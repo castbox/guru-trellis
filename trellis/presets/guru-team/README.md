@@ -1,5 +1,11 @@
 # Guru Team Preset
 
+Codex 的 Guru Skill 使用共享 `.agents/skills/`；新安装/reapply 不再创建受管 `.codex/skills/guru-*/`。专属编排包及 `agents/openai.yaml` 仍由目标 exact platform selection 决定，保留显式调用与原生能力前置。旧安装经原维护 owner 在目标完整后退出旧受管文件，保留用户修改并处理冲突；详见 [MIGRATION-724](MIGRATION-724.md)。
+
+只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
+再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
+并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](MIGRATION-718.md)。
+
 跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
 `guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
 分别处理依赖图与严格串行列表，默认协调器 heartbeat 为 2 分钟。
@@ -19,6 +25,10 @@ workflow 调用或用户要求正式阶段结果时，才按原前置与完整�
 按项目技术栈、已采用标准和当前产物选择实际需要的 Skill 及同源标准包，
 专项结果由原 Guru owner 在自己的职责内审查，不能替代正式阶段结论。
 
+行为测试、因果验证、证据采用和实验停止的共同方法见
+[Test And Validation Value](./spec/workflow/quality-guidelines.md#test-and-validation-value)。
+Author、实施派工、Check 和 Branch Review 在原职责内采用该方法。
+
 Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change`；它们保留
 现有 Issue、需求专项或项目动议/上游需求入口，Git 文件是否有改动不改变该边界。
 “审核需求是否已被代码和测试实现”属于实现审核。仅有 review 动词时承接明确的
@@ -27,15 +37,17 @@ Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change
 完整 preset 分发 `guru-review-change` 的独立合同、共享审核方法和无状态只读命令。
 它可审核未安装 Trellis 的 Git 仓库，输入选择工作区或已提交范围及可选路径。
 `reviewed` 表示完成本次审核，可以包含 Findings；它不代表正式门禁通过。
-Check 与 Branch Review 直接读取同源方法，并继续各自的正式流程。
-方法直接组合原语义 SSOT，并要求实际形成架构基线吻合度、基线规则适用性和需求
-实现覆盖结论。原 Architecture 独立读序、适用性与重审规则继续生效；无 Task
+共同覆盖与结束规则由 [审核充分性规范](./spec/workflow/review-sufficiency.md) 唯一维护，
+安装到 provider 的 `.trellis/spec/workflow/review-sufficiency.md`，由各原审核 owner 加载。
+Check 与 Branch Review 另读同源工程方法组合，并继续各自的正式流程。
+组合读取 Architecture、current-knowledge 和专题 SSOT，不读取 Check/Branch 的私有阶段方法。
+原 owner 仍须实际形成架构基线吻合度、基线规则适用性和需求实现覆盖结论。原 Architecture 独立读序、适用性与重审规则继续生效；无 Task
 独立审核不调用或伪造正式 Task/Delivery 架构结果。
 独立审核的不同角度由多个独立 subagent 实际执行，最终 owner 核对证据并汇总判断。
 原正式阶段的 worker 政策保持在各自 owner 内。
 
 已有安装需要更新匹配的 marketplace workflow 并完整 reapply preset，才能采用
-本次入口匹配、六个原 owner 与 managed quality spec 的变化。专项 Skills 在其
+本次共同规范、十二个审核消费者与工程方法迁移。专项 Skills 在其
 原来源单独维护和安装；缺少当前必须的专项证据时明确受影响结论，不静默降级。
 继续检查受管投影、drift 和 `.new`/`.bak`，保留用户修改。源码与分发检查不证明
 真实 Agent 已采用，也不代表完整多平台 upgrade/update 或 Release 矩阵通过。
@@ -79,9 +91,13 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 首次完整候选 Check 审核隔离贡献和完整拟写正文；`candidate_checked` 只进入
 原维护 owners 的最终整合。实际晋升后由 implementation 重建 candidate/begin_check，
 再完成最终 Check、TaskCommit 和完整 committed Review。Ready/Publication 不接受
-未晋升候选。普通知识晋升保留稳定 authority identity，根导航只在定位关系改变时写入，
+未晋升候选。普通知识晋升保留稳定 authority identity，根导航仅在入口自身合同实际变化时写入，
 不要求全局版本递增。当前 schema/consumer 成套切换和三类在途恢复见
 [MIGRATION-638](MIGRATION-638.md)。源码变更不证明安装采用或真实 Agent 验证完成。
+
+并行知识采用稳定入口、限定目录及稳定 ID 查找完整正文；独立主题不在共享入口逐项登记。
+共同方法、既有项目切换条件、未迁移范围、在途最终整合与旧写退出见
+[MIGRATION-711](MIGRATION-711.md)。安装新规则与项目文档切换分别完成。
 
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)
@@ -217,6 +233,12 @@ tree `08f5fc32d766ab2ccf04226846449b87ef95c5fb`，成功 main CI `40882919377`�
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
 本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
+精简 known_legacy 正式归档另需上游 #64/PR #65 的固定成对候选
+`619133c62d1487c5fbecbf9e00cea9e3f5ea52a6`（release
+`issue-64-candidate-619133c62d14`）。它同为 `.6`，必须核验实际 CLI/Core
+指纹，不能按版本号替换当前正式 lock。Guru 消费公共家族/key及目标 native 前驱关系；
+AI 仍审核原安装/Finish、历史范围及 PR/Git。原档不改写，人员字段只保留为历史资料。
+隔离 `local_candidate` 验证不证明正式 `source_locked` 采用、真实业务恢复或 Release 通过。
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
 本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
@@ -460,20 +482,32 @@ python3 trellis/skills/guru-team/runtime/bootstrap.py --repo "$TARGET" \
 只要求 CPython 3，不维护 minor 白名单。identity 继续绑定 lock、runtime API/layout、
 Python implementation/major/minor、OS、architecture、ABI/platform。相同有效 identity
 复用；minor 变化选择对应 cache。patch 或解释器路径变化本身不要求重建，也不保证
-受管环境 patch 与 Homebrew 最新版本同步。日常 Skill 只用已激活 managed venv，
-Homebrew 更新不会触发自动更新或退回全局 site-packages。旧 identity 不自动清理。
+受管环境 patch 与 Homebrew 最新版本同步。日常 Skill 按实际工具需求验证并选择已有共享 cache；
+无自动 pointer 的普通 worktree 也可发现匹配环境。有效 hint 或真实显式类别不因 Homebrew/PATH 更新
+自动变化，也不退回全局 site-packages。旧 identity 不自动清理。
 
 激活前必须完成 hash-locked 依赖安装、Draft 2020-12 probe、真实公开 schema wrapper
 正/普通不完整输入检查，以及完整 staged source/installed 验证。wrapper 的隔离 capability
 fixture 只证明传输/运行能力，不代表用户业务语义判断。安装或 runtime-check 失败时保留
-原 active pointer 和原环境；同 identity repair 也在检查通过后才替换旧环境。
+原合法选择和原环境；同 identity repair 也在检查通过后才替换旧环境。
+当前选择写入 checkout-private selection-v3.json，旧 active.json 原文保留给旧消费者。
+仅当新载体不存在时一次迁移旧有效选择；日常缺环境不会隐式安装。独立公开入口为：
+
+```bash
+.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --check --json
+.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --repair --python /path/to/python3 --json
+```
+
+从完整 matching source 恢复时，把实际目标 repo 和该来源 runtime assets 显式传给同一脚本。
+格式、稳定选择、直接 consumer 和原维护回滚的完整边界见 [MIGRATION-718](MIGRATION-718.md)。
 
 | 错误 code | 修复和重试 |
 | --- | --- |
 | `interpreter_unavailable` | 运行 `command -v python3` 和 `python3 --version`；检查可执行权限，或用上面的 `--python /path/to/python3` 明确选择。 |
 | `python3_required` / `python_implementation_unsupported` | 选择可运行的 CPython 3；不修改框架 manifest 来添加 minor。 |
-| `venv_bootstrap_failed` | 检查所选 Python 的 `-m venv` / ensurepip 支持，再使用同一 apply 命令。 |
-| `dependency_install_failed` | 检查 PyPI 访问及锁定依赖对所选解释器的 wheel 可用性，再重试；可显式选另一 CPython 3，不改 lock 或系统 Python。 |
+| `venv_bootstrap_failed` | 检查所选 Python 的 `-m venv` / ensurepip 支持，再使用同一环境 repair 命令。 |
+| `dependency_install_failed` | 检查 PyPI 访问及锁定依赖对所选解释器的 wheel 可用性，再通过环境 repair 重试；可显式选另一 CPython 3，不改 lock 或系统 Python。 |
+| `runtime_not_bootstrapped` / `managed_runtime_missing` / `explicit_runtime_unavailable` | 先运行独立 `--check`，再由原环境 owner 执行 `--repair`；显式类别失配不静默换环境。 |
 | `managed_runtime_check_failed` | 从完整 matching Guru 源/preset 重试，检查公开 wrapper/runtime 资产；可显式选择解释器。原 active 和旧环境保留，不手动覆盖 cache。 |
 
 未枚举 minor 的 identity admission 成功并不证明其 wheel/依赖兼容。这里的聚焦检查不替代

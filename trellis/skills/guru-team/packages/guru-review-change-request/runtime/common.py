@@ -11,6 +11,7 @@ from pathlib import Path
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.base_selection import check_candidate
 
 
 DIMENSIONS = (
@@ -143,8 +144,9 @@ def normalize_prerequisites(transition, target, source, package_root):
     stage = transition.get("stage") if isinstance(transition, dict) else None
     if stage not in {"context_current", "clarity_current", "wording_current"}:
         raise CommandError("schema_mismatch", "transition", "Provide a declared public prerequisite stage transition.")
-    schema = package_root.parents[1] / "consumers/workflow/stage0/transitions" / (stage.replace("_", "-") + ".schema.json")
+    schema = package_root.parents[1] / "consumers/workflow/stage0/transitions" / (stage.replace("_", "-") + "-3.0.schema.json")
     validate_json(transition, schema, "transition")
+    check_candidate(transition.get("candidate"),target["body_sha256"])
     if stage == "context_current" and transition["authority_content_sha256"] != target["body_sha256"]:
         raise CommandError("stale_identity", "transition.authority_content_sha256", "Refresh context for the current body.", 3)
     result = {}

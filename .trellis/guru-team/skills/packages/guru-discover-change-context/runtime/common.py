@@ -3,6 +3,7 @@ import argparse,copy,hashlib,json,re,subprocess,sys,unicodedata
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.base_selection import check_object_source, source_blob, source_ref
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
@@ -70,14 +71,14 @@ def _worktree_branches(repo):
  return rows
 def validate_public_input(package_root,value):
  profile=value.get("profile")
- schemas={"pre_task":"public-pre-task-input-3.0.schema.json","context_request":"public-context-request-input.schema.json"}
+ schemas={"pre_task":"public-pre-task-input-4.0.schema.json","context_request":"public-context-request-input-2.0.schema.json"}
  if profile not in schemas:raise CommandError("schema_mismatch","public_input.profile","Use current pre_task or context_request input.")
  validate_json(value,package_root/"schemas"/schemas[profile],"public_input")
  if profile=="context_request" and value["return_identity"]["continuation_id"]!=value["continuation_id"]:
   raise CommandError("stale_identity","public_input.continuation_id","Preserve the original clarification continuation.",3)
  return value
 def validate_transition(package_root,value):
- path=package_root.parents[1]/"consumers/workflow/stage0/transitions/base-current.schema.json"
+ path=package_root.parents[1]/"consumers/workflow/stage0/transitions/base-current-2.0.schema.json"
  validate_json(value,path,"transition")
  return value
 def observe_base_current(package_root,public_input,transition,expected_repo=None):
@@ -89,7 +90,14 @@ def observe_base_current(package_root,public_input,transition,expected_repo=None
  if not locator.exists() or locator.is_symlink():return base_failure("blocked","missing_authority","transition.repo_locator")
  code,top=_git(locator,"rev-parse","--show-toplevel")
  if code or Path(top).resolve()!=locator:return base_failure("blocked","repo_locator_mismatch","transition.repo_locator")
- base=transition["base"];selected=base["selected_base"];remote=base["remote"]
+ base=transition["base"]
+ if base.get("kind")=="git_object":
+  check_object_source(locator,base)
+  code,remote_url=_git(locator,"remote","get-url","origin");repo_name=_github_repo(remote_url) if not code else None
+  if not repo_name:return base_failure("blocked","repository_identity_unavailable","base_current.repository")
+  if expected_repo and str(expected_repo).casefold()!=repo_name.casefold():return base_failure("blocked","repository_mismatch","owner_result.repository.repo")
+  return {"classification":"current","reason":"fixed_git_object","repo":locator,"observation":{"repo":repo_name,"repo_locator":str(locator),"kind":"git_object","selected_ref":base["selected_ref"],"commit":base["commit"],"current":True}}
+ selected=base["selected_base"];remote=base["remote"]
  code,branch=_git(locator,"symbolic-ref","--short","HEAD")
  if code or branch!=selected:return base_failure("blocked","wrong_authority_branch","base_current.authority_branch")
  worktrees=[row for row in _worktree_branches(locator) if row.get("branch")==f"refs/heads/{selected}"]
@@ -126,10 +134,19 @@ def bind_owner_to_public(package_root,repo,public_input,transition,owner_result)
   info=observation["diagnostic"];raise CommandError(info["code"],info["field_path"],info["remediation"],3)
  value=copy.deepcopy(owner_result);value["mode"]=public_input["mode"];value["change_input"]=copy.deepcopy(public_input["change_input"]);value["base_observation"]=observation["observation"]
  live=observation["observation"]
- for key,expected in (("selected_base",live["selected_base"]),("decision_branch",live["authority_branch"])):
+ if live.get("kind")=="git_object":
+  value["schema_version"]="4.0"
+  expected_repository={"repo":live["repo"],"source_kind":"git_object","selected_ref":live["selected_ref"],"commit":live["commit"]}
+  if repository!=expected_repository:raise CommandError("stale_identity","repository","Use the selected Git-object repository/ref/commit, independently of the execution branch.",3)
+  validate_source_evidence(observation["repo"],live["commit"],value)
+  candidate=public_input.get("candidate_file") or transition.get("candidate",{}).get("locator")
+  if candidate:value["candidate_observation"]=candidate_observation(candidate,observation["repo"],value["live_change"]["body_sha256"])
+  if transition.get("candidate") and value.get("candidate_observation")!=transition["candidate"]:raise CommandError("stale_identity","transition.candidate","Reread the draft through fresh Intake before changing the return candidate.",3)
+ else:expected_repository={"selected_base":live["selected_base"],"decision_branch":live["authority_branch"]}
+ for key,expected in expected_repository.items():
   if repository.get(key)!=expected:
    raise CommandError("schema_mismatch",f"repository.{key}","Reread current base_current and live authority in this Discovery owner; rebuild repository authoring and rerun record/check/invoke.")
- value["canonical_query"]=canonical_query(value["change_input"]);value["history_preview"]=preview(repo,value["change_input"],value.get("history_preview",{}).get("limit",20));value["result_identity"]=identity(value);validate(package_root,value);return value
+ value["canonical_query"]=canonical_query(value["change_input"]);value["history_preview"]=preview(observation["repo"],value["change_input"],value.get("history_preview",{}).get("limit",20),live.get("commit"));value["result_identity"]=identity(value);validate(package_root,value);return value
 def check_owner_binding(package_root,repo,public_input,transition,value):
  validate_return_task(repo,public_input)
  repository=value.get("repository") if isinstance(value.get("repository"),dict) else {}
@@ -139,7 +156,13 @@ def check_owner_binding(package_root,repo,public_input,transition,value):
   field=first_difference(value.get(key),expected,f"owner_result.{key}")
   if field:
    raise CommandError("stale_identity",field,"Reread current public input and Sync base_current in this Discovery owner; rebuild its complete result through record/check/invoke. Do not edit recorded bindings.",3)
- rebuilt=preview(repo,value["change_input"],value["history_preview"]["limit"])
+ live=observation["observation"]
+ if live.get("kind")=="git_object":
+  validate_source_evidence(observation["repo"],live["commit"],value)
+  candidate=public_input.get("candidate_file") or transition.get("candidate",{}).get("locator")
+  expected_candidate=candidate_observation(candidate,observation["repo"],value["live_change"]["body_sha256"]) if candidate else None
+  if value.get("candidate_observation")!=expected_candidate:raise CommandError("stale_identity","candidate_observation","Reread the current draft and rerun Discovery record/check/invoke.",3)
+ rebuilt=preview(observation["repo"],value["change_input"],value["history_preview"]["limit"],live.get("commit"))
  for key in ("query_sha256","archive_manifest_sha256","preview_sha256","manifest","candidates","invalid"):
   field=first_difference(value["history_preview"].get(key),rebuilt.get(key),f"owner_result.history_preview.{key}")
   if field:
@@ -193,7 +216,8 @@ def canonical_query(raw):
  if not any(out[kind] for kind in QUERY_KINDS):raise CommandError("schema_mismatch","query","Provide at least one context clue.")
  out["tokens"]=_tokens(token_inputs);out["query_sha256"]=digest(out);return out
 def _valid_index(repo,index):
- schema_path=repo/".trellis/guru-team/schemas/finish-summary.schema.json"
+ skills=Path(__file__).resolve().parents[3]
+ schema_path=next((path for path in (skills.parent/"schemas/finish-summary.schema.json",skills.parents[1]/"workflows/guru-team/schemas/finish-summary.schema.json") if path.is_file()),repo/".trellis/guru-team/schemas/finish-summary.schema.json")
  try:schema=json.loads(schema_path.read_text())
  except Exception:return False
  try:
@@ -218,16 +242,20 @@ def _score(query,index):
  token_matches=_sort(set(query["tokens"])&retrieval_tokens)
  if token_matches:matched["tokens"]=token_matches
  token=min(99,len(token_matches));return {"total":exact+token,"exact":exact,"token":token,"exact_match_count":exact_count,"token_match_count":len(token_matches)},matched
-def preview(repo,raw,limit):
+def preview(repo,raw,limit,commit=None):
  if limit!=20:raise CommandError("invalid_arguments","limit","Use the fixed history preview limit 20.")
  q=canonical_query(raw);manifest=[];candidates=[];archive=repo/".trellis/tasks/archive"
- if archive.exists() and not archive.is_dir():raise CommandError("unsafe_path","archive","Archived task root must be a directory.")
- paths=sorted(archive.glob("**/finish-summary.json"),key=lambda path:path.relative_to(repo).as_posix().encode("utf-8")) if archive.exists() else []
+ if commit is None and archive.exists() and not archive.is_dir():raise CommandError("unsafe_path","archive","Archived task root must be a directory.")
+ paths=sorted(archive.glob("**/finish-summary.json"),key=lambda path:path.relative_to(repo).as_posix().encode("utf-8")) if commit is None and archive.exists() else []
+ if commit:
+  code,listing=_git(repo,"ls-tree","-r","--name-only",commit,"--",".trellis/tasks/archive")
+  if code:raise CommandError("git_failed","history_preview","Read the selected baseline archive tree.",4)
+  paths=[repo/line for line in listing.splitlines() if line.endswith("/finish-summary.json")]
  for path in paths:
   relative=path.relative_to(repo).as_posix();error=None;index=None
-  if path.is_symlink() or not path.is_file():error="not_regular_file"
+  if not commit and (path.is_symlink() or not path.is_file()):error="not_regular_file"
   else:
-   try:payload=json.loads(path.read_text(encoding="utf-8"))
+   try:payload=json.loads(source_blob(repo,commit,relative)[1].decode("utf-8") if commit else path.read_text(encoding="utf-8"))
    except Exception:error="invalid_json"
    else:
     if not isinstance(payload,dict) or "index" not in payload:error="missing_index"
@@ -242,8 +270,10 @@ def preview(repo,raw,limit):
  candidates.sort(key=lambda row:(-row["score"]["total"],-row["score"]["exact_match_count"],-row["score"]["token_match_count"],row["finish_summary_path"].encode("utf-8")));candidates=candidates[:limit];invalid=[copy.deepcopy(row) for row in manifest if row["status"]=="invalid"]
  out={"algorithm_id":"guru-context-history-score-1.0","canonical_query":q,"query_sha256":q["query_sha256"],"archive_manifest_sha256":digest(manifest),"limit":limit,"manifest":manifest,"candidates":candidates,"invalid":invalid};out["preview_sha256"]=digest({key:out[key] for key in ("algorithm_id","query_sha256","archive_manifest_sha256","limit","candidates","invalid")});return out
 def identity(v):
- base=v["base_observation"];live=v["live_change"];hp=v["history_preview"];out={"query_sha256":v["canonical_query"]["query_sha256"],"archive_manifest_sha256":hp["archive_manifest_sha256"],"base_head":base["local_head"],"live_change_sha256":live["facts_sha256"]};out["payload_sha256"]=digest({k:v[k] for k in v if k!="result_identity"});out["result_sha256"]=digest(out);return out
-def validate(package_root,v):validate_json(v,package_root/"schemas/change-context-owner-result-3.0.schema.json","owner_result");return v
+ base=v["base_observation"];live=v["live_change"];hp=v["history_preview"];out={"query_sha256":v["canonical_query"]["query_sha256"],"archive_manifest_sha256":hp["archive_manifest_sha256"],"base_head":base["commit"] if base.get("kind")=="git_object" else base["local_head"],"live_change_sha256":live["facts_sha256"]};out["payload_sha256"]=digest({k:v[k] for k in v if k!="result_identity"});out["result_sha256"]=digest(out);return out
+def validate(package_root,v):
+ name="change-context-owner-result-4.0.schema.json" if v.get("schema_version")=="4.0" else "change-context-owner-result-3.0.schema.json"
+ validate_json(v,package_root/"schemas"/name,"owner_result");return v
 def active_task(repo,value):
  p=(repo/str(value or "")).resolve();tasks=(repo/".trellis/tasks").resolve()
  if not p.is_dir() or p.is_symlink() or not p.is_relative_to(tasks):raise CommandError("unsafe_path","active_task","Use one active task below .trellis/tasks.")
@@ -274,3 +304,22 @@ def check_recovery(package_root,repo,task_dir,task,payload,continuation):
   consume_recovery(path);raise
  if value!=recovery_projection(repo,task_dir,task,payload,continuation):consume_recovery(path);raise CommandError("stale_identity","recovery","Rerun the interrupted context owner.",3)
  return path
+
+
+def candidate_observation(locator,repo,expected):
+ path=Path(locator);path=(path if path.is_absolute() else repo/path).resolve()
+ try:data=path.read_bytes()
+ except OSError as exc:raise CommandError("stale_identity","candidate_file","Restore or reselect the draft file, then rerun Discovery.",3) from exc
+ actual=hashlib.sha256(data).hexdigest()
+ if actual!=expected:raise CommandError("stale_identity","candidate_file","The draft changed. Reread it and rerun Discovery with the current content.",3)
+ return {"locator":str(path),"body_sha256":actual}
+
+
+def validate_source_evidence(repo,commit,value):
+ for section in ("docs","code_contracts","tests"):
+  for item in value["current_state"][section]:
+   oid,data=source_blob(repo,commit,item["path"])
+   if item["blob_or_content_sha256"] not in (oid,hashlib.sha256(data).hexdigest()):
+    raise CommandError("stale_identity","current_state."+section,"Reread the evidence from the selected fixed Git tree, then rerun Discovery.",3)
+ for read in value.get("history_review",{}).get("deep_reads",[]):
+  if read["source"]=="task_artifact":source_blob(repo,commit,read["locator"])

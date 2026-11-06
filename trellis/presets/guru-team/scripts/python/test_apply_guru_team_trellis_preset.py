@@ -1314,7 +1314,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                     (".trellis/guru-team/runtime/", "installed"),
                     (".trellis/guru-team/skills/", "installed"),
                     (".agents/skills/", "shared"),
-                    (".codex/skills/", "codex"),
                     (".claude/skills/", "claude"),
                     (".cursor/skills/", "cursor"),
                 )
@@ -1322,16 +1321,15 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             )
             if not group_order or group_order[-1] != group:
                 group_order.append(group)
-        self.assertEqual(
-            group_order,
-            [
-                "installed",
-                *(
-                    ["shared", "codex", "claude", "cursor"]
-                    * active_package_count
-                ),
-            ],
-        )
+        expected_groups = ["installed"]
+        for entry in registry["skills"]:
+            if entry.get("state") != "active":
+                continue
+            labels = ["shared", "claude", "cursor"] if "shared" in entry["supported_platforms"] else ["shared"]
+            for label in labels:
+                if expected_groups[-1] != label:
+                    expected_groups.append(label)
+        self.assertEqual(group_order, expected_groups)
 
     def test_default_platforms_install_claude_codex_cursor_and_shared_overlays(self) -> None:
         payload = self.install()
@@ -1432,7 +1430,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
         self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
         self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".codex/skills/guru-create-task/SKILL.md").is_file())
         self.assertTrue((self.repo / ".cursor/skills/guru-create-task/SKILL.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
@@ -1580,7 +1577,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         package_roots = (
             self.repo / ".trellis/guru-team/skills/packages/guru-review-branch",
             self.repo / ".agents/skills/guru-review-branch",
-            self.repo / ".codex/skills/guru-review-branch",
             self.repo / ".claude/skills/guru-review-branch",
             self.repo / ".cursor/skills/guru-review-branch",
             self.repo / ".opencode/skills/guru-review-branch",
@@ -1629,7 +1625,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         roots = (
             self.repo / ".trellis/guru-team/skills/packages" / skill_id,
             self.repo / ".agents/skills" / skill_id,
-            self.repo / ".codex/skills" / skill_id,
             self.repo / ".claude/skills" / skill_id,
             self.repo / ".cursor/skills" / skill_id,
         )
@@ -1670,7 +1665,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         platform_roots = (
             self.repo / ".agents/skills" / package_relative,
-            self.repo / ".codex/skills" / package_relative,
             self.repo / ".claude/skills" / package_relative,
             self.repo / ".cursor/skills" / package_relative,
             self.repo / ".opencode/skills" / package_relative,
@@ -1740,7 +1734,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
     def test_platform_reselection_prunes_empty_unselected_skill_directories(self) -> None:
         self.install({"claude", "codex", "cursor", "opencode"})
-        retired_root = self.repo / ".codex/skills/guru-review-branch"
+        retired_root = self.repo / ".claude/skills/guru-review-branch"
         empty_nested = retired_root / "empty/nested"
         empty_nested.mkdir(parents=True)
 
@@ -1748,7 +1742,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertEqual(payload["skill_packages"]["status"], "ok")
         self.assertFalse(retired_root.exists())
-        self.assertFalse(any((self.repo / ".codex/skills").glob("guru-*")))
+        self.assertTrue(any((self.repo / ".agents/skills").glob("guru-*")))
         self.assertFalse(any((self.repo / ".cursor/skills").glob("guru-*")))
         self.assertFalse(any((self.repo / ".claude/skills").glob("guru-*")))
         self.assertTrue(any((self.repo / ".opencode/skills").glob("guru-*")))
@@ -1850,7 +1844,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(exit_code, 0)
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
-        self.assertTrue((self.repo / ".codex/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
         self.assertTrue((self.repo / ".cursor/skills/guru-create-task/SKILL.md").is_file())
         self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
         self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
@@ -2506,7 +2500,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 self.guru_root / "trellis/skills/guru-team/packages" / skill_id,
                 self.install_dst / "skills/packages" / skill_id,
                 self.repo / ".agents/skills" / skill_id,
-                self.repo / ".codex/skills" / skill_id,
                 self.repo / ".cursor/skills" / skill_id,
             ):
                 self.assertFalse(planned_path.exists(), planned_path)
@@ -2567,7 +2560,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         for package_root in (
             self.repo / ".agents/skills/guru-review-contract-wording",
-            self.repo / ".codex/skills/guru-review-contract-wording",
             self.repo / ".cursor/skills/guru-review-contract-wording",
         ):
             self.assertFalse((package_root / schema_relative).exists())
@@ -2584,7 +2576,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         for package_root in (
             self.repo / ".agents/skills/guru-review-change-request",
-            self.repo / ".codex/skills/guru-review-change-request",
             self.repo / ".cursor/skills/guru-review-change-request",
         ):
             self.assertFalse((package_root / readiness_schema_relative).exists())

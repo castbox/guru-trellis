@@ -81,7 +81,7 @@ That global boundary does not relax this Skill's entry or completion contract.
 
 The current candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
-removed after success. Candidate delivery-2.0 has no authorization, branch
+removed after success. Candidate delivery-3.0 has no authorization, branch
 classification, publication eligibility, freshness digest, or terminal result
 fields. The public invocation may retain one minimal ignored result receipt after success
 so the same locator can recover lost stdout without repeating the commit; a
@@ -105,8 +105,8 @@ prepare and the current-dialogue commit boundary. Complete Check, heavy tests
 and final Branch Review remain pending duties.
 
 Use the same prepare and exact invoke transaction, real hooks and same-commit
-receipt recovery. The private candidate/result use the closed delivery-2.0 union:
-draft contains no Check or phase2 anchor; final retains both real bindings.
+receipt recovery. The private candidate uses delivery-3.0; the result receipt retains delivery-2.0.
+Draft contains no Check or phase2 anchor; final retains both real bindings.
 `draft_committed` carries task_ref/key/B/commit_sha only to the workflow draft
 router and original Publication. It cannot enter formal Branch Review.
 

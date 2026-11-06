@@ -38,9 +38,17 @@
           "description": "Validate without persistence.",
           "repeatable": false,
           "conflicts": []
+        },
+        {
+          "flag": "--skill-input",
+          "required": false,
+          "kind": "string",
+          "description": "Original public Delivery input; required for resolved reconciliation capture.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
@@ -76,9 +84,17 @@
           "description": "Task locator.",
           "repeatable": false,
           "conflicts": []
+        },
+        {
+          "flag": "--skill-input",
+          "required": false,
+          "kind": "string",
+          "description": "Original public Delivery input; required for resolved reconciliation capture.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",

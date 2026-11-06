@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from runtime_diagnostic import WrapperObserver
+from runtime_diagnostic import WrapperObserver, installed
 
 import targeted_ci as ci
 
@@ -200,6 +200,43 @@ class SelectionTest(unittest.TestCase):
 class ObserverTest(unittest.TestCase):
     cases = [{"arguments": ["--valid"], "expected_returncode": 0, "expected_output": {"ok": True}},
              {"arguments": ["--invalid"], "expected_returncode": 2, "expected_output": {"code": "schema_mismatch"}}]
+
+    def test_installed_uses_target_public_resolution_and_preserves_cases(self):
+        with tempfile.TemporaryDirectory(prefix="Guru installed diagnostic space ") as temporary:
+            root = Path(temporary) / "中文 target"
+            assets = root / ".trellis/guru-team/runtime"
+            assets.mkdir(parents=True)
+            (assets / "python-runtime.json").write_text(json.dumps({"public_wrapper_check": {
+                "package": "fixture-wrapper", "cases": self.cases,
+            }}), encoding="utf-8")
+            (assets / "bootstrap.py").write_text(
+                "import argparse,json\nfrom pathlib import Path\n"
+                "parser=argparse.ArgumentParser()\n"
+                "parser.add_argument('--repo',type=Path,required=True)\n"
+                "parser.add_argument('--runtime-assets',type=Path,required=True)\n"
+                "parser.add_argument('--resolve-active',action='store_true',required=True)\n"
+                "parser.add_argument('--json',action='store_true',required=True)\n"
+                "args=parser.parse_args()\n"
+                "assert args.runtime_assets == Path(__file__).parent\n"
+                "assert args.repo / '.trellis/guru-team/runtime' == args.runtime_assets\n"
+                "print(json.dumps({'status':'ok','runtime_identity':'selected-runtime',"
+                "'interpreter':'selected-managed-python'}))\n", encoding="utf-8")
+            wrapper = assets.parent / "skills/packages/fixture-wrapper/scripts/invoke.sh"
+            wrapper.parent.mkdir(parents=True)
+            wrapper.write_text('#!/bin/bash\ncase "$1" in\n'
+                ' --valid) printf \'{"ok":true}\\n\'; exit 0;;\n'
+                ' --invalid) printf \'{"code":"schema_mismatch"}\\n\'; exit 2;;\n'
+                'esac\nexit 9\n', encoding="utf-8")
+            report = {"python": sys.executable, "calls": []}
+            installed(root, report)
+            self.assertEqual(report["active_runtime"], {
+                "runtime_id": "selected-runtime", "interpreter": "selected-managed-python",
+            })
+            self.assertEqual(report["python_role"], "diagnostic_process")
+            self.assertEqual(report["fixture_status"], "passed")
+            self.assertEqual([row["returncode"] for row in report["calls"]], [0, 2])
+            self.assertEqual([row["argv"][2:] for row in report["calls"]],
+                             [case["arguments"] for case in self.cases])
 
     def test_success_keeps_original_results_and_arguments_without_extra_calls(self):
         calls = []

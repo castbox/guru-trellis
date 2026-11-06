@@ -1,0 +1,30 @@
+{
+  "client": "codex-cli 0.162.1",
+  "scope": "G1 native repo Skill discovery and original public invocation; no target Skill old Codex copy",
+  "public": [
+    {
+      "command": "/bin/zsh -lc 'cat .trellis/spec/workflow/clear-technical-writing.md .agents/skills/guru-sync-base/SKILL.md .agents/skills/guru-sync-base/references/contract.md .trellis/spec/workflow/companion-scripts.md'",
+      "exit_code": 0,
+      "observation": "Native command read the installed shared Skill body; original output omitted here."
+    },
+    {
+      "command": "/bin/zsh -lc \"PYTHONDONTWRITEBYTECODE=1 .agents/skills/guru-sync-base/scripts/invoke.sh --invocation - <<'JSON'\n{\\\"schema_version\\\":\\\"1.0\\\",\\\"public_input\\\":{\\\"source_exit\\\":\\\"start\\\",\\\"mode\\\":\\\"standalone\\\",\\\"repo_root\\\":\\\".\\\",\\\"route\\\":\\\"repo_change\\\",\\\"operation\\\":\\\"read\\\",\\\"base_ref\\\":\\\"refs/heads/main\\\"}}\nJSON\"",
+      "exit_code": 0,
+      "stdout": "{\"exit_id\":\"baseline_ready\",\"handoff_continuation_id\":\"stage0-current\",\"handoff_mode\":\"standalone\",\"handoff_profile\":\"pre_task\",\"transition\":{\"base\":{\"commit\":\"04bdfa574d646f2beb176d56181d51db157975c4\",\"identity_sha256\":\"61ac109615a03ea13c17211e8acbdbc85f786b2394c71eadd708e2aa9d28bfbb\",\"kind\":\"git_object\",\"selected_ref\":\"refs/heads/main\",\"source\":\"explicit\"},\"mode\":\"standalone\",\"repo_locator\":\"/private/var/folders/0b/2nwc70fx509_v4spgzcmsjkh0000gn/T/guru724-validation-7odvv_fu/clean\",\"schema_version\":\"2.0\",\"stage\":\"base_current\",\"transition_id\":\"base_current:61ac109615a03ea13c17211e\"}}\n"
+    }
+  ],
+  "codex_only": [
+    {
+      "command": "/bin/zsh -lc 'cat .agents/skills/guru-orchestrate-issue-sequence/SKILL.md'",
+      "exit_code": 0,
+      "observation": "Native command read the installed shared Skill body; original output omitted here."
+    }
+  ],
+  "codex_only_exit": "dry_run_blocked",
+  "codex_only_observation": "`dry_run_blocked`\n\n已显式使用当前安装的 [guru-orchestrate-issue-sequence](.agents/skills/guru-orchestrate-issue-sequence/SKILL.md)，完成只读 preflight 判断。\n\n已核实：\n\n- `repository=castbox/guru-trellis`、`issues=[724]`、`mode=dry-run`。\n- GitHub 认证读取成功；#724 为 open、无评论，范围及验收条件明确，正文未声明硬前置 Issue。\n- 默认分支为 `main`。\n\n实际阻塞：\n\n- 当前工具缺少合同要求的原生 Codex saved-project、独立 chat、消息、`wait_threads` 和当前会话 heartbeat 能力。普通 subagent、其它应用自动化不能替代。\n- 无法核实匹配的 saved project，以及是否存在竞争 coordinator、child、pending creation 或 heartbeat。\n- 当前目录有未跟踪文件，不满足初始 clean checkout 条件。本地 `main` 为 `04bdfa574d646f2beb176d56181d51db157975c4`；未发现对应 tracking ref，远端 OID 未验证，三方一致性未成立。\n\n`child_model`、`child_thinking` 未选择不单独阻塞 dry-run，合同允许推迟到 live 前。\n\n本次未启动 child、heartbeat 或后台任务；未修改仓库、Task 或 GitHub 资源，未读取 secret。该出口仅表示 preflight 阻塞，不证明 #724 已完成。",
+  "boundaries": [
+    "First public attempt in read-only filesystem sandbox returned runtime_dependency_missing without typed exit; same read task with runtime access then returned baseline_ready.",
+    "Specialized dry-run lacks native chat/async/heartbeat and fixture clean/tracking prerequisites; no business orchestration success claimed.",
+    "Full raw JSONL remains the original local execution evidence; this is a bounded excerpt with Skill bodies and unrelated trace events omitted."
+  ]
+}

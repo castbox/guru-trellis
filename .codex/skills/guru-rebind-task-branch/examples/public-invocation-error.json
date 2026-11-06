@@ -1,5 +1,0 @@
-{
-  "code": "stale_identity",
-  "field_path": "plan",
-  "remediation": "Refresh the reviewed branch rebind plan."
-}

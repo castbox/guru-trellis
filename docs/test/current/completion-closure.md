@@ -72,3 +72,15 @@
 **T-MECH-04 / R-MECH-05/06 → D-MECH-03/04**：V4 使用原 Completion native fixture，给出新旧 writer 共享状态、可独立迁移旧入口、场景不同仍合理的旧入口，以及属于整个 Task 但拆在后继 Delivery 的迁移。原 owner 自行读事实、作整体判断并调用原 wrapper；不能因新入口合并或基线晋升声明完成。必须识别共存破坏约束时的必要同步适配、可独立分期的真实共存与可执行承接、场景保留及 scope 内未完成责任。实现遗漏不记为仅待外部证据。
 
 固定原/新各一次，同语义事实、模型、权限和起点；期待不进入受测上下文。逐次具体观察、首次失败/修复与执行边界唯一见 [本批 Test](../../requirements-design-test-contributions/architecture-mechanism-review/test.md)，不把原出口或结构校验当语义通过。候选检查、真实晋升/读回、after 重绑、最终质量和交付分别沿原链路证明。
+
+## T712：compact 正式归档与原生续接
+| Test / requirement → design | 正常输入与操作 | 必须观察 |
+| --- | --- | --- |
+| T712-01 / R712-01/02 → D712-01 | 保留十字段、缺 generation/structured source、带人员字段/规范 scope 的旧档；真实 Git/受控 PR及历史合同 | public 分类、Guru历史准入和正式 applied 分别成立；原档字节不变，同TaskId只增代一次 |
+| T712-02 / R712-03 → D712-02 | pending、applied后绑定中断、输出/私有receipt丢失且真实后继可读 | 续接同 operation/后继，无重复 prepare/增代或额外资源 |
+| T712-03 / R712-01/03 → D712-01/02 | 普通 source/PR/Git/资格/后继不一致，旧schema1/Task2、人工历史、未完closeout | 具体诊断和原路线，原档与其它Task保留；不补历史source/gate |
+| T712-04 / R712-03 → D712-02 | 合法后继代表性再次归档状态，matching TS/Python native与Guru原入口 | 前驱关系一致，无重复身份/source/generation误判；不要求第二次实际增代 |
+| T712-05 / R712-03/04 → D712-03 | 一个固定成对候选的完整隔离安装；实际AI调用installed原owners | Identity/Ensure/Bind、continuation和下一scope owner真实消费分别证明，不造空Delivery |
+| T712-06 / R712-04 → D712-03 | canonical/dogfood/installed及平台投影、reapply/drift、sidecar/diff | 同步且无未解冲突；未验证formal source lock、真实业务和完整Release矩阵明确保留 |
+
+本项结果截止点与实际命令见本主题贡献 test.md。受控 provider 证明本地集成，不证明真实 GitHub/backend 或业务生产效果；公共上游自身测试不替代 Guru 联合验收。

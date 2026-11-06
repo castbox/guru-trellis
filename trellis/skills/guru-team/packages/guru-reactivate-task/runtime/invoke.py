@@ -192,10 +192,10 @@ def acquire_incarnation(root, key, public, semantic, facts):
 
     def after_acquisition(acquired):
         checkout = acquired.checkout.path
-        current = read_shared_archive(checkout, key, public["archive_anchor"])
+        current = read_shared_archive(checkout, key, public["archive_anchor"], semantic.get("source_ref"))
         require(current["archive_commit"] == facts["archive_commit"], "archive_anchor", "Use the exact reviewed predecessor.")
         target = checkout / plan.task_ref
-        if facts["family"] == "schema1":
+        if facts["family"] != "schema2":
             source = semantic["source_ref"]
             selected = formal_inspection(checkout, key, public["archive_anchor"], current, source)
             upstream = semantic["formal_input"]
@@ -253,7 +253,7 @@ def acquire_incarnation(root, key, public, semantic, facts):
                       "resource_ownership": {"branch": acquired.branch_ownership, "worktree": acquired.worktree_ownership}}
             implementation_record(record, checkout, public, semantic)
             save_transaction(path, record)
-        if facts["family"] == "schema1" or semantic["profile"] == PROFILE:
+        if facts["family"] != "schema2" or semantic["profile"] == PROFILE:
             binding = finish_local_binding(checkout, record)
         else:
             release_resolved_prior_binding(branches, resources, key, branch)
@@ -314,7 +314,7 @@ def execute(root, public, semantic):
             if stored["stage"] == "public_prepared":
                 require("source_ref" in semantic, "source_ref", "Validate the original public write set before recovery.")
                 call(semantic["source_ref"], "previewMaintenance", stored["public_plan"])
-    facts = read_shared_archive(working, key, public["archive_anchor"])
+    facts = read_shared_archive(working, key, public["archive_anchor"], semantic.get("source_ref"))
     if stored is not None and stored["stage"] in {"public_prepared", "public_applied"}:
         if stored["stage"] == "public_prepared" or stored["public_recovery_ref"] is not None:
             require("source_ref" in semantic, "source_ref", "Recover the original public operation with its matching source.")

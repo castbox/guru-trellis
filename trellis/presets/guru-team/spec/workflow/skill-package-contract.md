@@ -854,6 +854,19 @@ New Delivery profiles reject legacy Task-status inputs; the old whole installed
 version stays pinned until the public D2 and Guru private migrations are ready.
 See [task-delivery-migration.md](task-delivery-migration.md) for the supported switch boundary.
 
+### Fixed Git Source Compatibility (#718)
+
+Current Intake preserves the synchronized base and adds a closed Git-object
+source variant. The selected Interfaces reference versioned successor stages,
+outputs and consumer schemas; old published DTO files retain their bytes.
+Interface 1.8's transition descriptor grammar accepts those bounded versioned
+paths and stage ids while continuing to accept the original paths/ids. This is
+an additive descriptor extension, not permission to relabel a read result as
+`synced` or infer missing HEAD roles. The exact package contracts and
+MIGRATION-718 own public argument, version and projection details. The actual
+Task/Issue creation consumers retain their own necessary identity and mutation
+preconditions.
+
 ### Normal-scenario qualification public package
 
 `guru-qualify-normal-scenario` is a public Interface 1.6 semantic Skill and the
@@ -1156,7 +1169,7 @@ workflow/standalone preconditions: current runtime, current review target,
 current context evidence, source authority, and invocation-context freshness.
 Its Interface 1.8 semantic stages are `forward_behavior -> ai_review_gate ->
 conditional_human_confirmation -> recorder_validator -> typed_exit`. The Skill
-loads `trellis-brainstorm` as its one-question method, but owns question
+loads `trellis-brainstorm` as its exploration method, but owns question
 selection, convergence, scope classification, action selection, confirmation
 necessity, semantic pass/block, and typed route.
 
@@ -1167,7 +1180,12 @@ before the first user
 question. Each clarification round contains one `question_id`; an
 `atomic_group` is permitted only for an indivisible product choice and records
 its reason. Every round's `question_id` must be opened in that round or already
-open; `answer_status=partial` cannot close any question and therefore cannot
+open. Independent lightweight items may share a user-visible recommendation
+checklist under Interaction Budget; each keeps its own question record and actual
+answer. That presentation creates no `atomic_group`, public field, or extra user
+turn. Unanswered items do not acquire fictional answer records. Every round's id
+still refers to one question; the package's Questions And Convergence owns the
+dialogue method. `answer_status=partial` cannot close any question and therefore cannot
 disappear through an empty lifecycle. The reducer keeps exactly
 `open_questions = opened - closed`, rejects closing-before-open and reopening
 after closure. The recorder derives all proposal, action, payload, content, and
@@ -1560,10 +1578,23 @@ validation, so their absence is normal and never authorizes reconstruction.
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under
-`.trellis/guru-team/skills/`, then distributes each active package to
-`.agents/skills/<id>/` and only the selected platform roots:
-`.codex/skills/<id>/`, `.cursor/skills/<id>/`, and
-`.claude/skills/<id>/`. Unselected roots are not created.
+`.trellis/guru-team/skills/`, then distributes public package files to shared
+`.agents/skills/<id>/` and the exact selected descriptor roots. Codex uses that
+same shared root; Cursor and Claude retain `.cursor/skills/<id>/` and
+`.claude/skills/<id>/`. Shared roots are de-duplicated. A Codex-only package,
+including its `agents/openai.yaml`, enters the shared root only when the target
+selection contains `codex`; its platform applicability and native prerequisites
+remain unchanged. Package-private runtime, tests and evidence stay outside
+discovery roots.
+
+The explicit [Codex root migration](../../MIGRATION-724.md) retires previous
+Guru-managed `.codex/skills/guru-*/` files through the original maintenance and
+provenance owner. Complete conflict-free target public projections precede
+removal of unchanged managed predecessors. Preserve local edits and unknown
+files on either side; unresolved target conflicts retain predecessors needed
+for migration and cannot report success. Reapply never recreates the retired
+projection. Removing `codex` from the target selection retires only its
+exclusive managed files and preserves shared consumers and user content.
 
 Every distributed file uses exact previous managed hashes, never overlay
 content heuristics:

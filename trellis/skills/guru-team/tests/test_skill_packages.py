@@ -358,7 +358,6 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             self.assertFalse((target / ".trellis/guru-team/scripts/python/guru_team_trellis.py").exists())
             for projection in (
                 target / ".agents/skills",
-                target / ".codex/skills",
                 target / ".cursor/skills",
                 target / ".claude/skills",
             ):

@@ -1,9 +1,9 @@
 from __future__ import annotations
 import argparse, os, subprocess, sys, tempfile
 from pathlib import Path
-from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, committed_tree_digest, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
+from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, committed_tree_digest, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, parent_changes, resolve_commit, task_identity, validate_json, validate_public, validate_result
 from runtime.io import CommandError
-from resolved import commit_tree, require_merge_state, tree_index, validate_integration_paths, verify_commit
+from resolved import commit_tree, require_merge_state, tree_index, validate_integration_paths, verify_commit, task_metadata_snapshot, require_resolved_worktree
 
 def _managed_validation_command(command: list[str]) -> list[str]:
     launcher = Path(command[0]).name.casefold()
@@ -93,7 +93,7 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
                 reconciled=commit_tree(repo,[prior,new_base],tree,request["commit_message"],request["candidate_tree_sha256"],index=index)
         result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
         validate_json(result,package_root/"schemas/delivery-reconciliation-result.schema.json","result"); return result
-    dirty=bool(git(repo,"status","--porcelain=v1","--untracked-files=normal"))
+    dirty=bool(parent_changes(repo))
     if dirty and request["profile"] not in PRE_REVIEW_PROFILES:
         require_clean_worktree(repo)
     stash_oid=None
@@ -159,23 +159,20 @@ def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
     if request["selected_base_ref"] != new or request["merge_head"] != new or selected != new or request["parent_order"] != [phase2,new] or not is_ancestor(repo,old,new):
         raise CommandError("stale_identity","base_pair","Use the exact reviewed parent order and selected base.",3)
     head=resolve_commit(repo,"HEAD","HEAD")
+    metadata=task_metadata_snapshot(repo,identity["task_ref"])
     if head != phase2:
-        require_clean_worktree(repo)
+        require_resolved_worktree(repo,metadata,terminal=True)
         verify_commit(repo,head,request["parent_order"],request["stage0_tree"],request["commit_message"],request["index_tree_sha256"],recovery=True)
         status="recovered"
         reconciled=head
     else:
         require_merge_state(repo,new)
-        if subprocess.run(["git","diff","--quiet"],cwd=repo).returncode:
-            raise CommandError("stale_identity","worktree","Stage every resolved change before reconciliation.",3)
-        untracked=git(repo,"ls-files","--others","--exclude-standard")
-        if untracked:
-            raise CommandError("stale_identity","worktree","Remove untracked files before reconciliation.",3)
+        require_resolved_worktree(repo,metadata)
         tree=git(repo,"write-tree")
         if tree != request["stage0_tree"] or index_tree_digest(repo) != request["index_tree_sha256"]:
             raise CommandError("stale_identity","stage0_tree","Use the exact Phase 2 reviewed stage-0 tree and index digest.",3)
         reconciled=commit_tree(repo,request["parent_order"],request["stage0_tree"],request["commit_message"],request["index_tree_sha256"])
-        require_clean_worktree(repo)
+        require_resolved_worktree(repo,metadata,terminal=True)
         status="committed"
     result={"schema_version":"1.0","status":status,"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"phase2_commit_anchor":phase2,"old_base_head":old,"new_base_head":new,"merge_head":new,"stage0_tree":request["stage0_tree"],"index_tree_sha256":request["index_tree_sha256"],"parent_order":request["parent_order"],"commit_message":request["commit_message"],"reconciled_task_head":reconciled}
     validate_json(result,package_root/"schemas/delivery-resolved-reconciliation-result.schema.json","result"); return result

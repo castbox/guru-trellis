@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "全部写作与原审核语言规则"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性脚本角色及 runtime 边界"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "当前 Task 与历史记录边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "最小足够验证和真实路径判定"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "公共消费与兼容收敛"}
+{"file": ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/research/compact-formal-reactivation.md", "reason": "直接受影响文件及固定公共 API"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文及来源完整条件"}
+{"file": "docs/design/current/completion-closure.md", "reason": "正式恢复与人工历史的现行职责"}

@@ -1005,8 +1005,26 @@ secrets, or raw private records.
 
 ### Shared Base Resolution And Sync
 
-`sync-base` is the only deterministic owner of selected-base resolution and
-safe refresh. The fixed precedence is explicit `--base`, non-empty scalar
+The original `guru-sync-base` public invocation has two caller-selected
+operations. `read` resolves an available explicit/config-selected Git source
+without requiring its branch checkout or cleanliness; `sync` retains the
+original fetch/ff/identity loop below. Omitted operation preserves sync for old
+direct calls. Markdown selects intent. Runtime does not infer it from a Task,
+branch name, dirty state, or an earlier failure. `baseline_ready` enters the
+original Discovery consumer and never claims synchronization.
+
+Discovery's `read-change-context-source` command consumes the actual
+`base_current` transition and a source path, then returns fixed-commit blob
+bytes as a normal intermediate receipt. History preview's optional
+`--source-transition` selects that same archive tree. The current owner
+record/check/invoke validates those source bytes and the separate draft
+candidate; current workflow uses these original public entries. New source
+schema/version and projection details belong to the selected Skill Interfaces
+and MIGRATION-718. Old `prepare-task` paragraphs below describe the historical
+complete installation only; no current executable fallback is reintroduced.
+
+The sync profile remains the only deterministic owner of actual selected-base
+refresh. The fixed precedence is explicit `--base`, non-empty scalar
 `base_branch`, the first existing exact local or remote-tracking ref in
 `base_branch_candidates` order (default `dev`, `develop`, `main`, `master`), then
 remote default from `git ls-remote --symref <remote> HEAD` when no candidate

@@ -159,3 +159,57 @@ def authority_checkout(root,selected_base,require_clean=False):
     if require_clean and not clean(authority):
         raise CommandError("git_failed","repository.authority_checkout","Clean the selected-base authority checkout before synchronization.",4)
     return authority
+
+
+def object_source(root, selected_ref, expected_commit=None, source="explicit"):
+    """Resolve an intentionally selected Git object without checkout or refresh."""
+    selected_ref = valid_name(selected_ref, "base_ref")
+    commit = git(root, "rev-parse", "--verify", f"{selected_ref}^{{commit}}", check=False)
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise CommandError("git_failed", "base_ref", "Select an available Git ref or commit through guru-sync-base operation=read; refresh an explicit remote ref separately when needed.", 4)
+    if expected_commit is not None and expected_commit != commit:
+        raise CommandError("stale_identity", "base_commit", "The selected ref does not resolve to the requested fixed commit. Reselect the intended ref/commit through guru-sync-base operation=read.", 3)
+    value = {"kind": "git_object", "source": source, "selected_ref": selected_ref, "commit": commit}
+    value["identity_sha256"] = digest(value)
+    return value
+
+
+def check_object_source(root, value):
+    """Check the adopted immutable object; a later ref advance does not retarget it."""
+    expected = {key: value[key] for key in ("kind", "source", "selected_ref", "commit")}
+    if value["identity_sha256"] != digest(expected):
+        raise CommandError("stale_identity", "base.identity_sha256", "Rerun guru-sync-base operation=read for the selected source.", 3)
+    if git(root, "cat-file", "-t", value["commit"], check=False) != "commit":
+        raise CommandError("git_failed", "base.commit", "Restore the selected commit object, then rerun guru-sync-base operation=read.", 4)
+    return value["commit"]
+
+
+def source_ref(value):
+    return value["selected_ref"] if value.get("kind") == "git_object" else value["selected_base"]
+
+
+def source_blob(root, commit, path):
+    """Read one regular source blob at the selected tree, preserving its bytes."""
+    relative = Path(path)
+    if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+        raise CommandError("unsafe_path", "path", "Use a repository-relative source file path.")
+    result = subprocess.run(["git", "ls-tree", "-z", commit, "--", path], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    rows = [row for row in result.stdout.split(b"\0") if row]
+    if result.returncode or len(rows) != 1:
+        raise CommandError("git_failed", "path", "Select a file present in the fixed baseline tree.", 4)
+    metadata, _, name = rows[0].partition(b"\t")
+    mode, kind, oid = metadata.split()
+    if kind != b"blob" or mode not in (b"100644", b"100755") or name.decode("utf-8") != path:
+        raise CommandError("git_failed", "path", "Select a regular blob in the fixed baseline tree.", 4)
+    blob = subprocess.run(["git", "cat-file", "blob", oid.decode("ascii")], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if blob.returncode:
+        raise CommandError("git_failed", "path", "Restore the selected baseline blob.", 4)
+    return oid.decode("ascii"), blob.stdout
+
+
+def check_candidate(candidate, body_sha256=None):
+    if candidate is None:return
+    try:actual=hashlib.sha256(Path(candidate["locator"]).read_bytes()).hexdigest()
+    except OSError as exc:raise CommandError("stale_identity","transition.candidate","Restore or reselect the draft and rerun Discovery.",3) from exc
+    if actual!=candidate["body_sha256"] or (body_sha256 is not None and body_sha256!=actual):
+        raise CommandError("stale_identity","transition.candidate","The draft changed. Reread its content and rerun the affected Intake owners.",3)

@@ -1,17 +1,18 @@
 from __future__ import annotations
-import argparse,re
+import argparse
 from pathlib import Path
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 from runtime.io import CommandError,read_json
 from runtime.schema import validate_json
+from runtime.base_selection import source_ref, check_candidate
 from common import validate_owner
 
 OUTPUT_SCHEMAS = {
-    "clear": "public-clear-output-3.0.schema.json",
+    "clear": "public-clear-output-4.0.schema.json",
     "scope_ready": "public-scope-ready-output-1.0.schema.json",
-    "needs_context": "public-needs-context-output.schema.json",
-    "refresh_context": "public-refresh-context-output.schema.json",
-    "retarget_context": "public-retarget-context-output.schema.json",
+    "needs_context": "public-needs-context-output-3.0.schema.json",
+    "refresh_context": "public-refresh-context-output-2.0.schema.json",
+    "retarget_context": "public-retarget-context-output-2.0.schema.json",
     "new_task": "public-new-task-output.schema.json",
     "blocked": "public-blocked-output.schema.json",
 }
@@ -105,53 +106,28 @@ def typed_output(package_root, public, transition, owner):
         if initial_standalone:
             validate_json(
                 transition,
-                package_root.parents[1] / "consumers/workflow/stage0/transitions/base-current.schema.json",
+                package_root.parents[1] / "consumers/workflow/stage0/transitions/base-current-2.0.schema.json",
                 "transition",
             )
         base = transition.get("base")
         if not isinstance(base, dict):
             raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
-        required_base_fields = (
-            "source", "selected_base", "remote", "ordered_candidates",
-            "decision_head", "local_base_head", "remote_base_head",
-            "post_sync_resolution_sha256",
-        )
-        if any(field not in base for field in required_base_fields):
-            raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
-        if (
-            not isinstance(base["source"], str)
-            or base["source"] not in {"explicit", "config", "config-candidate", "remote-default"}
-            or not isinstance(base["selected_base"], str) or not base["selected_base"]
-            or not isinstance(base["remote"], str) or not base["remote"]
-            or not isinstance(base["ordered_candidates"], list)
-            or not base["ordered_candidates"]
-            or any(not isinstance(candidate, str) or not candidate for candidate in base["ordered_candidates"])
-            or len(set(base["ordered_candidates"])) != len(base["ordered_candidates"])
-            or any(
-                not isinstance(base[field], str)
-                or not re.fullmatch(r"[0-9a-f]{40}", base[field])
-                for field in ("decision_head", "local_base_head", "remote_base_head")
-            )
-            or not isinstance(base["post_sync_resolution_sha256"], str)
-            or not re.fullmatch(r"[0-9a-f]{64}", base["post_sync_resolution_sha256"])
-        ):
-            raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
-        if not isinstance(transition.get("repo_locator"), str) or not transition["repo_locator"]:
-            raise CommandError("stale_identity", "transition.repo_locator", "Provide the current repository transition.", 3)
+        token=base.get("identity_sha256") if base.get("kind")=="git_object" else base.get("post_sync_resolution_sha256")
+        if not isinstance(token,str):raise CommandError("stale_identity","transition.base","Provide the checked base source.",3)
         base_transition = dict(transition) if initial_standalone else {
-            "schema_version": "1.0",
-            "transition_id": f"base_current:{base['post_sync_resolution_sha256'][:24]}",
-            "stage": "base_current",
-            "mode": transition["mode"],
-            "repo_locator": transition["repo_locator"],
-            "base": base,
+            "schema_version": transition.get("schema_version"),
+            "transition_id": f"base_current:{token[:24]}",
+            "stage": "base_current", "mode": transition.get("mode"),
+            "repo_locator": transition.get("repo_locator"), "base": base,
         }
+        if transition.get("candidate"):base_transition["candidate"]=transition["candidate"]
+        try:validate_json(base_transition, package_root.parents[1]/"consumers/workflow/stage0/transitions/base-current-2.0.schema.json", "transition")
+        except CommandError as exc:raise CommandError("stale_identity","transition.base","Provide the complete checked base source for this return.",3) from exc
         output = {
             "exit_id": "needs_context",
             "handoff_profile": "context_request",
             "handoff_mode": public["mode"],
             "handoff_repo_locator": transition.get("repo_locator") or ".",
-            "handoff_base_branch": base["selected_base"],
             "handoff_continuation_id": public["continuation_id"],
             "transition": base_transition,
             "return_identity": {
@@ -175,7 +151,7 @@ def typed_output(package_root, public, transition, owner):
             and base.get("selected_base")
             and base.get("source") == "explicit"
         ):
-            output["handoff_base_branch"] = base["selected_base"]
+            output["handoff_base_branch"] = source_ref(base)
     elif exit_id == "new_task":
         output = {
             "exit_id": "new_task",
@@ -184,6 +160,7 @@ def typed_output(package_root, public, transition, owner):
         }
     else:
         raise CommandError("schema_mismatch", "typed_exit", "Return one declared typed exit.", 3)
+    if exit_id in {"refresh_context","retarget_context"} and (transition or {}).get("base",{}).get("kind")=="git_object":output.update(handoff_operation="read",handoff_base_ref=transition["base"]["commit"])
     validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[exit_id], "stdout")
     return output
 
@@ -238,6 +215,7 @@ def run(package_root,command,argv):
     if profile == "reviewed_plan_intake" and (not isinstance(transition, dict) or transition.get("source_locators") != public["source_locators"]):
         raise CommandError("stale_identity", "source_locators", "Refresh the selected source projection before clarification.", 3)
     if isinstance(transition, dict):
+        check_candidate(transition.get("candidate"),(owner.get("review_target") or {}).get("body_sha256"))
         if transition.get("mode") != public.get("mode"):
             raise CommandError("stale_identity", "transition.mode", "Match the transition to the public input.", 3)
         if transition.get("continuation_id") and transition.get("continuation_id") != public.get("continuation_id"):

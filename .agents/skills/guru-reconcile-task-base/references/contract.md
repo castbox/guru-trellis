@@ -92,6 +92,12 @@ owner, `index_tree_digest`. In Git index order, each `160000` gitlink contribute
 `path_bytes + NUL + b"160000" + NUL + index_oid_ascii + NUL`.
 The recorded pointer participates directly: no `cat-file` call, initialized
 submodule, local child commit object, credentials, or remote download is needed.
+
+Parent cleanliness, pending-work preservation and resolved integration-path
+checks use the same parent-only status projection. Child initialization, HEAD
+or internal changes do not trigger a stash or block reconciliation. Staged
+parent gitlink additions, updates, deletions and type changes remain visible;
+resolved-path validation compares exact parent index entries.
 All blob-backed entries retain
 `path_bytes + NUL + sha256(blob_bytes).hexdigest().encode() + NUL`, including
 ordinary files, executable files, and symlink target blobs. The final identity
@@ -205,14 +211,20 @@ It never consumes the ordinary Task Commit path.
 
 `execute-resolved-base-reconciliation` accepts only the exact branch-bound task
 worktree with `HEAD == phase2_commit_anchor`, one `MERGE_HEAD == new_base_head`,
-zero unresolved entries, zero unstaged or untracked paths, and no other Git
-sequencer. The stage-0 tree and index digest must equal the reviewed input
+zero unresolved entries, zero unstaged parent business or untracked paths, and no other Git
+sequencer. Only the exact current `task_ref/task.json`, already validated through
+the public Task/Delivery identity, may retain an unstaged regular-file metadata
+update from the original workflow. Other Task records and arbitrary metadata
+paths receive no exception. Preserve that file's exact worktree bytes and index
+entry before and after execution; never stage, reset, or include the update in
+the reviewed tree. The stage-0 tree and index digest must equal the reviewed input
 before one local merge commit is created. It performs no push or remote
 mutation.
 
 If stdout is lost after that commit, the same request may recover only when
-current `HEAD` has the exact reviewed parents, tree, and message in a clean
-terminal Git state. Recovery returns the existing commit and never creates a
+current `HEAD` has the exact reviewed parents, tree, and message in a terminal
+Git state with only the same current-Task metadata exception. Recovery preserves
+its current bytes and index entry, returns the existing commit and never creates a
 second commit. Resolved Check records no public Check gate, and this executor
 does not advance the public Delivery phase. The Delivery remains in checking.
 Before Full Review, the original Check owner invokes public rework to

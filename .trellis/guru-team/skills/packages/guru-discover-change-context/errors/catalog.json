@@ -1,1 +1,69 @@
-{"schema_version":"1.0","package_id":"guru-discover-change-context","errors":[{"code":"invalid_arguments","trigger":"Missing, repeated, conflicting, or unsupported command arguments.","exit_status":2,"locator":"field_path","remediation":"Use the exact command help contract."},{"code":"conflicting_arguments","trigger":"A non-repeatable flag is repeated or a declared conflict set is present.","exit_status":2,"locator":"field_path","remediation":"Use each scalar flag at most once and remove conflicting flags."},{"code":"invalid_json","trigger":"A JSON argument or input is not one object.","exit_status":2,"locator":"field_path","remediation":"Provide one valid JSON object."},{"code":"schema_mismatch","trigger":"Input, owner result, or output violates its declared schema.","exit_status":2,"locator":"field_path","remediation":"Repair the value to match the declared schema."},{"code":"unsafe_path","trigger":"A repository-relative locator is missing, escapes its root, or is symlink-backed.","exit_status":2,"locator":"path","remediation":"Use a regular file below the declared repository or package root."},{"code":"stale_identity","trigger":"A current task, input, base, history, target or payload/result binding differs from its reviewed evidence.","exit_status":3,"locator":"field_path","remediation":"Reread the indicated field/evidence with the original owner and rebuild through its supported entry; base drift returns to guru-sync-base. A binding mismatch alone does not establish a decoding cause."},{"code":"missing_contract","trigger":"A declared package contract is missing.","exit_status":2,"locator":"path","remediation":"Restore the compatible package installation."},{"code":"internal_error","trigger":"An unexpected package runtime failure occurred.","exit_status":70,"locator":"path","remediation":"Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-discover-change-context maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations."}]}
+{
+  "schema_version": "1.0",
+  "package_id": "guru-discover-change-context",
+  "errors": [
+    {
+      "code": "invalid_arguments",
+      "trigger": "Missing, repeated, conflicting, or unsupported command arguments.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use the exact command help contract."
+    },
+    {
+      "code": "conflicting_arguments",
+      "trigger": "A non-repeatable flag is repeated or a declared conflict set is present.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use each scalar flag at most once and remove conflicting flags."
+    },
+    {
+      "code": "invalid_json",
+      "trigger": "A JSON argument or input is not one object.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Provide one valid JSON object."
+    },
+    {
+      "code": "schema_mismatch",
+      "trigger": "Input, owner result, or output violates its declared schema.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Repair the value to match the declared schema."
+    },
+    {
+      "code": "unsafe_path",
+      "trigger": "A repository-relative locator is missing, escapes its root, or is symlink-backed.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Use a regular file below the declared repository or package root."
+    },
+    {
+      "code": "stale_identity",
+      "trigger": "A current task, input, base, history, target or payload/result binding differs from its reviewed evidence.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Reread the indicated field/evidence with the original owner and rebuild through its supported entry; base drift returns to guru-sync-base. A binding mismatch alone does not establish a decoding cause."
+    },
+    {
+      "code": "missing_contract",
+      "trigger": "A declared package contract is missing.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Restore the compatible package installation."
+    },
+    {
+      "code": "internal_error",
+      "trigger": "An unexpected package runtime failure occurred.",
+      "exit_status": 70,
+      "locator": "path",
+      "remediation": "Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-discover-change-context maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations."
+    },
+    {
+      "code": "git_failed",
+      "trigger": "A required Git inspection, fetch, or fast-forward failed.",
+      "exit_status": 4,
+      "locator": "path",
+      "remediation": "Resolve the reported Git state and rerun the command."
+    }
+  ]
+}

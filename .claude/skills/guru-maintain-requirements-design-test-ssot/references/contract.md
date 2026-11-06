@@ -194,7 +194,10 @@ retains its own live expected-current and subtraction/traceability checks.
   target, reconcile intervening changes, and
   integrate the reviewed contribution into complete current R/D/T units.
   Check surviving conditions, subtraction, stable identities and relationships
-  before updating navigation/version entry. Historical contributions remain
+  before updating affected unit references. Root/current entries change only
+  for their own identity, scope, status, location, discovery or necessary
+  relationship changes under current-knowledge.md; independent subjects do not
+  register in a shared list or increment unrelated versions. Historical contributions remain
   sources, not required assembly steps for ordinary migrated queries.
 - `repair`: name missing or conflicting objects and affected conclusions.
   Restore complete definitions and links within the existing scope, or return

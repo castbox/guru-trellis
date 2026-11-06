@@ -70,8 +70,9 @@ to obtain their stage result. The global workflow retains only this routing.
 
 ## Candidate Applicability And Coverage
 
-This section is the single shared rule for Architecture, Check, TaskCommit,
-Branch Review, Delivery Review, Publication, Merge and their continuation.
+This section owns formal candidate binding, engineering-fact applicability and
+action continuity for Architecture, Check, TaskCommit, Branch Review, Delivery
+Review, Publication, Merge and their continuation.
 Each original owner applies it within its own responsibility and produces its
 own current formal result. It adds no Skill, phase, public field or evidence store.
 
@@ -88,16 +89,14 @@ Keep three kinds of evidence distinct:
 
 ### Original coverage and current judgment
 
-The first candidate requires a complete independent review. Planning and
-implementation self-checks do not replace it. For a later candidate, the
-original review owner reads verifiable original coverage, the entire actual
-delta and affected dependencies, including unchanged consumers. It states
-what remains applicable, what no longer applies and what it supplemented.
-Original coverage plus that reviewed delta and affected dependencies must
-cover the complete current fixed-base-to-HEAD range. The owner then judges
+Apply [Review Sufficiency](review-sufficiency.md) for common coverage formation,
+continuation and completion. The first formal candidate requires a complete
+independent review; planning and implementation self-checks do not replace it.
+Original coverage plus the reviewed later delta and affected dependencies must
+cover the complete current fixed-base-to-HEAD range. The owner personally judges
 the current candidate and uses its original recorder/validator/public entry.
-This applies to normal integration, finding fixes and other content changes;
-the narrow promotion-reference-alignment profile retains its own input limits.
+This includes normal integration, finding fixes and other content changes; the
+narrow promotion-reference-alignment profile retains its own input limits.
 
 Use only actual retained public Task/Delivery results or public invocation
 objects, exact Git objects and ranges, current bodies, and verifiable original
@@ -112,10 +111,9 @@ An initial implementation_required has no passed full_review. Its commit and
 finding refs locate facts and defects; they do not prove passed coverage.
 Any original complete review work used for the next judgment must remain
 verifiable through actual public results/invocation objects, Git and current
-bodies. Retained reviewer understanding can reduce repeated reading but does
-not create authority. Supplement missing coverage; perform a complete review
-when the combined effect cannot be bounded. Neither a missing checkpoint nor
-a new reviewer/session alone invalidates otherwise verifiable coverage.
+bodies. Retained reviewer understanding does not create authority. Apply Review
+Sufficiency to any missing or no-longer-applicable coverage. A missing private
+checkpoint does not invalidate otherwise verifiable public coverage.
 
 Independence means that the reviewer has not authored or implemented the
 candidate under review. Keep the Architecture contract's first independent
@@ -703,10 +701,43 @@ artifact convenience never creates workflow authority.
 
 ## Interaction Budget
 
-Ask the user only for missing intent, a material scope/plan choice, new external
+Ask the user only for unresolved requirement intent, a material scope/plan choice, new external
 authority, or one fully displayed side-effect set. Use `确认继续` for one current,
 unique, unambiguous plan and accept any clear affirmative reply. Never require
 the user to repeat a SHA, digest, ref, or prescribed sentence.
+
+Resolve repository-answerable facts and verify external-system behavior from
+evidence first. Existing behavior establishes a baseline, not a decision about
+new product intent. Every unresolved requirement choice affecting goals,
+observable behavior, scope, compatibility, or acceptance needs the user's
+confirmation, even when it is small, reversible, or follows a common pattern.
+Do not relabel an unresolved requirement as a non-blocking assumption to implement
+it without an answer. Clear requirements need no manufactured questions.
+
+For lightweight ambiguity, present the concrete recommended behavior and its
+relevant consequence so the user can accept or correct it with a simple reply.
+Independent lightweight choices at the same stage may form a short, explicitly
+itemized recommendation checklist. Each item remains a separate question; a
+checklist is not an indivisible `atomic_group`. For a material trade-off, research
+viable options, explain the recommendation and the options' behavior, cost and
+risk, then ask for the choice. Ask dependent choices in order rather than guessing
+later answers. Weight changes the presentation, never the need to confirm an
+unresolved requirement.
+
+AI owns routine implementation choices within confirmed requirements and existing
+constraints. Do not ask the user to supply functions, classes or code. A technical
+label does not make an unresolved behavior, data, architecture, compatibility,
+risk or cost trade-off a routine implementation detail. The original stage owner
+handles that real choice through its existing clarification/plan route.
+
+Recommendations are not decisions. Accept only the items actually covered by the
+user's answer; partial answers leave the other items unresolved. Pause only work
+that depends on an unresolved choice and continue independent investigation.
+Write the resulting behavior into its owning requirements/design and applicable
+acceptance criteria; before a Task exists, retain it in the current conversation.
+Reuse still-applicable decisions on resume, but handle genuinely new ambiguity.
+Requirement confirmation does not grant a separate side effect or bypass the
+complete-plan presentation/activation boundary.
 
 Ordinary chat is the default channel for confirmations, real choices and
 necessary clarification. Honor an expressed preference for prompt interaction.

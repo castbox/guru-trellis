@@ -281,6 +281,7 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
     from runtime.bootstrap import active_pointer_path
     for target in roots(plan).values():
         target_paths.add(str(active_pointer_path(target, for_write=True)))
+        target_paths.add(str(target / ".trellis/.runtime/guru-team/python/active.json"))
         for argument in ("--git-common-dir", "--absolute-git-dir"):
             directory = Path(git(target, "rev-parse", argument))
             if not directory.is_absolute():

@@ -5,6 +5,15 @@ description: Perform complete formal Delivery Check when invoked by the workflow
 
 # Guru Check Task
 
+## Common review sufficiency
+
+Before reviewing this owner's object, read `review-sufficiency.md` in full from
+the complete Guru provider that supplies this Skill. Its workflow-spec root is
+`trellis/presets/guru-team/spec/workflow` in source, or `.trellis/spec/workflow`
+after installation. Resolve target-project authority separately; the target
+need not install Trellis to receive review from another provider. Apply the
+common rules within this owner's original scope, order and stage conditions.
+
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
 in full and apply it within this entry's existing scope. Until that read succeeds,
 use only short progress messages or concrete missing-dependency diagnostics.
@@ -229,3 +238,15 @@ minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
 
 For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.
+
+For resolved reconciliation, pass the same original public input with
+`--skill-input` to both `record-phase2-check.sh` and `check-phase2-check.sh`.
+This dedicated profile binds semantic stage-0 entries and the active merge.
+Ordinary and resolved capture both use only parent index/tree path/mode/OID
+for gitlinks; neither inspects child state. Explicit parent additions,
+updates, removals and type replacements remain reviewed content. Only the
+publicly validated current Task task.json has the natural unstaged metadata
+exception, with its bytes/index preserved. Follow the complete command sequence
+and capture contract in [references/contract.md](references/contract.md).
+Old child-sensitive private captures must be recorded and checked again.
+Reconcile remains the sole exact-commit owner.

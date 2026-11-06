@@ -17,7 +17,7 @@ class PublicSkillExampleProjectionTests(unittest.TestCase):
                 "guru-check-task": ("phase2-authoring.json", "phase2-rejected-candidates.json"),
                 "guru-create-task": ("public-create-issue-input.json",),
             }
-            for skill_root in (".agents/skills", ".codex/skills"):
+            for skill_root in preset.selected_skill_roots({"codex"}):
                 for package, names in examples.items():
                     for name in names:
                         target = Path(skill_root) / package / "examples" / name
@@ -26,11 +26,11 @@ class PublicSkillExampleProjectionTests(unittest.TestCase):
                             preset.guru_root_from_script() / "trellis/skills/guru-team/packages" / package / "examples" / name
                         ).read_bytes())
 
-    def test_mode_call_examples_reach_shared_and_codex_projections(self):
+    def test_mode_call_examples_reach_selected_codex_projection(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             mappings = preset.managed_source_projections(root, root / ".trellis/guru-team", {"codex"})
-            for skill_root in (".agents/skills", ".codex/skills"):
+            for skill_root in preset.selected_skill_roots({"codex"}):
                 for example in ("public-input.json", "workflow-mode-selection.json"):
                     with self.subTest(skill_root=skill_root, example=example):
                         target = Path(skill_root) / "guru-select-workflow-mode/examples" / example

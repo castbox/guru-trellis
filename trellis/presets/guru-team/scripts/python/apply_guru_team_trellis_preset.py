@@ -30,6 +30,9 @@ from guru_platform_inventory import (
     selected_skill_roots,
     validate_manifest_inventory,
 )
+from skill_file_projection import (
+    skill_package_source_files, skill_package_installed_files, skill_platform_public_files,
+)
 from platform_projection_contract import DESCRIPTORS_BY_FLAG
 from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
 from delivery_installation import require_delivery_installation, diagnose_delivery_installation, require_tools_maintenance_installation
@@ -108,8 +111,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-error-catalog.schema.json",
 })
 from skill_runtime_inventory import (
-    SKILL_RUNTIME_KERNEL_PATHS, PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS,
-    PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS, PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS,
+    SKILL_RUNTIME_KERNEL_PATHS,
 )
 
 
@@ -143,6 +145,10 @@ MANAGED_SPEC_PATHS = (
     (
         Path("trellis/presets/guru-team/spec/workflow/clear-technical-writing.md"),
         Path(".trellis/spec/workflow/clear-technical-writing.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/review-sufficiency.md"),
+        Path(".trellis/spec/workflow/review-sufficiency.md"),
     ),
     (
         Path("trellis/presets/guru-team/spec/workflow/issue-orchestration.md"),
@@ -1046,6 +1052,37 @@ SKILL_MANAGED_ROOTS = (
 )
 
 
+LEGACY_CODEX_SKILL_ROOT = Path(".codex/skills")
+
+
+def legacy_codex_skill_path(relative: Path) -> bool:
+    return (
+        LEGACY_CODEX_SKILL_ROOT in relative.parents
+        and len(relative.parts) > 3
+        and relative.parts[2].startswith("guru-")
+    )
+
+
+def legacy_codex_skill_files(repo: Path) -> set[Path]:
+    return {
+        path.relative_to(repo)
+        for package in (repo / LEGACY_CODEX_SKILL_ROOT).glob("guru-*")
+        if package.is_dir() and not package.is_symlink()
+        for path in package.rglob("*")
+        if path.is_file() or path.is_symlink()
+    }
+
+
+def legacy_codex_skill_directories(repo: Path) -> set[Path]:
+    return {
+        path.relative_to(repo)
+        for package in (repo / LEGACY_CODEX_SKILL_ROOT).glob("guru-*")
+        if package.is_dir() and not package.is_symlink()
+        for path in (package, *package.rglob("*"))
+        if path.is_dir() and not path.is_symlink()
+    }
+
+
 def skill_path_is_managed(relative: Path) -> bool:
     return any(relative == root or root in relative.parents for root in SKILL_MANAGED_ROOTS)
 
@@ -1053,13 +1090,20 @@ def skill_path_is_managed(relative: Path) -> bool:
 def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
     relative = lexical_repo_relative(repo, path)
     managed_root = next((root for root in SKILL_MANAGED_ROOTS if root in relative.parents), None)
+    if legacy_codex_skill_path(relative):
+        managed_root = LEGACY_CODEX_SKILL_ROOT
     if managed_root is None:
         return
     current = path.parent
     stop = Path(os.path.abspath(repo)) / managed_root
     while current != stop and stop in current.parents:
         _, current_stat, error = lstat_repo_path(repo, current)
-        if error or current_stat is None or not stat.S_ISDIR(current_stat.st_mode):
+        if error:
+            return
+        if current_stat is None:
+            current = current.parent
+            continue
+        if not stat.S_ISDIR(current_stat.st_mode):
             return
         try:
             current.rmdir()
@@ -1072,17 +1116,19 @@ def prune_empty_activated_skill_removals(repo: Path, result: dict[str, Any]) -> 
     retired_roots: set[Path] = set()
     active_ids = set(result.get("skill_packages", {}).get("active_ids", []))
     for removal in result.get("skill_packages", {}).get("removals", []):
-        if removal.get("action") != "removed_managed":
-            continue
         relative = Path(removal["path"])
+        if removal.get("action") != "removed_managed" and not (
+            removal.get("action") == "already_missing" and legacy_codex_skill_path(relative)
+        ):
+            continue
         target = repo / relative
-        if skill_path_is_managed(relative) and not target.exists():
+        if (skill_path_is_managed(relative) or legacy_codex_skill_path(relative)) and not target.exists():
             prune_empty_managed_skill_parents(repo, target)
-            for root in (*all_skill_roots(), Path(".trellis/guru-team/skills/packages")):
+            for root in (*all_skill_roots(), LEGACY_CODEX_SKILL_ROOT, Path(".trellis/guru-team/skills/packages")):
                 if root not in relative.parents:
                     continue
                 skill_id = relative.relative_to(root).parts[0]
-                if skill_id.startswith("guru-") and skill_id not in active_ids:
+                if skill_id.startswith("guru-") and skill_id not in active_ids and root != LEGACY_CODEX_SKILL_ROOT:
                     retired_roots.add(Path(os.path.abspath(repo)) / root / skill_id)
                 break
 
@@ -1134,13 +1180,15 @@ def remove_stale_skill_path(
     provenance_valid: bool,
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
     relative = Path(relative_text)
-    if not skill_path_is_managed(relative):
+    if not (skill_path_is_managed(relative) or (legacy_codex_skill_path(relative) and relative_text in previous_hashes)):
         return None, skill_conflict(relative_text, "previous_path_outside_skill_roots"), None
     target = Path(os.path.abspath(repo)) / relative
     checked_relative, target_stat, error = lstat_repo_path(repo, target)
     if error or checked_relative != relative:
         return None, skill_conflict(relative_text, "unsafe_stale_path_boundary"), None
     if target_stat is None:
+        if legacy_codex_skill_path(relative):
+            prune_empty_managed_skill_parents(repo, target)
         return {"path": relative_text, "action": "already_missing"}, None, None
     if not stat.S_ISREG(target_stat.st_mode):
         return None, skill_conflict(relative_text, "stale_target_not_regular_file"), None
@@ -1210,155 +1258,24 @@ def run_skill_package_validator(
     return payload
 
 
-def skill_package_source_files(package_root: Path) -> list[Path]:
-    return sorted(
-        path
-        for path in package_root.rglob("*")
-        if path.is_file()
-        and not path.is_symlink()
-        and not {"__pycache__", ".pytest_cache"}.intersection(path.relative_to(package_root).parts)
-        and path.suffix not in {".pyc", ".pyo"}
-    )
-
-
-def skill_package_installed_files(package_root: Path) -> list[Path]:
-    """Return package files that belong in the installed runtime projection."""
-    return [
-        path
-        for path in skill_package_source_files(package_root)
-        if "tests" not in path.relative_to(package_root).parts
-    ]
-
-
-def skill_platform_public_files(package_root: Path) -> list[Path]:
-    """Return the Agent-readable projection without package-private runtime assets."""
-    interface = json.loads((package_root / "interface.json").read_text(encoding="utf-8"))
-    required_schema_paths = PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS.get(
-        str(interface.get("id")), frozenset()
-    )
-    required_public_paths = PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS.get(
-        str(interface.get("id")), frozenset()
-    )
-    teaching_paths = PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS.get(str(interface.get("id")), frozenset())
-    declared_artifacts = {
-        Path(item["path"]) for item in interface.get("artifacts", [])
-        if isinstance(item, dict) and isinstance(item.get("path"), str)
-    }
-    if not teaching_paths.issubset(declared_artifacts) or any(
-        not (package_root / path).is_file() or (package_root / path).is_symlink()
-        for path in teaching_paths
-    ):
-        raise SystemExit(f"Missing declared public teaching example for {package_root.name}.")
-    declared_schema_paths = {
-        Path(str(item["path"]))
-        for item in interface.get("schemas", [])
-        if isinstance(item, dict) and isinstance(item.get("path"), str)
-    }
-    if not required_schema_paths.issubset(declared_schema_paths):
-        raise SystemExit(
-            f"Platform-required schemas are not declared by {package_root.name}."
-        )
-    declared_public_examples = {
-        Path(str(item["example"]["path"]))
-        for item in interface.get("public_contracts", {}).get("input", {}).get("profiles", [])
-        if isinstance(item, dict)
-        and isinstance(item.get("example"), dict)
-        and isinstance(item["example"].get("path"), str)
-    }
-    if not required_public_paths.issubset(declared_public_examples):
-        raise SystemExit(
-            f"Platform-required public examples are not declared by {package_root.name}."
-        )
-    private_paths = {
-        str(item["schema"]["path"])
-        for item in interface.get("public_contracts", {}).get("private_artifacts", [])
-        if isinstance(item, dict)
-        and isinstance(item.get("schema"), dict)
-        and isinstance(item["schema"].get("path"), str)
-    }
-    for inventory_name in ("schemas", "artifacts"):
-        private_paths.update(
-            str(item["path"])
-            for item in interface.get(inventory_name, [])
-            if isinstance(item, dict)
-            and isinstance(item.get("id"), str)
-            and item["id"].startswith("legacy_private_gate_")
-            and isinstance(item.get("path"), str)
-        )
-    private_artifact_paths = {
-        str(item["path"])
-        for item in interface.get("artifacts", [])
-        if isinstance(item, dict)
-        and isinstance(item.get("path"), str)
-        and str(item["path"]) not in {
-            str(ref.get("example", {}).get("path"))
-            for ref in interface.get("public_contracts", {}).get("outputs", [])
-            if isinstance(ref, dict) and isinstance(ref.get("example"), dict)
-        }
-    }
-    invocation_examples = set(interface.get("public_contracts", {}).get("invocation", {}).get("example_argv", []))
-    error_example = interface.get("public_contracts", {}).get("invocation", {}).get("error_example", {}).get("path")
-    if isinstance(error_example, str):
-        invocation_examples.add(error_example)
-    public_example_paths = {path.as_posix() for path in declared_public_examples}
-    public_example_paths.update(
-        item["path"] for item in interface.get("artifacts", [])
-        if isinstance(item, dict) and isinstance(item.get("path"), str)
-        and item["path"] in invocation_examples
-    )
-    private_artifact_paths.difference_update(public_example_paths)
-    public_authoring_paths: set[Path] = set()
-    for item in interface.get("public_contracts", {}).get("consumer_inputs", []):
-        if not isinstance(item, dict) or not isinstance(item.get("contract"), dict):
-            continue
-        contract = item["contract"]
-        for index, variant in enumerate((contract, *contract.get("alternate_authoring", []))):
-            example = variant.get("authoring_example")
-            if not isinstance(example, dict) or not isinstance(example.get("path"), str):
-                continue
-            relative = Path(example["path"])
-            source = package_root / relative
-            if index and (not source.is_file() or source.is_symlink()):
-                raise SystemExit(f"Missing canonical Skill authoring example: {source}")
-            public_authoring_paths.add(relative)
-    public_wrapper = str(
-        interface.get("public_contracts", {})
-        .get("invocation", {})
-        .get("wrapper", "")
-    )
-    excluded_roots = {"runtime", "tests", "errors"}
-    result = []
-    for path in skill_package_source_files(package_root):
-        relative = path.relative_to(package_root)
-        relative_text = relative.as_posix()
-        if relative.parts[0] in excluded_roots:
-            continue
-        if relative.parts[0] == "scripts" and relative_text != public_wrapper:
-            continue
-        if relative in required_schema_paths or relative in required_public_paths or relative in teaching_paths:
-            result.append(path)
-            continue
-        if relative in public_authoring_paths:
-            result.append(path)
-            continue
-        if relative_text in private_paths or relative_text in private_artifact_paths:
-            continue
-        result.append(path)
-    return result
-
-
 def install_skill_packages(
     repo: Path,
     guru_root: Path,
     dst: Path,
     platforms: set[str],
     previous_manifest: dict[str, Any] | None,
+    *, legacy_codex_hashes: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     canonical_root = guru_root / "trellis/skills/guru-team"
     registry, entries = skill_registry_entries(canonical_root)
     previous_hash_map, previous_paths, provenance_valid, recoverable_sidecars = previous_skill_hashes(
         previous_manifest
     )
+    for path, digest in (legacy_codex_hashes or {}).items():
+        if not legacy_codex_skill_path(Path(path)) or not re_full_hex_digest(digest):
+            raise SystemExit("Invalid predecessor Codex Skill provenance")
+        previous_hash_map[path] = digest
+        previous_paths.add(path)
     pending_recovery_sidecars: list[str] = []
     if provenance_valid:
         for sidecar_text in sorted(recoverable_sidecars):
@@ -1510,7 +1427,15 @@ def install_skill_packages(
     sidecars = [path for path in sidecars if path not in recovered_sidecars]
     for source, target in desired_files:
         install_one(source, target)
+    for relative in sorted(legacy_codex_skill_files(repo)):
+        if relative.as_posix() not in previous_paths | desired_paths:
+            conflicts.append(skill_conflict(relative.as_posix(), "unmanaged_legacy_codex_skill"))
+    # A complete replacement must exist before any legacy projection is retired.
+    projection_ready = not conflicts and not sidecars
     for stale_path in sorted(previous_paths - desired_paths):
+        if legacy_codex_skill_path(Path(stale_path)) and not projection_ready:
+            conflicts.append(skill_conflict(stale_path, "legacy_codex_replacement_incomplete"))
+            continue
         removal, conflict, sidecar = remove_stale_skill_path(
             repo,
             stale_path,
@@ -1524,6 +1449,9 @@ def install_skill_packages(
         if sidecar:
             sidecars.append(sidecar)
     prune_empty_unselected_skill_projections(repo, platforms)
+    if LEGACY_CODEX_SKILL_ROOT not in destination_roots:
+        for package in sorted((repo / LEGACY_CODEX_SKILL_ROOT).glob("guru-*")):
+            conflicts.append(skill_conflict(package.relative_to(repo).as_posix(), "legacy_codex_projection_remaining"))
 
     status = "ok" if provenance_valid and not conflicts and not sidecars else "conflict"
     return {
@@ -2050,6 +1978,7 @@ def managed_transaction_paths(
     )
     paths.update(projections)
     paths.update(_manifest_paths(previous_manifest))
+    paths.update(legacy_codex_skill_files(repo))
     paths.update(lexical_repo_relative(repo, dst / relative) for relative in LEGACY_MANAGED_ASSET_HASHES)
     # Preserve the existing bounded language-guidance behavior without opening
     # the transaction to arbitrary repository documentation.
@@ -2160,6 +2089,10 @@ def materialize_managed_preimage(
             staged_bytes += source_stat.st_size
         else:
             raise SystemExit(f"Managed transaction target must be regular or symlink: {relative.as_posix()}")
+    # Keep empty legacy directories visible to the original staging validator.
+    # They add no managed file claim and are never recursively removed.
+    for relative in legacy_codex_skill_directories(repo):
+        (staging_repo / relative).mkdir(parents=True, exist_ok=True)
     return {"file_count": staged_files, "bytes": staged_bytes}
 
 
@@ -2440,7 +2373,8 @@ def install_assets(
     platforms: set[str] | None = None,
     *,
     migration_preserved_paths: set[str] | None = None,
-    python: str = "python3",
+    legacy_codex_hashes: dict[str, str] | None = None,
+    python: str | None = None,
     checkout_local: bool = False,
     tools_only: bool = False,
     tools_maintenance: dict[str, Any] | None = None,
@@ -2501,6 +2435,7 @@ def install_assets(
             upstream_ownership_validation=upstream_ownership_validation,
             managed_python=managed_python,
             migration_preserved_paths=migration_preserved_paths or set(),
+            legacy_codex_hashes=legacy_codex_hashes,
             tools_only=tools_only,
         )
         result["text_attributes"] = text_attributes
@@ -2594,6 +2529,7 @@ def _install_assets_in_place(
     managed_python: Path,
     text_attributes: dict[str, str] | None = None,
     migration_preserved_paths: set[str] | None = None,
+    legacy_codex_hashes: dict[str, str] | None = None,
     tools_only: bool = False,
 ) -> dict[str, Any]:
     guru_root = guru_root_from_script()
@@ -2660,7 +2596,7 @@ def _install_assets_in_place(
     ensure_companion_modes(dst, repo, MANAGED_ASSET_PATHS, preserved, companion_results, ensure_executable)
 
     selected = platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
-    skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
+    skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest, legacy_codex_hashes=legacy_codex_hashes)
     skill_packages["conflicts"].extend(managed_spec_conflicts)
     skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + managed_spec_sidecars))
     skill_packages["removals"].extend(legacy_removals)
@@ -2908,7 +2844,7 @@ def main() -> int:
     supported_platforms, default_platforms = platform_capability_sets(manifest)
     parser = argparse.ArgumentParser(description="Apply Guru team Trellis preset")
     parser.add_argument("--repo", help="Target repository root. Defaults to current directory.")
-    parser.add_argument("--python", default="python3", help="Interpreter command or path; defaults to current PATH python3. Explicit selection never falls back.")
+    parser.add_argument("--python", default=None, help="Interpreter command or path; defaults to current PATH python3. Explicit selection never falls back.")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--version", action="store_true", help="Print the Guru Team extension version from the canonical manifest and exit.")
     parser.add_argument(

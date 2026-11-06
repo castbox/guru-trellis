@@ -28,8 +28,9 @@ class ExecutionConsumptionTests(unittest.TestCase):
     write = flow_fixture.DeliveryFlow.write
     wrapper = flow_fixture.DeliveryFlow.wrapper
 
-    def fixture(self, profile):
+    def fixture(self, profile, *, gitlink=False):
         fixture = flow_fixture.DeliveryFlow()
+        fixture.with_gitlink = gitlink
         fixture.setUp()
         self.addCleanup(fixture.doCleanups)
         if profile == "delivery_resolved_reconciliation":
@@ -41,6 +42,12 @@ class ExecutionConsumptionTests(unittest.TestCase):
             fixture.git("switch", "main")
             (fixture.repo / "app.txt").write_text("evolved base\n")
             fixture.git("add", "app.txt")
+            if gitlink:
+                child = fixture.repo / "module"
+                (child / "child.txt").write_text("new child\n")
+                subprocess.run(["git", "add", "."], cwd=child, check=True)
+                subprocess.run(["git", "commit", "-qm", "new child"], cwd=child, check=True)
+                fixture.git("add", "module")
             fixture.git("commit", "-qm", "base evolution")
             fixture.git("switch", "feat/flow")
             result = subprocess.run(["git", "merge", "--no-commit", "main"],
@@ -53,7 +60,6 @@ class ExecutionConsumptionTests(unittest.TestCase):
                    ["check", "full_review", "readiness"])
             fixture.projection.begin_check(fixture.key, fixture.projection.candidate(
                 ["app.txt"], head_ref=fixture.head, base_ref=old_base))
-            fixture.git("add", fixture.task_ref + "/task.json")
         return fixture
 
     def public(self, fixture, profile):
@@ -79,7 +85,7 @@ class ExecutionConsumptionTests(unittest.TestCase):
         spec.loader.exec_module(common)
         value = json.loads((PACKAGE / "examples/phase2-check.json").read_text())
         value.update(task_ref=fixture.task_ref, phase2_capture_commit=fixture.head,
-                     reviewed_content_sha256=common.content_identity(fixture.repo),
+                     reviewed_content_sha256=(common.resolved_content_identity(fixture.repo, self.public(fixture, "delivery_resolved_reconciliation"), fixture.projection.resolve(fixture.key)) if result == "resolved_reconciliation_passed" else common.content_identity(fixture.repo)),
                      reviewed_paths=["app.txt"], candidate_classifications=copy.deepcopy(candidates or []),
                      typed_exit=result)
         if result == "resolved_reconciliation_passed":
@@ -196,11 +202,12 @@ class ExecutionConsumptionTests(unittest.TestCase):
                             authored["route"] = "reapprove_plan"
                     # The host supplies only semantics. No private content helper
                     # or result identity is used before the real recorder.
-                    recorded = fixture.wrapper("guru-check-task", "record-phase2-check.sh", "--task", fixture.task_ref,
+                    skill_args = ["--skill-input", fixture.write("public-capture.json", public)] if profile == "delivery_resolved_reconciliation" else []
+                    recorded = fixture.wrapper("guru-check-task", "record-phase2-check.sh", *skill_args, "--task", fixture.task_ref,
                         "--input", fixture.write("semantic-command.json", authored))
                     artifact = Path(recorded["artifact_path"])
                     before = artifact.read_bytes()
-                    checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref)
+                    checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", *skill_args, "--task", fixture.task_ref)
                     self.assertEqual(recorded["artifact_path"], checked["artifact_path"])
                     output = fixture.wrapper("guru-check-task", "invoke.sh", "--input", fixture.write("public-command.json", public),
                         "--owner-result", artifact)
@@ -211,6 +218,97 @@ class ExecutionConsumptionTests(unittest.TestCase):
                         fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref)
                         self.assertEqual(output, fixture.wrapper("guru-check-task", "invoke.sh", "--input", fixture.write("public-command.json", public),
                             "--owner-result", artifact))
+
+    def resolved_record(self, fixture):
+        public = self.public(fixture, "delivery_resolved_reconciliation")
+        locator = fixture.write("resolved-public.json", public)
+        authored = json.loads((PACKAGE / "examples/phase2-authoring.json").read_text())
+        authored.update(reviewed_paths=["app.txt", "module"],
+                        typed_exit="resolved_reconciliation_passed",
+                        consumer={"kind": "skill", "id": "guru-reconcile-task-base"})
+        recorded = fixture.wrapper("guru-check-task", "record-phase2-check.sh", "--task", fixture.task_ref,
+            "--skill-input", locator, "--input", fixture.write("resolved-author.json", authored))
+        return public, locator, recorded["artifact_path"]
+
+    def test_resolved_gitlink_real_wrapper_chain_and_exact_reconcile(self):
+        fixture = self.fixture("delivery_resolved_reconciliation", gitlink=True)
+        metadata = fixture.repo / fixture.task_ref / "task.json"
+        metadata_bytes = metadata.read_bytes()
+        metadata_index = fixture.git("ls-files", "--stage", "--", fixture.task_ref + "/task.json")
+        self.assertIn(fixture.task_ref + "/task.json", fixture.git("diff", "--name-only").splitlines())
+        public, locator, artifact = self.resolved_record(fixture)
+        checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
+                                  "--skill-input", locator)
+        self.assertEqual(artifact, checked["artifact_path"])
+        # A normal index cache refresh does not change the semantic capture.
+        subprocess.run(["git", "update-index", "--refresh"], cwd=fixture.repo,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+        fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
+                        "--skill-input", locator)
+        output = fixture.wrapper("guru-check-task", "invoke.sh", "--input", locator, "--owner-result", artifact)
+        self.assertEqual("resolved_reconciliation_passed", output["exit_id"])
+        new = fixture.git("rev-parse", "MERGE_HEAD").strip()
+        old = fixture.git("merge-base", fixture.head, new).strip()
+        tree = fixture.git("write-tree").strip()
+        skills = PACKAGE.parents[1]
+        # Use the original Reconcile digest producer, not a test approximation.
+        import sys
+        digest = subprocess.run([sys.executable, "-c",
+            "import sys; from pathlib import Path; sys.path[:0]=sys.argv[1:]; from common import index_tree_digest; print(index_tree_digest(Path.cwd()))",
+            str(skills / "packages/guru-reconcile-task-base/runtime"), str(skills)],
+            cwd=fixture.repo, check=True, capture_output=True, text=True).stdout.strip()
+        facts = {"profile": "delivery_resolved_candidate", "mode": "workflow", "branch": "feat/flow",
+            "selected_base_ref": new, "old_base_head": old, "new_base_head": new, "merge_head": new,
+            "stage0_tree": tree, "index_tree_sha256": digest, "parent_order": [fixture.head, new],
+            "commit_message": "chore(base): reconcile reviewed gitlink", "resume_target": "branch_review"}
+        projected = fixture.wrapper("guru-check-task", "project-resolved-reconciliation.sh", "--input", locator,
+            "--owner-result", artifact, "--authoring", fixture.write("facts.json", facts))
+        result = fixture.wrapper("guru-reconcile-task-base", "execute-resolved-base-reconciliation.sh",
+            "--input", fixture.write("projected.json", projected))
+        self.assertEqual("committed", result["status"])
+        self.assertEqual([fixture.head, new], fixture.git("show", "-s", "--format=%P", "HEAD").split())
+        self.assertEqual(tree, fixture.git("show", "-s", "--format=%T", "HEAD").strip())
+        self.assertEqual(facts["commit_message"], fixture.git("show", "-s", "--format=%B", "HEAD").strip())
+        self.assertEqual(metadata_bytes, metadata.read_bytes())
+        self.assertEqual(metadata_index, fixture.git("ls-files", "--stage", "--", fixture.task_ref + "/task.json"))
+
+    def test_resolved_gitlink_ignores_child_but_rejects_changed_parent_candidate(self):
+        for change in ("ordinary", "child_dirty", "child_head", "index", "merge_head", "unstaged", "other_task", "unmerged"):
+            with self.subTest(change=change):
+                fixture = self.fixture("delivery_resolved_reconciliation", gitlink=True)
+                _, locator, artifact = self.resolved_record(fixture)
+                args = ["--skill-input", locator]
+                child = fixture.repo / "module"
+                if change == "ordinary":
+                    args = []
+                elif change == "child_dirty":
+                    (child / "child.txt").write_text("draft child\n")
+                elif change == "child_head":
+                    subprocess.run(["git", "checkout", "-q", "HEAD^"], cwd=child, check=True)
+                elif change == "index":
+                    fixture.git("update-index", "--chmod=+x", "app.txt")
+                elif change == "merge_head":
+                    merge_path = Path(fixture.git("rev-parse", "--git-path", "MERGE_HEAD").strip())
+                    if not merge_path.is_absolute():
+                        merge_path = fixture.repo / merge_path
+                    merge_path.write_text(fixture.head + "\n")
+                elif change == "unstaged":
+                    (fixture.repo / "app.txt").write_text("new unstaged content\n")
+                elif change == "other_task":
+                    other = fixture.repo / ".trellis/tasks/other/task.json"
+                    other.parent.mkdir(parents=True)
+                    other.write_text("{}\n")
+                else:
+                    oid = fixture.git("rev-parse", "HEAD:app.txt").strip()
+                    subprocess.run(["git", "update-index", "--index-info"], cwd=fixture.repo,
+                        input=f"0 {'0' * 40}\tapp.txt\n100644 {oid} 1\tapp.txt\n100644 {oid} 2\tapp.txt\n", text=True, check=True)
+                if change in {"child_dirty", "child_head"}:
+                    checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref, *args)
+                    self.assertEqual("ok", checked["status"])
+                else:
+                    rejected = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
+                                               *args, success=False)
+                    self.assertEqual("stale_identity", rejected["code"])
 
     def test_current_planning_predecessor_is_required(self):
         public = self.public(self, "delivery_initial_check")

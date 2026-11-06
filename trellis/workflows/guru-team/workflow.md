@@ -227,6 +227,7 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"blocked","consumer":{"kind":"stop","id":"task-free-change-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-sync-base","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"synced","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
+<!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"baseline_ready","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"skipped","consumer":{"kind":"workflow","id":"original-request-route"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"blocked","consumer":{"kind":"stop","id":"base-sync-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-discover-change-context","required":true} -->
@@ -1118,6 +1119,15 @@ writes authority locators in prd.md, and records final design dispositions only
 in design.md. Loss of selection re-enters original Clarify/context; the current unique Author is the mandatory consumer. Delivery-locator adaptation
 remains subject to the candidate migration boundary above.
 
+Initial read-only Intake invokes `guru-sync-base` with `operation=read` and
+adopts its explicit/config-selected fixed Git source. Both `baseline_ready` and
+`synced` have Discovery as their sole consumer. Use `operation=sync` only when
+the actual operation is branch refresh/synchronization; it retains its original
+clean/ff/identity conditions. A draft review does not require commit/push or
+moving another checkout. Formal Task, committed Branch Review, and publication
+keep their original operation-specific eligibility. The Sync and Discovery
+Skills own profile details; launchers do not infer intent.
+
 #### 0.1 Change-context discovery
 
 Invoke guru-discover-change-context and consume only its declared exit.
@@ -1362,9 +1372,12 @@ acceptance narrative. Official agents, hooks, seeds and generators remain
 upstream-owned.
 
 Before selecting validation, read
-`.trellis/spec/workflow/quality-guidelines.md` and apply its `Validation Scope
-Ownership` contract. A generic extension change never authorizes the full
-multi-platform Throwaway installer matrix.
+`.trellis/spec/workflow/quality-guidelines.md` and apply its `Test And Validation
+Value` method and `Validation Scope Ownership` contract. Dispatchers and workers
+use that shared method for evidence reuse, additional diagnostic experiments and
+stopping; a customary fixed red/green/rollback sequence is not a dispatch
+obligation. A generic extension change never authorizes the full multi-platform
+Throwaway installer matrix.
 
 Every dispatch prompt for an official Trellis implement, check, research,
 channel-runtime, or independent-review worker authorizes approved-plan work

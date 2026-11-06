@@ -57,7 +57,7 @@ def github_json(repo_ref, endpoint):
         raise LifecycleContractError("github_response_incomplete", "github.response", "Reread complete repository-bound bookkeeping PR facts.") from exc
 
 
-def read_shared_archive(root, key, anchor):
+def read_shared_archive(root, key, anchor, source=None):
     repository = inspect_repository(root)
     repo_ref = normalize_repo_ref(anchor["repo_ref"])
     require(origin_matches(root, repo_ref), "repo_ref", "Use the selected repository identity.")
@@ -72,23 +72,35 @@ def read_shared_archive(root, key, anchor):
     require(task_bytes is not None and summary_bytes is not None, "archive_commit", "Read both archived Task and Finish summary at the exact commit.")
     require(commit_path_bytes(repository, commit, original_ref + "/task.json") is None, "original_task_ref", "The exact archive result must remove the original active record.")
     task, summary = json.loads(task_bytes), json.loads(summary_bytes)
-    require(task.get("id") == key.task_id and task.get("lifecycle_generation") == key.lifecycle_generation, "archived_lifecycle", "Read the exact predecessor TaskId and generation.")
     require(summary.get("schema_version") == 2 and summary.get("generator") == "guru-team.finalize-task"
             and summary.get("task", {}).get("archive_dir") == archive_ref
             and summary["task"].get("artifact_dir") == original_ref
             and summary["task"].get("status") == "completed", "finish-summary", "Read the matching formal Finish summary and original locator.")
-    source = task_source(task)
-    family = "schema2" if task.get("schema_version") == "2.0" else "schema1"
-    if family == "schema2":
+    task_source_ref = task_source(task)
+    family = "schema2"
+    if task.get("schema_version") != "2.0":
+        require(source is not None, "source_ref", "Select the matching public CLI/Core source before formal archive inspection.")
+        require((Path(root) / archive_ref / "task.json").read_bytes() == task_bytes,
+                "archive_ref", "Inspect the exact shared archive bytes at the selected commit.")
+        contract = call(source, "getMaintenanceContract")
+        inspected = call(source, "inspectTaskTarget", {"root": str(root), "task_ref": archive_ref,
+                                                       "key": {"task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation},
+                                                       "original_task_ref": original_ref})
+        family = {"legacy": "known_legacy", "schema1": "schema1"}.get(inspected["classification"]["kind"])
+        require(family in contract.get("formal_archive_reactivation", {}).get("task_families", []),
+                "task", "Use a formal archive family explicitly supported by the selected public CLI/Core pair.")
+        require(inspected["key"] == {"task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation},
+                "archived_lifecycle", "Use the public interpretation of the exact predecessor key.")
+    else:
         task = upstream_modules(root).delivery_schema.parse_task_v2(task)
+    if family == "schema2":
+        require(task["id"] == key.task_id and task["lifecycle_generation"] == key.lifecycle_generation,
+                "archived_lifecycle", "Read the exact predecessor TaskId and generation.")
         completed = [row for row in task["completion_results"] if row["lifecycle_generation"] == key.lifecycle_generation
                      and row["accepted_scope"] == task["accepted_scope"] and row["outcome"] == "completed"]
         require(bool(completed) and any(row["lifecycle_generation"] == key.lifecycle_generation
                 and row["completion_result_id"] == completed[-1]["result_id"] for row in task["closure_results"]),
                 "completion_results", "Use the public Completion and matching Closure of the archived generation.")
-    else:
-        require(task.get("status") == "completed" and task.get("schema_version") is None
-                and "creator" not in task and "assignee" not in task, "task", "Only the selected formal schema1 family can enter public reactivation.")
     branch = run_common_git(repository, ["rev-parse", "--symbolic-full-name", anchor["target_ref"]]).stdout.strip()
     for prefix in ("refs/heads/", "refs/remotes/origin/"):
         if branch.startswith(prefix):
@@ -113,7 +125,7 @@ def read_shared_archive(root, key, anchor):
             continue
         matches.append(row)
     require(len(matches) == 1, "bookkeeping_pr", "Resolve one exact merged bookkeeping PR and target archive result.")
-    return {"task": task, "summary": summary, "source": source, "family": family,
+    return {"task": task, "summary": summary, "source": task_source_ref, "family": family,
             "archive_ref": archive_ref, "original_task_ref": original_ref,
             "archive_commit": commit, "target_head": target, "bookkeeping_pr": matches[0]["number"]}
 
@@ -129,7 +141,7 @@ def formal_inspection(root, key, anchor, facts, source):
 
 
 def _successor_at_checkout(root, key, anchor, facts, source=None):
-    if facts["family"] == "schema1":
+    if facts["family"] != "schema2":
         require(source is not None, "source_ref", "Select the matching public CLI/Core source before formal archive inspection.")
         result = call(source, "inspectFormalArchiveReactivation", formal_inspection(root, key, anchor, facts, source))
         require(result["successor"]["kind"] != "conflicting", "successor", "Resolve the actual accessible successor conflict.")
@@ -191,8 +203,8 @@ def find_successor(root, key, anchor, facts, source=None, *, with_checkout=False
         except LifecycleContractError as exc:
             if exc.code == "task_not_found":
                 continue
-            if exc.code == "unsupported_legacy_task" and facts["family"] == "schema1":
-                # The exact schema1 predecessor is read through its SDK below.
+            if exc.code == "unsupported_legacy_task" and facts["family"] != "schema2":
+                # The exact formal predecessor is read through its SDK below.
                 continue
             raise
         if identity.lifecycle_generation <= key.lifecycle_generation:

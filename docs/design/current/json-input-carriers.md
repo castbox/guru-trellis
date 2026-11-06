@@ -1,5 +1,7 @@
 # JSON 输入载体设计责任
 
+导航别名：`R695/BEH695`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-DES-JSON-INPUT`；需求由 [R695](../../requirements/current/json-input-carriers.md) 定义。适用来源为 `8d746ce561c464ca28af4dc91adf085132e4098c`；继承 `guru-trellis-architecture` 的原 runtime/package/distribution 边界。本项在既有确定性读取职责内直接修改，不建立第二状态或语义 authority。知识定义不证明实际实现或安装。
 
 | Identity | Owner、输入、行为与输出 |

@@ -83,7 +83,8 @@ def facts(package_root, repo, public, *, fixed_base=None):
         stale("task", "Archived review requires completed task branch/base identity.")
     if head != public["branch_review_commit"] or git(repo, "branch", "--show-current") != branch:
         stale("branch_review_commit", "Review the exact current archived branch HEAD.")
-    if git(repo, "status", "--porcelain=v1", "--untracked-files=all"):
+    from common import parent_changes
+    if parent_changes(repo):
         stale("worktree", "Archived review requires a completely clean checkout.")
     paths = [task_dir / name for name in ("task.json", "finish-summary.json")]
     planning = projection.planning_directory(public["delivery_key"]) if schema2 else task_dir

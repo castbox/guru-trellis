@@ -202,7 +202,8 @@ def guru_owned(path: str) -> bool:
 def controls(root: Path, plan: dict) -> dict[str, Path]:
     common = Path(git(root, "rev-parse", "--path-format=absolute", "--git-common-dir"))
     local = Path(git(root, "rev-parse", "--absolute-git-dir"))
-    result = {"python_common": common / "guru-team/python/active.json", "python_checkout": local / "guru-team/python/active.json"}
+    result = {"python_common": common / "guru-team/python/active.json", "python_checkout": local / "guru-team/python/active.json",
+              "python_legacy_local": root / ".trellis/.runtime/guru-team/python/active.json"}
     from runtime.bootstrap import active_pointer_path
     effective = active_pointer_path(root, for_write=True)
     if effective.resolve() not in {path.resolve() for path in result.values()}:
@@ -562,6 +563,8 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict, reviewed
                 if row["owner"] != "guru":
                     continue
                 path = relative_file(root, row["path"])
+                if row["path"].startswith(".codex/skills/guru-"):
+                    continue  # Keep predecessor bytes for the preset transaction.
                 current = state(path)["sha256"]
                 chosen = decisions.get(row["path"])
                 if chosen and chosen["action"] == "preserve":
@@ -615,7 +618,10 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict, reviewed
             preserve_customizations(root, source, module, plan)
             preserve_agents_work(root, recovery, checkpoint, module)
             result = module.install_assets(source / "trellis/workflows/guru-team", root / ".trellis/guru-team", root, set(plan["selected_platforms"]),
-                                           migration_preserved_paths=preserved_companions(root, module, plan), python=sys.executable)
+                                           migration_preserved_paths=preserved_companions(root, module, plan), python=sys.executable,
+                                           legacy_codex_hashes={row["path"]: row["previous_sha256"] for row in checkpoint["old_managed"]
+                                               if row["owner"] == "guru" and module.legacy_codex_skill_path(Path(row["path"]))
+                                               and row["previous_sha256"] is not None})
             if (result["skill_packages"]["status"] != "ok" or result["overlays"]["status"] != "ok"
                     or result["skill_installed_validation"].get("returncode") != 0):
                 raise MigrationError("Current preset has unresolved managed edits or sidecars")

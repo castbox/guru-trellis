@@ -36,7 +36,7 @@ UPSTREAM_PLATFORMS = (
     PlatformDescriptor("claude-code", "claude", ".claude", "claude", (Path(".claude/skills"),)),
     PlatformDescriptor("cursor", "cursor", ".cursor", "cursor", (Path(".cursor/skills"),)),
     PlatformDescriptor("opencode", "opencode", ".opencode", "opencode", (Path(".opencode/skills"),)),
-    PlatformDescriptor("codex", "codex", ".codex", "codex", (Path(".codex/skills"),)),
+    PlatformDescriptor("codex", "codex", ".codex", "codex", (Path(".agents/skills"),)),
     PlatformDescriptor("kilo", "kilo", ".kilocode", "kilo", (Path(".kilocode/skills"),)),
     PlatformDescriptor("kiro", "kiro", ".kiro/skills", "kiro", (Path(".kiro/skills"),)),
     PlatformDescriptor("gemini", "gemini", ".gemini", "gemini", (Path(".agents/skills"),)),

@@ -304,6 +304,12 @@ reading child objects or initializing submodules. Blob-backed rows and existing
 recorder/checker identity comparisons remain unchanged; this consumer does not
 define a separate algorithm or rewrite the producer's candidate token.
 
+Live parent-worktree checks ignore child initialization, HEAD and internal
+changes. They still include staged parent gitlink additions, pointer updates,
+deletions and type replacements from the parent index. Committed-range and
+cached differences retain parent gitlinks even when local Git configuration
+ignores submodule worktree changes. No child repository is read or updated.
+
 ## Semantic Review
 
 Before full-range Docs, code, test, fixture, consumer, or history retrieval,
@@ -337,14 +343,16 @@ Task scope does not negate an evidenced Architecture violation, and finding
 one does not authorize changing goals or authority. Green tests, prior approval
 and reviewer advice are not necessity evidence.
 
-Attribute red tests with bounded evidence to regression, inseparable current
-prerequisite, unrelated history, environment or unresolved cause. Stop repair
-and investigation when unrelatedness is established; do not claim unresolved
-failures are historical or widen scope to achieve full green. A required
-release gate may block publication without authorizing unrelated repair. Bind
-legal non-default configuration and protection invariants to their authority;
-defaults/recommendations and missing diagnostic labels do not become business
-rejection conditions.
+Use that same Test And Validation Value method when judging requests for
+additional diagnostic/counterfactual experiments, continued infrastructure
+repair or repetition after a stage/executor change. Preserve its required
+acceptance and regression exceptions and its evidence-based stopping boundary;
+reviewer advice alone does not add a fixed red/green/rollback obligation.
+
+Apply the shared engineering method's failed-validation attribution and
+authority-based configuration judgment in
+`../../guru-review-change/references/review-method.md`. Keep this stage's
+qualification, finding/fix and blocked routes.
 
 For a full `branch_review`, independently bind the approved Delivery slice,
 explicit remaining work, observable independent-delivery conditions, and
@@ -407,9 +415,9 @@ ancestry, not equality, proves finding continuity.
 
 Closure has no public exit, recorder call, or artifact. The compliant
 independent reviewer may continue from closure to the current final judgment.
-Read the entire fix delta and affected consumers; establish complete current
-coverage under the shared candidate contract. Missing coverage is supplemented,
-and an unbounded combined effect requires the complete review. Only after that
+Apply the same-provider `review-sufficiency.md` later-candidate rule to the
+fix and its affected consumers, together with the formal fixed-range and
+public-result constraints in Candidate Applicability And Coverage. Only after that
 judgment may `review_intent=fresh_final_review` reach the original recorder.
 MIGRATION-637 explicitly replaces the old distinct-reviewer requirement while
 retaining the wire value and finding-continuity checks. Never project closure

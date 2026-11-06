@@ -1,5 +1,7 @@
 # Guru Trellis
 
+Codex 的 Guru Skill 公共投影统一到 `.agents/skills/`，包括目标选择包含 `codex` 时的专属编排包和元数据。已有安装沿原维护 owner 迁移，在目标完整后退出未修改的旧受管副本；两端用户修改保留，冲突未解决时不报告成功。采用范围、恢复和验证边界见 [MIGRATION-724](trellis/presets/guru-team/MIGRATION-724.md)。
+
 [三系统定向 CI：运行、对照与诊断](docs/ci/README.md)
 
 “审核 / 审查 / 评审 / 复审 / review”先识别对象和目的。代码、修改、分支/PR、
@@ -302,8 +304,26 @@ Guru Trellis 是扩展仓库，不复制框架实现；框架依赖由 `castbox/
 
 Phase 0 的六个 mandatory Skills 通过五阶段 closed transition 直接衔接：每个 producer 的真实
 public output 只交给唯一 consumer，当前 Skill 的 semantic owner result 保持 call-local，正常
-pre-task 不需要在仓库保存 owner 或 prerequisite 文件。Base sync 只有一个 public authoritative
-入口；兼容 `prepare-task` 不是正常 workflow step。
+pre-task 不需要在仓库保存 owner 或 prerequisite 文件。原 Sync 只有一个 public authoritative
+入口：只读 Intake 使用 operation=read 固定 Git 来源；真实同步使用 operation=sync 并保留 clean/ff/identity。
+`prepare-task` 仅属于固定旧完整安装，当前 registry 不提供该入口。
+
+### 共享 Python 环境与独立恢复
+
+日常入口按实际工具 manifest、lock、runtime API/layout 和解释器/平台兼容类别验证已有共享 cache。
+普通 Git 或外部工具创建的位置无须先建立自动 pointer；相同有效需求复用同一物理环境。
+合法显式类别及有效需求 hint 保持稳定，日常不安装依赖、不因 PATH 更新自动换环境。
+
+当前安装可以独立检查或恢复环境：
+
+```bash
+.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --check --json
+.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --repair --python /path/to/python3 --json
+```
+
+目标旧 dispatcher 不可运行时，从明确选择的完整 matching Guru 来源加载同一环境 owner。
+工具更新仍由原 source-loaded maintenance owner 完成；恢复后由目标自身入口验证。
+旧 v2、selection-v3、只读来源 DTO、原回滚及采用边界见 [MIGRATION-718](trellis/presets/guru-team/MIGRATION-718.md)。
 
 ### AI-first 判断
 

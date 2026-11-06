@@ -1,5 +1,0 @@
-{
-  "profile": "delivery_completion",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/current"
-}

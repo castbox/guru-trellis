@@ -8,6 +8,8 @@ import stat
 import subprocess
 from pathlib import Path
 
+from runtime.parent_git import ParentGitError, head_entries, index_entries
+
 
 class MigrationError(ValueError):
     pass
@@ -60,14 +62,25 @@ def repo_files(root: Path) -> list[str]:
 
 def business_state(root: Path, managed_paths: set[str], projections: dict[str, dict] | None = None) -> str:
     index = git(root, "ls-files", "--stage", "-z")
-    # Gitlinks bind submodules by index OID, not by regular-file preimages.
-    gitlinks = {entry.partition("\t")[2] for entry in index.split("\0")
-                if entry.startswith("160000 ")}
+    # Bind parent entries while leaving child worktrees outside file preimages.
+    try:
+        current, committed = index_entries(root), head_entries(root)
+    except ParentGitError as exc:
+        raise MigrationError("Could not read resolved parent Git entries") from exc
+    gitlinks = {path for path, entry in current.items() if entry["mode"] == "160000"}
+    removed_gitlinks = {path for path, entry in committed.items()
+                        if entry["mode"] == "160000" and path not in current}
+
+    def parent_file(path: str) -> bool:
+        return path not in gitlinks and not any(
+            (path == removed or path.startswith(removed + "/")) and path not in current
+            for removed in removed_gitlinks
+        )
     facts = {
         "head": git(root, "rev-parse", "HEAD"),
         "index": index,
         "files": {p: state(relative_file(root, p)) for p in repo_files(root)
-                  if p not in gitlinks and p not in managed_paths and not p.startswith((".trellis/tasks/archive/", ".trellis/workspace/", ".trellis/agent-traces/")) and p != ".trellis/.developer"},
+                  if parent_file(p) and p not in managed_paths and not p.startswith((".trellis/tasks/archive/", ".trellis/workspace/", ".trellis/agent-traces/")) and p != ".trellis/.developer"},
     }
     for path, projected in (projections or {}).items():
         if path in facts["files"]:
@@ -116,7 +129,7 @@ def task_token(root: Path, checkpoint: dict) -> str:
 def control_token(checkpoint: dict) -> str:
     # The preset owns its Python pointers, including aliases of the same path.
     pointers = {Path(checkpoint["controls"][key]).resolve()
-                for key in ("python_common", "python_checkout", "python_effective") if key in checkpoint["controls"]}
+                for key in ("python_common", "python_checkout", "python_legacy_local", "python_effective") if key in checkpoint["controls"]}
     return content_token({key: Path(path) for key, path in checkpoint["controls"].items()
                           if Path(path).resolve() not in pointers})
 

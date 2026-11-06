@@ -450,6 +450,8 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     selected_roots: dict[Path, set[str]] = {Path(".agents/skills"): {"shared"}}
     for platform in selected:
         selected_roots.setdefault(platform_roots[platform], set()).add(platform)
+    if any((root / ".codex/skills").glob("guru-*")):
+        errors.append("retired Codex Guru Skill projection remains in .codex/skills")
     capability_roots = set(platform_roots.values()) | {Path(".agents/skills")}
     expected_packages: dict[str, dict[str, str]] = {}
     expected_ids_by_root: dict[Path, set[str]] = {

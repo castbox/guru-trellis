@@ -69,7 +69,7 @@ validated by the public API and original semantic owners.
 
 Current private schema is 6.0; schema 5.0 remains history with its old meaning.
 Current record/check/invoke reject 5.0 rather than converting an old passed
-result. The local guru-phase2-worktree-content-2.0 token covers business bytes
+result. The ordinary local guru-phase2-worktree-content-3.0 token covers business bytes
 and modes and excludes the existing reviewed-content metadata paths, so Task
 result writes do not cause a digest cycle. It remains adjacent freshness only.
 Retire the owner-private candidate checkpoint once its consumer completes.
@@ -204,7 +204,7 @@ owner. Do not author these fields, import private runtime code, copy a result
 example's digest, or fill this private digest from a candidate token.
 
 The candidate's `guru-reviewed-content-1.0` token still serves its original
-public consumer. The recorder's `guru-phase2-worktree-content-2.0` token still
+public consumer. The recorder's `guru-phase2-worktree-content-3.0` token still
 serves local Phase 2 freshness. Keep the actual public Task/Delivery/Planning
 identity and any legitimate upstream token in their declared public inputs;
 carry producer values unchanged. This input separation does not remove or
@@ -227,7 +227,8 @@ GURU_CHECK_RUNTIME=.trellis/guru-team/runtime
 GURU_CHECK_SCHEMAS=.trellis/guru-team/skills/schemas
 
 "$GURU_CHECK_PACKAGE/scripts/record-phase2-check.sh" \
-  --root . --task "$TASK_REF" --input "$AUTHORING" > "$RECORDER_STDOUT"
+  --root . --task "$TASK_REF" --skill-input "$PUBLIC_INPUT" \
+  --input "$AUTHORING" > "$RECORDER_STDOUT"
 RECORDED_RESULT="$("$GURU_CHECK_RUNTIME/resolve-python.sh" . "$GURU_CHECK_RUNTIME" - \
   "$RECORDER_STDOUT" "$GURU_CHECK_SCHEMAS/intermediate-command-receipt-1.0.schema.json" <<'PYTHON'
 import json, sys
@@ -241,7 +242,7 @@ PYTHON
 )"
 
 "$GURU_CHECK_PACKAGE/scripts/check-phase2-check.sh" \
-  --root . --task "$TASK_REF" > "$CHECKER_STDOUT"
+  --root . --task "$TASK_REF" --skill-input "$PUBLIC_INPUT" > "$CHECKER_STDOUT"
 "$GURU_CHECK_RUNTIME/resolve-python.sh" . "$GURU_CHECK_RUNTIME" - \
   "$CHECKER_STDOUT" "$GURU_CHECK_SCHEMAS/intermediate-command-receipt-1.0.schema.json" \
   "$RECORDED_RESULT" <<'PYTHON'
@@ -262,13 +263,40 @@ PYTHON
 Stop on any nonzero command before continuing; use the original diagnostic
 and owner recovery. The recorder's non-dry-run receipt projects
 `result.artifact_path`, which points to its complete JSON checkpoint. The
-checker accepts only `--root` and `--task` here: it reads that Task's original
+checker accepts `--root`, `--task`, and optional `--skill-input` here: it reads that Task's original
 checkpoint itself, with no `--input` or stdin body. Its receipt confirms that
 same artifact path. It is not an owner result. Invocation consumes the exact
 recorder-written file, without copying fields from either stdout object or
 rebuilding the result. The alternative `--invocation -` accepts only the
 closed `public_input`/`owner_result` envelope; do not mix it with the two file
 arguments. Only invocation emits a formal exit.
+
+For `delivery_resolved_reconciliation`, both record and check require
+`--skill-input` with the original public input. They validate its Task, mode,
+Delivery, accepted Planning result and actual public candidate before capture.
+Only this dedicated profile uses `guru-phase2-resolved-content-2.0`: it binds
+live HEAD, the single MERGE_HEAD, stage-0 tree, every stage-0 mode/OID entry,
+and the complete business file set. Index stat and cache-tree refreshes do not
+change this semantic identity. Gitlinks in ordinary and resolved capture bind only the parent's stage-0
+path/mode/OID. Capture never enters a child or reads its HEAD, root, clean,
+initialization, files or objects. Explicit parent additions, updates, removals
+and type replacements remain content; a staged removal is absence even when
+its child directory remains. Unmerged entries, another sequencer, unstaged
+business changes and untracked business files are rejected. Only the exact
+publicly validated current task_ref/task.json may have its natural metadata
+update unstaged; its bytes/index remain untouched. Other Task paths receive
+no such exception. No `typed_exit` or detected MERGE_HEAD selects this
+capture implicitly. The ordinary local algorithm is now 3.0 and resolved is 2.0, so a private
+checkpoint captured with the old child-sensitive semantics must be recorded
+and checked again; it is not converted. Each locator may use a regular JSON file or `-`; record accepts
+stdin for only one locator at a time.
+
+Invocation and resolved projection validate the same capture. A change to
+HEAD, MERGE_HEAD, index entries, candidate or business content requires fresh review. Child worktree state
+never changes this parent content identity. Check creates no reconciliation commit and
+changes no public candidate. The original Reconcile consumer alone commits the
+exact reviewed tree, parent order and message; the new HEAD then receives its
+ordinary formal Check and full Review.
 
 Use the same sequence for `delivery_candidate_check`, `delivery_initial_check`,
 `delivery_finding_fix_rerun`, `delivery_planning_reentry`, and
@@ -412,15 +440,16 @@ Architecture facts and work coordination remain separate; scope cannot dismiss
 a responsibility violation, and its discovery does not authorize a product-goal
 or authority change.
 
-For a red validation, collect only enough evidence to attribute it to a task
-regression, inseparable prerequisite, unrelated historical failure, environment,
-or unresolved cause. Handle the first two in scope; stop investigation and
-repair after unrelatedness is established. Unresolved does not mean historical.
-A real required release gate can block release without authorizing unrelated
-repairs. Do not pursue full green by weakening assertions, fixtures or samples,
-or adjusting timeouts. Review defaults, recommendations, legal explicit
-configuration and real protection invariants against their authority; missing
-diagnostic attribution alone must not add a business rejection.
+Use that same Test And Validation Value method when judging requests for
+additional diagnostic/counterfactual experiments, continued infrastructure
+repair or repetition after a stage/executor change. Preserve its required
+acceptance and regression exceptions and its evidence-based stopping boundary;
+reviewer advice alone does not add a fixed red/green/rollback obligation.
+
+Apply the shared engineering method's failed-validation attribution and
+authority-based configuration judgment in
+`../../guru-review-change/references/review-method.md`. Keep this stage's
+qualification, finding/fix and blocked routes.
 
 1. Reread the current task, approved plan, live authority, diff,
    dirty paths, code, tests, docs, the current Phase 2 Architecture result, and
@@ -504,13 +533,11 @@ existing validation summary for execution/adoption, original source, checked
 object and applicability reason. Bind the actual current worktree through the
 original recorder even when business conclusions remain applicable.
 
-A complete current Check may combine verifiable original coverage with the
-reviewed entire delta and affected dependencies. After committed content
-changes, Branch Review's original owner applies that same shared rule and
-records its own current exact-range result; its narrow reference-alignment
-profile remains limited to its declared input. Git integration continuity
-remains bounded. This owner does not read another owner's private state or
-supply Branch Review's semantic conclusion. Existing Phase 2-to-TaskCommit
+Apply `review-sufficiency.md` from the same provider for later-candidate
+coverage. This Check binds the actual current worktree; Branch Review's owner
+records its own current exact-range result, including its narrow alignment
+profile limits. Git continuity stays bounded. This owner reads no other owner's
+private state and supplies no Branch Review conclusion. Existing Phase 2-to-TaskCommit
 consumption, capture ancestry, content identity and retirement remain unchanged.
 
 ## Causal stage review

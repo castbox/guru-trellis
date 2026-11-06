@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import signal
@@ -58,6 +59,30 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+
+    def test_dirty_paths_ignore_children_but_retain_parent_gitlink_changes(self):
+        source = self.parent / "child-source"
+        subprocess.run(["git", "init", "-q", str(source)], check=True)
+        def child_git(*args):
+            return subprocess.check_output(["git", *args], cwd=source, text=True).strip()
+        child_git("config", "user.email", "child@example.invalid")
+        child_git("config", "user.name", "Child fixture")
+        (source / "file.txt").write_text("child\n")
+        child_git("add", ".")
+        child_git("commit", "-qm", "child")
+        first = child_git("rev-parse", "HEAD")
+        self.git("update-index", "--add", "--cacheinfo", "160000", first, "module")
+        self.git("commit", "-qm", "record parent gitlink")
+        subprocess.run(["git", "clone", "-q", str(source), str(self.repo / "module")], check=True)
+        spec = importlib.util.spec_from_file_location("branch_gitlink_common", PACKAGE / "runtime/common.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        (self.repo / "module/file.txt").write_text("child dirty\n")
+        self.assertEqual([], module.dirty_paths(self.repo, TASK_REF))
+        self.git("update-index", "--cacheinfo", "160000", "a" * 40, "module")
+        self.assertEqual(["module"], module.dirty_paths(self.repo, TASK_REF))
+        self.git("rm", "--cached", "-f", "module")
+        self.assertEqual(["module"], module.dirty_paths(self.repo, TASK_REF))
 
     def test_contract_keeps_eof_blank_lines_non_blocking_but_narrow(self):
         skill = (PACKAGE / "SKILL.md").read_text()

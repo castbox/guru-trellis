@@ -826,48 +826,25 @@ def public_runtime_target(request: dict[str, Any]) -> Path:
         raise ValueError("public invocation runtime boundary target is unavailable")
     return resolved
 
+def runtime_residue(owner_repository: Path) -> list[Path]:
+    """Return business runtime files, preserving the environment owner's selection."""
+    from runtime.bootstrap import active_pointer_path
+    selection = active_pointer_path(owner_repository)
+    return [path for path in (owner_repository / ".trellis/.runtime").rglob("*")
+            if path.is_file() and path != selection]
+
+
 def qualification_runtime_environment(owner_repository: Path) -> dict[str, str]:
-    pointer = owner_repository / ".git/guru-team/python/active.json"
-    if pointer.is_symlink() or not pointer.is_file():
-        raise ValueError("qualification managed runtime pointer is unavailable")
+    assets = owner_repository / ".trellis/guru-team/runtime"
+    checked = subprocess.run([sys.executable, "-S", str(assets / "bootstrap.py"),
+                              "--repo", str(owner_repository), "--runtime-assets", str(assets),
+                              "--check", "--json"], text=True, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, check=False)
     try:
-        payload = json.loads(pointer.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValueError("qualification managed runtime pointer is invalid") from exc
-    if not isinstance(payload, dict) or set(payload) != {
-        "schema_version", "cache_scope", "runtime_id", "interpreter",
-    }:
-        raise ValueError("qualification managed runtime pointer is invalid")
-    runtime_id = payload.get("runtime_id")
-    interpreter_value = payload.get("interpreter")
-    if (
-        payload.get("schema_version") != "2.0"
-        or payload.get("cache_scope") != "user"
-        or not isinstance(runtime_id, str)
-        or len(runtime_id) != 24
-        or any(character not in "0123456789abcdef" for character in runtime_id)
-        or not isinstance(interpreter_value, str)
-    ):
-        raise ValueError("qualification managed runtime pointer is invalid")
-    interpreter = Path(interpreter_value)
-    if (
-        not interpreter.is_absolute()
-        or Path(os.path.abspath(interpreter)) != interpreter
-        or len(interpreter.parents) < 4
-    ):
-        raise ValueError("qualification managed runtime interpreter path is invalid")
-    runtime_root = interpreter.parents[2]
-    cache_root = interpreter.parents[3]
-    expected_interpreter = cache_root / runtime_id / "venv/bin/python"
-    if (
-        runtime_root != cache_root / runtime_id
-        or interpreter != expected_interpreter
-        or cache_root.is_symlink()
-        or not cache_root.is_dir()
-        or runtime_root.is_symlink()
-        or not runtime_root.is_dir()
-        or not interpreter.is_file()
-        or not os.access(interpreter, os.X_OK)
-    ):
-        raise ValueError("qualification managed runtime identity is invalid")
-    return {"GURU_TEAM_PYTHON_CACHE_ROOT": str(cache_root)}
+        selected = json.loads(checked.stdout)
+    except ValueError as exc:
+        raise ValueError("qualification managed runtime check failed") from exc
+    if checked.returncode != 0 or selected.get("status") != "ok":
+        raise ValueError("qualification managed runtime is unavailable")
+    interpreter = Path(selected["interpreter"])
+    return {"GURU_TEAM_PYTHON_CACHE_ROOT": str(interpreter.parents[3])}

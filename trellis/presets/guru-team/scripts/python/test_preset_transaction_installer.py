@@ -116,7 +116,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             for root in (
                 self.install_dst / "skills/packages",
                 self.repo / ".agents/skills",
-                self.repo / ".codex/skills",
                 self.repo / ".cursor/skills",
                 self.repo / ".claude/skills",
             ):

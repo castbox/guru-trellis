@@ -1,14 +1,14 @@
-# 当前知识导航
+# 当前知识发现入口
 
-| Identity / alias | Status | Locator | Relations |
-| --- | --- | --- | --- |
-| RDT-TST-LOCAL-FIX-INTAKE; T692/SC692; 局部修复 Intake 与诊断 | current | [local-fix-intake](./local-fix-intake.md) | RDT-REQ-LOCAL-FIX-INTAKE; RDT-DES-LOCAL-FIX-INTAKE; RDT-TST-LOCAL-FIX-INTAKE |
-| RDT-TST-JSON-INPUT; R695/BEH695; JSON 输入载体 | current | [json-input-carriers](./json-input-carriers.md) | RDT-REQ-JSON-INPUT; RDT-DES-JSON-INPUT |
-| RDT-TST-LIFECYCLE; Task/Delivery; BEH-001..006; R531-01..05/08; R636/BEH636; R637/BEH637 | current | [task-delivery-lifecycle](./task-delivery-lifecycle.md) | [RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md); [RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md) |
-| RDT-TST-COMPLETION; Completion/Closure/Finish; R531-06; R547 | current | [completion-closure](./completion-closure.md) | [RDT-REQ-COMPLETION](../../requirements/current/completion-closure.md); [RDT-DES-COMPLETION](../../design/current/completion-closure.md) |
-| RDT-TST-KNOWLEDGE; RDT/Architecture; REQ-007/BEH-007; R331 | current | [knowledge-maintenance](./knowledge-maintenance.md) | [RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md); [RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md) |
+本层属于 `guru-trellis-rdt` / active；状态与历史边界从 [根入口](../README.md) 读取。采用 `knowledge-navigation-1`，能力完整正文位于本目录 `**/*.md`，多文件能力可有自身目录的局部 README。本页不维护逐单元清单。
 
-| RDT-TST-NATIVE; R630/BEH630; 三系统兼容 | current | [native-compatibility](./native-compatibility.md) | [RDT-DES-NATIVE](../../design/current/native-compatibility.md); [T630](../../test/current/native-compatibility.md) |
+1. 原 owner 先选择问题、Task、阶段与候选适用的版本。运行 `rg --files docs/test/current` 定位范围，再用 `rg -n '<稳定ID、别名或概念>' docs/test/current` 限定检索。
+2. 实际读取命中完整单元，核稳定身份/aliases、状态、适用来源、原 owner 晋升依据和替代范围，再展开回答所需 R/D/T/Architecture 关系。目录、标题、搜索排名、日期或更大版本不产生 authority。
+3. current、accepted target、未晋升 contribution/proposed、历史与 superseded 分开。贡献/历史只用于来源或未迁移边界，晋升后的普通查询不拼贡献链。断链、缺来源/晋升依据或重复 current 返回原 repair/澄清，保留最后可读 authority。
+
+新增或修改独立主题只维护所属完整正文、局部导航与真实关系，不在本页追加条目。既有能力沿原正文整合，不创建每 Issue 第二 current。改名保稳定 ID；替换/删除保前驱/后继、仍有效引用及旧引用意义。真实关系重叠由原 owner 整合，不复制关系规避。
+
+## 历史与未迁移范围
 
 | Legacy scope identity | Status | Locator | Relations |
 | --- | --- | --- | --- |

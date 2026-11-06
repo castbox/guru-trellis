@@ -1,6 +1,6 @@
 ---
 name: guru-sync-base
-description: Resolve, safely synchronize, and deterministically validate the selected Git base before Guru Team reads repository task context or starts intake side effects.
+description: Resolve a fixed Git baseline for read-only Intake, or safely synchronize a selected base checkout.
 ---
 
 # Guru Sync Base
@@ -13,7 +13,7 @@ cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
 Use this Skill when the Guru Team workflow mandatory invokes `guru-sync-base`,
-or when the user explicitly asks to refresh or verify a repository base branch.
+or when the user asks to read a fixed Git baseline, refresh, or verify a repository base branch.
 
 The caller must finish tool-free route classification before invoking this
 Skill. Load [references/contract.md](references/contract.md), then invoke
@@ -26,7 +26,14 @@ before authoring that envelope. Interface paths beginning with `consumers/`
 resolve from `.trellis/guru-team/skills`, while public `schemas/` and `examples/`
 resolve from this package. The envelope is not a package-local schema.
 
-Base resolution first selects the branch without consulting the current branch
+For `operation=read`, the caller selects a repository and `base_ref` (a Git ref
+or commit), with optional `base_commit` as an expected resolution assertion.
+Omitted `base_ref` reuses the original explicit/config/candidate/default base
+selection rules. Runtime fixes the available commit and returns `baseline_ready`
+to Discovery. It does not require a base checkout, cleanliness, fetch, or
+fast-forward. Later ref movement does not retarget that adopted commit.
+
+For `operation=sync` (the compatibility default), base resolution first selects the branch without consulting the current branch
 or registered-worktree availability. It then binds that fixed selection to the
 unique clean checkout registered for `refs/heads/<selected-base>` in the same
 Git common-dir. The invocation checkout may be detached. Fetch, fast-forward,
@@ -34,9 +41,9 @@ live validation, and the public repository locator all use the bound authority
 checkout; missing, dirty, or mismatched authority identity returns `blocked`
 without selecting another base or creating/switching a checkout.
 
-Workflow mode may return `synced`, `skipped`, or `blocked`. Standalone mode
-may return only `synced` or `blocked`; it never enters issue intake, task
-creation, worktree creation, or change-context discovery. Resolution and result
+Workflow mode may return `baseline_ready`, `synced`, `skipped`, or `blocked`.
+Standalone read returns `baseline_ready` to its declared Discovery consumer;
+standalone sync returns `synced` or `blocked`. Neither creates a Task or worktree. Resolution and result
 facts remain on stdout; the Skill does not create or manage cross-step evidence
 files.
 
@@ -47,8 +54,7 @@ validation fails. This package is not self-contained or portable.
 Normal public handoff uses `scripts/invoke.sh --invocation -`; the declared
 scalar CLI remains compatibility-only and is not the workflow route. The
 wrapper dispatches only through `run-skill-command`; runtime performs the formal
-resolve, execute, and check sequence, then emits one `synced`, `skipped`, or
-`blocked` minimal DTO. Do not invoke the low-level components first, read/import
+resolve, execute, and check sequence, then emits one `baseline_ready`, `synced`, `skipped`, or `blocked` minimal DTO. Do not invoke the low-level components first, read/import
 the shared Python runtime, or pass the private base-sync result as the next
 Skill input.
 

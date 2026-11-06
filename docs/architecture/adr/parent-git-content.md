@@ -1,0 +1,25 @@
+# 父仓 Gitlink 使用父仓原子内容
+
+Identity：ADR-PARENT-GIT-CONTENT。Status：accepted。Owner：Architecture。作用域：父仓Guru流程的Gitlink事实及跨consumer职责；不改变上游Delivery authority或子仓独立root。
+
+## 问题与依据
+
+Issue739及原resolved合并现场说明，父仓合法stage0指针与旧HEAD不同，child检出状态又成为流程前置。历史局部修复保留了child准入，不同Check/Commit/shared消费者的语义不一致。自然begin_check产生的Task metadata亦暴露跨owner衔接缺口。需要替代共同错误职责，保留父内容审查和精确提交。
+
+## 决策与替代
+
+采用父index/tree的path/mode/OID原子条目。所有父仓consumer忽略child内部状态，显式父index变化保持可见。isolated commit index写入已捕获父OID/absence，不从child重新取值；普通文件继续原staging/hook流程。原Reconcile保持exact tree/parents/message，当前Taskmetadata由公开身份精确识别。
+
+拒绝只加resolved特例，因为普通流程与共享身份仍会阻断；拒绝全局ignore-submodules=all，因为会隐藏父cached gitlink变化；拒绝排除gitlink或维护第二Delivery content authority，因为会丢失被审Git内容并绕过真实consumer。选择在原runtime内复用最小父仓事实，不新增长期state或旧新双读。
+
+## 兼容和完成边界
+
+旧未执行private候选因语义变化重新prepare；已经生成commit/receipt的操作由原owner核真实结果并恢复，不能重复提交。结果receipt语义未变不强行改版。受管投影由完整upgrade-tools owner更新，不热改目标或上游生成脚本。
+
+17015调查中的regular-only API限制保留为历史依据。castbox/Trellis #62已由PR63合并，固定merge3c37c75897f530c3ae8c5c4d85f6c1f3455b2e5f（head0336f397e1c38194d6d853149e0c1e9db14200cf）以同签名API支持父index/tree原子gitlink行[path,57344,OID]，普通文件摘要保持。当前工作树r4完整匹配采用已由原guru-upgrade-tools owner完成，实际出口tools_upgraded、installed_version=0.7.0-guru.7，固定上游merge3c37c75897f530c3ae8c5c4d85f6c1f3455b2e5f。原输出仍列formal_fork_source_lock为unverified，不宣称该项已验证。采用沿既有owner和公开API，不产生第二authority或新的Guru机制；源码、工具采用和外部效果分别判断。业务采用与保留现场复跑仍未验证，由原业务owner承担，不属本Task完成条件。
+
+## 验证与晋升
+
+本Task design V1—V4定义真实Git、正式wrappers、自然metadata、精确tree和父index drift观察；上游曾缺能力的原观察保持；当前按实际匹配provider及consumer结果判断，不mock成功或把上游合并等同于本机采用、业务恢复。完整领域定义见03-domains/parent-git-content.md，算法与payload归canonical runtime/data-contracts。本决定及完整领域定义经原candidate Check和Architecture final_integration写入/readback；实现owner重绑after，最终Check/Review覆盖真实结果。该晋升不代表业务采用或现场恢复。
+
+本Issue完成边界按2026-11-05修订Issue739：只交付Guru侧修复及最小验收；上游改造、工具采用、业务复跑非本Task后继阶段或额外完成条件，不以局部测试声明其成功。

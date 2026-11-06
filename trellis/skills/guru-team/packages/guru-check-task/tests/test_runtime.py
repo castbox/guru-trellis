@@ -125,7 +125,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    entries=[{"path":"tracked.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest(),"mode":"100644"}]
    expected=hashlib.sha256(json.dumps({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
    retired=hashlib.sha256(json.dumps({"algorithm":"guru-reviewed-content-1.0","entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
-   self.assertEqual("guru-phase2-worktree-content-2.0",PHASE2_WORKTREE_CONTENT_ALGORITHM)
+   self.assertEqual("guru-phase2-worktree-content-3.0",PHASE2_WORKTREE_CONTENT_ALGORITHM)
    self.assertEqual(expected,content_identity(repo))
    self.assertNotEqual(retired,content_identity(repo))
 
@@ -145,11 +145,11 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.git(repo,"submodule","deinit","-f","--","module")
    self.assertEqual(digest,content_identity(repo,["module"]))
 
- def test_content_identity_rejects_gitlink_worktree_drift(self):
+ def test_content_identity_ignores_gitlink_worktree_state(self):
   cases=("dirty","head_drift","deletion","replacement","root_mismatch")
   for case in cases:
    with self.subTest(case=case),tempfile.TemporaryDirectory() as temporary:
-    repo,_=self.gitlink_fixture(temporary);module=repo/"module"
+    repo,_=self.gitlink_fixture(temporary);module=repo/"module";before=content_identity(repo,["module"])
     if case=="dirty":(module/"tracked.txt").write_text("dirty\n")
     elif case=="head_drift":
      self.git(module,"config","user.name","Test");self.git(module,"config","user.email","test@example.com")
@@ -158,23 +158,24 @@ class PackageLocalRuntimeTest(unittest.TestCase):
      shutil.rmtree(module)
      if case=="replacement":module.write_text("replacement\n")
      elif case=="root_mismatch":module.mkdir();(module/"ordinary.txt").write_text("not a submodule\n")
-    with self.assertRaises(CommandError) as raised:content_identity(repo,["module"])
-    self.assertEqual("stale_identity",raised.exception.code)
+    self.assertEqual(before,content_identity(repo,["module"]))
 
- def test_content_identity_rejects_gitlink_pointer_drift_and_ambiguous_index(self):
+ def test_content_identity_binds_parent_pointer_and_rejects_unmerged_index(self):
   for case in ("pointer_drift","index_deletion","staged_replacement","ambiguous_index"):
    with self.subTest(case=case),tempfile.TemporaryDirectory() as temporary:
-    repo,oid=self.gitlink_fixture(temporary)
-    alternate=self.git(repo,"rev-parse","HEAD^{tree}")
+    repo,oid=self.gitlink_fixture(temporary);before=content_identity(repo,["module"])
+    alternate="1"*40
     if case=="pointer_drift":self.git(repo,"update-index","--cacheinfo",f"160000,{alternate},module")
     elif case=="index_deletion":self.git(repo,"update-index","--force-remove","module")
     elif case=="staged_replacement":
-     blob=self.git(repo,"hash-object","-w","--stdin",input="replacement\n");self.git(repo,"update-index","--add","--cacheinfo",f"100644,{blob},module")
+     shutil.rmtree(repo/"module");(repo/"module").write_text("replacement\n");self.git(repo,"add","module")
     else:
      records=f"0 {oid}\tmodule\n160000 {oid} 1\tmodule\n160000 {alternate} 2\tmodule\n"
      self.git(repo,"update-index","--index-info",input=records)
-    with self.assertRaises(CommandError) as raised:content_identity(repo,["module"])
-    self.assertEqual("stale_identity",raised.exception.code)
+    if case=="ambiguous_index":
+     with self.assertRaises(CommandError) as raised:content_identity(repo,["module"])
+     self.assertEqual("stale_identity",raised.exception.code)
+    else:self.assertNotEqual(before,content_identity(repo,["module"]))
 
  def test_phase2_record_and_check_accept_uninitialized_clean_gitlink(self):
   with tempfile.TemporaryDirectory() as temporary:
@@ -188,14 +189,14 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    checked=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task","test-task","--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
    self.assertEqual("ok",json.loads(checked.stdout)["result"]["status"])
 
- def test_phase2_gitlink_fallback_does_not_relax_task_commit_staging(self):
+ def test_phase2_captures_new_gitlink_without_local_child_object(self):
   with tempfile.TemporaryDirectory() as temporary:
-   repo,_=self.gitlink_fixture(temporary);self.git(repo,"submodule","deinit","-f","--","module")
-   self.assertIsInstance(content_identity(repo,["module"]),str)
-   path=PACKAGE.parent/"guru-create-task-commit/runtime/common.py";spec=importlib.util.spec_from_file_location("task_commit_common_contract",path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-   self.assertNotIn("module",{row["path"] for row in module.capture_snapshot(repo)["entries"]})
-   alternate=self.git(repo,"rev-parse","HEAD");self.git(repo,"update-index","--cacheinfo",f"160000,{alternate},module")
-   with self.assertRaises(CommandError):module.capture_snapshot(repo)
+   repo=Path(temporary);self.git(repo,"init","-q")
+   self.git(repo,"update-index","--add","--cacheinfo",f"160000,{'1'*40},module")
+   before=content_identity(repo)
+   self.assertEqual(["module"],dirty_paths(repo))
+   self.git(repo,"update-index","--cacheinfo",f"160000,{'2'*40},module")
+   self.assertNotEqual(before,content_identity(repo))
 
  def test_public_wrapper_retains_only_passed_checkpoint_and_projects_all_exits(self):
   example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())

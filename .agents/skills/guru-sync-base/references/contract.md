@@ -21,7 +21,29 @@ use `skipped` only for a caller-classified non-repository route. Standalone
 requires caller-recognized explicit refresh/verify intent and never returns
 `skipped`.
 
-## Forward Behavior
+## Read-Only Baseline Profile
+
+The caller chooses `operation=read` for content discovery and review. Supply
+`repo_root` and `base_ref`; the latter can name a branch, tag, or fixed commit.
+`base_commit`, when supplied, asserts the commit at selection time. A mismatch
+returns `stale_identity` at `base_commit`; correct the ref/commit through this
+same public invocation. Omitted `base_ref` uses the original base selection
+precedence below. Runtime never infers read versus sync intent.
+
+The output is `baseline_ready` with `base_current` 2.0. Its independent
+`kind=git_object` base contains only `source`, `selected_ref`, `commit`, and
+`identity_sha256`. The repository locator belongs to the transition. Discovery
+checks the object and selection token, then reads that fixed tree. A later ref
+advance does not change the adopted commit. There is no checkout/head/remote
+equality claim, fetch, or fast-forward. No Task, branch, clean checkout, or
+registered base worktree is required for this profile.
+
+Only actual synchronization uses `operation=sync`. Omission retains sync for
+existing direct callers. The remaining synchronization sections preserve that
+profile's complete original behavior and result schema. Current workflow
+Intake explicitly supplies `operation=read`.
+
+## Forward Behavior (Sync Profile)
 
 The caller invokes only the public `scripts/invoke.sh --invocation -` wrapper.
 Inside that one authoritative invocation, the runtime first executes the
@@ -71,13 +93,12 @@ fast-forward execution must produce a new digest bound to the synchronized HEAD.
 
 The internal result validator receives the pre-sync digest, validates both
 resolution identities, and projects the complete eight-field `base_current`
-provenance to Discovery. Compatibility-only `prepare-task` requires that exact
-reviewed provenance through `--reviewed-base-provenance '<JSON>'`; optional
-`--base-branch` is only an equality assertion. Missing provenance returns
-`missing_reviewed_base_provenance` before `gh auth status`, GitHub reads or
-fetch. Changed provenance or live base facts return a stable blocking
-diagnostic and never start semantic re-intake. `prepare-task` is query-only and
-has no GitHub issue, worktree or Trellis task mutation path.
+provenance to Discovery. The old `prepare-task --reviewed-base-provenance
+'<JSON>'` consumer belongs to pinned-old complete installations. It is absent
+from the fixed implementation baseline and current registry/command inventory;
+it is not a current entry or fallback. Its historical
+`missing_reviewed_base_provenance` and query-only contract remain in the old
+installation, without receiving the new Git-object variant.
 
 Execution performs only an explicit remote-tracking refspec fetch. An already
 equal local base is unchanged. A behind local base can fast-forward only when it
@@ -110,6 +131,8 @@ selected refs, clean state, and live three-way equality. It never fetches or
 mutates Git. Its internal return may carry the resolved authority locator to the
 public wrapper, but that field never enters `guru-base-sync-result-1.0`.
 
+- `baseline_ready`: the read-only fixed object is available; its sole consumer
+  is `guru-discover-change-context`.
 - `synced`: the digest-bound executor and live Git validator passed; the typed
   result carries `post_sync_resolution_sha256` and workflow enters
   `guru-discover-change-context`.

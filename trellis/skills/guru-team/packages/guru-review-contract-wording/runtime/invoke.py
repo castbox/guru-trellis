@@ -4,6 +4,7 @@ from pathlib import Path
 from common import change_request_target_content_sha256,check_receipt,digest,load,parse,root,scope,validate_result
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.base_selection import check_candidate
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");public=e.get("public_input");owner=e.get("owner_result");transition=e.get("transition")
  if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and owner result.")
@@ -23,10 +24,12 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if public["profile"]=="change_request":
    if not isinstance(transition,dict) or transition.get("stage")!="clarity_current":raise CommandError("stale_identity","transition","Provide the current clarity transition.",3)
    target_content_sha256=change_request_target_content_sha256(owner["scope"])
+   body=next(item["content_sha256"] for item in owner["scope"]["items"] if item.get("field")=="body")
+   check_candidate(transition.get("candidate"),body)
    wording={"facts_sha256":owner["facts_sha256"],"scope_sha256":owner["scope"]["scope_sha256"],"scan_sha256":owner["scan"]["scan_sha256"],"target_content_sha256":target_content_sha256}
    current=dict(transition);current.update({"transition_id":"wording_current:"+digest(wording)[:24],"stage":"wording_current","continuation_id":public["continuation_id"],"wording_facts_sha256":owner["facts_sha256"],"target_content_sha256":target_content_sha256,"wording":wording})
    out["transition"]=current
-  schema="public-pass-output-2.0.schema.json"
+  schema="public-pass-output-3.0.schema.json"
  elif exit_id=="content_changed":
   out["profile"]=public["profile"]
   if public["profile"]=="planning_artifacts":

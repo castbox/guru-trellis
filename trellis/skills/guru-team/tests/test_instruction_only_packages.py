@@ -70,18 +70,18 @@ class InstructionOnlyPackageTests(unittest.TestCase):
             self.assertEqual(result["status"], "ok", result["conflicts"])
             for package_id in IDS:
                 row, package, interface = self.package(package_id)
-                projected = root / ".codex/skills" / package_id
+                projected = root / ".agents/skills" / package_id
                 self.assertEqual((projected / "agents/openai.yaml").read_bytes(), (package / "agents/openai.yaml").read_bytes())
                 self.assertFalse((projected / "tests").exists())
                 runtime_package = installed / "skills/packages" / package_id
                 self.assertFalse((runtime_package / "tests").exists())
                 validate_instruction_package(runtime_package, row, interface, source=False)
-                self.assertFalse((root / ".agents/skills" / package_id).exists())
+                self.assertFalse((root / ".codex/skills" / package_id).exists())
                 self.assertFalse((root / ".claude/skills" / package_id).exists())
-            for relative in (".agents/skills", ".claude/skills", ".codex/skills"):
+            for relative in (".agents/skills", ".claude/skills"):
                 self.assertEqual(validate(REPO, "source", root / relative)["status"], "passed")
             misplaced = root / ".claude/skills" / IDS[0]
-            shutil.copytree(root / ".codex/skills" / IDS[0], misplaced)
+            shutil.copytree(root / ".agents/skills" / IDS[0], misplaced)
             with self.assertRaises(CommandError) as failure:
                 validate(REPO, "source", root / ".claude/skills")
             self.assertEqual(failure.exception.code, "projection_invalid")
@@ -92,12 +92,12 @@ class InstructionOnlyPackageTests(unittest.TestCase):
             switched = preset.install_skill_packages(root, REPO, installed, {"claude"}, {"skill_packages": reapplied})
             self.assertEqual(switched["status"], "ok", switched["conflicts"])
             for package_id in IDS:
-                self.assertFalse((root / ".codex/skills" / package_id).exists())
+                self.assertFalse((root / ".agents/skills" / package_id).exists())
                 self.assertTrue((installed / "skills/packages" / package_id / "SKILL.md").is_file())
             restored = preset.install_skill_packages(root, REPO, installed, {"codex", "claude"}, {"skill_packages": switched})
             self.assertEqual(restored["status"], "ok", restored["conflicts"])
             # An ordinary local metadata edit uses the existing conflict path.
-            metadata = root / ".codex/skills" / IDS[0] / "agents/openai.yaml"
+            metadata = root / ".agents/skills" / IDS[0] / "agents/openai.yaml"
             edited = metadata.read_text() + "# local display preference\n"
             metadata.write_text(edited, encoding="utf-8")
             conflicted = preset.install_skill_packages(root, REPO, installed, {"codex", "claude"}, {"skill_packages": restored})

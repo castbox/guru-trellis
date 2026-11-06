@@ -1,5 +1,11 @@
 # Guru Team Workflow
 
+Codex 的 Guru Skill 通过 `.agents/skills/` 公共投影发现，专属包仍仅在选择 `codex` 时分发。目录收敛不改变 workflow、Skill id 或出口；已有安装沿原维护 owner 保留用户修改并退出旧受管投影。采用和 native 验证边界见 [MIGRATION-724](../../presets/guru-team/MIGRATION-724.md)。
+
+只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
+再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
+并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](../../presets/guru-team/MIGRATION-718.md)。
+
 审核、审查、评审、复审和 review 先按对象与目的分流。代码、分支/PR、测试覆盖和
 需求实现情况的审核，再区分独立只读审核与正式阶段结果。上述独立审核
 无论有无 Task/Delivery，都显式调用 `guru-review-change`，由它完成指定范围的
@@ -10,6 +16,10 @@ workflow 调用或用户要求正式阶段结果时，才按原前置与完整�
 选择专项方法。选择方法唯一见
 [Specialist Review Standards](../../presets/guru-team/spec/workflow/quality-guidelines.md#specialist-review-standards)。
 
+行为测试、因果验证、证据采用和实验停止的共同方法见
+[Test And Validation Value](../../presets/guru-team/spec/workflow/quality-guidelines.md#test-and-validation-value)。
+Author、实施派工、Check 和 Branch Review 在原职责内采用该方法。
+
 Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即使它们是改动文件。
 它们保留现有 Issue、需求专项或项目动议/上游需求审核入口。需求用于判断实现覆盖时，
 可作为本 skill 的来源；判断需求本身是否完整合理时，使用其上游 owner。
@@ -17,10 +27,11 @@ Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即�
 
 独立审核的完整步骤归 [guru-review-change](../../skills/guru-team/packages/guru-review-change/SKILL.md)；
 workflow 只负责显式调用和消费终端出口。`reviewed`、`blocked` 分别停止在该 owner
-声明的用户响应消费者，不进入正式交付阶段。通用语义方法由该包唯一维护，
-Check 与 Branch Review 在原职责内读取 [同一正文](../../skills/guru-team/packages/guru-review-change/references/review-method.md)。
-该正文组合原 Check、Branch Review、Architecture 和 current-knowledge 的语义
-SSOT。独立审核实际执行架构基线及其技术规则适用性判断、业务需求实现覆盖判断，
+声明的用户响应消费者，不进入正式交付阶段。共同覆盖与结束规则由
+[审核充分性规范](../../presets/guru-team/spec/workflow/review-sufficiency.md) 唯一维护。
+各原审核 owner 在原职责内读取；Check 与 Branch Review 另读
+[工程方法组合](../../skills/guru-team/packages/guru-review-change/references/review-method.md)。
+该组合读取 Architecture、current-knowledge 和专题 SSOT，不读取 Check/Branch 的私有阶段方法。独立审核实际执行架构基线及其技术规则适用性判断、业务需求实现覆盖判断，
 报告依据和缺口。正式阶段的独立评估、重审适用性及公共结果仍遵守各自原合同。
 独立 owner 还必须按其本地合同使用不同 subagent 完成不同角度的审核，并核对
 原始证据作最终判断。正式 Check 和 Branch Review 不继承这项本地调度要求。
@@ -80,9 +91,13 @@ Issue 创建与修订共用原 Clarify package 的
 首次完整候选 Check 审核隔离贡献和完整拟写正文；`candidate_checked` 只进入
 原维护 owners 的最终整合。实际晋升后由 implementation 重建 candidate/begin_check，
 再完成最终 Check、TaskCommit 和完整 committed Review。Ready/Publication 不接受
-未晋升候选。普通知识晋升保留稳定 authority identity，根导航只在定位关系改变时写入，
+未晋升候选。普通知识晋升保留稳定 authority identity，根导航仅在入口自身合同实际变化时写入，
 不要求全局版本递增。当前 schema/consumer 成套切换和三类在途恢复见
 [MIGRATION-638](../../presets/guru-team/MIGRATION-638.md)。源码变更不证明安装采用或真实 Agent 验证完成。
+
+并行知识采用稳定入口、限定目录及稳定 ID 查找完整正文；独立主题不在共享入口逐项登记。
+共同方法、既有项目切换条件、未迁移范围、在途最终整合与旧写退出见
+[MIGRATION-711](../../presets/guru-team/MIGRATION-711.md)。安装新规则与项目文档切换分别完成。
 
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)

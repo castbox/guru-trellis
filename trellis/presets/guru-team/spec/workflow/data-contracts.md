@@ -97,7 +97,7 @@ object:
 | `wording_current` | current clarity identity, fixed wording profile, target content identity and wording checker token | `guru-review-change-request` |
 | `readiness_current` | current wording identity, ready scope projection, target/content/linkage identity | `guru-task-intake-router` (current Issue/task creation route) |
 
-The base provenance is a closed source-preserving value containing resolution
+The synchronized base provenance is a closed source-preserving value containing resolution
 source, selected base, remote, ordered candidates, decision HEAD, local base
 HEAD, remote base HEAD, and `post_sync_resolution_sha256`. These HEAD roles are
 distinct contract fields and must not be folded into one generic `base_head`.
@@ -107,6 +107,26 @@ source as `config-candidate`. Discovery receives this `base_current` separately
 from its own caller-authored public input and compares the public identity with
 live Git before any semantic authority read. It never receives
 `guru-base-sync-result-1.0`, its facts digest, or a reconstruction of either.
+
+The current source union additionally accepts the distinct `kind=git_object`
+base. It contains `source`, `selected_ref`, a fixed 40-hex `commit`, and one
+`identity_sha256` checked by Discovery. The transition carries the repository
+locator. This variant does not contain checkout, local-base, or remote-base
+HEAD roles and does not establish synchronization. The current transition
+schemas use versioned paths: `base-current-2.0.schema.json` and
+`{context,clarity,wording,readiness}-current-3.0.schema.json`. Read-only source
+transitions carry `schema_version=2.0`; the preserved sync variant carries
+`schema_version=1.0`. Earlier published schema files remain unchanged.
+
+Discovery's caller-owned `pre_task` 4.0 and `context_request` 2.0 inputs may
+name a `candidate_file` for a file-backed draft body. The fixed Git tree owns
+baseline Docs/code/tests/archive bytes. The separate candidate locator/body
+identity is reread by the actual Clarify, Wording and Readiness consumers.
+An ordinary candidate change refreshes affected results; it never rewrites the
+baseline or establishes committed Review/publication eligibility. Current
+private Discovery result 4.0 separates Git-object repository/observation fields
+from the original synchronized 3.0 result. The owner index validates these
+distinct current formats; only the minimal public transition crosses Skills.
 
 Each later stage contains only the prior identity plus fields directly consumed
 by its next checker. Complete issue bodies, scan or review history, findings,
@@ -141,32 +161,16 @@ and base authority remain exclusively in the independent `base_current` stage.
 The published 1.0 pre-task input remains an immutable legacy asset and is not
 selected by the current Interface.
 
-`prepare-task.base_freshness` is the current query projection and
-adds pre-sync resolution source/digest, post-sync resolution/digest, decision
-checkout, local/remote refs, and three-way equality facts from the same core.
-It also exposes `reviewed_resolution_sha256` as the digest consumed by the
-current guard and `post_sync_resolution_sha256` as the digest to pass to the
-next guard, while `resolution.source` remains the
-`explicit`, `config`, `config-candidate`, or `remote-default` provenance rather than a
-prepare-generated explicit override. No task artifact persists the complete
-base resolution/result payload, process output, or machine path. Current task
-identity comes from the canonical TaskId/generation artifact, its Git common-dir
-branch binding, and live registered worktree facts. Retired task/workspace
-mappings and `task.json.branch` are not current identity inputs.
-
-`prepare-task` is compatibility-only and never produces a current transition.
-An explicit call must receive the complete reviewed base provenance above.
-It supplies that exact `base_current.base` object as one JSON scalar through
-`--reviewed-base-provenance`; the value is not a file locator. Optional
-`--base-branch` only asserts selected-base equality and cannot rebuild source.
-Missing provenance returns the stable local diagnostic
-`missing_reviewed_base_provenance`; changed provenance/state returns a stable
-base-provenance or base-state diagnostic. Both stop before GitHub reads, fetch,
-duplicate search, or semantic Intake. A digest alone cannot reconstruct the
-resolution source or ordered candidates. Whether a missing remote ref is legal
-for a particular query state is defined by the formal closed schema/runtime
-status matrix; callers must not infer a nullable fallback or synthesize a remote
-HEAD.
+The historical `prepare-task.base_freshness` and
+`prepare-task --reviewed-base-provenance '<JSON>'` reader belong only to
+pinned-old complete installations. The fixed implementation baseline and
+current registry/commands no longer contain that executable consumer. Do not
+revive it as an Intake fallback or feed the new Git-object union into its old
+synchronized provenance contract. Current Task Creation projects the selected
+local branch ref and fixed reviewed commit into its existing
+`selected_base_ref` / `reviewed_base_head` contract. Its original source,
+branch/head, checkout suitability, Task and generation checks remain required.
+A commit-only read result does not supply a missing creation branch.
 
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.
@@ -998,7 +1002,7 @@ mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
 adequacy/findings, final candidate classifications with direct-consumer
 witness, and one typed exit/route/reason/consumer. The private
-`guru-phase2-worktree-content-2.0` identity covers live tracked and untracked
+`guru-phase2-worktree-content-3.0` identity covers live tracked and untracked
 business worktree paths, including regular-file executable mode. It uses the
 existing metadata exclusions owned by [Reviewed Content Identity](#reviewed-content-identity),
 so recording lifecycle metadata does not change the checked business content.
@@ -1006,18 +1010,20 @@ Only the original Check recorder/checker and public wrapper consume this local
 equality token. It remains distinct from the durable `guru-reviewed-content-1.0`
 identity used in the candidate handoff.
 Its supported atomic entries include regular files, executable files,
-symlinks, missing paths, and Gitlinks. An unchanged uninitialized Gitlink binds
-the unique stage-0 superproject index mode `160000` and OID after the current
-commit records the same pointer. An initialized Gitlink additionally requires
-an exact submodule root, clean status, and submodule `HEAD` equal to that OID.
-Dirty, HEAD-drifted, index/commit-pointer-drifted, deleted, replaced,
-root-mismatched, unmerged, or ambiguous Gitlinks fail closed. This is an
-additive Gitlink compatibility rule in historical `1.0`: that earlier runtime
-produced no valid digest for a Gitlink and retained its non-Gitlink digests.
-Current `2.0` changes regular-file mode binding and metadata selection; it does
-not claim the old payload or digest is unchanged. Old checkpoint shapes remain
-historical and are not converted. This does not relax Task Commit's separate rule that
-a Gitlink selected for staging must be initialized and clean.
+symlinks, missing paths, and Gitlinks. Gitlinks bind only the superproject's
+unique stage-0 mode `160000` and OID. Added or updated pointers need not match
+old `HEAD`; staged deletion uses index absence even when a child directory
+remains. Type replacements use the resulting parent entry. No child root,
+HEAD, cleanliness, initialization, files or object availability is inspected.
+Unmerged or ambiguous parent entries still fail closed. Ordinary non-gitlink
+worktree bytes and executable mode retain their existing meaning.
+Current `3.0` replaces the former child-state admission. Old unexecuted local
+checkpoints are rerun through their original recorder/checker, not converted.
+The resolved profile additionally uses `guru-phase2-resolved-content-2.0` to bind
+HEAD, the unique MERGE_HEAD, stage-0 entries/tree and the validated public
+Delivery context. Only that validated current Task's task.json may carry its
+natural unstaged lifecycle metadata; other Task or business changes receive no
+such exception. Check and Reconcile preserve that file's original bytes/index.
 It detects reviewed-content drift and returns control to the AI owner for delta
 classification; it is not authorization, semantic approval, public handoff, or
 whole-chain authority. Live implementation output, Planning owner state, issue
@@ -1077,8 +1083,8 @@ into Phase 2.
 Each `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
-increasing id. Current schema `guru-task-commit-candidate-5.0` binds only task
-locator/branch/status, base/pre-commit/Phase 2 commit anchor, the complete
+increasing id. Current Delivery candidate schema `delivery-3.0` binds only Task
+identity/branch and DeliveryKey, base/pre-commit/Check identity, the complete
 staged/unstaged/untracked/delete/rename/copy snapshot, unique path
 classifications, exact stage paths, canonical UTF-8 message fields/bytes, and
 the completed AI review. Live `task.json`, the Phase 2 DTO,
@@ -1087,22 +1093,25 @@ are reread by the builder/validator; they are not copied into a cross-Skill
 digest chain. The candidate contains no user authorization, confirmation
 wording, terminal result journal, reviewer identity, or timestamp.
 
-Snapshot entries whose index mode is `160000` additionally require
-`gitlink_head`, `gitlink_initialized=true`, and `gitlink_dirty=false`.
-`gitlink_head` is the unique commit checked out by the submodule rooted at the
-exact worktree path. Uninitialized, dirty, unborn, or root-mismatched submodules
-cannot produce a safe candidate. These fields are conditional. Current snapshot
-producers always emit `copied_from`, using a repo path only for copy destinations
-and `null` otherwise.
-Candidate validation and executor revalidation compare the current
-gitlink identity, so a reviewed B revision changed to C before exact staging is
-stale before any index mutation. For non-deleted mode `160000` paths,
-`gitlink_head` is also the exact index-content authority: the executor writes
-that OID through `git update-index --cacheinfo` rather than reading the mutable
-submodule worktree through `git add`, then verifies the staged mode/OID and the
-current worktree identity. Consequently a B-to-C change detected before
-publication cannot place C in the index or commit. A deliberate gitlink delete keeps the conditional deletion
-identity and ordinary literal delete behavior.
+Snapshot entries for non-deleted Gitlinks use `mode=160000`, `index_blob`
+as the reviewed parent stage-0 OID, and `worktree_sha256=null`. They contain no
+child HEAD, initialized or dirty fields. A parent-HEAD Gitlink with absent index
+entry records `mode=160000`, `index_blob=null`, `deleted=true` and no worktree
+hash, including when its child directory remains. A replacement with an ordinary
+parent entry follows ordinary worktree content rules. Current producers emit
+`copied_from` for copy destinations and null otherwise.
+
+Candidate and executor revalidation compare the parent index entry, never child
+state. Exact staging writes the captured mode/OID with update-index --cacheinfo;
+a staged Gitlink deletion removes the isolated index entry. Ordinary paths keep
+the original staging and hook transaction. The parent pointer changing after
+capture is stale; a child checkout changing alone is irrelevant.
+
+Old unexecuted delivery-2.0 private candidates require fresh prepare and have no
+new-execution fallback. If the original operation already produced a commit or
+result receipt, its original owner first verifies and recovers that same result;
+it must not prepare a duplicate commit. An unchanged result receipt retains its
+own existing version. Historical task candidate 5.0 is not current execution.
 
 For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, and `deleted`
 form the path's ordinary content authority. `renamed_from` and `copied_from`
@@ -1286,8 +1295,13 @@ contains exactly `path`, `mode`, and `oid`; Git object kind, `base_commit`,
 review range, stage-private fields, and any other metadata are not identity
 input. Entries are ordered by the raw bytes of `path.encode("utf-8")` before
 the payload is hashed. Paths must decode as strict UTF-8. Supported atomic Git
-entries retain the existing regular/executable blob, symlink, and gitlink
-semantics; ambiguous or unavailable entries fail closed.
+entries include regular/executable blobs, symlinks and atomic Gitlinks. For
+worktree capture, Gitlinks use parent index path/mode/OID or staged absence;
+child internal state is ignored, including uninitialized, dirty, different HEAD
+and unavailable objects. Explicit parent updates, deletion and type replacement
+remain content. Cached/committed differences preserve parent pointers while
+worktree state projection ignores child changes. Ambiguous parent entries fail
+closed. Committed-tree capture keeps its existing tree-only algorithm.
 
 The closed metadata exclusion set is:
 

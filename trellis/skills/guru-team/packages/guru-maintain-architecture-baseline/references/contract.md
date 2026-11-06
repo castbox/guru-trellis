@@ -56,8 +56,10 @@ shared definitions into project prose.
 Bootstrap identifies complete units and the real generic/project sources.
 Task impact reads their applicable bodies and necessary consumers before
 judging the candidate. Promotion integrates reviewed changes into complete
-current definitions and updates necessary relationships/navigation against
-expected-current. Repair handles missing sources, broken references,
+current definitions and updates affected unit relationships/navigation against
+expected-current. Use the shared contract's bounded responsibility-directory
+and stable-identity discovery. Ordinary independent subjects do not require
+root, system, ownership, ADR-index or other shared per-unit registration. Repair handles missing sources, broken references,
 conflicting definitions and incomplete migration through the original routes.
 Name the affected selections/conclusions and preserve uncertainty until the
 necessary source or review is available. Stage applicability and the
@@ -723,7 +725,8 @@ expected_current_identity and current_identity equal that before identity.
 Ordinary promotion can retain the same identity. It does not require a
 successor_baseline, a write to the root entry or a root-entry content token.
 Bootstrap alone retains its distinct-successor rule. Root navigation changes
-only when identity, status or necessary relationships actually change. Git
+only when its own identity, scope, status, location, discovery contract or
+necessary relationships actually change, under current-knowledge.md. Git
 commit plus locator identifies the exact applicable historical content.
 There is no committed_range: the commit and independent Review occur later.
 

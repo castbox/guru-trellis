@@ -20,7 +20,7 @@ owner. Do not wait for another agent, agent ID, subagent evidence, or a
 pre-existing owner result. Real missing authority or prerequisites still
 follow this Skill's declared routes; runtime cannot supply your judgment.
 
-Use this Skill after `guru-sync-base:synced`, or when a standalone caller asks
+Use this Skill after `guru-sync-base:baseline_ready` or `guru-sync-base:synced`, or when a standalone caller asks
 to discover change context from a fresh base with explicit issue, request,
 path, command, config, schema, or symbol clues.
 
@@ -47,7 +47,7 @@ that a mechanism, duplicate, or historical decision is absent.
 
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
-does not create a repository artifact. Pass the current Discovery `pre_task` 3.0 or `context_request` 1.0 input and
+does not create a repository artifact. Pass the current Discovery `pre_task` 4.0 or `context_request` 2.0 input and
 independent `base_current` transition to record, check, and invoke in one closed
 semantic-owner 1.0 envelope via `--invocation -`. Include `schema_version`,
 `public_input`, `transition`, `owner_context={}`, and `owner_result`; mode comes
@@ -88,3 +88,11 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 Use current pre_task or context_request input. The latter preserves the exact
 Clarify profile, target, continuation and its required caller identity; fresh
 context_ready returns there, never to a fixed initial profile.
+
+For a Git-object baseline, use `scripts/read-change-context-source.sh
+--source-transition <base_current JSON> --path <repo-relative file>` to read
+Docs, code, tests, and selected archive bodies. Run history preview with the
+same `--source-transition` so it reads the fixed archive tree. Working checkout
+HEAD and dirty bytes are separate from this authority. Supply `candidate_file`
+for a file-backed draft; its body remains a separate candidate through
+Clarify, Wording, and Readiness. Read the package contract for the exact fields.

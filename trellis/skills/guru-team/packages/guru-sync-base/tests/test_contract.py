@@ -78,7 +78,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],
-            ["synced", "skipped", "blocked"],
+            ["synced", "baseline_ready", "skipped", "blocked"],
         )
 
     def test_skill_and_contract_keep_deterministic_boundary(self) -> None:
@@ -108,7 +108,6 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             "git merge --ff-only",
             "decision checkout HEAD == local selected-base HEAD == remote-tracking HEAD",
             "scripts/invoke.sh --invocation -",
-            "--reviewed-base-provenance '<JSON>'",
             "missing_reviewed_base_provenance",
             "query-only",
             "no selected-base AI",
@@ -127,8 +126,6 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             item for item in self.interface["entry_preconditions"]
             if item["id"] == "selected_base_resolution"
         )
-        self.assertIn("prepare-task", selected["binding"])
-        self.assertIn("compatibility-only prepare-task", selected["binding"])
         self.assertIn("complete base_current provenance", selected["freshness"])
         for forbidden in ("--resolution-file", "--evidence-file", "--release-resolution-evidence", "quarantine"):
             self.assertNotIn(forbidden, skill + contract + json.dumps(self.interface))

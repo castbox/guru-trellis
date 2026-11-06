@@ -75,6 +75,18 @@ class MigrationContractTests(unittest.TestCase):
             (root / "business.txt").chmod(0o755)
             self.assertNotEqual(business_state(root, paths), before)
 
+    def test_business_state_preserves_staged_gitlink_delete_with_retained_child(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _, paths, _ = self.submodule_fixture(directory, "initialized")
+            before = business_state(root, paths)
+            subprocess.run(["git", "rm", "--cached", "compliance"], cwd=root,
+                           check=True, capture_output=True)
+            deleted = business_state(root, paths)
+            self.assertNotEqual(deleted, before)
+            (root / "compliance/policy.txt").write_text("child-only dirty content\n")
+            (root / "compliance/local.txt").write_text("child-only untracked content\n")
+            self.assertEqual(business_state(root, paths), deleted)
+
     def test_formal_bin_and_built_entry_use_same_original_preimage_collector(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -266,7 +278,7 @@ class MigrationContractTests(unittest.TestCase):
             self.assertEqual(before, path.read_bytes())
 
     def test_required_package_and_overlay_reconciliation_restores_customized_preimage(self):
-        for target in (".codex/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
+        for target in (".agents/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
             with self.subTest(target=target), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 recovery, checkpoint, paths = self.fixture(root)
@@ -295,7 +307,7 @@ class MigrationContractTests(unittest.TestCase):
                 self.assertEqual(path.stat().st_mode & 0o777, 0o640)
 
     def test_unresolved_package_and_overlay_new_work_blocks_rollback(self):
-        for target in (".codex/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
+        for target in (".agents/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
             with self.subTest(target=target), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 recovery, checkpoint, paths = self.fixture(root)

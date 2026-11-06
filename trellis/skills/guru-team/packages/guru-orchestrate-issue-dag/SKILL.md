@@ -29,8 +29,9 @@ historical personal copy. The target repository may be elsewhere and need not
 install these orchestration Skills.
 
 The shared method exclusively defines endpoint interpretation, current-dialogue
-authority, child operation, heartbeat, continuation, merge/completion proof and
-supported recovery. Apply it at startup, resume and child continuation alike.
+authority, overall completion responsibility, active unblocking, child operation,
+heartbeat, continuation, merge/completion proof and supported recovery. Apply
+it at startup, resume and child continuation alike.
 The local contract owns graph normalization, eligibility, slots, exclusion,
 failure propagation, stage settlement and this Skill's public I/O.
 
@@ -48,9 +49,11 @@ failure propagation, stage settlement and this Skill's public I/O.
    minutes. Recompute eligibility; reserve each slot before creating its child.
    Preserve pending bindings and immediately observe each newly formal child.
    Fill available slots without creating blocked descendants or duplicate owners.
-4. Observe every admitted unfinished node each cycle under the shared method.
-   Give each actionable idle node one current disposition. Keep sibling work
-   moving; one busy child, merge or repair cannot starve other observations.
+4. Apply the shared progress and active-unblocking method each cycle, following
+   owner actions to their actual results and rechecking real wait conditions.
+   Observe every admitted unfinished node; use the local failure policy for
+   affected nodes while keeping other permitted work moving. One busy child,
+   merge or repair cannot starve other observations.
 5. Verify full completion before releasing any dependency. A join waits for all
    predecessors. Refill a free slot immediately when an eligible node exists;
    do not impose a wave barrier. An earlier requested stage frees only the

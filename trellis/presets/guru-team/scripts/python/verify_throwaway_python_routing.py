@@ -9,6 +9,7 @@ import json
 import os
 import re
 import stat
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -39,37 +40,6 @@ def launch_path(path: str | Path) -> Path:
     return absolute.parent.resolve() / absolute.name
 
 
-def repository_state_root(repo: Path) -> Path:
-    local = repo / ".trellis/.runtime/guru-team/python"
-    if (local / "active.json").exists() or (local / "active.json").is_symlink():
-        return local
-    marker = repo / ".git"
-    if marker.is_dir():
-        return marker.resolve() / "guru-team/python"
-    if marker.is_file() and not marker.is_symlink():
-        text = marker.read_text(encoding="utf-8").strip()
-        if not text.startswith("gitdir: "):
-            raise RoutingError(f"invalid gitfile: {marker}")
-        git_dir = Path(text.removeprefix("gitdir: ").strip())
-        if not git_dir.is_absolute():
-            git_dir = repo / git_dir
-        git_dir = git_dir.resolve()
-        common_dir = git_dir
-        commondir = git_dir / "commondir"
-        if commondir.is_file() and not commondir.is_symlink():
-            common_value = commondir.read_text(encoding="utf-8").strip()
-            if common_value:
-                common_dir = Path(common_value)
-                if not common_dir.is_absolute():
-                    common_dir = git_dir / common_dir
-                common_dir = common_dir.resolve()
-        worktree_root = git_dir / "guru-team/python"
-        if (worktree_root / "active.json").is_file():
-            return worktree_root
-        return common_dir / "guru-team/python"
-    return repo / ".trellis/.runtime/guru-team/python"
-
-
 def runtime_checkpoint(
     repo: Path,
     runtime_assets: Path,
@@ -79,10 +49,16 @@ def runtime_checkpoint(
 ) -> dict[str, Any]:
     repo = repo.resolve()
     runtime_assets = runtime_assets.resolve()
-    pointer_path = repository_state_root(repo) / "active.json"
-    pointer = load_json(pointer_path)
-    runtime_id = pointer.get("runtime_id")
-    interpreter_text = pointer.get("interpreter")
+    # The environment owner resolves both current and one-time legacy state.
+    resolved = subprocess.run([sys.executable, "-S", str(runtime_assets / "bootstrap.py"),
+                               "--repo", str(repo), "--runtime-assets", str(runtime_assets),
+                               "--check", "--json"], text=True, capture_output=True, check=False)
+    if resolved.returncode != 0:
+        raise RoutingError(f"{label}: managed runtime check failed")
+    selected = json.loads(resolved.stdout)
+    pointer_path = repo / ".trellis/.runtime/guru-team/python/selection-v3.json"
+    runtime_id = selected.get("runtime_identity")
+    interpreter_text = selected.get("interpreter")
     if not isinstance(runtime_id, str) or not re.fullmatch(r"[0-9a-f]{24}", runtime_id):
         raise RoutingError(f"{label}: invalid active runtime id")
     if not isinstance(interpreter_text, str):

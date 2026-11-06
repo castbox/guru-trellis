@@ -5,6 +5,15 @@ description: Maintain and reconcile the repository 需求、设计、测试 SSOT
 
 # Guru Maintain Requirements Design Test SSOT
 
+## Common review sufficiency
+
+Before reviewing this owner's object, read `review-sufficiency.md` in full from
+the complete Guru provider that supplies this Skill. Its workflow-spec root is
+`trellis/presets/guru-team/spec/workflow` in source, or `.trellis/spec/workflow`
+after installation. Resolve target-project authority separately; the target
+need not install Trellis to receive review from another provider. Apply the
+common rules within this owner's original scope, order and stage conditions.
+
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
 in full and apply it within this entry's existing scope. Until that read succeeds,
 use only short progress messages or concrete missing-dependency diagnostics.
@@ -36,7 +45,9 @@ replace either default without changing this package contract.
 
 Before executing any profile, read
 [references/current-knowledge.md](references/current-knowledge.md) in full.
-It owns complete-unit reading, revision, promotion and migration behavior.
+It owns complete-unit reading, stable directory/identity discovery, isolated
+navigation, revision, promotion and migration behavior. Ordinary independent
+units do not register in root/current README or another shared index.
 Use applicable complete bodies and necessary relationships; navigation and
 historical contributions do not replace a migrated current definition.
 

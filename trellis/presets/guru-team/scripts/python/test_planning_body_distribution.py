@@ -39,13 +39,18 @@ class PlanningBodyDistributionTest(unittest.TestCase):
             example = source / "examples/planning-body" / kind
             self.assertTrue(example.is_dir(), f"missing process example: {example}")
             assets.extend(path for path in example.rglob("*") if path.is_file())
+        clarify = self.fixture.guru_root / "trellis/skills/guru-team/packages/guru-clarify-requirements"
+        decision_assets = [clarify / name for name in (
+            "SKILL.md", "references/contract.md", "examples/decision-exploration.md",
+        )]
 
         user_file = repo / "docs/local-project-notes.md"
         user_file.parent.mkdir(parents=True, exist_ok=True)
         user_bytes = b"# Local project notes\r\nPreserve the project-owned file.\r\n"
         user_file.write_bytes(user_bytes)
         installed = self.fixture.install(set(PLATFORM_FLAGS))
-        self.assertEqual(installed["skill_installed_validation"]["returncode"], 0)
+        self.assertEqual(installed["skill_installed_validation"]["returncode"], 0,
+                         installed["skill_installed_validation"])
         roots = [
             self.fixture.install_dst / "skills/packages" / package,
             *(repo / root / package for root in selected_skill_roots(PLATFORM_FLAGS)),
@@ -59,10 +64,20 @@ class PlanningBodyDistributionTest(unittest.TestCase):
                 for root in roots:
                     with self.subTest(projection=root, asset=relative):
                         self.assertEqual((root / relative).read_bytes(), expected)
+            for asset in decision_assets:
+                relative = asset.relative_to(clarify)
+                destinations = [
+                    self.fixture.install_dst / "skills/packages/guru-clarify-requirements",
+                    *(repo / root / "guru-clarify-requirements" for root in selected_skill_roots(PLATFORM_FLAGS)),
+                ]
+                for destination in destinations:
+                    with self.subTest(projection=destination, asset=relative):
+                        self.assertEqual((destination / relative).read_bytes(), asset.read_bytes())
 
         assert_readable_assets()
         repeated = self.fixture.install(set(PLATFORM_FLAGS))
-        self.assertEqual(repeated["skill_installed_validation"]["returncode"], 0)
+        self.assertEqual(repeated["skill_installed_validation"]["returncode"], 0,
+                         repeated["skill_installed_validation"])
         assert_readable_assets()
         self.assertEqual(user_file.read_bytes(), user_bytes)
         self.assertEqual(

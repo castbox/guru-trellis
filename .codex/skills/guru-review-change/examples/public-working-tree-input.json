@@ -1,9 +1,0 @@
-{
-  "profile": "working_tree",
-  "mode": "standalone",
-  "repository": ".",
-  "paths": [
-    "src",
-    "docs"
-  ]
-}

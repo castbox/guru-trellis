@@ -1,5 +1,0 @@
-{
-  "exit_id": "blocked",
-  "reason_code": "maintenance_prerequisite_missing",
-  "remediation": "Load a complete matching maintenance source."
-}

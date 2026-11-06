@@ -1413,11 +1413,11 @@
         },
         "schema_id": {
           "type": "string",
-          "pattern": "^guru-stage0-transition-[a-z]+-current-[12]\\.0$"
+          "pattern": "^guru-stage0-transition-[a-z]+-current-[123]\\.0$"
         },
         "path": {
           "type": "string",
-          "pattern": "^consumers/workflow/stage0/transitions/[a-z]+-current\\.schema\\.json$"
+          "pattern": "^consumers/workflow/stage0/transitions/[a-z]+-current(-[23]\\.0)?\\.schema\\.json$"
         },
         "producer_profiles": {
           "type": "array",

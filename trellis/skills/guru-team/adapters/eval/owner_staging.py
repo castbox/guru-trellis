@@ -20,6 +20,7 @@ from adapters.eval.eval_constants import (
 from adapters.eval.eval_support import (
     package_tree_sha256,
     qualification_runtime_environment,
+    runtime_residue,
     stage_qualification_public_authoring_fixture,
 )
 
@@ -125,10 +126,13 @@ def stage_owner_execution(
             raise ValueError("qualification installed package does not match the evaluated contract")
         runtime_root = fixture / ".trellis/.runtime"
         if runtime_root.exists():
-            residue = [path for path in runtime_root.rglob("*") if path.is_file()]
+            from runtime.bootstrap import active_pointer_path
+            environment_selection = active_pointer_path(fixture)
+            residue = runtime_residue(fixture)
             if residue:
                 raise ValueError("qualification fixture contains unexpected runtime residue")
-            shutil.rmtree(runtime_root)
+            if not environment_selection.is_file():
+                shutil.rmtree(runtime_root)
         normalize_qualification_owner_extension(fixture)
         stage_qualification_public_authoring_fixture(fixture)
         run_git(fixture, "add", ".")
@@ -329,7 +333,7 @@ def stage_owner_execution(
                 guide.write_text("# Guide\n\nUser-owned overlapping edit.\n", encoding="utf-8")
             owner = build_task_free_change_owner(public_payload, recipe)
         elif skill_id == "guru-clarify-requirements":
-            owner = build_clarity_owner(runtime, package, recipe)
+            owner = build_clarity_owner(runtime, package, recipe, public_payload)
         elif skill_id == "guru-discover-change-context":
             owner = build_context_owner(runtime, fixture, package, recipe)
         elif skill_id == "guru-review-contract-wording":

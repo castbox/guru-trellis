@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "全部实质输出的完整写作规范"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "原安装、受管来源与冲突次序"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "受管路径和上游资产边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共投影 allowlist 与专属包适用性"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "旧路径退出、直接演进和3000行边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证、测试价值和原生证据分层"}
+{"file": ".trellis/tasks/archive/2026-11/11-03-724-codex-shared-skills/deliveries/a831ddba-681c-480a-9eb9-1e350f48a43d/prd.md", "reason": "本 D1 场景与完整验收"}
+{"file": ".trellis/tasks/archive/2026-11/11-03-724-codex-shared-skills/deliveries/a831ddba-681c-480a-9eb9-1e350f48a43d/design.md", "reason": "已审核候选基础上的实际迁移方案"}
+{"file": ".trellis/tasks/archive/2026-11/11-03-724-codex-shared-skills/deliveries/a831ddba-681c-480a-9eb9-1e350f48a43d/implement.md", "reason": "唯一 Delivery Policy 和 Docs Plan"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实际共享正文合同，供implement/check理解完整规划责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求模板完整条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计模板完整条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批Policy、Docs Plan与验证责任"}

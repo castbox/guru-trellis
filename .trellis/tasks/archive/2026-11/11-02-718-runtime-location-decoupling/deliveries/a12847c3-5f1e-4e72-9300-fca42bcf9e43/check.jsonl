@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "审核本次正文和说明；不以机械句长代判断"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按test价值和声明层验证全部A1—A8；不扩Release矩阵"}
+{"file": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "完整当前单元与candidate-only到final integration的原owner顺序"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "按原正文合同检查需求到实现验证的语义承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "实际规划模板：核对当前需求、方案和验证责任，不把标题当充分性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "实际规划模板：核对当前需求、方案和验证责任，不把标题当充分性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实际规划模板：核对当前需求、方案和验证责任，不把标题当充分性"}

@@ -236,7 +236,7 @@ independent review before shared baseline promotion.
                extra: list[str] | None = None, script: str = "invoke.sh",
                environment: dict | None = None) -> dict:
         package = (PACKAGES / skill_id if skill_id == "guru-upgrade-installation"
-                   else self.root / ".codex/skills" / skill_id)
+                   else self.root / ".agents/skills" / skill_id)
         arguments = ["bash", str(package / "scripts" / script), "--root", str(self.root), "--input", "-"]
         if owner is not None:
             arguments.extend(["--owner-result", json.dumps(owner)])
@@ -432,7 +432,7 @@ independent review before shared baseline promotion.
         }
         relative = ".trellis/.runtime/guru-team/fixture/planning-author.json"
         write_json(self.root / relative, author)
-        package = self.root / ".codex/skills/guru-approve-task-plan"
+        package = self.root / ".agents/skills/guru-approve-task-plan"
         runtime_package = self.root / ".trellis/guru-team/skills/packages/guru-approve-task-plan"
         common = ["--root", str(self.root), "--task", self.task_ref, "--json"]
         recorded = run(self.root, ["bash", str(runtime_package / "scripts/record-planning-approval.sh"),
@@ -498,7 +498,7 @@ independent review before shared baseline promotion.
         self.assertEqual(output["exit_id"], "pass", output)
 
     def invoke_envelope(self, skill_id: str, envelope: dict) -> dict:
-        wrapper = self.root / ".codex/skills" / skill_id / "scripts/invoke.sh"
+        wrapper = self.root / ".agents/skills" / skill_id / "scripts/invoke.sh"
         process = run(self.root, ["bash", str(wrapper), "--invocation", "-"], payload=envelope)
         self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
         return json.loads(process.stdout)

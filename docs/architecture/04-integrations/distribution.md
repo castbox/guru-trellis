@@ -5,7 +5,7 @@
 - `ARCH-INT-003`：Git/GitHub 是 base、Issue、PR、merge、release live facts provider；Task archive 仅保留 closeout history，不替代 live provider。
 - `ARCH-INT-004`：RDT 只消费 Architecture public locator/version/status；Bootstrap 只消费两个 child owner 的 minimal schema-validated result。
 - `ARCH-INT-005`：`get_context.py` 从 `.trellis/spec/**/index.md` 提供 Agent 读取入口，但 projection 不复制 authority 正文。
-- `ARCH-INT-006`：每个 declared platform cell 同时安装 shared `.agents` public projection 与唯一 selected platform projection；package-private validator scripts 不分发到平台 roots。
+- `ARCH-INT-006`：公共 Skill 按 exact target platform selection 安装到 shared `.agents/skills` 及所选平台的 current root；Codex current root 同为 `.agents/skills`，去重后只有一份公共投影。Codex 专属包和 `agents/openai.yaml` 仅在选择包含 `codex` 时进入共享根，保留原平台适用性与原生能力前置；私有 runtime、validator 和 tests 不进入发现根。旧 `.codex/skills/guru-*` 只由原维护/受管来源 owner 迁移识别；目标完整无冲突后才退出未修改旧文件，用户修改/未知内容保留并沿原冲突重试。完整采用决策见 [ADR-CODEX-SHARED-SKILLS](../adr/codex-shared-skills.md)。
 - `ARCH-INT-007`：项目 Architecture check 通过 current descriptor/result identity、applicability、rule/decision/GAP refs、before/after、evidence/unavailable reason 与 freshness 接入 semantic owner；公共 runtime 只校验一一绑定和 route consistency，不执行或解释项目语义。
 - `ARCH-INT-008`：installed manifest 的 immutable `repo/ref/commit` 只定位 extension source；canonical
   apply 以 `--repo target_reviewed_checkout` 写 target，postimage 分别验证 target lineage 与 extension

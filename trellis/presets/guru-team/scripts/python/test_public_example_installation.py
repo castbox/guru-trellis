@@ -39,7 +39,7 @@ class PublicExampleInstallationTests(unittest.TestCase):
                 self.assert_validation_passed(installed)
                 package = Path("guru-select-workflow-mode")
                 canonical = self.fixture.guru_root / "trellis/skills/guru-team/packages" / package
-                for skill_root in (".agents/skills", ".codex/skills"):
+                for skill_root in installer_tests.preset.selected_skill_roots({"codex"}):
                     projection = self.fixture.repo / skill_root / package
                     for name in ("public-input.json", "workflow-mode-selection.json", "public-invocation-error.json"):
                         relative = Path("examples") / name
@@ -57,6 +57,7 @@ class PublicExampleInstallationTests(unittest.TestCase):
                     read_issue = subprocess.run(["cat", str(issue_example)], cwd=self.fixture.repo, text=True, capture_output=True)
                     self.assertEqual(read_issue.returncode, 0, read_issue.stderr)
                     self.assertEqual(json.loads(read_issue.stdout)["creation"]["source_profile"], "existing_issue")
+                self.assertEqual(list((self.fixture.repo / ".codex/skills").glob("guru-*")), [])
                 shared_check_schema = Path(".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json")
                 read_check_schema = subprocess.run(["cat", str(shared_check_schema)], cwd=self.fixture.repo, text=True, capture_output=True)
                 self.assertEqual(read_check_schema.returncode, 0, read_check_schema.stderr)

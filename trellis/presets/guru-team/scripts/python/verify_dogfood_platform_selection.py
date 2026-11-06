@@ -70,6 +70,8 @@ def verify(repo: Path) -> dict[str, object]:
             f"dogfood selection must be {list(DOGFOOD_PLATFORM_FLAGS)}, got {list(selected)}"
         )
 
+    if any((repo / ".codex/skills").glob("guru-*")):
+        raise DogfoodDriftError("retired Codex Guru Skill projection remains in .codex/skills")
     checked_roots: list[str] = []
     selected_roots = {Path(".agents/skills")}
     for flag in selected:

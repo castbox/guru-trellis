@@ -102,7 +102,12 @@ exists. A newly initialized repository without a first commit is supported:
 review its actual staged, unstaged and untracked content, with the snapshot
 preserving the true absence of commit anchors. Do not create a commit or invent
 an OID to make review possible. Staged and unstaged versions can differ;
-inspect both when they affect the requested review. A committed range requires
+inspect both when they affect the requested review. Gitlinks are parent
+path/mode/OID content: cached and committed snapshots retain their pointer
+changes, while unstaged snapshots ignore child initialization, HEAD and internal
+changes. A staged parent deletion remains a deletion when its child checkout
+directory remains present. The snapshot never reads child files or objects.
+A committed range requires
 the selected commits and reviews the direct `base` to `head` tree difference,
 without selecting a merge base automatically. If the user intends a merge-base
 branch comparison,
@@ -189,13 +194,10 @@ execute, does not finish, or lacks the necessary independence, report the
 actual limitation and return `blocked` with any supported partial observations.
 Do not silently downgrade to one Agent or claim complete coverage.
 
-Later candidates retain eligible reviewers and verifiable coverage under the
-original sources' continuation and engineering-fact applicability rules.
-Changed Architecture facts return to the eligible Architecture carrier for the
-corresponding assessment; missing or unbounded coverage needs the original
-complete assessment. A different worker, stage or HEAD alone does not require
-repeating unchanged assessment or validate an old pass. Necessary current
-conclusions from all perspectives still require actual coverage.
+For later candidates, apply the complete provider's Review Sufficiency and
+engineering-fact applicability rules. Changed Architecture facts return to an
+eligible Architecture carrier under its original continuation contract. Necessary
+current conclusions from all three perspectives still require actual coverage.
 
 This multiple-subagent requirement belongs only to `guru-review-change`.
 Formal Check and Branch Review consume the shared semantic method under their

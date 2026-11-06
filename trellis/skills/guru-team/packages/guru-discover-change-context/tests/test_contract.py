@@ -55,6 +55,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             {item["id"]: item["runtime_command"] for item in self.interface["validators"]},
             {
                 "history_previewer": "preview-change-context-history",
+                "source_reader": "read-change-context-source",
                 "owner_result_recorder": "record-context-discovery",
                 "owner_result_validator": "check-context-discovery",
                 "public_invocation": "invoke-guru-discover-change-context",
@@ -72,7 +73,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
     def test_invocation_commands_share_declared_envelope_and_migration(self) -> None:
         commands = json.loads((self.package / "commands.json").read_text())["commands"]
         for command in commands:
-            if command["runtime_role"] == "preview":
+            if command["runtime_role"] == "preview" or command["id"] == "read-change-context-source":
                 continue
             flags = {item["flag"]: item for item in command["arguments"]}
             self.assertTrue(flags["--invocation"]["required"])
@@ -119,7 +120,6 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "including the creation-attempt marker",
             "original draft is not carried across Sync as source authority",
             "source issue may be live `open` or `closed`",
-            "resolves from `HEAD:<path>` to exactly a `blob`",
             "source-specific portable locator",
             "return the caller-authored `refresh_base` exit for complete re-entry from live authority",
             "at least one array must be non-empty",
