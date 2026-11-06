@@ -1,0 +1,7 @@
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "R8声明入口投影原实现及existing消费者"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py", "reason": "AC6长期回归与现有stream检查"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Interface1.9 instruction-only入口与runtime原合同"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "当前Delivery正文与范围完整性"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批PRD结构与场景验收"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "本批机制与验证设计"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批Policy及Docs计划"}

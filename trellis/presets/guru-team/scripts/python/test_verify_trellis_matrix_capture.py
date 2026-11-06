@@ -82,5 +82,88 @@ class MatrixCaptureTests(unittest.TestCase):
         self.assertIn(self.log.read_text(encoding="utf-8"), error.error_tail)
 
 
+class PlatformProjectionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.target = Path(self.temporary.name)
+
+    def install_skill(self, *, agent: bool) -> tuple[Path, Path]:
+        skill_id = "guru-agent" if agent else "guru-runtime"
+        package = self.target / ".trellis/guru-team/skills/packages" / skill_id
+        projection = self.target / ".agents/skills" / skill_id
+        package.mkdir(parents=True)
+        projection.mkdir(parents=True)
+        # Runtime Interfaces retain their original wrapper contract without kind.
+        invocation = (
+            {"kind": "agent", "entrypoint": "SKILL.md"}
+            if agent else {"wrapper": "scripts/invoke.sh"}
+        )
+        (package / "interface.json").write_text(json.dumps({
+            "public_contracts": {"invocation": invocation},
+        }))
+        relative = invocation["entrypoint" if agent else "wrapper"]
+        content = "# Agent entry\n" if agent else "#!/bin/sh\nexit 0\n"
+        paths = (package / relative, projection / relative)
+        for path in paths:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content)
+            path.chmod(0o644 if agent else 0o755)
+        return paths
+
+    def test_mixed_agent_and_runtime_entries_pass(self) -> None:
+        self.install_skill(agent=True)
+        self.install_skill(agent=False)
+        matrix._assert_platform_projection(self.target, "codex")
+
+    def test_missing_declared_entry_fails_for_both_types(self) -> None:
+        for agent in (True, False):
+            with self.subTest(agent=agent):
+                package, public = self.install_skill(agent=agent)
+                public.unlink()
+                with self.assertRaisesRegex(matrix.MatrixError, "no .*declared"):
+                    matrix._assert_platform_projection(self.target, "codex")
+                # Keep the other iteration's installed package valid.
+                public.write_bytes(package.read_bytes())
+                public.chmod(0o644 if agent else 0o755)
+
+    def test_declared_entry_byte_drift_fails_for_both_types(self) -> None:
+        for agent in (True, False):
+            with self.subTest(agent=agent):
+                package, public = self.install_skill(agent=agent)
+                public.write_text("ordinary local edit\n")
+                with self.assertRaisesRegex(matrix.MatrixError, "drift"):
+                    matrix._assert_platform_projection(self.target, "codex")
+                public.write_bytes(package.read_bytes())
+
+    def test_declared_entry_mode_drift_fails_for_both_types(self) -> None:
+        for agent in (True, False):
+            with self.subTest(agent=agent):
+                _, public = self.install_skill(agent=agent)
+                public.chmod(0o600 if agent else 0o700)
+                with self.assertRaisesRegex(matrix.MatrixError, "drift"):
+                    matrix._assert_platform_projection(self.target, "codex")
+                public.chmod(0o644 if agent else 0o755)
+
+    def test_runtime_wrapper_must_be_executable_even_when_modes_match(self) -> None:
+        package, public = self.install_skill(agent=False)
+        package.chmod(0o644)
+        public.chmod(0o644)
+        with self.assertRaisesRegex(matrix.MatrixError, "executable declared wrapper"):
+            matrix._assert_platform_projection(self.target, "codex")
+
+    def test_private_scripts_fail_for_both_types(self) -> None:
+        for agent in (True, False):
+            with self.subTest(agent=agent):
+                _, public = self.install_skill(agent=agent)
+                scripts = public.parent / "scripts" if agent else public.parent
+                scripts.mkdir(exist_ok=True)
+                private = scripts / "private.py"
+                private.write_text("# private implementation\n")
+                with self.assertRaisesRegex(matrix.MatrixError, "leaked private wrappers"):
+                    matrix._assert_platform_projection(self.target, "codex")
+                private.unlink()
+
+
 if __name__ == "__main__":
     unittest.main()
