@@ -1,0 +1,649 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-08-752-current-task-worktree-copies",
+  "id": "ce0248be-6b58-4239-8c1f-7444625adf73",
+  "name": "752-current-task-worktree-copies",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 752,
+    "disposition": "exact_source"
+  },
+  "title": "#752 支持 Plan2 保留 current-schema Task worktree 副本",
+  "description": "使用匹配 Fork CLI/Core successor 和 Guru projection 完成 current-schema 多 worktree 副本迁移保留。",
+  "dev_type": null,
+  "scope": "承接 #752 全部五项验收：按原 branch binding 与 live checkout 唯一 authority、合法非 authority 副本及业务元数据原样保留、内容/generation/source/binding/checkout 不一致阻塞、Plan2 dry-run/migrate/resume/rollback 和完整匹配 source pair 的 representative installed 验证。不得改写、删除或重建用户 Task/session/Delivery/archive，不 patch installed CLI/node_modules 或 release tag。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-08",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+    "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+  },
+  "deliveries": [
+    {
+      "id": "cffee5bc-4a87-465e-b056-534b530951d5",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+          "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/cffee5bc-4a87-465e-b056-534b530951d5",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+        "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+      },
+      "candidate": {
+        "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+        "content_ref": "sha256:7198b58b36842faef67863db2f11cb80c6ed10754cbbe371d777463520ad26a9",
+        "head_ref": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+          ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+          ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+          ".trellis/guru-team/trellis-source.json",
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/workflow/issue-orchestration.md",
+          "README.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "docs/architecture/contributions/752-current-task-worktree-copies.md",
+          "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+          "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+          "docs/design/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+          "docs/requirements/current/native-compatibility.md",
+          "docs/test/current/native-compatibility.md",
+          "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/source/trellis-source.json",
+          "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+          "trellis/workflows/guru-team/README.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:0d913a94-4b4e-4bdc-9884-c8accea559f2",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+              "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+            "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/prd.md",
+              "revision": "sha256:f6fab4f303d954b96cd41af7d8dd34513d27b44bce719119ffc4779524dc2147"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+              "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/implement.md",
+              "revision": "sha256:8ff63926da734a4ba9d303575b6b4fa4f3f6badf86db69b988ac77398011091f"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:68536e399930e4fd081d5288ae0c247d40f5d191ec3be87c159abf6603e6ac1e",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+              "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+            "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+          },
+          "candidate": {
+            "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+            "content_ref": "sha256:7198b58b36842faef67863db2f11cb80c6ed10754cbbe371d777463520ad26a9",
+            "head_ref": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/spec/docs/public-docs.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "README.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+              "docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+              "docs/requirements/current/native-compatibility.md",
+              "docs/test/current/native-compatibility.md",
+              "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/source/trellis-source.json",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:0d913a94-4b4e-4bdc-9884-c8accea559f2",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/prd.md",
+              "revision": "sha256:f6fab4f303d954b96cd41af7d8dd34513d27b44bce719119ffc4779524dc2147"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+              "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/implement.md",
+              "revision": "sha256:8ff63926da734a4ba9d303575b6b4fa4f3f6badf86db69b988ac77398011091f"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:97d059d436d231caccc8be583b06c0d6457397a973751c743ea7505332d4b9fd",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+              "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+            "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+          },
+          "candidate": {
+            "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+            "content_ref": "sha256:7198b58b36842faef67863db2f11cb80c6ed10754cbbe371d777463520ad26a9",
+            "head_ref": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/spec/docs/public-docs.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "README.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+              "docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+              "docs/requirements/current/native-compatibility.md",
+              "docs/test/current/native-compatibility.md",
+              "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/source/trellis-source.json",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "check:68536e399930e4fd081d5288ae0c247d40f5d191ec3be87c159abf6603e6ac1e",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/implement.md",
+              "revision": "sha256:8ff63926da734a4ba9d303575b6b4fa4f3f6badf86db69b988ac77398011091f"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:8992a699a8e795bd42fcc2378af23acc3f1773b6b8c6ab9e9eaeb0109202b389",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+              "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
+            "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
+          },
+          "candidate": {
+            "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+            "content_ref": "sha256:7198b58b36842faef67863db2f11cb80c6ed10754cbbe371d777463520ad26a9",
+            "head_ref": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/spec/docs/public-docs.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "README.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+              "docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+              "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+              "docs/requirements/current/native-compatibility.md",
+              "docs/test/current/native-compatibility.md",
+              "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/source/trellis-source.json",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:97d059d436d231caccc8be583b06c0d6457397a973751c743ea7505332d4b9fd",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/implement.md",
+              "revision": "sha256:8ff63926da734a4ba9d303575b6b4fa4f3f6badf86db69b988ac77398011091f"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:a956c329378cec81933fa7f7a84329c2714b96a49031f93a982f96035c9264fd",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/753",
+            "revision": "sha256:371d9b50c662cab1b6a1b7d675e853394688e5bda1ee2fd18f0e9d7e734e15e5"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+          "content_ref": "sha256:7198b58b36842faef67863db2f11cb80c6ed10754cbbe371d777463520ad26a9",
+          "head_ref": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+            ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+            ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/spec/docs/public-docs.md",
+            ".trellis/spec/workflow/issue-orchestration.md",
+            "README.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/04-integrations/distribution.md",
+            "docs/architecture/contributions/752-current-task-worktree-copies.md",
+            "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+            "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+            "docs/design/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+            "docs/requirements/current/native-compatibility.md",
+            "docs/test/current/native-compatibility.md",
+            "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/source/trellis-source.json",
+            "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 753,
+        "reviewed_head": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/753",
+          "revision": "sha256:371d9b50c662cab1b6a1b7d675e853394688e5bda1ee2fd18f0e9d7e734e15e5"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:3247bede1cb51eaf7084022e1bf29a3fcc6b48b7",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/753",
+            "revision": "3247bede1cb51eaf7084022e1bf29a3fcc6b48b7"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+          "content_ref": "sha256:7198b58b36842faef67863db2f11cb80c6ed10754cbbe371d777463520ad26a9",
+          "head_ref": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+            ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+            ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/spec/docs/public-docs.md",
+            ".trellis/spec/workflow/issue-orchestration.md",
+            "README.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/04-integrations/distribution.md",
+            "docs/architecture/contributions/752-current-task-worktree-copies.md",
+            "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+            "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+            "docs/design/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+            "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+            "docs/requirements/current/native-compatibility.md",
+            "docs/test/current/native-compatibility.md",
+            "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/source/trellis-source.json",
+            "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 753,
+        "reviewed_head": "732784d5a8e7ef1d822206119f236b33eaa46d80",
+        "merge_commit": "3247bede1cb51eaf7084022e1bf29a3fcc6b48b7",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:752-current-copies-generation0",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/753",
+          "revision": "3247bede1cb51eaf7084022e1bf29a3fcc6b48b7"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+          "revision": "sha256:19af12b4d39c80a8f93d0a7827b579bd44999fd338d60987478bfc555b1a0bf6"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/42448347557",
+          "revision": "732784d5a8e7ef1d822206119f236b33eaa46d80"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/prd.md",
+        "revision": "sha256:3c1042cdabe62cb5ca9f398c2e4ac40eac80364ce0afb9f9fc689e66860d4e98"
+      },
+      "delivery_result_ids": [
+        "delivery:3247bede1cb51eaf7084022e1bf29a3fcc6b48b7"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:f82bf57ee99941522e16b2b2",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/752",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/closeout/closure/Y2xvc3VyZTpmODJiZjU3ZWU5OTk0MTUyMmUxNmIyYjI.json",
+          "revision": "sha256:398e097f97280dcc4d16ad4c551019a265493ee8a5f8bdbf6f2811613525bb04"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:752-current-copies-generation0",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/752",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
