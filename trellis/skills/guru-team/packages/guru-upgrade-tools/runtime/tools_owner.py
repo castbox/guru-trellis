@@ -96,7 +96,18 @@ def upstream_source(public, descriptor):
 
 def peers(root, old):
     raw = old.git(root, 'worktree', 'list', '--porcelain')
-    return [Path(line[9:]).resolve() for line in raw.splitlines() if line.startswith('worktree ')]
+    result = []
+    for record in raw.split('\n\n'):
+        lines = record.splitlines()
+        worktree = next((line[9:] for line in lines if line.startswith('worktree ')), None)
+        if worktree is None:
+            continue
+        path = Path(worktree)
+        prunable = any(line == 'prunable' or line.startswith(('prunable ', 'prunable:')) for line in lines)
+        if prunable and not os.path.lexists(path / '.git'):
+            continue
+        result.append(path.resolve())
+    return result
 
 
 def isolated_layout(root, old):
