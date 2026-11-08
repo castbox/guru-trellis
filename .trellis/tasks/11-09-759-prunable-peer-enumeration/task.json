@@ -1,0 +1,188 @@
+{
+  "schema_version": "2.0",
+  "id": "TASK-759-PRUNABLE-PEER",
+  "name": "759-prunable-peer-enumeration",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 759,
+    "disposition": "exact_source"
+  },
+  "title": "修复 tools-only 对失效 prunable peer 注册的处理",
+  "description": "仅跳过 Git 标记 prunable 且 checkout 的 .git 不存在的 peer 注册。保留有效 peer 检查。",
+  "dev_type": null,
+  "scope": "修改 guru-upgrade-tools 的 peer 枚举逻辑并增加回归覆盖：失效 prunable 注册跳过其 rev-parse；正常 peer 仍检查；未标 prunable 但 .git 缺失时 fail closed；prunable 标记但 .git 存在时仍检查。不得 prune 注册、删除或改写残留目录、修改旧 checkpoint，或引入 Task/session 迁移与批量 binding。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-09",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/prd.md",
+    "revision": "sha256:347c739bb503fde0a507df0964666fc077155b19cdbd2e34ab52e696777441fd"
+  },
+  "deliveries": [
+    {
+      "id": "a8194db3-09fc-41d5-b3bf-927939a3887e",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/prd.md",
+          "revision": "sha256:347c739bb503fde0a507df0964666fc077155b19cdbd2e34ab52e696777441fd"
+        },
+        "anchors": [
+          "REQ-01",
+          "REQ-02",
+          "REQ-03",
+          "REQ-04",
+          "AC-01",
+          "AC-02",
+          "AC-03",
+          "AC-04",
+          "AC-05"
+        ]
+      },
+      "planning_root": "deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+        "revision": "sha256:4a0718bfe160bdb47fa692e88fc4b56ad7749d4e232d468a14bce2f42e71d21c"
+      },
+      "candidate": {
+        "base_ref": "8c158381b5bdb61fd961cbb89e23c2d1f659c9aa",
+        "content_ref": "sha256:b4ff055e8136ef4ddb598cf19af09b37668327a19f61c567d64077f7765ac0ce",
+        "head_ref": "216e0ca0d8f8b95e4978648cc6dde2dda6195687",
+        "kind": "git",
+        "paths": [
+          ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/check.jsonl",
+          ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+          ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/implement.jsonl",
+          ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/implement.md",
+          ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/prd.md",
+          ".trellis/tasks/11-09-759-prunable-peer-enumeration/prd.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+          "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_contract.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:f92973d5-0fc3-4226-9680-c5a55d4f3a50",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/prd.md",
+              "revision": "sha256:347c739bb503fde0a507df0964666fc077155b19cdbd2e34ab52e696777441fd"
+            },
+            "anchors": [
+              "REQ-01",
+              "REQ-02",
+              "REQ-03",
+              "REQ-04",
+              "AC-01",
+              "AC-02",
+              "AC-03",
+              "AC-04",
+              "AC-05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+            "revision": "sha256:4a0718bfe160bdb47fa692e88fc4b56ad7749d4e232d468a14bce2f42e71d21c"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/prd.md",
+              "revision": "sha256:46b08f44109de864992d336297e73acabf62daa529529858b8edb50c39849e5b"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+              "revision": "sha256:4a0718bfe160bdb47fa692e88fc4b56ad7749d4e232d468a14bce2f42e71d21c"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/implement.md",
+              "revision": "sha256:a2390b5154242fe4e16043122e2457d464aeaeae3bb42461e5c56a292f49704c"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:f5738aeddc75b9310d6f578206da5ec31abe2e6cf50f50e4ad9ee621749b281d",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/prd.md",
+              "revision": "sha256:347c739bb503fde0a507df0964666fc077155b19cdbd2e34ab52e696777441fd"
+            },
+            "anchors": [
+              "REQ-01",
+              "REQ-02",
+              "REQ-03",
+              "REQ-04",
+              "AC-01",
+              "AC-02",
+              "AC-03",
+              "AC-04",
+              "AC-05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+            "revision": "sha256:4a0718bfe160bdb47fa692e88fc4b56ad7749d4e232d468a14bce2f42e71d21c"
+          },
+          "candidate": {
+            "base_ref": "8c158381b5bdb61fd961cbb89e23c2d1f659c9aa",
+            "content_ref": "sha256:b4ff055e8136ef4ddb598cf19af09b37668327a19f61c567d64077f7765ac0ce",
+            "head_ref": "216e0ca0d8f8b95e4978648cc6dde2dda6195687",
+            "kind": "git",
+            "paths": [
+              ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/check.jsonl",
+              ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+              ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/implement.jsonl",
+              ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/implement.md",
+              ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/prd.md",
+              ".trellis/tasks/11-09-759-prunable-peer-enumeration/prd.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_contract.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:f92973d5-0fc3-4226-9680-c5a55d4f3a50",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/prd.md",
+              "revision": "sha256:46b08f44109de864992d336297e73acabf62daa529529858b8edb50c39849e5b"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/design.md",
+              "revision": "sha256:4a0718bfe160bdb47fa692e88fc4b56ad7749d4e232d468a14bce2f42e71d21c"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-759-prunable-peer-enumeration/deliveries/a8194db3-09fc-41d5-b3bf-927939a3887e/implement.md",
+              "revision": "sha256:a2390b5154242fe4e16043122e2457d464aeaeae3bb42461e5c56a292f49704c"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
