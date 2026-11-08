@@ -1,585 +1,165 @@
 # Guru Trellis
 
-Codex 的 Guru Skill 公共投影统一到 `.agents/skills/`，包括目标选择包含 `codex` 时的专属编排包和元数据。已有安装沿原维护 owner 迁移，在目标完整后退出未修改的旧受管副本；两端用户修改保留，冲突未解决时不报告成功。采用范围、恢复和验证边界见 [MIGRATION-724](trellis/presets/guru-team/MIGRATION-724.md)。
+Guru Trellis 为业务研发仓库提供 Guru Team 的 AI 协作流程。它在 Trellis 框架上补充
+需求澄清、规划、实现检查、独立审核和交付收口，让 Codex、Claude Code、Cursor 等
+工具使用同一套团队约定。业务仓库保留自己的需求、设计和工程规范。
 
-[三系统定向 CI：运行、对照与诊断](docs/ci/README.md)
+流程由 Markdown workflow 和 Skills 定义，AI 负责判断，脚本执行和校验确定性事实。
+用户在真实选择、范围变化或外部副作用前参与确认。
 
-“审核 / 审查 / 评审 / 复审 / review”先识别对象和目的。代码、修改、分支/PR、
-测试覆盖及需求实现情况的审核，再区分独立只读审核与
-正式阶段结果。独立审核由 [guru-review-change](trellis/skills/guru-team/packages/guru-review-change/SKILL.md)
-承接，无论有无 Task/Delivery，都保留指定范围，不推进生命周期或生成正式 pass。
-只有 workflow 调用或用户要求正式阶段结果时，才按原前置与
-完整范围进入现有 Guru Check、Branch Review 或 Completion。
+## 快速开始
 
-Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change`，即使对象是
-Git 中的改动文件。Issue 使用现有 Issue 审核 owner，需求文档使用适用专项，
-动议使用项目已有的动议或上游需求审核入口。“审核需求是否已实现”仍属实现审核。
-只说“审核一下”时承接对话中明确的对象；对象不明时先澄清，不凭关键词抢入口。
+### 让 AI 安装
 
-独立 owner 支持工作区的 staged、unstaged、untracked 改动、已提交范围和指定路径。
-被审仓库不需要安装 Trellis；Skill 和只读校验命令由完整匹配的 Guru 来源提供。
-它与正式 Check、Branch Review 读取同一份 [审核方法](trellis/skills/guru-team/packages/guru-review-change/references/review-method.md)，
-正式阶段保留各自身份、Planning、Architecture、结果和接续条件。
+在目标业务仓库打开 AI 会话，复制以下请求：
 
-共享方法直接加载原 Check、Branch Review、Architecture 和 current-knowledge 的
-语义 SSOT。独立审核先按原方法评估架构基线吻合度与基线技术规则的适用性，再判断
-实际需求的实现和测试覆盖；报告须交代两项结论及证据缺口。正式 Architecture 的
-显式对象入口仍受其原 profile 限制，不为无 Task 审核伪造身份或阶段结果。
-独立 owner 必须使用不同 subagent 分别审核架构、业务实现、测试及跨层证据，
-核对原始证据后作最终判断。分工与并发受限时的调度由该 skill 合同定义；
-正式 Check、Branch Review 保留自己的 worker 政策。
+> 请从 https://github.com/castbox/guru-trellis 安装 Guru Team Trellis。
+> 使用正式发布 tag，并让 workflow 与 preset 来自同一 ref。先检查现有研发流程、
+> 本地定制和需要的平台，再展示安装影响。从所选 Guru checkout 的 source lock
+> 获取并构建匹配 Fork，按本文入口安装并做定向验证。保留未知修改；安装不包含
+> commit、push 或 PR。若生成 `00-bootstrap-guidelines`，请说明它的用途，另行确认
+> 是否完善项目规范。
 
-专项需求、概要设计、详细设计、Go-Guru 实现和集成测试计划方法仍由
-`guru-ai-guides` 的对应 Skills 及同源标准
-提供，按项目实际采用情况加载；完整选择边界见
-[专项审核标准](trellis/presets/guru-team/spec/workflow/quality-guidelines.md#specialist-review-standards)。
-不为独立审核创建 Task；普通 review 关键词和 Task 存在本身不选择正式门禁。
-专项 Skills 不随 preset 安装；已有项目须更新匹配 workflow 并 reapply preset，
-再独立确认所需专项来源已安装。源码更新不证明旧安装或实际 Agent 已采用。
+仓库已采用另一套完整研发流程时，先评估迁移方式，再安装。
 
-架构变化先在现有 Phase2 独立评估中审查完整候选及拟晋升内容，再由原 owner
-在执行分支晋升，随后完成最终 Check、Task Commit、committed 独立架构判断和
-完整 Branch Review。安装切换、在途恢复及完整审查后的窄引用/状态对齐见
-[MIGRATION-600](trellis/presets/guru-team/MIGRATION-600.md)。知识晋升不代表交付、部署或采用。
+### 命令行安装新仓库
 
-[清晰技术写作规范](trellis/presets/guru-team/spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
-`.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
-Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。
-加载要求覆盖无 Task、Task、task-free、独立操作、恢复和子 Agent；写作 owner 自检，
-审核 owner 保持原范围。源码和投影检查不证明实际平台加载与输出行为。
+准备 Git、Bash、Python 3、Node.js，以及所选 Fork 要求的 Node 版本和锁定的 pnpm。
+GitHub Issue、PR 等操作还需要已安装并登录的 GitHub CLI（`gh`）。
+Guru 的 GitHub 操作使用显式绑定仓库的 `gh` / `gh api`；Git 传输使用 `git`。
 
-单 checkout 的 tools-only 升级由 `guru-upgrade-tools` 承接。调用方显式提供
-`AGENTS.md` 的 custom 基底正文与原文件快照；Guru 在公共 prepare 前更新其中的
-规则块，公共计划返回后保持不变。目标 Fork 须声明 `tools_custom_instruction`
-能力；缺失能力或最终内容被 `update.skip` 保留为旧块时，准备阶段停止。
-旧失败操作先由未变的原来源合法处置，再从修复来源重新准备；不转换旧 checkpoint。
-
-已有安装须更新匹配的 workflow 并完整 reapply preset。Trellis update/upgrade 后，
-先按官方 marketplace `--create-new` 预览，再显式 `--force` 应用 workflow，最后
-reapply preset。现有受管哈希与 `.new`/`.bak` 机制保留用户修改；AGENTS 用户区块
-保持原样。源码更新不会自动更新旧安装；完整升级与 Release 矩阵仍由专门 Issue 承担。
-
-Guru Team GitHub operations require an installed and authenticated GitHub CLI.
-All platform reads and mutations are explicitly repository-bound `gh` or
-`gh api` operations; GitHub App, MCP, connector, and browser UI fallback are
-not supported. Git transport remains owned by `git`.
-
-Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩展。
-
-它建立在官方 Trellis 之上，为团队补充一套开箱即用、AI-first 的研发协作方式，让不同 AI 工具能够按照一致的流程理解需求、规划实现、检查变更、审查分支并完成交付。
-
-如果你只是想在业务仓库中使用 Guru Team Trellis，不需要理解本仓库的内部实现。可以把本仓库地址交给业务仓库中的 AI，让它完成安装或升级，也可以使用下方固定版本命令：
-
-[https://github.com/castbox/guru-trellis](https://github.com/castbox/guru-trellis)
-
-## 已归档任务复审
-
-旧链产生的已归档任务只读复审不能在当前图中接回旧 Merge、Publication、
-Finalizer 或 `ready_for_merge`。当前 Branch Review 的 `archived_review_passed`
-止于 `legacy-archived-review-disposition-required`，须核对任务、归档、PR、
-本地/远端 HEAD、base 与旧 Finalizer 事实后，在兼容的 pinned-old 版本完成，
-或逐案人工处置；不得伪投影为新 Delivery/Completion/Finish 结果。正常完成的
-旧归档若含退役的任务人员字段，只保留 TaskId 防复用，并可在严格限定的只读
-来源定位后返回拒绝诊断，不进入 Reactivate 或 Finish recovery。正常完成的当前
-Task2 归档与原合同选定的正式 schema1 归档，均由 [Reactivate 合同](trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 的原 owner 承接。
-原 owner 先核验并继续合法后继；没有后继且资格满足时，才经匹配公共 SDK/operation
-保持同 TaskId 并将 lifecycle generation 严格递增一次。同操作恢复继续原操作，不重复增代。
-人工历史归档与未完成 closeout 仍回各自原 maintenance/Finish owner。
-旧链在途 residue 不是 Reactivate 的正常结束输入；详见 [当前 workflow](trellis/workflows/guru-team/workflow.md)。
-
-## 当前框架来源
-
-Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
-`trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
-`.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前源码固定到 `b4f1665143bd4ecf3a290d426ad62293fc13ea42`，
-对应 tree `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`、成功 main CI
-`42440325190`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
-schema-1 会话元数据兼容修复，以及 #47 的 Task/Delivery Git 对象读取优化和 #50 的公开 `GitCandidateContent` 不可变摘要能力及 #52 的公开 `task_resume`。
-本来源另包含上游 #53 的新进程 Python 选择与命令加参数执行修复。
-本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
-上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
-本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。
-本来源另包含上游 #62/PR #63 的 parent gitlink 原子身份修复，以及 #64/PR #65 的精简 known_legacy 正式归档后继能力。
-本来源新增上游 PR #66 的 current-schema Task peer 迁移：mixed Plan2 通过
-`defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
-authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
-匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
-Fork CLI/core 均为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
-来源采用不代表目标已经更新；目标工具安装、Guru 集成与各专项验收仍需实际验证。
-构建命令始终读取所选 `GURU_SOURCE` 自身的 lock。
-已有 Fork `.4` Release tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
-不代表当前 source lock 的匹配构建。本来源使用干净 workspace 的正常 CLI/Core
-依赖布局；不得以同版本 tarball 或更改模板 mode 代替该构建。Guru `.8` 已发布；本次 current-peer 修复尚未新建 Release。
-公开能力不替代目标正式采用与整体性能验收。
-`ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
-installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
-
-使用已存在的 Fork checkout；只有尚未取得源码时才 clone 记录中的 repository。
-下面的 `GURU_SOURCE`、`FORK_SOURCE`、`TARGET_REPO` 由使用者设置为本机目录，
-不写入共享来源记录。`GURU_SOURCE` 必须是包含本来源合同的已审查 checkout。
+先从 [Releases](https://github.com/castbox/guru-trellis/releases) 选择正式 tag。
+以下示例使用已发布的 `v0.7.0-guru.8`；目录按本机情况设置：
 
 ```bash
-: "${GURU_SOURCE:?请设置 Guru 源码目录}" &&
-: "${FORK_SOURCE:?请设置已有 Fork 源码目录}" &&
-: "${TARGET_REPO:?请设置目标仓库目录}" &&
-SOURCE_LOCK="$GURU_SOURCE/trellis/presets/guru-team/source/trellis-source.json" &&
-FORK_REPOSITORY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repository"])' "$SOURCE_LOCK")" &&
-FORK_COMMIT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit"])' "$SOURCE_LOCK")" &&
-FORK_STATUS="$(git -C "$FORK_SOURCE" status --porcelain)" &&
-test -z "$FORK_STATUS" &&
-git -C "$FORK_SOURCE" fetch "$FORK_REPOSITORY" "$FORK_COMMIT" &&
-git -C "$FORK_SOURCE" checkout --detach "$FORK_COMMIT" &&
-test "$(git -C "$FORK_SOURCE" rev-parse HEAD)" = "$FORK_COMMIT" &&
-(cd "$FORK_SOURCE" && pnpm install --frozen-lockfile && pnpm build &&
- git rev-parse HEAD > packages/cli/dist/.guru-source-commit) &&
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" --version
+GURU_REF=v0.7.0-guru.8
+GURU_SOURCE=/absolute/path/to/guru-trellis
+FORK_SOURCE=/absolute/path/to/Trellis
+TARGET_REPO=/absolute/path/to/business-repo
+GURU_WORKFLOW_SOURCE="gh:castbox/guru-trellis/trellis#$GURU_REF"
+
+git clone --branch "$GURU_REF" --depth 1 \
+  https://github.com/castbox/guru-trellis.git "$GURU_SOURCE"
 ```
 
-使用来源记录声明的 package-manager 版本。保留 Fork 的 ESM 与 workspace 依赖布局，
-不复制 dist、不重造 launcher、不全局安装原 Trellis npm 包。后续修改框架版本先评审
-source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgrade`。
-整个代码块使用 `&&` 串联；任何准备步骤失败，都不会执行版本检查或写入构建标记。
-`.guru-source-commit` 仅记录本次成功构建的源码 HEAD，用于识别同版本 stale dist，
-不是审批或防篡改凭据。单独执行校验时不补写该标记；旧 root-bin predecessor 构建后
-将同样的 HEAD 记录到其 `dist/.guru-source-commit`。
+已有 Guru checkout 时复用并核验所选 ref。然后按
+[构建所选 Fork](trellis/presets/guru-team/README.md#构建所选-fork)
+读取该 Guru checkout 自身的 lock、取得源码并完成构建。完成后在新业务仓库执行：
 
-## 发布身份边界
+```bash
+(
+  set -e
+  cd "$TARGET_REPO"
+  node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y \
+    --claude --codex --cursor \
+    --workflow guru-team --workflow-source "$GURU_WORKFLOW_SOURCE"
+  cd "$GURU_SOURCE"
+  bash trellis/presets/guru-team/scripts/bash/apply.sh --repo "$TARGET_REPO"
+)
+```
 
-| 组件 | 固定版本 |
+按实际工具选择 init 的平台 flags；示例选择 Claude、Codex、Cursor。
+`-y` 避免交互式 spec 模板选择。marketplace 只安装 `.trellis/workflow.md`，
+完整 preset 才安装 Guru Skills、运行环境和所选平台入口。
+单独复制 Skill 目录不能运行完整扩展。
+
+安装后让 AI 运行 `.trellis/guru-team/scripts/bash/check-env.sh --json`，
+检查 workflow/preset 来源、受管文件与所选平台投影，并处理
+`.new` / `.bak`。若无法推断 GitHub 仓库，先设置 GitHub `origin` 或
+`.trellis/guru-team/config.yml`，再使用 Issue 和 PR 功能。
+详细安装与验证见 [preset 指南](trellis/presets/guru-team/README.md#apply-and-verify)。
+
+`00-bootstrap-guidelines` 是一次性的项目规范初始化任务。安装不自动完成它；
+AI 应先说明拟写入 `.trellis/spec/` 的内容，再确认现在执行或留待后续。
+业务仓库的规范、需求设计、任务人类可读内容和 PR 说明默认使用中文。
+
+## 来源与版本选择
+
+<a id="guru-team-extension-version"></a>
+<a id="发布身份边界"></a>
+
+正式业务使用优先选择已发布 tag。当前已发布稳定版本为 `v0.7.0-guru.8`。
+源码中的 extension revision 即使仍为 `0.7.0-guru.8`，也可能已包含 tag 之后的
+未发布修改。相同版本号不代表相同源码或构建。
+
+- **稳定安装**：workflow marketplace 与 preset checkout 使用同一个正式 Guru tag。
+- **候选试用**：两者使用同一个真实、远端可寻址的完整 Guru commit SHA。
+  分支会变化；未发布 candidate 不作为业务仓库的默认安装版本。
+- **框架来源**：从所选 Guru checkout 自身的
+  [`trellis-source.json`](trellis/presets/guru-team/source/trellis-source.json)
+  读取 `castbox/Trellis` repository、commit、CLI version 和 package manager。
+  目标投影为 `.trellis/guru-team/trellis-source.json`。
+
+Guru tag、extension revision、Fork commit/CLI 版本是不同的版本轴。
+始终构建所选 lock 的 Fork，保留正常 workspace 依赖布局和模板 mode。
+不要以同版本旧 tarball、全局 stock CLI 或可变 `latest` 替代匹配构建。
+框架维护通过锁定 Fork 的公共入口进行，不运行 stock `trellis upgrade`。
+
+本页不另存 Fork SHA/CI 对照表。source lock 和 CI 成功只说明各自绑定的来源与结果，
+不证明本地 build、业务安装、实际 Agent 行为或 Release 已验证。
+已发布 tag 也不自动包含当前源码中的修复。
+
+## 升级已有仓库
+
+把本仓库地址、目标版本和升级目的交给业务仓库中的 AI。
+AI 从**完整匹配的目标 Guru 来源**加载对应 Skill，先核对实际安装与定制：
+
+| 目标 | 入口 |
 | --- | --- |
-| 已发布稳定 Guru tag | `v0.7.0-guru.8`（peeled `2ab135ed2d3908966785bb23ad42ada0790f0c81`） |
-| 本次修复发布状态 | 未新建 tag/Release；试用须固定完整源码 SHA |
-| 当前源码 Guru extension revision | `0.7.0-guru.8`（源码含尚未发布的修复） |
-| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.6` @ `b4f1665143bd4ecf3a290d426ad62293fc13ea42` |
-| 当前源码 Fork CI identity | `42440325190` |
-| Fork package manager | `pnpm@10.32.1` |
-| 当前知识 authority（非软件版本） | `guru-trellis-rdt` / `guru-trellis-architecture`；分别从 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 读取 |
-
-repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
-当前源码 extension 与 maintenance target 仍为 `.8`。稳定安装使用
-`gh:castbox/guru-trellis/trellis#v0.7.0-guru.8` 与同一 immutable `.8` preset checkout，
-并读取该 checkout 自身的 lock 构建 Fork。已发布 `.8` 自身锁定 Fork
-`ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core `0.7.0-castbox.6`，
-不包含本次 current-peer 修复。前驱 `.7` 与其 `.5` Fork 保留各自历史来源；
-不能用当前源码 lock 或相同版本号替代任一 tag 的匹配构建。
-
-试用未发布源码时，workflow marketplace 与 preset 必须来自同一个真实、远端可寻址的
-完整 Guru SHA（`gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`）。先核验该 SHA，
-再从其 lock 构建；已发布 `.8` tag 不包含修复，不能代替所选修复 SHA。
-未发布修复源码不作为业务仓默认安装版本。Fork main CI、旧 tag 或本地样本不能替代
-Guru exact-candidate、installed/lifecycle 或发布门禁。
-
-本次仅演进修复源码、原受管投影和来源说明，不重发已有 `.8` tag、Release 或 npm 包。
-未来正式发布由独立 Release owner 冻结 exact commit/tree，执行所需定向安装与
-predecessor 验证，再完成新 tag、tag-pinned smoke、Release 及其 Issue closure。
-本批代表性安装与历史验收各保留原来源身份，不代替未来 Release 门禁。
-
-已发布 `.8` 的准备集合由 `v0.7.0-guru.7` 到该 Release candidate 的完整 diff 确定。
-该准备差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
-显式对象与机制采用审核，#692/#695 的 Intake 和 JSON 输入诊断，以及 #693 的合同承接
-与验证证据方法。#706/#717 收敛独立多视角审核与审核充分性；#709/#731 完善 Issue 编排
-和协调者解阻；#710/#713 收敛 Phase 2 authoring 与公共执行合同。#711 隔离知识导航写入，
-#718 解耦共享环境与运行位置，#724 将 Codex 公共 Skill 迁入共享根，#735 完善行为测试
-与因果验证，#739 修复父仓 gitlink 原子候选与 resolved 合并承接。上述源码和合同变化的
-具体交付范围由完整 diff 与原专项证据确定；它们不替代本次候选安装或发布验证。
-
-以下前序能力保留原验证来源和层次：
-
-- [#630 Test](docs/requirements-design-test-contributions/630-native-compatibility/test.md)
-  记录三系统 Python runtime、安装、维护脚本和公开 wrapper；Windows 实际 Agent
-  会话仍未完成，其超时和早期失败保持原结果，该会话不属于 #630 当前脚本验收范围。
-- [#649 Test](docs/requirements-design-test-contributions/649-stage-result-convergence/test.md)
-  保留独立对照、受控连续 Delivery 样本、合法路线差异、false/no-grade 及历史失败。
-  已完成该 Issue 不表示每个样本通过，也不证明正式来源维护、业务采用或生产 E2E。
-- [#669 Test](docs/requirements-design-test-contributions/669-existing-implementation-reactivation/test.md)
-  的受控原生 Task2 恢复样本、真实 SDK 回归及 local_candidate 维护各有独立边界；
-  它们不证明 source_locked 维护、真实 GitHub/backend #802 或业务生产恢复。
-
-这些历史结果不代替未来 exact-candidate、tag-pinned smoke 或完整多平台 Release 矩阵。
-原 Test 的历史观察不因后续源码修复而回写。
-
-新仓库的非交互安装入口：
-
-```bash
-: "${GURU_WORKFLOW_SOURCE:?请设置与 GURU_SOURCE 同一 ref 的 marketplace source}"
-# GURU_SOURCE 须为同一 tag checkout；源码试用时二者须改为同一真实完整 SHA。
-cd "$TARGET_REPO"
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
-  --workflow guru-team \
-  --workflow-source "$GURU_WORKFLOW_SOURCE"
-(cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo "$TARGET_REPO")
-```
-
-历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
-已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；下列普通 update/reapply
-步骤仅适用于与所选 Fork 版本兼容的安装，拒绝不能作为升级成功。
-历史 `.3` 系列迁移能力（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）通过独立
-`guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，
-按实际 receipt/ownership/core/task 差异分组，保留定制、当前任务状态并恢复实际来源。
-精确远端 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的历史同源定向验收由
-[唯一系列 Test](docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接，
-对应当时的 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / CI `37647767799`。
-历史稳定 `.3` 的后续 `5c760463…` lock、历史 `.2` 依赖与 `.41` 证据各保留原归属，
-均不证明 `.6` 候选已完成维护或发布验证。当前源码的真实业务安装、完整累计矩阵
-和 `.6` Release 仍须独立验证；后继文档 HEAD 不表示重跑历史验收。
-旧安装的显式升级请求从固定目标 source package 加载该 Skill，不先进入 business Intake；普通 update/reapply 不替代迁移。保留业务定制、无关 dirty/untracked 和合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界不变。
-入口和恢复边界见 [旧安装迁移说明](trellis/presets/guru-team/MIGRATION-495.md)。
-普通 runtime 不提供兼容双读或自动迁移。
-
-已有兼容仓库先核验/构建同一固定 Fork，再预览 update：
-
-```bash
-cd "$TARGET_REPO"
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run
-```
-
-审查 dry-run 输出及受管文件的本地修改后，保留本地修改时执行：
-
-```bash
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --skip-all
-```
-
-完成适用的 preserve-mode install/upgrade/update 子步骤后，先检查
-`.trellis/workflow.md.new` 与当前 workflow 的字节、sidecar、用户修改状态和 live identity；
-确认预览可安全应用后，再切换 workflow 并 reapply 同一 Guru ref 的 preset：
-
-```bash
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
-  --marketplace "$GURU_WORKFLOW_SOURCE" \
-  --template guru-team --create-new
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
-  --marketplace "$GURU_WORKFLOW_SOURCE" \
-  --template guru-team --force
-(cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo "$TARGET_REPO")
-```
-
-`--create-new` 只生成预览，不会切换 active workflow；无 flag replacement 不属于支持
-路径，应用预览必须在上述检查通过后显式使用 `--force`。
-
-升级完成后必须处理全部 `.new` / `.bak`，再验证 source/installed/platform equality、
-managed inventory、受管 Python runtime、dogfood drift 和递归零 sidecar，才能声明升级成功。
-
-Guru 正常路径不初始化或读取任务人员身份，也不读取或写入旧
-`.trellis/workspace/**` journal/index。新 task 不带人员参数；当前任务身份来自
-task metadata 中的 TaskId 与 lifecycle generation，不从人员身份推断。
-path-free session focus 只负责选择任务；无 session context key 时显式选择 TaskId。
-TaskBranchBinding 负责当前 branch，checkout 由该绑定和已注册的 live Git worktree
-事实解析。ignored runtime mapping 和 checkout 路径均不是任务身份或 checkout 路径权威。
-既有 `.trellis/.developer`、`.trellis/workspace/**` 与 `.trellis/agent-traces/**` 保持原字节，
-不迁移、不删除，也不作为 current task、owner 或 recovery 输入。
-
-## 自动流程失败后的独立操作
-
-Guru 自动流程的停止不等于禁止用户明确要求的独立 Git/GitHub 操作。完整行为由
-[canonical workflow](trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations) 的手动操作合同定义：
-每项操作独立读取 live facts、展示精确范围并确认，完成后区分实际结果与 workflow residue。
-本能力不新增恢复节点，也不把手动完成描述为 Guru lifecycle 已完成。
-
-## 它解决什么问题
-
-AI 编程工具很擅长完成局部开发工作，但团队协作还需要稳定的共同约定：
-
-- 从真实需求和 Issue 出发，而不是直接开始改代码；
-- 在实现前澄清范围、依赖、风险和验收标准；
-- 让规划、实现、检查和审查各自拥有清晰职责；
-- 在提交、推送、创建 PR、合并和关闭 Issue 前核对真实状态；
-- 让 Codex、Claude Code、Cursor 等工具看到一致的团队规则；
-- 升级工具时保留业务仓库已有的有效定制，不静默覆盖本地内容。
-
-Guru Trellis 把这些团队能力整理成可复用的 workflow、preset 和 Skills，并让 AI 在实际开发过程中自动使用它们。
-
-## 与官方 Trellis 的关系
-
-Guru Trellis 是扩展仓库，不复制框架实现；框架依赖由 `castbox/Trellis` Fork 提供。
-
-官方 Trellis 负责基础能力，包括项目规范、任务上下文、工作流运行方式以及各类 AI 工具的基础接入。Guru Trellis 使用 Trellis 提供的正式扩展方式，在其上增加 Guru Team 的团队流程和交付约定。
-
-两者的分工可以简单理解为：
-
-- **Trellis** 提供通用研发框架；
-- **Guru Trellis** 提供 Guru Team 的团队工作方式；
-- **业务仓库** 保存自己的产品需求、工程规范和项目事实。
-
-框架更新通过锁定 Fork 的原有 CLI 执行，Guru Team 能力由本仓库维护。业务仓库不手改
-框架安装副本，也不叠加两套完整研发流程。第三方依赖与原作者许可证归属保持不变。
-
-## Guru Team preset 增强了什么
-
-### 完整的研发闭环
-
-覆盖从需求进入到最终交付的主要阶段，包括需求澄清、规划审核、实现检查、分支审查、发布准备和任务收口。
-
-Phase 0 的六个 mandatory Skills 通过五阶段 closed transition 直接衔接：每个 producer 的真实
-public output 只交给唯一 consumer，当前 Skill 的 semantic owner result 保持 call-local，正常
-pre-task 不需要在仓库保存 owner 或 prerequisite 文件。原 Sync 只有一个 public authoritative
-入口：只读 Intake 使用 operation=read 固定 Git 来源；真实同步使用 operation=sync 并保留 clean/ff/identity。
-`prepare-task` 仅属于固定旧完整安装，当前 registry 不提供该入口。
-
-### 共享 Python 环境与独立恢复
-
-日常入口按实际工具 manifest、lock、runtime API/layout 和解释器/平台兼容类别验证已有共享 cache。
-普通 Git 或外部工具创建的位置无须先建立自动 pointer；相同有效需求复用同一物理环境。
-合法显式类别及有效需求 hint 保持稳定，日常不安装依赖、不因 PATH 更新自动换环境。
-
-当前安装可以独立检查或恢复环境：
-
-```bash
-.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --check --json
-.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --repair --python /path/to/python3 --json
-```
-
-目标旧 dispatcher 不可运行时，从明确选择的完整 matching Guru 来源加载同一环境 owner。
-工具更新仍由原 source-loaded maintenance owner 完成；恢复后由目标自身入口验证。
-旧 v2、selection-v3、只读来源 DTO、原回滚及采用边界见 [MIGRATION-718](trellis/presets/guru-team/MIGRATION-718.md)。
-
-### AI-first 判断
-
-流程中的判断由 AI 基于当前需求、实现和验证结果完成，而不是模拟人工审批表、签字链或书面交接流程。
-
-用户只需要在存在真实选择、范围变化或外部副作用时参与确认。
-
-### 独立架构评估
-
-需要新的架构结论时，Planning、适用的 implementation discovery、Phase2 和 committed
-Branch Review 由 fresh independent subagent 执行既有
-[`guru-maintain-architecture-baseline`](trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md)。
-主会话协调候选与修订，消费 reviewer 的真实结果；Delivery/Completion 按 current
-eligibility 接续。方法与输入边界只由 [Architecture step-local contract](trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md)
-定义。真实 native 行为与平台投影的验证边界见 [#404 唯一 Test](docs/requirements-design-test-contributions/404-independent-architecture-review/test.md)。
-
-### 正常场景资格
-
-公共 closed-loop Skill `guru-qualify-normal-scenario` 是新场景资格的唯一语义
-Owner。它覆盖 task-free 写前/演化、需求、变更请求、规划、实现发现、base impact、
-Phase 2、Branch Review 和 Publication 共十个 mandatory profiles；Guru caller 只把
-worker 的当前观察投影为 candidate refs 与 live locators。每次 worker dispatch 只授权
-approved-plan work；规划外候选资格完成前不 edit、不补负向测试、不 self-fix、不赋
-severity，也不形成 finding、实现或发布 blocker。官方 `trellis-*` agent bytes 保持
-upstream-owned，不由 Guru preset 修改。
-
-Skill 只返回 `classified`、`scope_confirmation_required`、
-`mechanism_revision_required`、`blocked` 四个 typed exits，并由 workflow 交给唯一
-consumer。资格 decision/result 只存在当前 invocation 的 memory/stdout，不生成 tracked
-或 ignored qualification report/checkpoint、共享 candidate state、handoff 或跨进程
-result locator。Phase 2、Branch Review、Publication 只在各自现有 owner-private gate 中
-直接记录本阶段 consumer 必需的最终 classification/witness。
-
-Production eval 资产通过 clean install 后的真实 public entry 覆盖全部十 profiles，将
-#113 F-001 与 #236 攻击式 scanner 变体同 paired legitimate cases 一起验证。当前
-deterministic release gate 验证 corpus、runner、真实 wrapper、sandbox 与 no-model/fake
-production path，但不执行 live GPT-5.6 Sol matrix。只有另行完成且绑定 exact
-model/prompt/package/matrix 的 live run 才能形成模型行为证据；没有该证据时 Issue、PR、
-README 与 release text 均不得声称 pressure matrix 或模型稳定性已经通过，本文也不承诺
-未来永不复发。
-
-本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
-fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
-
-### 智能选择 task-free 或标准 Intake
-
-尚未进入活动 task 路径的文件修改请求都会先由 semantic
-`guru-select-workflow-mode` 选择模式；Issue 是否存在、当前 branch、文件数量、路径和关键词
-都不能独立决定 mode。最简显式表达是 `这次走 task-free`，此时不再询问 mode。没有明确表达时，
-边界清楚、局部、可逆且低风险的修改自动走 `task_free`；大概率适合但证据不足时只问
-一次；运行时影响明显或风险较高，或涉及跨层合同、public API、schema、CI、安装升级、
-发布部署、权限、安全或数据时自动走 `standard_intake`。
-
-Selector 的最小 `task_free` DTO 通过 target-owned authoring seed 调用 semantic
-`guru-execute-task-free-change`。该 Skill 在写入前只读检查本地 branch/worktree、活动 task
-scope、dirty/untracked 与目标文件重叠；首次写入须位于本仓已注册 linked worktree 的非 base 工作分支，
-位置需求不强制创建 Task，也不查询远端 branch protection。没有合适位置由 `location_required`
-回原执行 owner，沿精确 Git 副作用边界创建或复用后重读事实。它独占限定编辑、targeted checks 和写后 scope/risk 复核；`completed`
-必须同时有写前 suitability、实际 edited paths、通过的 targeted check 和写后复核，并向
-completion consumer 报告实际修改路径、精简检查结果和未验证边界。自动选择的 task-free
-在真实 partial edit 后发现风险扩大时立即停止剩余写入并重新判断 mode；显式 task-free 同样
-停止剩余写入，再由用户选择缩小范围或进入标准 Intake。
-
-真实 upstream `trellis-continue:no_current_task` 由 Guru workflow caller fresh 核对范围、位置和绑定后接续，
-不将无 Task 变成建 Task 门禁。Guru 不改写上游入口；真实 native 接续不可用时保留未交付依赖。
-正式新 Task 的 primary 拒绝仅作用于创建前置，旧 Task recovery、base Sync 与 Cleanup 保留原 owner。
-
-Task-free 只授权限定编辑、保留无关改动和 targeted checks；Issue/task/worktree/branch
-创建以及 commit、push、PR、merge、tag、release、安装、清理和关闭 Issue 都是独立的后续
-副作用，不由 mode selection 自动授权。
-
-`guru-execute-task-free-change` 提供 `selected_route` / `interaction_resume` 两种 inputs，
-稳定 exits 为 `completed|resume_active_task|scope_change|location_required|reselect_mode|explicit_choice_required|blocked`；
-完整 preset 安装命令 `record-task-free-change`、`check-task-free-change` 与
-`invoke-guru-execute-task-free-change`。单独复制 Skill 目录不可运行。
-
-### 更可靠的变更边界
-
-在创建任务、修改仓库、提交代码、推送分支、创建 PR 或完成发布前，AI 会先核对目标、影响范围和当前状态，降低误改仓库、误用旧上下文或错误关闭 Issue 的风险。
-
-### 规划、检查与审查能力
-
-Guru Team preset 提供面向规划、实现检查、任务提交、分支审查、发布审核和最终收口的协作能力，使每个阶段都能读取前序结果，同时保持职责清晰。
-
-Phase 1 的业务写作唯一归 `guru-author-task-plan`。需求与真实候选先进入独立 Architecture `candidate_assessment`，方案写作后进入 Wording，再由当前 `final_plan` Architecture 结果相邻交给独立 Approval。来源设计处置、Delivery Policy 与 Docs SSOT Plan 由 Author 承接；正常 brainstorm 和恢复入口仍遵从当前 workflow。迁移须同时应用 matching preset 与 marketplace workflow，具体见 [MIGRATION-292](trellis/presets/guru-team/MIGRATION-292.md)。
-
-当前交付由 `guru-review-task-delivery` 根据 accepted slice、current requirement authority、完整 reviewed diff 与目标分支审查中文 Refs-only PR 标题正文。其 `ready` 交给 `guru-publish-task-delivery` 完成 push/PR/Ready；`ready_for_merge` 再交给 `guru-merge-task-delivery` 做独立 expected-head merge。Merge 只产生一次 Delivery result，task 保持 active；`guru-review-task-completion` 随后判断剩余工作，只有 `completed` 才进入 Closure、Finish 与 Cleanup。旧 Publication/Finalizer/Merge closeout 和 finish summary 1/2 仅是历史或 pinned-old 版本事实，不提供当前 runtime adapter。
-
-旧 Finalizer 的 provenance metadata-tail 行为属于 pinned-old 交付链，不能作为当前
-Delivery/Finish 的入口。当前安装来源仍由 manifest 中的 immutable repo/ref/commit 和
-canonical preset 界定；业务仓库不需要携带 `trellis/presets/**` source tree，也不会在
-业务 Delivery 中调用 standalone extension verifier。
-
-### 多平台一致体验
-
-团队可以在 Codex、Claude Code、Cursor 等不同 AI 工具中使用同一套 Guru Team 语义。平台入口可以不同，但工作目标、判断原则和交付标准保持一致。
-
-### 面向业务项目的文档习惯
-
-业务需求、设计、检查结果和 PR 说明默认以团队成员易于阅读的方式呈现。对于中文团队，面向人的内容优先使用中文，代码符号、路径和专有名词保留其原始形式。
-
-### 安全的安装与升级
-
-安装和升级时，AI 会区分官方 Trellis、Guru Team 和业务仓库各自拥有的内容。已知版本可以平滑迁移，无法确认来源的本地修改会被保留并交给用户判断，而不是被静默删除。
-
-Phase 0 六包、transition schemas、invocation envelopes、package runtime、minimal shared kernel 和 manifest 作为一个
-版本单元安装。Clean install、existing-project update/reapply、dogfood 与平台副本验证必须同时
-通过，任何 mixed graph 或未处理的 `.new` / `.bak` 都会阻止激活。
-
-扩展安装验证不属于业务 task 或业务 closeout。业务仓库即使已经安装完整 preset、
-manifest 和 Skill package，也不会调用或路由到 `guru-verify-extension-installation`。
-该 Skill 只允许从 clean `castbox/guru-trellis` source checkout 显式发起 standalone
-验证；runtime 会在 clone、临时目录、安装或 artifact 写入前核对 canonical assets、
-origin、requested ref、resolved commit、HEAD 和 clean tree。验证目标由 source 流程创建
-clean throwaway repo，不绑定真实业务 task、branch、Finalizer plan 或 publication HEAD。
-任何携带 credential 的 locator 都会在外部动作和证据写入前被拒绝。
-兼容性 matrix 失败时，runtime 会在临时目录清理前保留 bounded、credential-safe 的
-stage/cell/command/exit/error-tail；无法解析终态时显式记录
-`unparseable_failure_output`。这些事实只属于 standalone verifier，不进入 Finalizer。
-
-源仓的安装/update 验收使用隔离环境：核验锁定 Fork checkout 和构建产物，再通过
-`node "$FORK_SOURCE/packages/cli/bin/trellis.js"` 执行 clean initial workflow/preset
-install 与目标项目的 `update --dry-run`；审查 managed replacement 与本地修改后，
-保留本地修改的非交互路径使用同一 CLI 的 `update --skip-all`。
-版本号相同不代替源码 SHA 证明，原发行包不参与当前正常路径。
-`--skip-all` 保留项目已有修改并以非交互方式继续。随后完成 marketplace
-`--create-new` preview、active switch 与 canonical preset reapply。最后验证 package、
-workflow、十 profiles、平台投影、ownership、dogfood drift 与递归零 `.new`/`.bak`。
-该门禁不修改开发机 global npm，也不升级真实业务仓。历史 predecessor 升级矩阵
-需要单独声明 predecessor 来源；当前候选的 init/reapply 不冒充历史升级证明。
-
-## 仓库维护者正式发布入口
-
-`release-guru-trellis-version` 是 `castbox/guru-trellis` 仓库私有的正式发布编排
-Skill。维护者提供 target repository、current release Issue、目标 repo tag、目标 extension
-revision、官方 Trellis CLI version 和 predecessor tag；Skill 每次重新读取 live Git/GitHub authority，先
-编排 preparation task/PR，再在合并后从 fresh `origin/main` 冻结 exact candidate。
-
-preparation 继续由 standard intake、Phase 2、Task Commit、晋升前后各一次完整 Branch Review、
-Delivery Review、Publish、Merge、Completion、Closure、Finish 和 Cleanup owners 各自负责；post-merge 阶段只组合 release-specific
-检查以及彼此独立的 tag、tag-pinned smoke、GitHub Release、Issue closure 和 cleanup 动作。
-每个外部副作用都必须单独展示并取得仅适用于该动作的确认。
-
-该 Skill 只在本仓库的 Shared、Codex、Claude 和 Cursor project-local discovery roots 中
-发现，不进入 Guru Team marketplace、preset、公共 Skill package 或业务仓库安装投影。
-release task 不创建 `release-notes*.md`，`implement.md` 只保存稳定计划；HEAD、阶段进度、
-Gate 结果、finding closure、tag/smoke/Release 状态和用户授权不得写入 tracked task 或
-durable docs。PR body 与 GitHub Release body 分别在对应动作前根据 live authority 即时生成
-并完成语义审查。
-
-## 适合哪些仓库
-
-Guru Trellis 适合：
-
-- 已经使用 Trellis，希望采用 Guru Team 工作方式的业务仓库；
-- 希望为多个 AI 编程工具提供统一研发流程的团队；
-- 希望把 Issue、规划、代码检查、PR 和发布收敛为一个完整闭环的项目；
-- 新项目初始化，以及需要从旧 Guru Team preset 升级的存量项目。
-
-如果仓库已经使用另一套完整的研发流程，应先让 AI 评估两者的关系并给出迁移方案。不要直接叠加安装，否则不同流程可能互相干扰。
-
-## 正确的使用方式
-
-### 安装到新仓库
-
-在目标业务仓库中打开 AI 会话，把本仓库地址发给 AI，并说明需要安装 Guru Team Trellis。
-
-AI 应当先了解目标仓库和实际使用的开发工具，再选择当前正式发布版本完成安装和验证。读者不需要从 README 中复制安装命令。
-
-### 升级已有仓库
-
-同样把本仓库地址交给目标仓库中的 AI，并说明需要升级 Guru Team Trellis。
-
-AI 应先识别现有 Trellis 版本、本地定制、历史 Guru Team 安装以及可能存在的其它研发流程，再展示迁移影响。无法确认来源的改动必须保留，不能为了升级而直接覆盖。
-
-### 日常开发
-
-需要跨 Issue 协调时，在 Codex 中显式调用 `guru-orchestrate-issue-dag`
-（依赖图与并行）或 `guru-orchestrate-issue-sequence`（严格串行）。
-当前源码的 Guru preset 提供这两个受管入口，默认协调器心跳为 2 分钟；
-始终以完成 Issue 为目标，并承接本轮人类指令中的执行限制。
-显式选定基线贯穿启动、PR 和完成证明，无关分支不要求同步。
-迁移和能力边界见 [Issue 编排说明](trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
-
-安装完成后，继续用自然语言向 AI 描述需求即可。
-
-AI 会读取当前仓库中的 Guru Team workflow 和相关 Skills，并根据任务状态进入合适阶段。通常不需要用户记忆命令、阶段编号或内部产物名称。
-
-## 使用原则
-
-- 一个业务仓库只保留一套主研发流程；
-- 默认使用本仓库最新的正式发布版本，而不是开发中的临时版本；
-- 安装或升级前先检查目标仓库，不能套用其它项目的结论；
-- 不静默覆盖业务仓库已有的未知修改；
-- 只有在真实选择或副作用发生前才打断用户；
-- 最终结论以当前需求、仓库内容和实际验证结果为准。
-
-## 本仓库包含什么
-
-本仓库集中维护：
-
-- Guru Team 的团队 workflow；
-- 可安装到业务仓库的 Guru Team preset；
-- 规划、检查、审查和收口等公共 Skills；
-- Codex、Claude Code、Cursor 等平台的接入内容；
-- 安装、升级、兼容性和发布质量保障。
-
-这些内容共同组成一个版本化的团队扩展。业务仓库通过正式发布版本使用它们，不需要复制或维护本仓库的内部实现。
-
-## 发布与反馈
-
-面向业务仓库的安装和升级应使用本仓库的正式发布版本。
-
-如果发现安装、升级或日常使用问题，请在本仓库提交 Issue，并附上目标仓库的可公开环境信息、使用的 AI 工具、当前表现和预期结果。不要提交密钥、客户数据或其它敏感信息。
-
-## 根因候选资格
-
-新增 semantic `guru-qualify-root-cause` 在现有十个 candidate profiles 中承接
-normal-scenario、solution-mechanism 的实际合格结果。根因未知的有界诊断可以
-继续；有独立效果、风险、owner 和退出依据的缓解保留 `mitigation_only`。
-修复证据不足返回诊断，症状抑制只返回机制移除/替换。四出口为
-`classified`、`mechanism_revision_required`、`diagnosis_required`、`blocked`。
-同机制结论仍适用时由后续阶段消费；新/实质变化机制重新资格。阶段仍审当前
-实现和证据，qualification 不等于完成，#383 拥有共同完成语义。
-
-完整 preset 安装后使用 public discovery 和 stdin wrapper：
-
-```bash
-.trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-qualify-root-cause --json
-# 先由 AI 读取 public contract/live facts 并完成 gate，再将 call-local envelope 送入：
-.trellis/guru-team/skills/packages/guru-qualify-root-cause/scripts/invoke.sh --invocation -
-```
-
-三个 record/check/invoke 命令仅 stdin/stdout，无 qualification 文件、cache 或
-授权持久化。安装与升级通过 canonical marketplace/preset，并重新应用 preset；
-定向验证和代表性 clean/update/reapply 不代表完整多平台 Release 矩阵。
-
-## 单 checkout 工具升级与独立旧任务维护（#566）
-
-`guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换、人工旧归档恢复或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
-
-当前正式 source lock 已包含上游 #40 与 #43。`source_locked` 仍要求完整匹配、已提交且干净的 Guru 来源及成功的匹配 Fork 构建；来源锁变化不等于目标已升级。历史 `local_candidate` 仅为隔离开发证据，不证明正式来源维护、业务恢复或发布。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](trellis/presets/guru-team/MIGRATION-566.md)。
-
-人工旧归档恢复使用原维护 owner 的 `archive_resume` profile。正式 Finish 归档
-仍由 Reactivate 承接；未完成收尾返回原事务。恢复保留原归档并消费公共返回的
-活动身份，目标 native 和下一实际 Guru owner 必须实际验证。
-#577 当时未修改正式 source lock，本地 matching candidate 只用于隔离开发。
-当前正式来源以本页来源记录为准；历史兼容边界详见
-[兼容与依赖边界](trellis/presets/guru-team/MIGRATION-577.md)。
+| 单 checkout 更新工具、workflow、Skills 和受管投影，保留 Task/session 状态 | [guru-upgrade-tools](trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md) |
+| 完整旧安装升级，包含所需 Task/schema 迁移 | [guru-upgrade-installation](trellis/skills/guru-team/packages/guru-upgrade-installation/SKILL.md) |
+| 单独维护所选旧 Task 或人工历史归档 | [guru-maintain-legacy-task](trellis/skills/guru-team/packages/guru-maintain-legacy-task/SKILL.md) |
+
+例如：
+
+> 请按 `guru-upgrade-tools` 将当前 checkout 的 Guru 工具更新到我选择的版本，
+> 保留 Task/session 和业务定制。先核验同源 Guru/Fork 与实际目标，再展示写入范围。
+> 若存在旧失败事务，先由其原 owner 按原 source pair 和冻结计划合法处置。
+
+升级步骤、冲突、验证和恢复规则由所选 Skill 独占。
+旧失败事务不要求回到原聊天；接续仍须使用原 owner、原 source pair 和原冻结计划。
+需要改用修复来源时，先按原合同处置旧事务，再从新来源重新准备，不能换源直接 resume。
+
+官方 update 后仍需更新匹配的 marketplace workflow 并 reapply 完整 preset。
+workflow `--create-new` 只生成预览；实际替换使用同一 provider 的显式 `--force`。
+这些动作由升级 owner 编排，不能用普通 apply 绕过旧 Task 或迁移前置。
+保留本地定制并解决 `.new` / `.bak`，验证真实安装后才报告成功。
+
+## 日常使用
+
+安装后直接向 AI 描述需求。AI 读取业务仓库的 `.trellis/workflow.md` 和相关 Skills，
+根据当前任务状态接续；通常无需记忆阶段编号或内部产物名称。
+
+- **开发需求**：描述目标、约束和验收预期。AI 判断采用标准 Intake 或有界 task-free。
+  可明确说“这次走 task-free”；创建资源和 Git/GitHub 副作用仍单独确认。
+- **独立审核**：说明要审核的改动、分支、PR 或路径。
+  [guru-review-change](trellis/skills/guru-team/packages/guru-review-change/SKILL.md)
+  承接代码、测试覆盖和需求实现审核。正式 Check、Branch Review、Completion
+  由 workflow 调用或明确的正式阶段请求进入。
+- **交付收口**：使用当前平台的 `guru-finish-work` 入口，由 workflow 接续交付和完成步骤。
+  一个 Delivery 合并后，Task 可能仍有剩余工作。
+- **跨 Issue 协调**：Codex 可显式调用 `guru-orchestrate-issue-dag` 或
+  `guru-orchestrate-issue-sequence`；见 [编排说明](trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
+
+专项需求、设计、Go-Guru 实现等方法按项目采用情况从 `guru-ai-guides` 加载，
+不随 preset 安装。已归档任务的复审、恢复和手动 Git/GitHub 操作分别遵从
+[当前 workflow](trellis/workflows/guru-team/workflow.md)，不以手动结果补写正式阶段结论。
+
+## 文档导航
+
+| 想了解 | 文档 |
+| --- | --- |
+| 安装资产、环境、平台选择与排障 | [Guru Team preset](trellis/presets/guru-team/README.md) |
+| 团队流程、阶段与日常入口 | [workflow 指南](trellis/workflows/guru-team/README.md) / [完整流程](trellis/workflows/guru-team/workflow.md) |
+| 某一步的输入、行为和出口 | [canonical Skills](trellis/skills/guru-team/) |
+| 项目需求、设计、测试与架构知识 | [Requirements](docs/requirements/README.md) / [Design](docs/design/README.md) / [Test](docs/test/README.md) / [Architecture](docs/architecture/README.md) |
+| 定向 CI 与诊断 | [CI 指南](docs/ci/README.md) |
+| 正式版本与反馈 | [Releases](https://github.com/castbox/guru-trellis/releases) / [Issues](https://github.com/castbox/guru-trellis/issues) |
+
+Trellis 官方参考：[首页](https://docs.trytrellis.app/index.md)、
+[自定义 workflow](https://docs.trytrellis.app/advanced/custom-workflow.md)、
+[spec template marketplace](https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md)。
+本仓库使用这些扩展面；业务私有需求与运行状态留在业务仓库。
+
+普通安装或升级的定向验证不代表完整多平台兼容矩阵或 Release Gate。
+反馈问题时请说明版本来源、AI 工具、实际表现和预期结果，并移除密钥及敏感数据。

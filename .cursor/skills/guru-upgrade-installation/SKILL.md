@@ -10,6 +10,11 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+Use this owner for installation-wide Task/schema conversion. Tools-only updates
+enter `guru-upgrade-tools`; selected single-Task maintenance remains with
+`guru-maintain-legacy-task`. Choose by the actual goal; diagnostics or missing
+prerequisites do not authorize a different route.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
