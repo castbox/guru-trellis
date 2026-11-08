@@ -1,0 +1,8 @@
+{"file": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md", "reason": "唯一采用机制方法及原读取/owner边界"}
+{"file": "trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md", "reason": "Protection资格与Architecture消费"}
+{"file": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md", "reason": "Author原方案形成消费"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value当前验证选择"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文及来源设计处置规则"}
+{"file": "docs/requirements/current/knowledge-maintenance.md", "reason": "R-MECH当前承诺与历史边界"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "D-MECH原owner与消费关系"}
+{"file": "docs/test/current/knowledge-maintenance.md", "reason": "T-MECH既有观察与本批证据差额"}

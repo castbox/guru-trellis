@@ -1,0 +1,203 @@
+{
+  "schema_version": "2.0",
+  "id": "normal-completion-design",
+  "name": "normal-completion-design",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "强化正常完成路径与协调成本的通用设计方法",
+  "description": "沿现有 Adopted-mechanism review 强化默认淘汰无依据共享写、串行等待及重复状态，Root Cause 与 Author 只补必要消费。",
+  "dev_type": null,
+  "scope": "只修改原通用方法及必要知识承接、定向验证；不新增公共DTO、runtime、业务规则、安装更新或生产操作。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-08",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-08-normal-completion-design/prd.md",
+    "revision": "sha256:8e408b05aa32b31ecdc8bd43b31f8a6526558d5f3a7b7f9d9d81a00cfc64fcda"
+  },
+  "deliveries": [
+    {
+      "id": "850accc1-21f2-47ce-86c6-8212cec58bd7",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-08-normal-completion-design/prd.md",
+          "revision": "sha256:8e408b05aa32b31ecdc8bd43b31f8a6526558d5f3a7b7f9d9d81a00cfc64fcda"
+        },
+        "anchors": [
+          "NC-R1",
+          "NC-R2",
+          "NC-R3",
+          "NC-R4",
+          "NC-R5",
+          "NC-R6",
+          "NC-R7",
+          "NC-AC1",
+          "NC-AC2",
+          "NC-AC3",
+          "NC-AC4"
+        ]
+      },
+      "planning_root": "deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/design.md",
+        "revision": "sha256:5ab8fd4a7a8aa24c6882af28461f5958cb898eb766e8c46ccdbe72e04a5004f2"
+      },
+      "candidate": {
+        "base_ref": "80fc24eed3d4deb2dd0fc63126c0affb9789d365",
+        "content_ref": "sha256:efd289266096f221a4a9d1f3e1a1f0411713062e52ea894ed96c9e1fafb4abef",
+        "head_ref": "80fc24eed3d4deb2dd0fc63126c0affb9789d365",
+        "kind": "git",
+        "paths": [
+          "docs/design/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/design.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/manifest.yaml",
+          "docs/requirements-design-test-contributions/normal-completion-design/proposed/docs/design/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/proposed/docs/requirements/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/proposed/docs/test/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/requirements.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/test.md",
+          "docs/requirements-design-test-contributions/normal-completion-design/traceability.md",
+          "docs/requirements/current/knowledge-maintenance.md",
+          "docs/test/current/knowledge-maintenance.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:d450320e-3422-4d03-8b70-5370f086b57a",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/prd.md",
+              "revision": "sha256:8e408b05aa32b31ecdc8bd43b31f8a6526558d5f3a7b7f9d9d81a00cfc64fcda"
+            },
+            "anchors": [
+              "NC-R1",
+              "NC-R2",
+              "NC-R3",
+              "NC-R4",
+              "NC-R5",
+              "NC-R6",
+              "NC-R7",
+              "NC-AC1",
+              "NC-AC2",
+              "NC-AC3",
+              "NC-AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/design.md",
+            "revision": "sha256:5ab8fd4a7a8aa24c6882af28461f5958cb898eb766e8c46ccdbe72e04a5004f2"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/prd.md",
+              "revision": "sha256:36467896d158dec503719cb2d0657e3a7989126ab9cfa18f881453de51775fb3"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/design.md",
+              "revision": "sha256:5ab8fd4a7a8aa24c6882af28461f5958cb898eb766e8c46ccdbe72e04a5004f2"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/implement.md",
+              "revision": "sha256:8b6ea1c9095c69774520c9a606f59cb685c750c02b0c5e78c3c36d68a3b7f1fa"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:f7a4d2c198fa9409962bdc6f65264d700fd3ebab19f426a4050d17eafd791fd1",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/prd.md",
+              "revision": "sha256:8e408b05aa32b31ecdc8bd43b31f8a6526558d5f3a7b7f9d9d81a00cfc64fcda"
+            },
+            "anchors": [
+              "NC-R1",
+              "NC-R2",
+              "NC-R3",
+              "NC-R4",
+              "NC-R5",
+              "NC-R6",
+              "NC-R7",
+              "NC-AC1",
+              "NC-AC2",
+              "NC-AC3",
+              "NC-AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/design.md",
+            "revision": "sha256:5ab8fd4a7a8aa24c6882af28461f5958cb898eb766e8c46ccdbe72e04a5004f2"
+          },
+          "candidate": {
+            "base_ref": "80fc24eed3d4deb2dd0fc63126c0affb9789d365",
+            "content_ref": "sha256:efd289266096f221a4a9d1f3e1a1f0411713062e52ea894ed96c9e1fafb4abef",
+            "head_ref": "80fc24eed3d4deb2dd0fc63126c0affb9789d365",
+            "kind": "git",
+            "paths": [
+              "docs/design/current/knowledge-maintenance.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/design.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/manifest.yaml",
+              "docs/requirements-design-test-contributions/normal-completion-design/proposed/docs/design/current/knowledge-maintenance.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/proposed/docs/requirements/current/knowledge-maintenance.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/proposed/docs/test/current/knowledge-maintenance.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/requirements.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/test.md",
+              "docs/requirements-design-test-contributions/normal-completion-design/traceability.md",
+              "docs/requirements/current/knowledge-maintenance.md",
+              "docs/test/current/knowledge-maintenance.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:d450320e-3422-4d03-8b70-5370f086b57a",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/prd.md",
+              "revision": "sha256:36467896d158dec503719cb2d0657e3a7989126ab9cfa18f881453de51775fb3"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/design.md",
+              "revision": "sha256:5ab8fd4a7a8aa24c6882af28461f5958cb898eb766e8c46ccdbe72e04a5004f2"
+            },
+            {
+              "locator": ".trellis/tasks/11-08-normal-completion-design/deliveries/850accc1-21f2-47ce-86c6-8212cec58bd7/implement.md",
+              "revision": "sha256:8b6ea1c9095c69774520c9a606f59cb685c750c02b0c5e78c3c36d68a3b7f1fa"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
