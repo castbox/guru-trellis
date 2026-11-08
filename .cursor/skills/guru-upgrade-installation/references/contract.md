@@ -21,6 +21,31 @@ platform copies describe the contract, but initial migration requires the
 complete target canonical source checkout. Do not patch generated target files,
 global npm installations or node_modules to bypass the old-version guard.
 
+## Version and unfinished-operation prerequisites
+
+Choose this owner for installation-wide Task/schema conversion. Tools-only
+updates enter `guru-upgrade-tools`; selected single-Task maintenance remains
+with `guru-maintain-legacy-task`. A missing prerequisite or tool diagnostic
+returns to the selected owner; it does not authorize a different upgrade route.
+
+After selecting the target version, resolve it to a complete Guru commit and
+read that commit's own Fork source lock. Obtain the CLI and Core packages from
+that exact locked source and verify the existing package/source checks. This
+applies to formal releases and explicitly selected unpublished candidates.
+Unpublished `main` is not a default stable release. Preserve the existing
+`source_locked` and isolated `local_candidate` qualification boundaries.
+
+Before a new plan or write, inspect relevant unfinished upgrade transactions
+across the target's registered project roots and shared state. Locate their
+original owning Skill, source pair, input, frozen plan, recovery reference and
+backups. Resume or roll back only through that owner's existing contract.
+The owner is the Skill and original operation, not a particular chat or Agent;
+another Agent can recover from the complete original inputs. Preserve later
+business work and fixed rollback anchors. Do not edit old checkpoints or make
+rollback the default disposition. If neither legal resume nor rollback is
+available, the original owner handles the concrete case before an overlapping
+new operation can proceed.
+
 ## Forward behavior and AI review
 
 1. Read current public profiles and command help. For `initial_upgrade`, obtain

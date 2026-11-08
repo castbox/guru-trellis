@@ -22,7 +22,29 @@ convert unrelated history nor establishes this owner's prerequisites. Read the
 actual goal, target and available maintenance capability before choosing this
 entry. A full installation/migration request stays with its original owner;
 missing tools-only prerequisites stop here without falling back to migration.
-The script diagnostic never chooses that semantic route.
+The script diagnostic never chooses that semantic route. Selected single-Task
+conversion or historical maintenance remains with `guru-maintain-legacy-task`.
+
+## Version and unfinished-operation prerequisites
+
+After selecting the target version, resolve it to a complete Guru commit and
+read that commit's own Fork source lock. Obtain the CLI and Core packages from
+that exact locked source and verify the existing package/source checks. This
+applies to formal releases and explicitly selected unpublished candidates.
+Unpublished `main` is not a default stable release. Version labels alone do not
+establish this source pair; isolated `local_candidate` retains its declared
+formal-source-lock limitation.
+
+Before preparing or writing a new operation, inspect relevant unfinished
+upgrade transactions in the selected checkout and any shared paths the proposed
+write set touches. Return an existing transaction to its original owning Skill
+and matching source pair. Use its original input, frozen plan, recovery reference
+and backups under that owner's recovery contract. The original owner means the
+Skill and operation, not the original chat or Agent; another Agent may recover
+from the complete original inputs. Preserve later business work. Do not edit
+old checkpoints, refresh rollback anchors, or assume every unfinished operation
+must roll back. If legal resume or rollback is unavailable, that original owner
+handles the concrete case before an overlapping new operation can proceed.
 
 ## Forward behavior
 
@@ -41,6 +63,9 @@ The script diagnostic never chooses that semantic route.
    Missing/ambiguous/prunable checkout stops; do not skip a preferred branch
    to find an easier checkout. Selection never fetches, fast-forwards, creates
    or switches a branch/worktree, nor invokes Task Identity/Reconcile.
+   Identify registered peers through the Git common directory and inspect the
+   actual shared paths before freezing this one-checkout write set. Common-dir
+   membership alone does not prohibit ordinary parallel work.
 3. Read current upstream tools inspection, old Guru manifest/source hashes,
    actual managed edits, user config/spec/platform choice, and pointer layout.
    `preview.sh --root CONTEXT --input INPUT --upstream-source SOURCE_JSON`
@@ -113,6 +138,7 @@ original gitdir/common fallback still supports ordinary installs. Common and
 peer pointer bytes stay unchanged. The source runtime is not evidence that the
 target can execute: read the public tools postvalidation, run the real target's
 own resolver plus installed package validation and its actual native entry.
+Verify that peer checkout tools and common/peer pointers remain unchanged.
 A direct old Task must diagnose maintenance_required and route to the separate
 maintenance owner, not appear valid/current. A valid current target must enter
 its original next owner. Do not convert data to make tools validation pass.
@@ -135,11 +161,10 @@ original public plan/operation ID and original Guru preimages; it never expands
 backups, accepts a replacement plan, replays a completed public write, or
 imports later business work into rollback eligibility. Complete output loss
 is recovered by the same reference and actual checks. A source/path/runtime
-mismatch or later owned edit stops for review. Old failed operations must first
-be inspected and legally rolled back or exited through their unchanged original
-source. A new source prepares a new operation only after that disposition; it
-does not take over or convert the old checkpoint. Sidecar reconciliation must be
-an explicit reviewed canonical resolution; it cannot silently refresh backups.
+mismatch or later owned edit stops for review. Apply the unfinished-operation
+prerequisites above before any overlapping new operation. Sidecar reconciliation
+must be an explicit reviewed canonical resolution; it cannot silently refresh
+backups.
 
 Rollback is a separately reviewed bounded write. Read the fixed original
 preimages and current Task/session compatibility through the public owner.

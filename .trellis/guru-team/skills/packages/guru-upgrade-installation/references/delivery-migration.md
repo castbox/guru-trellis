@@ -5,6 +5,15 @@
 Plan1 is a historical migration consumer, never a current Delivery runtime
 fallback. Use this complete source-loaded owner, not the old installed dispatcher.
 
+Apply the version and unfinished-operation prerequisites in
+[the owned contract](contract.md#version-and-unfinished-operation-prerequisites)
+before preparing Plan2. Identify related registered project roots through the
+Git common directory, then include their actual Task, artifact and common/local
+session projections in the complete plan. Compare actual planned write sets
+with unfinished operations and avoid overlapping writes. A shared common
+directory does not itself prohibit ordinary parallel tasks or require a new
+global coordinator.
+
 Before writes, read actual versions, original receipts, every registered
 workspace, occupied active/archive root, common/local session, task artifact and
 original private transaction. Normal old archives and same-version schema
@@ -55,8 +64,9 @@ key order can differ; original bytes, modes and business metadata are preserved.
 A deferred peer receives no additional lifecycle, Delivery, session selection,
 migration artifact or Guru private-owner conversion; private calls must belong
 to a projected Task in their selected workspace. Normal source, binding or
-registration changes return to fresh prepare rather than changing the frozen
-plan or extending rollback anchors. Older closed-schema CLI candidates cannot
+registration changes before writes return to fresh prepare. After partial
+writes, return to the original operation's recovery contract; do not change its
+frozen plan or extend rollback anchors. Older closed-schema CLI candidates cannot
 consume `branch_bindings` or current-schema deferred peers; acquire the reviewed
 matching candidate and fresh prepare, keeping earlier plans with their original packages for same-plan
 recovery. Same version numbers do not establish package equality.

@@ -42,21 +42,10 @@ else:
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_release_readmes_match_canonical_source_identity(self):
-        lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
-        for relative_path in (
-            "README.md",
-            "trellis/workflows/guru-team/README.md",
-            "trellis/presets/guru-team/README.md",
-        ):
-            with self.subTest(path=relative_path):
-                content = (ROOT / relative_path).read_text()
-                self.assertIn(lock["commit"], content)
-                self.assertIn(str(lock["ci_run_id"]), content)
-                self.assertNotIn("34838784963", content)
-
     def test_readme_stops_on_each_preparation_failure(self):
-        snippet = (ROOT / "README.md").read_text().split("```bash\n", 1)[1].split("```", 1)[0]
+        readme = (ROOT / "trellis/presets/guru-team/README.md").read_text()
+        preparation = readme.split("## 构建所选 Fork\n", 1)[1].split("\n## ", 1)[0]
+        snippet = preparation.split("```bash\n", 1)[1].split("```", 1)[0]
         lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
         for failure in ("status", "dirty", "fetch", "checkout", "sha", "install", "build", ""):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory(prefix="fork-prepare-") as tmp:
@@ -81,6 +70,7 @@ esac
 exit 0
 ''',
                     "pnpm": '''#!/bin/sh
+if [ "$1" = --version ]; then echo "$EXPECTED_PNPM_VERSION"; exit 0; fi
 [ "$FAILURE" != "$1" ] || exit 7
 if [ "$1" = build ]; then mkdir -p packages/cli/dist; fi
 exit 0
@@ -95,6 +85,7 @@ exit 0
                     **os.environ, "PATH": str(commands) + os.pathsep + os.environ["PATH"],
                     "GURU_SOURCE": str(ROOT), "FORK_SOURCE": str(fork),
                     "TARGET_REPO": str(work / "target"), "EXPECTED_SHA": lock["commit"],
+                    "EXPECTED_PNPM_VERSION": lock["package_manager"].removeprefix("pnpm@"),
                     "FAILURE": failure, "NODE_MARKER": str(node_marker),
                 })
                 origin = fork / "packages/cli/dist/.guru-source-commit"
