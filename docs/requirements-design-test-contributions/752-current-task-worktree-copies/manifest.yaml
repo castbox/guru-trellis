@@ -1,6 +1,6 @@
 task_id: 752-current-task-worktree-copies
 source: https://github.com/castbox/guru-trellis/issues/752
-status: proposed
+status: promoted
 strategy: delta_first
 authority_identity: guru-trellis-rdt
 source_revision: 2ab135ed2d3908966785bb23ad42ada0790f0c81

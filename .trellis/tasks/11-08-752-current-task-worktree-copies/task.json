@@ -56,7 +56,37 @@
         "locator": ".trellis/tasks/11-08-752-current-task-worktree-copies/deliveries/cffee5bc-4a87-465e-b056-534b530951d5/design.md",
         "revision": "sha256:459a4b0e78485b006f3f3b35ca95c5bcf240ffdaf95ce271b519bb1f86267f33"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "2ab135ed2d3908966785bb23ad42ada0790f0c81",
+        "content_ref": "sha256:35a8b00cfcef0a6b0c1c2def1e7e993e59027861f05e7654d67e70d349a63644",
+        "head_ref": "51b3f36a53f6c10bf4fc3f99fbc5ab3645f2a487",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
+          ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
+          ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
+          ".trellis/guru-team/trellis-source.json",
+          ".trellis/spec/docs/public-docs.md",
+          "README.md",
+          "docs/architecture/contributions/752-current-task-worktree-copies.md",
+          "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/03-domains/ownership.md",
+          "docs/architecture/contributions/752-current-task-worktree-copies/proposed/docs/architecture/04-integrations/distribution.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/design.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/manifest.yaml",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/design/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/requirements/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/proposed/docs/test/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/requirements.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/test.md",
+          "docs/requirements-design-test-contributions/752-current-task-worktree-copies/traceability.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/source/trellis-source.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py",
+          "trellis/workflows/guru-team/README.md"
+        ]
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:0d913a94-4b4e-4bdc-9884-c8accea559f2",

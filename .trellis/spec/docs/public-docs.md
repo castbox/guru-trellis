@@ -35,16 +35,17 @@ is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must keep the version axes explicit. The
-published stable release and this release's predecessor are `v0.7.0-guru.7`
-(peeled `7718d129bcb2055d77c7f43d0e4edca9aee313ea`), extension `0.7.0-guru.7`.
-Stable workflow marketplace and preset sources use that same immutable `.7`
-tag. That tag's own lock selects Fork
-`79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI/core `0.7.0-castbox.5`.
-Build that checkout's locked Fork; the current source lock or a matching CLI
-version number alone cannot establish the predecessor's matching build.
+published stable release is `v0.7.0-guru.8` (peeled
+`2ab135ed2d3908966785bb23ad42ada0790f0c81`), extension `0.7.0-guru.8`.
+Stable workflow and preset use that immutable `.8` tag and its own Fork lock:
+`ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI/core `0.7.0-castbox.6`.
+The `.7` / Fork `.5` predecessor retains its historical source identity.
+Build each selected checkout's own lock; equal version numbers do not establish
+matching source or build.
 
-The next repository target is `v0.7.0-guru.8`, not yet published. Its canonical
-extension and maintenance target are `0.7.0-guru.8`. The current Fork source
+Current source still declares extension and maintenance target `0.7.0-guru.8`,
+but contains an unreleased current-peer fix beyond the immutable `.8` tag.
+Do not republish that tag, Release or same-version npm package. Its current Fork source
 lock selects `castbox/Trellis@b4f1665143bd4ecf3a290d426ad62293fc13ea42`, tree
 `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`, successful main CI `42440325190`,
 with CLI/core `0.7.0-castbox.6` and `pnpm@10.32.1`. This source includes #40
@@ -64,21 +65,18 @@ tarballs do not substitute for the current lock's matching build. Use the clean
 locked source workspace with its normal CLI/Core dependency layout and
 original template modes.
 
-Before `.8` publication, marketplace and preset must use the same actual,
-remote-addressable full Guru candidate SHA. Do not insert an invented SHA or
-use the unavailable `.8` tag as a provider. Only after publication and remote
-tag identity verification may both use immutable `v0.7.0-guru.8`. The final
-exact-candidate gate starts from fresh main after preparation and Finish
-bookkeeping merge. It performs focused installation and predecessor upgrade
-validation before the separate tag, tag-pinned smoke, GitHub Release and Issue
-closure actions. Earlier local samples and historical acceptance retain their
-original source identity and do not replace these gates. Unpinned branch
-inputs remain mutable latest/canary sources. Preparation docs do not prove
-installation, native continuation, real-business adoption, production, the full
-cumulative matrix or Release.
+For the unreleased fix, marketplace and preset must use the same actual,
+remote-addressable full Guru SHA and its own Fork lock. The published `.8` tag
+does not contain the fix and cannot replace that SHA. A future Release owner
+selects a new immutable version and performs its exact-candidate, installation,
+predecessor, tag-pinned smoke and publication gates separately. Current source
+or representative acceptance does not establish that future Release.
+Earlier observations retain their exact source and cutoff. Unpinned branches
+remain mutable canary sources; business adoption, production and the full
+cumulative matrix keep their own evidence boundaries.
 
 Release capability descriptions follow the actual full diff from the
-predecessor tag to the final candidate. The current difference includes #687's
+predecessor tag to the final candidate. The released `.8` preparation difference included #687's
 fixed Fork `.6` adoption; #690/#694/#697 Architecture routes, explicit review
 objects and mechanism-adoption review; #692/#695 Intake and JSON-input
 diagnostics; and #693 contract-consumption and verification-evidence methods.
