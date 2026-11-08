@@ -86,11 +86,11 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 
 ## D-MECH：采用机制与原 owner 承接
 
-**D-MECH-01 / CON-MECH-ADOPTION** 承接 R-MECH-01/03/04。原 Architecture contract 单写采用机制审核方法，按实际行为、状态、依赖和直接消费者确定对象，含无 diff 的复用。先判断当前必要性、职责与作用范围、整体代价、替代和证据，再解释设计依据；完整宪法不排名。Author 在原候选与方案比较中消费，Approval 在原设计充分性等维度核落点，Check/Branch Review 审完整实际候选及受影响未改消费者，不复制另一套问卷。受审旧技术选择可被质疑，真实约束及原 change contract 继续有效。
+**D-MECH-01 / CON-MECH-ADOPTION** 承接 R-MECH-01/03/04。原 Architecture contract 单写采用机制审核方法，按实际行为、状态、依赖和直接消费者确定对象，含无 diff 的复用。先从支持调用方取得承诺结果的完整路径推导直接可行方案，再判断额外协调的必要性、职责与作用范围、整体代价、替代和证据；完整宪法不排名。默认不准入与主动尝试删除、收窄或替代的方法只由原 Architecture contract 单写，独立审核自行判断可行性；原方案已最小时说明依据，不虚构替代。Author 在原候选与方案比较中消费，Approval 在原设计充分性等维度核落点，Check/Branch Review 审完整实际候选及受影响未改消费者，不复制另一套问卷。受审旧技术选择可被质疑，真实约束及原 change contract 继续有效。
 
-**D-MECH-02 / CON-MECH-PROTECTION** 承接 R-MECH-02。原 root-cause contract 的 Protection 分支拥有提出方举证；作者、reviewer、模板提出保护都须说明真实缺口、补齐、收益和整体代价。原正常场景、solution/root qualification 及 finding 出口不变；脚本不从缺签名/锁/重试或安全词汇生成结论。新保护缺证不先成为义务，旧保护缺证只限制依赖结论，不自动删除或视为通过。
+**D-MECH-02 / CON-MECH-PROTECTION** 承接 R-MECH-02。原 root-cause contract 的 Protection 分支拥有提出方举证；作者、reviewer、模板提出保护都须说明真实缺口、补齐、收益和整体代价。Protection 资格只承担原准入职责，不替代 Architecture 对简单替代、最小范围和正常最终完成成本的判断；Root Cause 与 Author 在原消费点引用唯一方法，不复制新清单。原正常场景、solution/root qualification 及 finding 出口不变；脚本不从缺签名/锁/重试或安全词汇生成结论。新保护缺证不先成为义务，旧保护缺证只限制依赖结论，不自动删除或视为通过。
 
-**D-MECH-03 / CON-MECH-KNOWLEDGE** 承接 R-MECH-03..05。原 current-knowledge 单写文档优先取证、完整决策单元和存量处置关系。RDT 足够时不追全部源码；行为、性能、消费者完整性或冲突有缺口才定向查。纠正决策区分必须同步适配、可独立分期和场景保留，在原单元/change contract 承接真实 owner、共存依据、剩余消费者、可执行交付/触发及退出证据，不建永久迁移台账。
+**D-MECH-03 / CON-MECH-KNOWLEDGE** 承接 R-MECH-03..05。原 current-knowledge 单写文档优先取证、完整决策单元和存量处置关系。RDT 足够时不追全部源码；行为、性能、消费者完整性或冲突有缺口才定向查。必要性已证、缺陷已证与缺证分别承接：已证问题由原 owner 有界纠正并适配必要消费者，缺证保留有界调查且不扩大采用；不将机制用途或 CURRENT 自证视为充分依据。纠正决策区分必须同步适配、可独立分期和场景保留，在原单元/change contract 承接真实 owner、共存依据、剩余消费者、可执行交付/触发及退出证据，不建永久迁移台账。
 
 项目方法投影由原 Architecture contribution/final_integration 写 change-contract。六个 RDT 完整拟写由原 RDT owner 保留有效前驱，先接受独立 Architecture/候选 Check，再由原 final_integration 写入读回、同 B 的实际 after 重绑及最终 Check/完整 committed Review。公共 I/O、schema、runtime、状态、原则、single-writer 和阶段保持；canonical 经原 preset 完整分发，既有业务安装采用另行证明。
 

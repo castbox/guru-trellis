@@ -82,6 +82,17 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 
 全部实际结果唯一由 [本批 test.md](../../requirements-design-test-contributions/architecture-mechanism-review/test.md) 拥有。本单元不追写自己的最终 pass；源码、分发、真实行为、业务安装采用和生产效果分开。完整 Release/多平台升级矩阵不在本项范围。
 
+### 正常最终完成与协调成本的后继验证
+
+下表承接 R-MECH-01—05 与 D-MECH-01—03 的本轮差额。上文八次 native 和原结果 locator 保留其形成时专项范围，不成为后续普通方法修订的固定义务。本轮原方法及真实消费者使用风险匹配的定向语义检查和已有合同测试；不新增固定次数、行为评分或完整安装矩阵。
+
+| Test / requirement → design | 当前输入与原入口 | 必须观察及证据边界 |
+| --- | --- | --- |
+| T-MECH-06 / R-MECH-01/02/03 → D-MECH-01/02 | Author、Architecture 与独立审核读取实际改后方法；审独立账号共享写、持锁慢调用、整批等待和提前受理但最终结果仍排队的路径 | 先推导直接完成路径，主动尝试简单替代，拒绝没有必要依据的额外协调和可避免成本；Protection 资格不替代 Architecture 取舍。案例推理不冒充实际 Agent 行为对照、性能改善或业务根因证明。 |
+| T-MECH-07 / R-MECH-01/04/05 → D-MECH-01/02/03 | 同一方法审必要短事务、局部互斥/容量、原方案已最小，以及存量缺证与已证缺陷；核实际 canonical diff 和原消费者 | 不按名称禁用，不强迫虚构替代；缺证不擅删、不批准扩用，已证缺陷承接有界整改。方法正文唯一、原接口/路由保持；source 合同与格式检查不证明安装采用。 |
+
+本轮实际修改、定向命令及未验证项只由 [正常完成路径 Test contribution](../../requirements-design-test-contributions/normal-completion-design/test.md) 记录。shared current 仍由原 RDT final_integration 在候选检查后写入并读回；源码、正式质量链、分发、安装采用和业务效果分别判断。没有声明本轮原生对照或生产收益，后续只有具体证据缺口才增加定向实验。
+
 ## T693：合同方法与证据边界
 
 | Test / requirement → design | 本批输入与原 owner | 必须观察及证明边界 |
