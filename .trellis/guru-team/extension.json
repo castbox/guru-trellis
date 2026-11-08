@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-08T04:32:46Z",
+  "installed_at": "2026-11-08T06:58:40Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "a11f722b33c4939e81a752e19352648a9b98febe",
-    "commit": "a11f722b33c4939e81a752e19352648a9b98febe",
+    "ref": "d09ba1df9b38ef5689f1f873bf2ba2ef231c0012",
+    "commit": "d09ba1df9b38ef5689f1f873bf2ba2ef231c0012",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1288,7 +1288,7 @@
       ".trellis/spec/workflow/data-contracts.md": "b0449e5b630564c0b8f45e07c4a4090cac8b2a3704c5727554a8e6721c26378b",
       ".trellis/spec/workflow/companion-scripts.md": "6f401433df1c3b1047f0447ab78b7310af86e1ea5c823b3c851261d268c91916",
       ".trellis/spec/workflow/quality-guidelines.md": "e088af40759ea9007652f0bb02dbc928c02d8cff62a3630aa20b2e5a2022a945",
-      ".trellis/guru-team/trellis-source.json": "8957b1084e59f7f4bc8c8b41d3ff70f0855e13b5681159b2930ad09884caeba5"
+      ".trellis/guru-team/trellis-source.json": "f216996e0950c288f7edd3e7c4e87c817c97c3558d11bfe52dd06954266190f9"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -1554,7 +1554,7 @@
       {
         "id": "guru-upgrade-installation",
         "interface_sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
-        "tree_sha256": "ba8afdd183c82dcf3c41785ce636ca6de633706a4f939e9ba13b463503d56054"
+        "tree_sha256": "ecd8909e51d37ab00fc34c0fe95803bcf41341b66f42c0f4e5ea6c38f6b8ac7c"
       },
       {
         "id": "guru-upgrade-tools",
@@ -20086,7 +20086,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/delivery-migration.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
-        "sha256": "f6bed936f585f0bcfbc2873bf319dbd728c52dbce75b17ec70eeba25523fa044",
+        "sha256": "aa6ac300238572b1d2a6312639ccbc81f7afda656fe620454d7efe0fc739f62a",
         "executable": false,
         "action": "installed"
       },
@@ -20100,7 +20100,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
-        "sha256": "fa789334f821c3a22fa8b7d95d148301d7281a5751014d42422570829557eb80",
+        "sha256": "450c3b914fd7851ebe6eff7f6fdb101edf4606862b1cb80b7f3f767adebeb4fb",
         "executable": false,
         "action": "installed"
       },
@@ -63248,7 +63248,7 @@
       {
         "path": ".agents/skills/guru-upgrade-installation/references/delivery-migration.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
-        "sha256": "f6bed936f585f0bcfbc2873bf319dbd728c52dbce75b17ec70eeba25523fa044",
+        "sha256": "aa6ac300238572b1d2a6312639ccbc81f7afda656fe620454d7efe0fc739f62a",
         "executable": false,
         "action": "installed"
       },
@@ -63500,7 +63500,7 @@
       {
         "path": ".claude/skills/guru-upgrade-installation/references/delivery-migration.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
-        "sha256": "f6bed936f585f0bcfbc2873bf319dbd728c52dbce75b17ec70eeba25523fa044",
+        "sha256": "aa6ac300238572b1d2a6312639ccbc81f7afda656fe620454d7efe0fc739f62a",
         "executable": false,
         "action": "installed"
       },
@@ -63752,7 +63752,7 @@
       {
         "path": ".cursor/skills/guru-upgrade-installation/references/delivery-migration.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md",
-        "sha256": "f6bed936f585f0bcfbc2873bf319dbd728c52dbce75b17ec70eeba25523fa044",
+        "sha256": "aa6ac300238572b1d2a6312639ccbc81f7afda656fe620454d7efe0fc739f62a",
         "executable": false,
         "action": "installed"
       },

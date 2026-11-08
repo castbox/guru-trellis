@@ -23,9 +23,12 @@ Upstream exclusively owns its task/session/schema and full-inventory algorithms.
 
 The plan-free preview also returns a call-local raw inventory: every eligible
 registered project root and its actual branch, occupied active/archive directory
-(including a missing historical task record), Task/artifact bytes and modes,
-workflow/receipt/extension preimages, and common/local session preimages. It
-does not select conversion dispositions. For each observed active identity with
+(including a missing historical task record), Task records, artifact fingerprints,
+workflow/receipt/extension preimages, and common/local session preimages. Task
+artifacts use the public Fork's preserve-only source shape `{sha256, mode}`.
+Their content remains in the actual workspace and original backup. Task records,
+installation preimages and session carriers retain their original content.
+The inventory does not select conversion dispositions. For each observed active identity with
 an existing common-dir C4 binding, it reads that original binding and returns
 the upstream `branch_bindings` row with only `task_id`,
 `lifecycle_generation`, and `source`. Include unique active Tasks as well as
@@ -71,7 +74,12 @@ reenter their original owner. No second Delivery authority or permanent cycle ma
 
 AI reviews the complete dry-run writes/preservation/removals, source frozen
 identity, every private owner result, installed platforms, session disposition
-and backups. Show the exact targets and obtain current-dialogue confirmation
+and backups. A `preserve` decision for a required current non-companion asset
+must already match its canonical bytes and mode, including presence. Preview
+rejects an absent or customized required entry before Core writes; review an
+explicit `replace` decision in a fresh plan. The existing companion preservation
+contract remains in force.
+Show the exact targets and obtain current-dialogue confirmation
 only for real choices or target writes. Never serialize authorization. Controlled
 local_candidate rehearsals freeze actual managed source bytes/modes and both
 installed packages; they report formal_fork_source_lock unverified. Formal
@@ -102,7 +110,10 @@ are not routing facts. Third-state changes stop and remain untouched. Missing pr
 owner result returns to that owner; independent task/Delivery work is not erased.
 
 The original Git-private checkpoint remains solely for rollback and retained
-history diagnosis during reapply. Exact Plan2 defer/history_only preimages are
+history diagnosis during reapply. Diagnosis locates the original checkpoint
+across registered worktree Git directories in the same repository, including
+when a linked checkout initiated the upgrade. Exact Plan2 defer/history_only
+preimages and nested `task.json` artifacts explicitly preserved by Core are
 accepted as historical records under the matching API1/schema2 declaration;
 they never enter lifecycle/session selection or provide gate authority. Retire
 that diagnostic consumer only after its retained records are retired or migrated.

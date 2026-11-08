@@ -53,24 +53,61 @@ def installed_capabilities(common: Path, workflow: Path, records: list[tuple[str
                 del sys.modules[name]
 
 
-def retained_migration_records(target: Path) -> dict[str, dict]:
-    """Consume only an original Plan2 checkpoint, never infer a legacy phase.
-
-    The backup remains private for rollback and this installation diagnostic;
-    these rows grant no task/session/gate authority.
-    """
-    result = subprocess.run(["git", "rev-parse", "--git-common-dir", "--absolute-git-dir"], cwd=target,
-                            text=True, capture_output=True)
+def migration_checkpoints(target: Path) -> set[Path]:
+    """Locate original backups across this repository's registered worktrees."""
+    result = subprocess.run(["git", "rev-parse", "--path-format=absolute", "--git-common-dir", "--absolute-git-dir"],
+                            cwd=target, text=True, capture_output=True)
     if result.returncode:
-        return {}
-    receipts = []
-    for line in result.stdout.splitlines():
-        directory = Path(line)
-        if not directory.is_absolute():
-            directory = target / directory
-        receipts.extend((directory / "guru-team/install-upgrade").glob("*/checkpoint.json"))
+        return set()
+    directories = {Path(line) for line in result.stdout.splitlines()}
+    registered = subprocess.run(["git", "worktree", "list", "--porcelain", "-z"],
+                                cwd=target, text=True, capture_output=True)
+    if registered.returncode == 0:
+        for record in registered.stdout.split("\0\0"):
+            first = record.split("\0", 1)[0]
+            if not first.startswith("worktree "):
+                continue
+            root = Path(first[9:])
+            if not root.is_dir():
+                continue
+            observed = subprocess.run(["git", "rev-parse", "--absolute-git-dir"],
+                                      cwd=root, text=True, capture_output=True)
+            if observed.returncode == 0:
+                directories.add(Path(observed.stdout.strip()))
+    return {path for directory in directories
+            for path in (directory / "guru-team/install-upgrade").glob("*/checkpoint.json")}
+
+
+def retained_plan_records(target: Path, plan: dict) -> dict[str, dict]:
+    """Project exact retained preimages; Core owns Task and artifact classification."""
+    workspaces = {row["id"]: Path(row["root"]).resolve() for row in plan["workspaces"]}
+    candidates = [(row["workspace"], row["task_ref"] + "/task.json", row["source"])
+                  for row in plan["tasks"] if row["disposition"] in ("defer", "history_only")]
+    for row in plan["files"]:
+        selected = row["target"]
+        ref = selected["path"]
+        if (row["owner"] == "preserve" and row["action"] == "preserve"
+                and selected["kind"] == "project" and ref.startswith(".trellis/tasks/")
+                and ref.endswith("/task.json")):
+            candidates.append((selected["workspace"], ref, row["source"]))
     retained = {}
-    for path in set(receipts):
+    for workspace, ref, source in candidates:
+        if workspaces.get(workspace) != target.resolve() or source is None:
+            continue
+        file = target / ref
+        try:
+            actual = {"sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "mode": file.stat().st_mode & 0o777}
+        except OSError:
+            continue
+        if actual == {key: source[key] for key in ("sha256", "mode")}:
+            retained[ref] = actual
+    return retained
+
+
+def retained_migration_records(target: Path) -> dict[str, dict]:
+    """Consume original Plan2 backups for diagnosis, never Task/session authority."""
+    retained = {}
+    for path in migration_checkpoints(target):
         try:
             value = json.loads(path.read_text())
             if value.get("schema_version") != "2.0" or value.get("core_completed") is not True:
@@ -80,18 +117,7 @@ def retained_migration_records(target: Path) -> dict[str, dict]:
             plan = value["plan"]["core_plan"]
             if plan["target"]["task_schema"] != "2.0" or plan["target"]["delivery_api"] != "1.0":
                 continue
-            workspaces = {row["id"]: Path(row["root"]).resolve()
-                          for row in plan["workspaces"]}
-            for row in plan["tasks"]:
-                if workspaces.get(row["workspace"]) != target.resolve() or row["disposition"] not in ("defer", "history_only"):
-                    continue
-                if row["source"] is None:
-                    continue
-                ref = row["task_ref"] + "/task.json"
-                file = target / ref
-                actual = {"sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "mode": file.stat().st_mode & 0o777}
-                if actual == {key: row["source"][key] for key in ("sha256", "mode")}:
-                    retained[ref] = actual
+            retained.update(retained_plan_records(target, plan))
         except (OSError, ValueError, KeyError, TypeError):
             continue
     return retained
