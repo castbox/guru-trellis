@@ -131,12 +131,14 @@ class DeliveryUpgradeTests(unittest.TestCase):
                      "target": {"version": json.loads((self.cli / "package.json").read_text())["version"], "task_schema": "2.0", "delivery_api": "1.0"},
                      "workspaces": [{"id": key, "root": str(value), "project_relative": getattr(self, "project_relative", None)} for key, value in selected.items()],
                      "installations": [], "tasks": [], "sessions": [], "workflows": [], "templates": [], "files": []}
+        inventory = upgrade.prepare_inventory(self.root, None)
         for workspace, target in selected.items():
             template = call(target, self.fork, "templates")
             core_plan["templates"].append({"workspace": workspace, "candidate_sha256": template["candidate_sha256"], "files": template["files"]})
             core_plan["installations"].append({"workspace": workspace, "version_source": self.raw(target, ".trellis/.version"), "receipt_source": self.raw(target, ".trellis/.template-hashes.json")})
-            for path in (target / ".trellis/tasks").rglob("task.json"):
-                ref = path.parent.relative_to(target).as_posix(); raw = self.raw(target, ref + "/task.json")
+            tasks = next(row["tasks"] for row in inventory["workspaces"] if row["root"] == str(target))
+            for task in tasks:
+                ref = task["task_ref"]; path = target / ref / "task.json"; raw = task["source"]
                 old = json.loads(path.read_text())
                 archived = ref.startswith(".trellis/tasks/archive/")
                 current = old.get("schema_version") == "2.0"
@@ -153,7 +155,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
                 for artifact in path.parent.rglob("*"):
                     if artifact.is_file() and artifact != path:
                         relative = artifact.relative_to(target).as_posix()
-                        core_plan["files"].append({"target": {"kind": "project", "workspace": workspace, "path": relative}, "owner": "preserve", "action": "preserve", "source": self.raw(target, relative)})
+                        core_plan["files"].append({"target": {"kind": "project", "workspace": workspace, "path": relative}, "owner": "preserve", "action": "preserve", "source": task["artifacts"][relative]})
             for item in template["files"]:
                 name = item["path"]
                 core_plan["files"].append({"target": {"kind": "project", "workspace": workspace, "path": name}, "owner": "template", "action": "write", "source": self.raw(target, name), "target_content_base64": template["contents"][name], "target_mode": item["mode"]})
@@ -171,7 +173,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
         for directory, ref, kind in session_roots:
             for path in (directory / ref).glob("*.json"):
                 core_plan["sessions"].append({"target": {**kind, "filename": path.name}, "source": self.raw(directory, ref + "/" + path.name)})
-        core_plan["branch_bindings"] = upgrade.prepare_inventory(self.root, None)["branch_bindings"]
+        core_plan["branch_bindings"] = inventory["branch_bindings"]
         return {"core_plan": core_plan, "dependency_mode": "local_candidate", "source_candidate": upgrade.freeze_source(self.source), "fork_candidate": upgrade.freeze_fork(self.fork),
                 "guru_workspaces": [{"workspace": key, "selected_platforms": ["codex"], "decisions": []} for key in selected], "controls": [], "owner_migrations": []}
 
@@ -326,6 +328,56 @@ class DeliveryUpgradeTests(unittest.TestCase):
         self.assertEqual(result["code"], "upstream_delivery_migration_required")
         self.assertEqual(upgrade.rollback(self.root, recovery, checkpoint)["exit_id"], "blocked")
 
+    def test_linked_invocation_retained_peer_and_nested_snapshot_reapply(self):
+        nested = self.root / self.ref / "worktree-snapshots/prior/task.json"
+        nested.parent.mkdir(parents=True)
+        shutil.copyfile(self.root / self.ref / "task.json", nested)
+        nested.chmod(0o640)
+        self.git("add", "."); self.git("commit", "-qm", "normal retained Task snapshot")
+        sibling = self.directory / "retained-peer"
+        self.git("worktree", "add", "-qb", "retained-peer", str(sibling))
+        plan = self.plan({"primary": self.root, "peer": sibling}, ("peer",))
+        artifacts = [row for row in plan["core_plan"]["files"] if row["target"]["path"].endswith("worktree-snapshots/prior/task.json")]
+        self.assertEqual(len(artifacts), 2)
+        self.assertTrue(all(set(row["source"]) == {"sha256", "mode"} for row in artifacts))
+        before = {str(p): state(p) for target in (self.root, sibling)
+                  for p in target.rglob("*") if p.is_file() and ".git" not in p.parts and p.name != ".git"}
+        recovery, checkpoint = upgrade.begin(PACKAGE, sibling, self.public, plan, self.fork)
+        self.module.install_assets = Mock(side_effect=SystemExit("normal preset pause"))
+        self.assertEqual(upgrade.resume(PACKAGE, sibling, recovery, checkpoint)["exit_id"], "delivery_resume_required")
+        self.assertEqual(checkpoint["phase"], "preset", checkpoint.get("failure"))
+        sys.path.insert(0, str(SOURCE / "trellis/presets/guru-team/scripts/python"))
+        from delivery_installation import diagnose_delivery_installation, migration_checkpoints
+        self.assertIn(recovery / "checkpoint.json", migration_checkpoints(self.root))
+        for target in (self.root, sibling):
+            self.assertEqual(diagnose_delivery_installation(self.source, target)["status"], "supported_candidate")
+        self.assertEqual(upgrade.rollback(sibling, recovery, checkpoint)["exit_id"], "rolled_back")
+        self.assertEqual({str(p): state(p) for target in (self.root, sibling)
+                          for p in target.rglob("*") if p.is_file() and ".git" not in p.parts and p.name != ".git"}, before)
+
+    def test_required_preserve_is_checked_before_begin_writes(self):
+        ref = ".cursor/commands/guru-finish-work.md"
+        canonical = self.source / "required-finish.md"
+        canonical.write_text("Required current entry\n")
+        self.module.managed_source_projections = lambda *args: {Path(ref): canonical}
+        for content in (None, "Ordinary local entry customization\n"):
+            with self.subTest(content=content):
+                path = self.root / ref
+                if content is not None:
+                    path.parent.mkdir(parents=True, exist_ok=True); path.write_text(content)
+                plan = self.plan()
+                plan["guru_workspaces"][0]["decisions"] = [{"path": ref, "action": "preserve", "expected_sha256": state(path)["sha256"]}]
+                before = self.tree()
+                with self.assertRaisesRegex(MigrationError, "review replace before migration"):
+                    upgrade.begin(PACKAGE, self.root, self.public, plan, self.fork)
+                self.assertEqual(self.tree(), before)
+                plan["guru_workspaces"][0]["decisions"][0]["action"] = "replace"
+                self.assertEqual(upgrade.preview(PACKAGE, self.root, self.public, plan, self.fork)["core"]["status"], "preview")
+        path.write_bytes(canonical.read_bytes()); path.chmod(canonical.stat().st_mode & 0o777)
+        plan = self.plan()
+        plan["guru_workspaces"][0]["decisions"] = [{"path": ref, "action": "preserve", "expected_sha256": state(path)["sha256"]}]
+        self.assertEqual(upgrade.preview(PACKAGE, self.root, self.public, plan, self.fork)["core"]["status"], "preview")
+
     def test_lost_public_output_reentry_reuses_completed_core_and_same_backup(self):
         plan = self.plan();recovery, checkpoint = upgrade.begin(PACKAGE, self.root, self.public, plan, self.fork)
         self.module.install_assets = lambda *args, **kwargs: (_ for _ in ()).throw(SystemExit("pause"))
@@ -427,7 +479,8 @@ class DeliveryUpgradeTests(unittest.TestCase):
         self.assertEqual(binding["source"], upgrade.raw_snapshot(self.binding_store(self.root).path_for(TaskLifecycleKey("00-bootstrap-guidelines", 0))))
         peer = next(row for row in inventory["workspaces"] if row["root"] == str(sibling))
         task = next(row for row in peer["tasks"] if row["task_ref"] == self.ref)
-        self.assertEqual(base64.b64decode(task["artifacts"][self.ref + "/prd.md"]["content_base64"]), peer_prd.read_bytes())
+        self.assertEqual(task["artifacts"][self.ref + "/prd.md"], state(peer_prd))
+        self.assertIn("content_base64", task["source"])
         self.assertNotIn("disposition", task)
         self.assertIsNone(next(row for row in peer["tasks"] if row["task_ref"].endswith("occupied-without-record"))["source"])
         after = {str(p): state(p) for target in (self.root, sibling) for p in target.rglob("*") if p.is_file() and ".git" not in p.parts}

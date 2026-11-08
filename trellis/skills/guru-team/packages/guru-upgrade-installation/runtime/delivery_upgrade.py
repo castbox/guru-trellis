@@ -81,10 +81,12 @@ def roots(plan: dict) -> dict[str, Path]:
             for row in plan["core_plan"]["workspaces"]}
 
 
-def raw_snapshot(path: Path) -> dict | None:
+def raw_snapshot(path: Path, *, include_content: bool = True) -> dict | None:
     facts = state(path)
     if facts["sha256"] is None:
         return None
+    if not include_content:
+        return facts
     return {"content_base64": base64.b64encode(path.read_bytes()).decode("ascii"), **facts}
 
 
@@ -138,7 +140,7 @@ def prepare_inventory(root: Path, fork: Path | None) -> dict:
             ref = directory.relative_to(target).as_posix()
             original = raw_snapshot(path)
             tasks.append({"task_ref": ref, "source": original,
-                          "artifacts": {p.relative_to(target).as_posix(): raw_snapshot(p)
+                          "artifacts": {p.relative_to(target).as_posix(): raw_snapshot(p, include_content=False)
                                         for p in sorted(directory.rglob("*")) if p.is_file() and p != path}})
             if common is not None and original is not None and not ref.startswith(".trellis/tasks/archive/"):
                 metadata = json.loads(base64.b64decode(original["content_base64"]))
@@ -174,7 +176,7 @@ def old_installation(root: Path, source: Path | None = None) -> dict:
 
 
 def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Path | None) -> dict:
-    from owner import source_root, installer, old_paths, guru_owned
+    from owner import source_root, installer, old_paths, guru_owned, required_reconciliations
     source = source_root(package)
     old = old_installation(root, source)
     if public["source_profile"] != old["profile"]:
@@ -215,6 +217,13 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
         decisions = {row["path"]: row for row in selected["decisions"]}
         if len(decisions) != len(selected["decisions"]):
             raise MigrationError("Duplicate Guru managed decision")
+        for path, decision in decisions.items():
+            if state(relative_file(target, path))["sha256"] != decision["expected_sha256"]:
+                raise MigrationError("Guru asset decision became stale: " + path)
+        adapter = {"selected_platforms": selected["selected_platforms"], "guru_decisions": selected["decisions"]}
+        for path, canonical in required_reconciliations(target, module, adapter).items():
+            if state(relative_file(target, path)) != state(canonical):
+                raise MigrationError("Preserve conflicts with a required current Guru asset; review replace before migration: " + path)
         rows = []
         for path, digest in hashes.items():
             if not guru_owned(path):
