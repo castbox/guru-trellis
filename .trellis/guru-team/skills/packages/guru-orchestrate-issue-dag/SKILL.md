@@ -7,7 +7,8 @@ description: Explicitly coordinate a GitHub Issue dependency graph across Codex 
 
 `judgment_mode=semantic`. This standalone Codex Skill owns one repository's
 cross-Issue DAG. The coordinator reads live evidence, schedules eligible nodes,
-judges progress and proves the requested endpoint. Each Issue has its own child
+judges progress and proves full Issue completion. Explicit human stage limits
+only bound the current execution segment. Each Issue has its own child
 chat/worktree and executes the target repository's complete current workflow.
 The coordinator does not implement Issues or enter a single-Issue workflow phase.
 
@@ -28,8 +29,8 @@ A discovery projection is only an entry locator. Do not mix providers or use a
 historical personal copy. The target repository may be elsewhere and need not
 install these orchestration Skills.
 
-The shared method exclusively defines endpoint interpretation, current-dialogue
-authority, overall completion responsibility, active unblocking, child operation,
+The shared method exclusively defines selected-base continuity, endpoint
+interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
 heartbeat, continuation, merge/completion proof and supported recovery. Apply
 it at startup, resume and child continuation alike.
 The local contract owns graph normalization, eligibility, slots, exclusion,
@@ -42,7 +43,8 @@ failure propagation, stage settlement and this Skill's public I/O.
    breaks ties among eligible nodes, never creates implicit edges. Clarify only
    actual ambiguous dependencies or choices before affected admission.
 2. Perform the shared read-only preflight and AI Gate for the entire graph.
-   Verify acyclicity, hard prerequisites, exclusions and endpoint compatibility.
+   Resolve the selected base and full-completion goal. Verify acyclicity, hard
+   prerequisites, exclusions and any explicit execution-limit compatibility.
    A dry-run returns `dry_run_ready|dry_run_blocked` and stops. Auto/live consume
    ready preflight internally and launch only within current human instructions.
 3. Start or recover the one native current-chat heartbeat, default every two
