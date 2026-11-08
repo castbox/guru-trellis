@@ -127,7 +127,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
 
     def plan(self, workspace_roots=None, deferred_workspaces=()):
         selected = workspace_roots or {"primary": self.root}
-        core_plan = {"schema_version": "2.0", "source": {"version": "0.7.0-castbox.3", "task_schema": "1.0", "delivery_api": None},
+        core_plan = {"schema_version": "2.0", "source": {"version": (self.root / ".trellis/.version").read_text().strip(), "task_schema": "1.0", "delivery_api": None},
                      "target": {"version": json.loads((self.cli / "package.json").read_text())["version"], "task_schema": "2.0", "delivery_api": "1.0"},
                      "workspaces": [{"id": key, "root": str(value), "project_relative": getattr(self, "project_relative", None)} for key, value in selected.items()],
                      "installations": [], "tasks": [], "sessions": [], "workflows": [], "templates": [], "files": []}
@@ -139,8 +139,13 @@ class DeliveryUpgradeTests(unittest.TestCase):
                 ref = path.parent.relative_to(target).as_posix(); raw = self.raw(target, ref + "/task.json")
                 old = json.loads(path.read_text())
                 archived = ref.startswith(".trellis/tasks/archive/")
-                row = {"workspace": workspace, "task_ref": ref, "source": raw, "disposition": "history_only" if archived else "defer" if workspace in deferred_workspaces else "convert_active"}
-                if not archived and workspace not in deferred_workspaces:
+                current = old.get("schema_version") == "2.0"
+                row = {"workspace": workspace, "task_ref": ref, "source": raw, "disposition": "history_only" if archived else "defer" if workspace in deferred_workspaces else "current" if current else "convert_active"}
+                if current:
+                    core_plan["source"]["task_schema"] = "mixed"
+                    if row["disposition"] == "defer":
+                        row["source_task_schema"] = "2.0"
+                if not archived and workspace not in deferred_workspaces and not current:
                     row["record"] = self.projected(old)
                     row["legacy_facts"] = [{"field": name, "disposition": "source_snapshot", "owner_id": "controlled-upgrade-owner", "reason": {"locator": ref + "/migration/source-task.json", "revision": "sha256:" + raw["sha256"]}}
                                            for name in ("commit", "pr_url", "completedAt") if old.get(name)]
@@ -466,6 +471,107 @@ class DeliveryUpgradeTests(unittest.TestCase):
         self.assertEqual(upgrade.rollback(self.root, recovery, loaded)["exit_id"], "rolled_back")
         self.assertEqual({p.relative_to(sibling).as_posix(): state(p) for p in (sibling / self.ref).rglob("*") if p.is_file()}, peer_before)
         self.assertFalse((self.root / private).exists())
+
+    def current_peer_plan(self):
+        path = self.root / self.ref / "task.json"
+        metadata = json.loads(path.read_text())
+        metadata["description"] = "Current Task keeps its existing business description"
+        write_json(path, metadata)
+        initial, private = self.taskcommit_plan()
+        owner = copy.deepcopy(initial["owner_migrations"][0])
+        key = owner["input"]["delivery_key"]
+        for row in initial["core_plan"]["sessions"]:
+            if row["target"]["kind"] == "common_session":
+                row["record"] = {"schema_version": 3, **key}
+        call(self.root, self.fork, "migrate", initial["core_plan"])
+        self.git("add", ".")
+        self.git("commit", "-qm", "current Task before inherited worktree")
+        sibling = self.directory / "current-copy"
+        self.git("worktree", "add", "-qb", "current-copy", str(sibling))
+        # A normal checkout may use different JSON formatting and file modes.
+        # Equality belongs to Core's parsed record; preservation uses raw bytes.
+        peer_task = sibling / self.ref / "task.json"
+        peer_task.write_text(json.dumps(json.loads(peer_task.read_text()), indent=4) + "\n")
+        peer_task.chmod(0o640)
+        (sibling / self.ref / "peer-note.md").write_text("Independent peer planning note\n")
+        plan = self.plan({"primary": self.root, "peer": sibling}, ("peer",))
+        return sibling, plan, key, private, owner
+
+    def test_current_peer_preserved_through_preview_migration_resume_and_rollback(self):
+        sibling, plan, key, private, _ = self.current_peer_plan()
+        task_before = {str(path): upgrade.raw_snapshot(path) for target in (self.root, sibling)
+                       for path in (target / self.ref).rglob("*") if path.is_file()}
+        common = self.binding_store(self.root).repository.common_dir
+        sessions_before = {str(path): upgrade.raw_snapshot(path)
+                           for directory in (common / "trellis/sessions", self.root / ".trellis/.runtime/sessions", sibling / ".trellis/.runtime/sessions")
+                           for path in directory.glob("*.json")}
+        binding_path = self.binding_store(self.root).path_for(TaskLifecycleKey(key["task_id"], 0))
+        binding_before = upgrade.raw_snapshot(binding_path)
+        before = {str(path): state(path) for target in (self.root, sibling)
+                  for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}
+        facts = upgrade.preview(PACKAGE, self.root, self.public, plan, self.fork)
+        self.assertEqual(facts["core"]["status"], "preview")
+        self.assertEqual({row["root"] for row in upgrade.prepare_inventory(self.root, None)["workspaces"]}, {str(self.root), str(sibling)})
+        self.assertEqual({str(path): state(path) for target in (self.root, sibling)
+                          for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}, before)
+        recovery, checkpoint = upgrade.begin(PACKAGE, self.root, self.public, plan, self.fork)
+        anchors = copy.deepcopy(checkpoint["preimages"])
+        self.module.install_assets = Mock(side_effect=SystemExit("normal preset pause"))
+        result = upgrade.resume(PACKAGE, self.root, recovery, checkpoint)
+        self.assertEqual(result["exit_id"], "delivery_resume_required")
+        self.assertTrue(checkpoint["core_completed"])
+        self.assertEqual(checkpoint["phase"], "preset", checkpoint.get("failure"))
+        self.assertEqual(call(self.root, self.fork, "migrate", plan["core_plan"])["status"], "migrated")
+        loaded = json.loads((recovery / "checkpoint.json").read_text())
+        with patch("delivery_upgrade.call", side_effect=AssertionError("Completed Core must not execute twice")):
+            self.assertEqual(upgrade.resume(PACKAGE, self.root, recovery, loaded)["recovery_ref"], result["recovery_ref"])
+        self.assertEqual(loaded["preimages"], anchors)
+        for target in (self.root, sibling):
+            outcome = subprocess.run([sys.executable, ".trellis/scripts/delivery.py", "current", "--json"], cwd=target, text=True, capture_output=True)
+            self.assertEqual(outcome.returncode, 0, outcome.stderr[-500:])
+            current = json.loads(outcome.stdout)
+            self.assertEqual(current["kind"], "current", current)
+            self.assertEqual(current["key"], key)
+            self.assertFalse((target / private).exists())
+            self.assertEqual(len(json.loads((target / self.ref / "task.json").read_text())["deliveries"]), 1)
+        self.assertEqual({str(path): upgrade.raw_snapshot(path) for target in (self.root, sibling)
+                          for path in (target / self.ref).rglob("*") if path.is_file()}, task_before)
+        self.assertEqual({path: upgrade.raw_snapshot(Path(path)) for path in sessions_before}, sessions_before)
+        self.assertEqual(upgrade.raw_snapshot(binding_path), binding_before)
+        self.assertEqual(upgrade.rollback(self.root, recovery, loaded)["exit_id"], "rolled_back")
+        self.assertEqual({str(path): state(path) for target in (self.root, sibling)
+                          for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}, before)
+        self.assertEqual({path: upgrade.raw_snapshot(Path(path)) for path in sessions_before}, sessions_before)
+        self.assertEqual(upgrade.raw_snapshot(binding_path), binding_before)
+
+    def test_current_peer_business_content_mismatch_reaches_core_and_blocks_zero_write(self):
+        sibling, _, _, _, _ = self.current_peer_plan()
+        path = sibling / self.ref / "task.json"
+        metadata = json.loads(path.read_text())
+        metadata["description"] = "Ordinary independent Task edit on the peer branch"
+        write_json(path, metadata)
+        plan = self.plan({"primary": self.root, "peer": sibling}, ("peer",))
+        before = {str(path): state(path) for target in (self.root, sibling)
+                  for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}
+        common = self.binding_store(self.root).repository.common_dir
+        sessions = {str(path): upgrade.raw_snapshot(path) for path in (common / "trellis/sessions").glob("*.json")}
+        with self.assertRaisesRegex(MigrationError, "Installed Plan2 preview rejected"):
+            upgrade.preview(PACKAGE, self.root, self.public, plan, self.fork)
+        self.assertEqual({str(path): state(path) for target in (self.root, sibling)
+                          for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}, before)
+        self.assertEqual({path: upgrade.raw_snapshot(Path(path)) for path in sessions}, sessions)
+
+    def test_current_peer_cannot_receive_original_owner_private_conversion(self):
+        sibling, plan, _, private, owner = self.current_peer_plan()
+        owner["workspace"] = "peer"
+        plan["owner_migrations"].append(owner)
+        before = {str(path): state(path) for target in (self.root, sibling)
+                  for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}
+        with self.assertRaisesRegex(MigrationError, "never a deferred/history-only peer"):
+            upgrade.preview(PACKAGE, self.root, self.public, plan, self.fork)
+        self.assertFalse((sibling / private).exists())
+        self.assertEqual({str(path): state(path) for target in (self.root, sibling)
+                          for path in target.rglob("*") if path.is_file() and ".git" not in path.parts and path.name != ".git"}, before)
 
     def test_normal_binding_and_registration_changes_require_fresh_prepare(self):
         plan = self.plan(); before = self.tree()

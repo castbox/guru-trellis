@@ -227,8 +227,8 @@ Fork `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI-Core
 
 本次目标为尚未发布的 `v0.7.0-guru.8`。当前准备源码的 extension 与 maintenance
 target 为 `0.7.0-guru.8`；它与已发布的 immutable `.7` tag 分开读取。
-正式 Fork lock 固定到 `ca0e8b931d19ccb87802d6866abd2113a6f707c0`，
-tree `7d765bd35caf840820359259703e4035fe7d0ad2`，成功 main CI `42016570304`。
+正式 Fork lock 固定到 `b4f1665143bd4ecf3a290d426ad62293fc13ea42`，
+tree `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`，成功 main CI `42440325190`。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
@@ -239,6 +239,9 @@ Guru 消费公共家族/key 及目标 native 前驱关系；AI 仍审核原安�
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
 本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。
 本来源另包含上游 #62/PR #63 的 parent gitlink 原子身份修复，以及 #64/PR #65 的精简 known_legacy 正式归档后继能力。
+本来源新增上游 PR #66 的 current-schema Task peer 迁移：mixed Plan2 通过
+`defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
+authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
@@ -294,8 +297,8 @@ business Intake，普通 apply 保持严格。
 与 `docs/architecture/README.md` 读取完整适用单元及 Git revision，与软件版本分开。
 
 For current-source validation, use the source-locked, built
-`castbox/Trellis@ca0e8b931d19ccb87802d6866abd2113a6f707c0` CLI
-(successful main CI `42016570304`) and that same reviewed Guru source.
+`castbox/Trellis@b4f1665143bd4ecf3a290d426ad62293fc13ea42` CLI
+(successful main CI `42440325190`) and that same reviewed Guru source.
 Stable `.7` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. For a target meeting the ordinary current-only installation

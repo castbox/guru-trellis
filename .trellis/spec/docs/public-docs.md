@@ -45,8 +45,8 @@ version number alone cannot establish the predecessor's matching build.
 
 The next repository target is `v0.7.0-guru.8`, not yet published. Its canonical
 extension and maintenance target are `0.7.0-guru.8`. The current Fork source
-lock selects `castbox/Trellis@ca0e8b931d19ccb87802d6866abd2113a6f707c0`, tree
-`7d765bd35caf840820359259703e4035fe7d0ad2`, successful main CI `42016570304`,
+lock selects `castbox/Trellis@b4f1665143bd4ecf3a290d426ad62293fc13ea42`, tree
+`9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`, successful main CI `42440325190`,
 with CLI/core `0.7.0-castbox.6` and `pnpm@10.32.1`. This source includes #40
 maintenance, #43 native schema-1 session compatibility, #47 Task/Delivery Git
 object reading, #50 public `GitCandidateContent`, #52 public `task_resume`,
@@ -54,7 +54,11 @@ object reading, #50 public `GitCandidateContent`, #52 public `task_resume`,
 reactivation, #56 verified sibling snapshots, #58 custom AGENTS content
 maintenance, and #59/#60 legal stopping of retained old Delivery profiles.
 It also includes #62/PR #63 parent gitlink atomic identity and #64/PR #65
-compact known_legacy formal archive successors. Source identities and CI do not prove a matching local build,
+compact known_legacy formal archive successors. PR #66 adds mixed Plan2 current-schema
+Task peers through defer/source_task_schema=2.0. The original binding and live
+checkout select one authority; legal peers preserve their raw content and modes
+and do not enter lifecycle, session, Delivery or private-owner conversion.
+Source identities and CI do not prove a matching local build,
 target installation, native acceptance or Release. Historical Fork `.4`
 tarballs do not substitute for the current lock's matching build. Use the clean
 locked source workspace with its normal CLI/Core dependency layout and

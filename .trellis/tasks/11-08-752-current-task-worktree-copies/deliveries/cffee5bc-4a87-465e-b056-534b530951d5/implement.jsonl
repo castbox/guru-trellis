@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实质文本前完整读取，同一写作规范。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划来源、完整正文与语义保留合同。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "读取适用 Test And Validation Value 与 Validation Scope Ownership，按行为验证。"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/delivery-migration.md", "reason": "Plan2 public/private owner、完整 roots、frozen resume/rollback。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "canonical与官方Trellis资产归属及维护入口。"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "consumer兼容及必要旧路径退出，不增加冗余双读。"}
+{"file": "docs/architecture/contributions/752-current-task-worktree-copies.md", "reason": "真实隔离Architecture拟写，candidate阶段不改CURRENT。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "原Author完整正文模板，实施与Check读取适用条件。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "原Author完整正文模板，实施与Check读取适用条件。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "原Author完整正文模板，实施与Check读取适用条件。"}

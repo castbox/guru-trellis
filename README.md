@@ -92,15 +92,18 @@ Task2 归档与原合同选定的正式 schema1 归档，均由 [Reactivate 合�
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前源码固定到 `ca0e8b931d19ccb87802d6866abd2113a6f707c0`，
-对应 tree `7d765bd35caf840820359259703e4035fe7d0ad2`、成功 main CI
-`42016570304`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
+当前源码固定到 `b4f1665143bd4ecf3a290d426ad62293fc13ea42`，
+对应 tree `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`、成功 main CI
+`42440325190`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
 schema-1 会话元数据兼容修复，以及 #47 的 Task/Delivery Git 对象读取优化和 #50 的公开 `GitCandidateContent` 不可变摘要能力及 #52 的公开 `task_resume`。
 本来源另包含上游 #53 的新进程 Python 选择与命令加参数执行修复。
 本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
 本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。
 本来源另包含上游 #62/PR #63 的 parent gitlink 原子身份修复，以及 #64/PR #65 的精简 known_legacy 正式归档后继能力。
+本来源新增上游 PR #66 的 current-schema Task peer 迁移：mixed Plan2 通过
+`defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
+authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 Fork CLI/core 均为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 来源采用不代表目标已经更新；目标工具安装、Guru 集成与各专项验收仍需实际验证。
@@ -148,8 +151,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 已发布稳定 Guru tag | `v0.7.0-guru.7`（peeled `7718d129bcb2055d77c7f43d0e4edca9aee313ea`） |
 | 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.8` |
 | 当前源码 Guru extension revision | `0.7.0-guru.8`（未发布的准备源码） |
-| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.6` @ `ca0e8b931d19ccb87802d6866abd2113a6f707c0` |
-| 当前源码 Fork CI identity | `42016570304` |
+| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.6` @ `b4f1665143bd4ecf3a290d426ad62293fc13ea42` |
+| 当前源码 Fork CI identity | `42440325190` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前知识 authority（非软件版本） | `guru-trellis-rdt` / `guru-trellis-architecture`；分别从 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 读取 |
 
