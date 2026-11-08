@@ -514,7 +514,8 @@ AI 应先识别现有 Trellis 版本、本地定制、历史 Guru Team 安装以
 需要跨 Issue 协调时，在 Codex 中显式调用 `guru-orchestrate-issue-dag`
 （依赖图与并行）或 `guru-orchestrate-issue-sequence`（严格串行）。
 当前源码的 Guru preset 提供这两个受管入口，默认协调器心跳为 2 分钟；
-启动前承接本轮人类指令中的执行终点。
+始终以完成 Issue 为目标，并承接本轮人类指令中的执行限制。
+显式选定基线贯穿启动、PR 和完成证明，无关分支不要求同步。
 迁移和能力边界见 [Issue 编排说明](trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
 
 安装完成后，继续用自然语言向 AI 描述需求即可。

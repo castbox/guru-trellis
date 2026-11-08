@@ -249,6 +249,7 @@ accept Delivery Planning or begin implementation.
 当前源码支持 Codex 独立显式调用受管的 `guru-orchestrate-issue-dag` 和
 `guru-orchestrate-issue-sequence`，协调器 heartbeat 默认为 2 分钟。
 它们协调多个 Issue，不加入本 workflow 的单 Issue mandatory phase。
+完整完成 Issue 是目标；显式选定基线贯穿启动、PR 和完成证明，无关分支不要求同步。
 分发、执行终点和个人安装迁移见
 [Issue 编排迁移说明](../../presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
 

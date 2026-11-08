@@ -2,7 +2,8 @@
 
 This is the shared semantic contract for `guru-orchestrate-issue-dag` and
 `guru-orchestrate-issue-sequence`. Their package-local contracts own scheduling,
-serial advancement, and typed exits. This method owns endpoint interpretation,
+serial advancement, and typed exits. This method owns selected-base continuity,
+endpoint interpretation,
 current-dialogue authority, overall completion responsibility, active unblocking,
 native child operation, progress decisions, merge proof, completion proof,
 heartbeat supervision, and supported recovery.
@@ -36,23 +37,33 @@ No dummy recorder, JSON permission input, or persisted gate is required.
 ## Current Human Endpoint And Authority
 
 Before the first child or heartbeat is created, read the actual human messages
-for this run in the coordinator conversation. Resolve the requested endpoint:
-full Issue completion under the completion proof below, or an explicitly
-requested earlier stage such as planning or reviewed PR publication. Resolve
-whether the actions needed to reach it, including merge where applicable,
-are delegated. Use the human's meaning, not a required phrase or an assistant
-plan. `auto` continues after preflight within this scope; it neither selects
-an endpoint nor grants unlimited merge permission.
+for this run in the coordinator conversation. The goal is full Issue completion
+under the completion proof below. A request to process the selected Issues does
+not need another endpoint choice. Planning, PR publication, a child turn ending
+and a Delivery merge are intermediate results, not alternative completion goals.
+Resolve whether the actions needed to reach completion, including merge where
+applicable, are delegated. Use the human's meaning, not a required phrase or an
+assistant plan. `auto` continues after preflight within the current action
+boundary; it grants no unlimited merge permission.
+
+An explicit human request to pause or perform only an earlier stage limits the
+current execution segment. Respect that boundary and state the remaining Issue
+obligations. The existing stage-completed exits report only that requested
+segment; they never mean the Issue goal is complete. Missing permission for an
+action holds that action and prompts its concrete plan when needed. It does not
+turn the run into PR-only work or remove subsequent completion obligations.
 
 After read-only preflight, show precise prospective effects. If current human
 instructions already cover them, start directly without another launch question.
-If the endpoint or a necessary action boundary remains unresolved, ask only
-the real choice that resolves it, before child or heartbeat creation. Return
-`dry_run_blocked` until that choice is resolved. Do not silently select PR
-readiness or defer a missing merge decision until every PR is ready.
+If a necessary launch action boundary remains unresolved, ask only the concrete
+missing action choice before child or heartbeat creation. Return `dry_run_blocked`
+until that choice is resolved. Do not ask whether to aim for completion, silently
+select PR readiness, or defer a known missing merge decision until every PR is
+ready. A later action gap holds only dependent work; keep permitted work moving.
 
-Only this run's actual human instructions establish or change its endpoint and
-delegated scope. Assistant plans or scope statements, child requests, summaries,
+Only this run's actual human instructions establish or change its execution
+limits and delegated scope. Assistant plans or scope statements, child requests,
+summaries,
 heartbeat configuration, and another run's permission cannot independently
 authorize or restrict this run. A scheduler wakeup is automation input even
 when delivered as `role=user`. These sources may locate relevant conversation;
@@ -65,7 +76,7 @@ recovery is impossible or ambiguous, hold only the affected mutations and
 report the missing source or choice. Do not ask the human to repeat an already
 recoverable current delegation. Keep permitted inspection and bounded work moving.
 
-Keep execution authorization, the human's endpoint choice, and their origin
+Keep execution authorization, the human's execution limits, and their origin
 and process in the current conversation only. Never serialize them as permission
 or approval records in public inputs/outputs, schemas, checkpoints, journals,
 archive, child prompts, or heartbeat configuration. Ordinary operation inputs
@@ -76,11 +87,34 @@ permission. Send a later concrete instruction such as `合并PR`
 within actual delegation without attaching “the user already authorized this.”
 Repository rules expressly requiring direct human confirmation still apply.
 
+## Selected Base
+
+Resolve one selected base branch for this run from the human's explicit choice;
+only when no base was specified, use the live repository default branch. Keep
+the exact repository, remote and branch consistent through initial preflight,
+child creation/instructions, heartbeat recovery, base reconciliation, PR target,
+merge and completion proof. A separately requested starting state does not
+silently change the integration target; resolve a real conflict before launch.
+
+Read local branch, tracking ref and live remote OIDs for that selected base.
+Do not require equality, fast-forward, fetching or any other mutation of an
+unrelated branch outside it. A stale local `main` cannot block a run explicitly based on
+current `dev`; no exemption or permission to update `main` is needed. The live
+default branch remains relevant to GitHub closure semantics or an accepted
+release requirement, not as an extra synchronization or delivery target.
+
+If selected-base synchronization is actually needed, keep dry-run read-only and
+use the target repository's original base owner for the exact selected branch.
+A branch mismatch is not permission to switch or reset unrelated work. On
+resume, recover the selection from this run's original messages and actual
+child/Task/PR facts; do not replace it with a newer project default. A genuine
+change to the target follows the original scope/base owners and affected gates.
+
 ## Public Inputs And Model Settings
 
 Each package owns its concise conversation input contract. Resolve one exact
-repository, saved local project, and selected Issue identities. Do not put the
-endpoint or authorization in a normalized data object; resolve those from the
+repository, saved local project, selected base and selected Issue identities.
+Do not put the endpoint or authorization in a normalized data object; resolve those from the
 human conversation. Optional completion overrides identify concrete accepted
 extra gates, not new release, deployment, cleanup, or publication permission.
 
@@ -111,7 +145,7 @@ Before a live launch, verify the whole selected run:
 | --- | --- |
 | Provider/tools | Same-provider package and shared method; current native project, chat, message, wait, heartbeat and live-read capabilities. |
 | Repository/project | Authenticated exact `owner/repo`; one current saved project matching its path and repository remote. |
-| Initial base | Live default branch is known; local default, local tracking ref and remote default OIDs agree. Report all three without fetching. |
+| Initial base | Selected base is resolved under the rule above; its local branch, tracking ref and live remote OIDs agree. Report those facts without fetching. Unrelated branches add no equality or update requirement. |
 | Initial checkout | Clean and suitable for the target repository's normal intake; no unrelated work is reset or moved. |
 | Issues | Selected identities are accessible and open initially, with sufficient current scope and completion criteria. Explicit resume can adopt completed nodes only after fresh full proof. |
 | Dependencies | Package scheduling rules and live hard prerequisites are compatible with the requested endpoint. |
@@ -147,10 +181,20 @@ second final exit.
 Use current native Codex tools. Separate user-visible Issue chats are intended
 execution carriers, rather than in-turn implementation subagents. Resolve the
 saved project afresh. Create each child with `target.type=project`, its actual
-`projectId`, and `environment.type=worktree`. Start from the project default
-branch unless the human explicitly chose another starting state. The child's
-workflow establishes formal Task and branch binding. Do not invent a ref from
-an Issue title.
+`projectId`, and `environment.type=worktree`. Start from the selected base
+unless the human explicitly requested a separate starting state. The original
+repository owners must verify that such a state fits the selected target and
+current dependencies; preserve both identities and resolve an actual conflict
+through those owners. A valid separate source never changes the PR target.
+
+Pass an explicit existing source branch/ref through the tool's supported
+starting-state parameter, such as branch `dev`; a prompt alone does not select
+the worktree source. Preserve an explicitly requested working-tree source under
+the same suitability and unrelated-change rules. Omit the override only when
+the tool's actual default matches the resolved source. If the capability cannot
+express that source, hold creation and report the specific gap rather than
+creating from another branch. The child's workflow establishes formal Task and
+branch binding. Do not invent a ref from an Issue title.
 
 Before each creation, inspect existing active/pending owners. Bind one logical
 creation to repository, current run, Issue and requested settings, plus the
@@ -174,6 +218,8 @@ Project only execution inputs into the child:
 ```text
 Repository: <owner/repo>
 Issue: #<number>
+Selected base: <remote>/<branch> (PR and completion target)
+Starting state: <actual source, only if separately specified>
 Coordinator: <current formal chat identity>
 Position/prerequisites: <only this child's sequence position or prerequisite refs>
 Completion overrides: <only this Issue's additional accepted gates>
@@ -183,8 +229,9 @@ Use this repository's complete current Trellis workflow. Read live Issue body,
 accepted comments, linked delivery, AGENTS.md, workflow and relevant specs.
 Read the installed clear-technical-writing.md in full where required. Recover
 existing Task/Delivery identity through its original owner. Use this dedicated
-worktree and independent branch binding; reconcile the current default branch
-and verify predecessor results before implementation.
+worktree and independent branch binding; reconcile the current selected base
+and verify predecessor results before implementation. Keep PRs and merge proof
+on that target; do not synchronize unrelated branches.
 
 Own only this Issue. Preserve other agents' changes, resources and evidence.
 Do not write shared journals or unrelated Task metadata. Stop at the specified
@@ -223,17 +270,21 @@ bounded native waits may use their supported event-wait behavior and cursors;
 do not replace the two-minute heartbeat with a two-second polling loop.
 
 The heartbeat prompt identifies the managed Skill/provider, normalized Issue
-selection/dependencies, project, concurrency/resources, selected model settings,
+selection/dependencies, project, selected base, concurrency/resources, selected
+model settings,
 failure policy and accepted completion gates. It contains no selected endpoint
 or authorization record. Include this supervision instruction:
 
 ```text
 Resume this same Issue run as its AI coordinator. Load the selected managed
 Skill, its local contract and the shared issue-orchestration.md from the same
-provider. Recover this run's endpoint from original human messages in this chat.
+provider. Recover the selected base and current execution limits from original
+human messages in this chat. Keep full Issue completion as the goal; a phase
+result or missing action permission does not complete it.
 Observe every admitted unfinished Issue chat and read its newest real assistant
-output when changed or idle. Compare actual results with the whole requested
-endpoint and remaining obligations. Apply the shared active-unblocking method
+output when changed or idle. Compare actual results against all remaining
+completion obligations within current execution limits. Apply the shared
+active-unblocking method
 to blockers, absent recommendations and insufficient completion claims; follow
 the chosen action to its actual result. Give each actionable idle child below
 the endpoint one useful continuation in this cycle. Use 确认继续, 按建议方案执行
@@ -276,9 +327,11 @@ observation verifies running work or a handled wait that remains valid.
 
 ### Overall Responsibility And Active Unblocking
 
-Keep the whole human-requested endpoint and all remaining Issue obligations in
-view until completion or a genuinely unresolved block is proved. Sending an
-instruction, observing one turn, a child ending, or one Delivery merging does
+Keep full Issue completion and all remaining accepted obligations in view until
+completion, an explicit human stop boundary, or a genuinely unresolved block.
+An explicit earlier-stage boundary may settle only that segment. A stage result
+or a missing permission never removes the unfinished Issue obligations. Sending
+an instruction, observing one turn, a child ending, or one Delivery merging does
 not discharge that responsibility. Keep lightweight conversation context about
 the actual gap, its owner and the next result to observe; create no coordinator
 ledger or additional gate artifact.
@@ -332,7 +385,7 @@ not request fixed wording before receiving a useful next instruction.
 | Evidence | Disposition |
 | --- | --- |
 | Requested earlier stage is reached | Verify its original-owner result and safe inactive disposition; apply package stage rules without advancing further. |
-| Phase finished below the endpoint | Send the next valid mapped phase instruction. |
+| Phase finished and completion obligations remain | Send the next valid mapped phase instruction within current execution limits; resolve only the missing action permission when necessary. |
 | One precise current in-scope operation has passing prerequisites | Send `确认继续` if that is the target workflow's signal, only for that action. |
 | One unique current safe recommendation fits scope | Evaluate consequences and adopt it, for example `按建议方案执行`; unresolved real choices return to the human. |
 | Delegated merge passes the fresh merge gate | Send `合并PR` for the selected integration owner, subject to direct-human exceptions. |
@@ -365,10 +418,12 @@ their concrete blocker. Other admitted DAG children still receive observation.
 Choose one integration owner among ready children in package order. First
 recover whether merge is inside this run's current human delegation. Then
 freshly read the exact repository/PR, target branch, current head and reviewed
-candidate; current default branch, mergeability and merge policy; required
+candidate; current selected-base head, mergeability and merge policy; required
 checks/reviews at that candidate with no unresolved required finding; truthful
 PR title/body, closure intent, validation and deployment/release claims; and
-the exact current operation displayed by the child.
+the exact current operation displayed by the child. Verify that the PR targets
+the selected base. Read the default branch only where actual closure or release
+rules require it; do not add another branch's freshness as a merge gate.
 
 When delegation and these gates pass, send `合并PR` without a repeated human
 confirmation for each node. A child request alone proves neither. Preserve the
@@ -400,9 +455,12 @@ Full Issue completion requires fresh proof of every applicable item:
    superseded or not-planned closure does not prove delivery.
 2. All PRs required to deliver its scope are merged. Identify the reviewed
    candidate and the platform's actual merge result.
-3. The actual merge result is reachable from the live default branch. For
+3. The actual merge result is reachable from the live selected base. For
    squash/rebase, verify the resulting commits and candidate association;
-   do not require ancestry of the former feature HEAD.
+   do not require ancestry of the former feature HEAD. A run targeting `dev`
+   does not also require delivery to `main` unless accepted Issue scope says so.
+   Issue closure still uses the repository's original Closure owner; do not
+   assume GitHub auto-closes an Issue for a non-default-branch merge.
 4. The repository's semantic Check, full-range Review, readiness and whole-Task
    completion pass under their current contracts. A merged Delivery is not
    whole-Task completion.
@@ -491,8 +549,9 @@ A genuine blocked exit requires the terminal-block judgment above. Completed
 exits require full proof.
 Do not archive chats, remove worktrees or perform other incidental cleanup.
 
-Resume the same run after its concrete blocker is resolved. Recover children,
-revalidate affected proofs and resume the same heartbeat as needed. No new Task
-or fresh-base restart. Membership, dependency, completion-gate or resource changes
+Resume the same run after its concrete blocker is resolved or the human resumes
+a limited segment. Recover children, the selected base and unfinished completion
+obligations, revalidate affected proofs and resume the same heartbeat as needed.
+No new Task or fresh-base restart. Membership, dependency, completion-gate or resource changes
 need fresh semantic impact review and only their real human choices. Do not
 persist authorization during recovery.

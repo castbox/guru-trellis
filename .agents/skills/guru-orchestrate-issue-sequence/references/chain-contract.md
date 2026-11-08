@@ -8,6 +8,7 @@ Normalize in the current conversation:
 | --- | --- |
 | `repository` | Exact GitHub `owner/repo`; one repository per run. |
 | `project_path` | Absolute path to its current saved local Codex project. |
+| `base_branch` | Optional explicit integration base; use the live default only when omitted, under the shared selected-base rule. |
 | `issues` | Ordered nonempty list of unique positive Issue numbers; arbitrary length 1..N. |
 | `mode` | `dry-run`, `auto` or `live`; omitted means `auto`. |
 | `child_model`, `child_thinking` | Exact current supported settings, resolved before live effects under the shared method. |
@@ -16,8 +17,10 @@ Normalize in the current conversation:
 | `resume` | Optional explicit recovery/adoption selection; fresh ownership and completion proof are required. |
 
 Preserve supplied order exactly. Numeric order and example length add no
-requirements. Endpoint and authority are read only from actual human messages
-under the shared `issue-orchestration.md`; they are not normalized data fields.
+requirements. Keep the same selected base through child creation, reconciliation,
+PRs, merge and completion proof. Full Issue completion is the goal. Execution
+limits and authority are read only from actual human messages under the shared
+`issue-orchestration.md`; they are not normalized data fields.
 
 The current Issue is the earliest selected Issue without fresh full completion
 proof. Keep one child or pending creation for it. A current child waiting on a
@@ -45,8 +48,10 @@ On resume, recover the original child/Task/Delivery instead of creating a duplic
 
 ## Earlier Endpoint Compatibility
 
-Resolve the actual human endpoint before launch using the shared method.
-This Skill's strict complete-before-next rule remains in force for every step.
+Full Issue completion remains the goal. Resolve any explicit human earlier-stage
+limit before launch using the shared method. A missing merge or other action
+permission is an action gap, not an earlier-stage selection. This Skill's strict
+complete-before-next rule remains in force for every step.
 An earlier-stage result, including a reviewed ready PR, does not release the
 next sequence position even when the Issues have no technical dependency.
 
@@ -54,7 +59,9 @@ A requested earlier endpoint is compatible when every selected Issue before
 the last has already passed fresh full completion proof and the last selected
 Issue is the only remaining work item. A single-Issue chain is the simplest
 case. Verify the remaining Issue's requested stage and safe inactive disposition,
-then use `chain_stage_completed`; do not claim full Issue completion.
+then use `chain_stage_completed`; do not claim full Issue completion. This
+existing exit retains its segment-only meaning. Retain the last Issue's owner
+and unfinished completion obligations for same-chain resume when the limit ends.
 
 If the human asks for an earlier endpoint for multiple still-incomplete Issues,
 show the concrete conflict during preflight. For example, “publish PRs for A
@@ -83,9 +90,11 @@ proof for a release Issue. Verify the platform's actual resulting commits for
 squash/rebase, rather than requiring the old feature HEAD to be an ancestor.
 Only after that proof may the coordinator create or adopt the next Issue child.
 
-When the remote base evolves, use the current child's original reconciliation
-owner and refresh affected gates. A reported complete/completed status, a merge
-alone or a closed Issue without correct delivery does not release the position.
+When the remote selected base evolves, use the current child's original
+reconciliation owner and refresh affected gates. Verify actual merge-result
+reachability on that selected base; a run targeting `dev` does not require
+another branch's update or delivery unless accepted scope explicitly requires it.
+A reported complete/completed status, a merge alone or a closed Issue without correct delivery does not release the position.
 
 Ordinary rework, supported recovery, pending creation and bounded waits retain
 the current owner. Temporary model capacity retries preserve the same child
