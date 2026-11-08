@@ -40,16 +40,22 @@ private-owner calls, backups and rollback use that exact public project root.
 
 Using the actual original binding and checkout facts, the semantic owner chooses
 one projected active authority and preserves inherited active peers with
-`defer`. Submit all roots, original Task sources, per-branch planning and session
-rows without merging mutable planning. The installed public Plan2 executor
-alone validates immutable-source/generation agreement, group legality, binding
-freshness and its unique actual checkout. A deferred peer receives no Delivery,
+`defer`. For current-schema Task copies, use `source.task_schema=mixed`, keep
+one authority row as `current`, and mark each preserve-only peer with
+`disposition=defer` and `source_task_schema=2.0`. The peer carries its original
+raw source, never a replacement record. Submit all roots, original Task sources,
+per-branch planning and session rows without merging mutable planning. The
+installed public Plan2 executor alone validates the complete parsed current
+record against the authority, immutable-source/generation agreement, group
+legality, binding freshness and its unique actual checkout. JSON formatting and
+key order can differ; original bytes, modes and business metadata are preserved.
+A deferred peer receives no additional lifecycle, Delivery, session selection,
 migration artifact or Guru private-owner conversion; private calls must belong
 to a projected Task in their selected workspace. Normal source, binding or
 registration changes return to fresh prepare rather than changing the frozen
 plan or extending rollback anchors. Older closed-schema CLI candidates cannot
-consume `branch_bindings`; acquire the reviewed matching candidate and fresh
-prepare, keeping earlier plans with their original packages for same-plan
+consume `branch_bindings` or current-schema deferred peers; acquire the reviewed
+matching candidate and fresh prepare, keeping earlier plans with their original packages for same-plan
 recovery. Same version numbers do not establish package equality.
 
 The private Plan2 package plan contains the full upstream `core_plan`, frozen

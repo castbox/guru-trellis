@@ -28,3 +28,21 @@
 | R687-03 / BEH687-STOP | 当前 workflow 仅支持 pull_request 时，原阶段 owner 仍可通过已安装公开 Core/Python stop 撤回合法保留的 manual/local_commit。原 owner、阶段、evidence 和匹配重试约束保持；peer/history 保留，selection 合法释放。stop 不新增不支持 profile 的创建能力，不表示 delivered、Task Completion 或 Closure。 |
 
 本轮来源采用以定向 source/installed、ownership、reapply/drift、sidecar 和实际安装回归验证；它不重新承担 #630 全部三系统验收。设计和测试分别由[同一当前设计](../../design/current/native-compatibility.md)、[同一当前测试](../../test/current/native-compatibility.md)定义，实际观察由 [#687 Test](../../requirements-design-test-contributions/687-adopt-castbox6/test.md) 单写。原生命周期 [R657-03](task-delivery-lifecycle.md) 保持；完整累计矩阵、Guru 软件 Release、真实业务升级和原 Backend 收尾保持独立范围。
+
+## Current-schema Task worktree 副本迁移
+
+本节来源为 [Issue #752](https://github.com/castbox/guru-trellis/issues/752)。适用完整前驱为 Git `2ab135ed2d3908966785bb23ad42ada0790f0c81:docs/requirements/current/native-compatibility.md`。本节接续 R630-05、R687-01/02 的来源与迁移关系；上文 #687 的 `17015f9` 采用及其观察保持历史截止，不代表本节当前锁定来源。
+
+current-schema 指 Task schema 2.0。authority 是原 branch binding 与 live registered checkout 对应的唯一执行来源。peer 是正常 Git checkout 继承的同 Task 非权威记录；保留记录不赋予它第二套生命周期权威。
+
+| Identity | 完整行为与边界 |
+| --- | --- |
+| R752-01 / BEH752-AUTHORITY | 原 Upgrade owner 将同一 common-dir 下全部 eligible registered project roots 纳入 Plan2。依据原 binding 与实际 checkout 选择唯一 authority，不忽略 peer roots，不创建或修改 binding 以消除冲突。 |
+| R752-02 / BEH752-PRESERVE | 合法 current-schema peer 的原 Task bytes、modes 和业务元数据保留。peer 不产生额外 lifecycle、session selection、Delivery、migration artifact 或 Guru private-owner conversion；即使 TaskId 相同，也不能将 selected workspace 外或未投影 Task 交给私有 owner。 |
+| R752-03 / BEH752-REJECT | Task 内容、generation、source、原 binding 或实际 checkout 不一致，或 authority 非唯一时，preview 在写前阻止迁移。不得静默合并、丢弃、重建、改写原记录或把 current record 伪装成 legacy。合法 JSON 格式差异不能被误当业务差异，保留仍须保持各自原字节。 |
+| R752-04 / BEH752-RECOVERY | dry-run、执行、同冻结计划 resume 和 rollback 覆盖多 workspace current copies。恢复保持原 source pair、Plan2 和 rollback anchors；原业务或 topology 正常变化时不刷新旧计划使其通过。rollback 先检查后来工作，再恢复原 Task/session bytes/modes并仅删除本次新增资产，不 reset Git 或重写远端。 |
+| R752-05 / BEH752-PAIR | Guru 采用完整匹配的 Fork CLI/Core schema/executor 和精确 source lock：`b4f1665143bd4ecf3a290d426ad62293fc13ea42`，tree `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`，main CI `42440325190`，CLI/Core `0.7.0-castbox.6`。同版本号不证明匹配；构建、受管投影与目标实际安装分别核验。至少一个含多个 registered worktrees 的代表性安装完成升级，再通过目标 own installed runtime 验证 authority、Task/session、peer 保留及私有转换排除。 |
+
+设计责任由[当前 Design](../../design/current/native-compatibility.md) D752-01..05，验证策略由[当前 Test](../../test/current/native-compatibility.md) T752-01..05 承接。公共 Task/session/schema/group 和执行器只归 Fork；Guru 保留原安装、语义判断和私有迁移编排职责，不新增 copy ledger、第二判定算法或业务数据 writer。旧冻结计划沿原匹配 package pair 恢复；新 selector 必须由理解它的完整 successor 消费，不 patch installed CLI、node_modules 或不可变 tag。
+
+本节不改变 #630 原三系统范围、#687 原 tools-only/stop 合同或其它 Task/Delivery 生命周期。完整多平台 Release 矩阵、远端 immutable marketplace、Guru tag/npm Release 与真实业务仓升级不由本节专项证明。实际执行只由 [#752 Test](../../requirements-design-test-contributions/752-current-task-worktree-copies/test.md) 单写；知识接受不代表这些验证或 Task Completion 已完成。

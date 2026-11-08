@@ -219,17 +219,17 @@ full_review、readiness、Ready 和 Merge 保持完整门禁。早期反馈不�
 
 ## Apply And Verify
 
-已发布稳定版本为 `v0.7.0-guru.7`，peeled commit 为
-`7718d129bcb2055d77c7f43d0e4edca9aee313ea`。默认稳定安装使用同一 immutable `.7`
-tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.7`
+已发布稳定版本为 `v0.7.0-guru.8`，peeled commit 为
+`2ab135ed2d3908966785bb23ad42ada0790f0c81`。默认稳定安装使用同一 immutable `.8`
+tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
-Fork `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI-Core
-`0.7.0-castbox.5`，与下述当前源码分开核对。
+Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
+`0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-本次目标为尚未发布的 `v0.7.0-guru.8`。当前准备源码的 extension 与 maintenance
-target 为 `0.7.0-guru.8`；它与已发布的 immutable `.7` tag 分开读取。
-正式 Fork lock 固定到 `ca0e8b931d19ccb87802d6866abd2113a6f707c0`，
-tree `7d765bd35caf840820359259703e4035fe7d0ad2`，成功 main CI `42016570304`。
+当前修复源码的 extension 与 maintenance target 仍为 `0.7.0-guru.8`，但其内容与
+已发布 `.8` tag 分开识别。本次不重发 tag、Release 或同版本 npm 包。
+正式 Fork lock 固定到 `b4f1665143bd4ecf3a290d426ad62293fc13ea42`，
+tree `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`，成功 main CI `42440325190`。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
@@ -240,6 +240,9 @@ Guru 消费公共家族/key 及目标 native 前驱关系；AI 仍审核原安�
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
 本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。
 本来源另包含上游 #62/PR #63 的 parent gitlink 原子身份修复，以及 #64/PR #65 的精简 known_legacy 正式归档后继能力。
+本来源新增上游 PR #66 的 current-schema Task peer 迁移：mixed Plan2 通过
+`defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
+authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
@@ -248,16 +251,15 @@ CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 保留模板原 mode；不以相同版本号选择另一构建或放宽 `source_locked`。
 
 源码试用的 workflow marketplace 与 preset 必须使用同一个真实、远端可寻址的完整
-Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.8` tag。
-准备源码与投影检查不证明 `.8` 安装、业务采用或 Release 通过。
-本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main`
-重新冻结 exact commit/tree，执行定向安装及 predecessor 升级验证。tag、tag-pinned
-smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完成。
-历史验收只保留原来源身份，不替代本次候选门禁；完整多平台矩阵与真实业务、生产
-验证保持独立。
+Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包含本次修复，
+不能用该 tag 或相同 extension/CLI 版本号代替所选修复 SHA。
+当前源码、投影及代表性安装各保留其真实来源和验证边界，不证明新 Release 通过。
+未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
+predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
+历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
 
-本次发布集合由 `v0.7.0-guru.7` 到最终 candidate 的实际完整 diff 确定。
-当前差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
+已发布 `.8` 的准备集合由 `v0.7.0-guru.7` 到该 Release candidate 的完整 diff 确定。
+该准备差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
 显式对象与机制采用审核，#692/#695 的 Intake 和 JSON 输入诊断，以及 #693 的合同承接
 与验证证据方法。#706/#717 收敛独立多视角审核与审核充分性；#709/#731 完善 Issue 编排
 和协调者解阻；#710/#713 收敛 Phase 2 authoring 与公共执行合同。#711 隔离知识导航写入，
@@ -295,9 +297,9 @@ business Intake，普通 apply 保持严格。
 与 `docs/architecture/README.md` 读取完整适用单元及 Git revision，与软件版本分开。
 
 For current-source validation, use the source-locked, built
-`castbox/Trellis@ca0e8b931d19ccb87802d6866abd2113a6f707c0` CLI
-(successful main CI `42016570304`) and that same reviewed Guru source.
-Stable `.7` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
+`castbox/Trellis@b4f1665143bd4ecf3a290d426ad62293fc13ea42` CLI
+(successful main CI `42440325190`) and that same reviewed Guru source.
+Stable `.8` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. For a target meeting the ordinary current-only installation
 prerequisites, run:

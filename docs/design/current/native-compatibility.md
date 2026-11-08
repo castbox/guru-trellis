@@ -28,3 +28,19 @@
 | D687-03 / CON687-STOP | stop 由所选固定 Fork Core 和匹配 Python 实现。Guru 保持 PR-only 声明及原阶段 owner，通过已安装公开入口消费合法保留的 manual/local_commit 与所需 evidence，核对 stopped、selection、peer/history 和匹配 retry；不修改上游生成资产或以 stop 生成 Completion/Closure。原 D657-03 的生命周期分工保持。 |
 
 测试策略由[当前 Test](../../test/current/native-compatibility.md) T687-01..05 定义，实际采用观察由 [#687 Test](../../requirements-design-test-contributions/687-adopt-castbox6/test.md) 拥有。#630 原 .5 构建及三系统观察保持历史身份。本轮无新 API、持久化字段、Task 数据迁移或 ADR；原严格 source_locked、mode、所有权、解释器、用户编辑和恢复条件保持。
+
+## Current-schema Task 副本迁移责任
+
+本节承接[当前 Requirements](../../requirements/current/native-compatibility.md) R752-01..05。完整前驱为 Git `2ab135ed2d3908966785bb23ad42ada0790f0c81:docs/design/current/native-compatibility.md`。原 Architecture `guru-trellis-architecture`、ADR-024/017 及 source/installer/maintenance owners 保持；上文 #687 的来源选择是其历史采用，不覆盖本节 successor。
+
+| Identity | 原 owner、输入→行为→输出及边界 |
+| --- | --- |
+| D752-01 / CON752-INVENTORY | Guru 原 prepare_inventory 读取全部 eligible registered project roots、Task/artifact/session raw snapshots 和现有 C4 binding；semantic owner 选择 dispositions。原 binding 仅投影 task_id、lifecycle_generation、source，不添加 target branch/path。Fork migrate2 独占完整 inventory、binding freshness 与唯一实际 bound checkout 校验。 |
+| D752-02 / CON752-CURRENT-PEER | Fork 的 mixed Plan2 使用 authority `disposition=current`（无 source_task_schema selector）与 peer `disposition=defer, source_task_schema=2.0`（原 RawSnapshot、无 target record）。public parseTaskRecordV2 解析 peer，并与唯一 projected authority 做完整 parsed record 等价校验；合法格式/key顺序差异可保留原字节。selector2 只属于 mixed defer，不生成额外模型、Delivery 或 migration 资产。 |
+| D752-03 / CON752-PRIVATE | Guru 透传原完整 core_plan，不复制 Fork group/equality 算法。原 private migration 仅接收其 selected workspace 中 projected current/convert_active/convert_archive Task；defer peer 永不进入 owner_migrations。普通内容/generation/source/binding/checkout mismatch 或非唯一 authority 由 preview 阻止写入，不合并、删除或重建用户数据。 |
+| D752-04 / CON752-RECOVERY | 原 Upgrade begin 冻结同一 source/Fork candidates、Plan2、写集、所有 workspace/common/local session 的 bytes/modes 与原业务/topology anchors。依次执行 Core、原私有 owners、旧 Guru retirement、完整 preset 和实际 activated installed validation。resume 只续原阶段；rollback 检查 managed postimage 与原业务/topology后恢复原preimages、删除本次新增路径，不刷新anchors、不reset Git。 |
+| D752-05 / CON752-SOURCE | 原 source owner 固定 R752-05 的精确 merge/parents/tree/main CI；正常 pnpm frozen-lock Core→CLI build 和 build marker 与该 commit 匹配。canonical source lock、dogfood tools-only与实际安装分别取证。正式 source_locked 使用干净已提交 Guru source 及精确 Fork build；旧冻结计划保留其原 package pair，不换包续跑，不发布同版本 npm replacement或修改不可变 tag。 |
+
+采用原 defer selector2 的理由是复用已有 preserve、session 和恢复路径，并由公共 schema/executor 承担唯一 group authority。过滤 registered roots、伪装 legacy 或在 Guru 复制 copy 模型都会违反 R752-01/02 的真实输入与职责。该方案的必要维护成本为完整 source pair 同步、原 public parser/group 回归和 Guru consumer/installed 回归；不增加永久状态、锁或兼容双读。若公共 source schema、binding/checkout authority 或 private projected-task 合同改变，原 Author/Architecture 重新评估该机制。
+
+测试策略由[当前 Test](../../test/current/native-compatibility.md) T752-01..05 单写，实际执行由 [#752 Test](../../requirements-design-test-contributions/752-current-task-worktree-copies/test.md) 记录。#630、#687 的历史构建和采用观察保留原义；当前来源、组件通过与真实目标采用互不替代。无公共 Guru DTO、Task schema 或 Delivery API 版本变化；Plan2 wire 的窄 selector 扩展归 Fork。知识晋升仍沿完整 proposed→独立 Architecture/候选 Check→原 final_integration/readback→actual-after 重绑及最终质量链。
