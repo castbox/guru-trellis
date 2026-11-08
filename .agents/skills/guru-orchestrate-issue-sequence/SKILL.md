@@ -8,8 +8,9 @@ description: Explicitly coordinate an ordered GitHub Issue chain across separate
 `judgment_mode=semantic`. This standalone Codex Skill owns one repository's
 strictly ordered Issue chain. Keep at most one current Issue child, including
 pending creation. Complete and verify that Issue before creating or adopting
-the next. The coordinator judges progress and endpoint proof; it does not
-implement Issues or replace their repository workflow.
+the next. Full Issue completion remains the goal; explicit human stage limits
+only bound the current execution segment. The coordinator judges progress and
+completion proof; it does not implement Issues or replace their repository workflow.
 
 ## Load The Same-Provider Contracts
 
@@ -28,8 +29,8 @@ after installation. A discovery projection is only an entry locator. Do not
 mix providers or use a historical personal copy. The target repository may be
 elsewhere and need not install these orchestration Skills.
 
-The shared method exclusively defines endpoint interpretation, current-dialogue
-authority, overall completion responsibility, active unblocking, child operation,
+The shared method exclusively defines selected-base continuity, endpoint
+interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
 heartbeat, continuation, merge/completion proof and supported recovery. Apply
 it at startup, resume and child continuation alike.
 The local contract owns exact order, dependency compatibility, serial
@@ -40,9 +41,9 @@ advancement, earlier-stage disposition and this Skill's public I/O.
 1. Resolve the conversation inputs from the local contract. Preserve the exact
    nonempty Issue order; identify current hard dependencies from live sources.
 2. Perform the shared read-only preflight and AI Gate for the whole chain.
-   Resolve the actual human endpoint before launch. Check that it fits strict
-   complete-before-next advancement. A dry-run returns its one ready/blocked
-   result and stops; auto/live consume ready preflight internally.
+   Resolve the selected base and actual human execution limits before launch.
+   Keep full completion as the goal and strict complete-before-next advancement.
+   A dry-run returns its one ready/blocked result and stops; auto/live consume ready preflight internally.
 3. Start or recover the one native current-chat heartbeat, default every two
    minutes. Create only the current Issue child, or recover its exact existing
    owner. Preserve pending creation; immediately observe each newly formal child.

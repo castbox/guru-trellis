@@ -20,6 +20,7 @@ Equivalent normalized input:
 ```yaml
 repository: example/project
 project_path: /absolute/path/to/project
+base_branch: dev
 mode: dry-run
 max_parallel: 3
 child_model: gpt-6.1-sol
@@ -47,7 +48,7 @@ start. If 102 completes while 103 is still running, 105 may start immediately.
 
 ```text
 使用 $guru-orchestrate-issue-dag。
-仓库 example/project，本地项目 /absolute/path/to/project。
+仓库 example/project，本地项目 /absolute/path/to/project，以 dev 为基线。
 依赖关系：101 -> 102，101 -> 103，102 -> 104，103 -> 104，102 -> 105。
 最多并行 3 个 Issue，子 chat 使用 gpt-6.1-sol / medium。
 先做 dry-run，展示依赖图、首批可启动节点、完成条件和具体副作用。
@@ -61,8 +62,11 @@ resource cleanup are included. These are human conversation instructions, not
 fields to persist in the skill input or automation configuration. Missing
 authority is resolved after the concrete read-only plan is available.
 Resolve that choice before creating children or a heartbeat. A current human
-request that already specifies the endpoint and actions needs no repeat
-question. The coordinator's own proposed endpoint is not a human choice.
+request that already covers the actions needs no repeat question. Full Issue
+completion is the goal; only an explicit human stage limit narrows the current
+execution segment. The coordinator does not invent a PR-only endpoint.
+The selected `dev` base applies to worktree creation, PR targets and merge-result
+reachability. A stale unrelated `main` needs no fast-forward or exemption.
 
 ## Other Graph Shapes
 

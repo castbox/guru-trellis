@@ -38,7 +38,8 @@ and explicit shared-resource exclusions where required. Exclusion groups
 contain only included Issue identities and do not create dependency edges. File overlap alone does not prove
 that independent worktrees cannot run in parallel.
 
-For an earlier endpoint, test every edge against full predecessor completion.
+Full Issue completion is the goal. If the human explicitly limits the current
+segment to an earlier stage, test every edge against full predecessor completion.
 If A must stop at PR publication while B needs A's completed result, report that
 specific endpoint/dependency conflict before launch unless A already has fresh
 full completion proof. A free slot does not resolve it. Never weaken an edge,
@@ -133,7 +134,10 @@ owners decide what needs rework. Do not auto-rollback unrelated results.
 
 Use the shared method's original-owner stage proof or full Issue completion
 proof. Only full completion releases dependency edges. Use stage proof solely
-for the safe slot release above and `dag_stage_completed` below.
+for the safe slot release above and `dag_stage_completed` below when the human
+explicitly limited execution. This existing exit retains its segment-only
+meaning; no phase result or authority gap implicitly selects it. Resume the
+same Issue owners for the remaining completion obligations when that limit ends.
 
 - `progressing`: unfinished permitted work, a pending creation, an owned wait,
   observation recovery or incomplete safe settlement still requires supervision.
@@ -161,9 +165,14 @@ with unique positive `issue` and included `depends_on` predecessors, optional
 positive-integer `max_parallel` (default 3), `mode` (dry-run/auto/live; default auto),
 optional native `child_model`/`child_thinking`, per-Issue `completion_overrides`,
 `exclusive_groups`, `failure_policy` (default continue_independent), and explicit
-resume selection. Equivalent graph notation may be normalized in conversation.
-Resolve endpoint and authority only from the human conversation under the shared
-method; they are not public data fields or persistent state.
+resume selection, and an optional explicitly selected `base_branch`. Equivalent
+graph notation may be normalized in conversation. Resolve the base under the
+shared method: explicit branch first, live default only when omitted. Carry the
+same target into child creation, PRs and completion proof.
+Full Issue completion is the goal. Resolve execution limits and authority only
+from the human conversation under the shared method; they are not public data
+fields or persistent state. A missing action permission does not select an
+earlier-stage goal.
 
 Return exactly one primary exit. Outputs stay in the current conversation;
 they are concise action/results for their named consumer, not audit artifacts.
