@@ -50,6 +50,24 @@ workflow routers. `explicit_task_mode` carries TaskLifecycleDTO to
 `task-session-binding-blocked`. Each consumer derives TaskRef afresh if needed.
 Unknown, stale, ambiguous or mismatched official identity stops without writing.
 
+After same-identity carrier recovery, follow the original Branch
+[recovery contract](../guru-establish-task-branch-binding/references/task-carrier-recovery.md)
+only at this owner's receiving-session boundary. Require the actual Identity
+and Ensure results for the restored original lifecycle. Inspect this receiving
+chat's own official pointer; do not borrow the source chat's environment,
+pointer or hidden runtime. Reuse a matching pointer with resume, restore a
+missing pointer with rebind, and retain the original switch/manual-recovery
+preconditions for a different or stale pointer. A truly absent context key
+keeps `explicit_task_mode` and writes no session.
+
+After the actual success exit, read native `task.py current --json`,
+`delivery.py current --json` and `get_context.py --mode continuation` from the
+resolved checkout. Consume the real current phase and remaining obligations.
+`no_current_delivery` is not a request to allocate an empty Delivery. Retain
+the original TaskId/generation/Delivery and missing historical Publication,
+Delivery, full_review and readiness; restored binding does not supply a gate,
+business delivery or Task Completion result.
+
 Read [JSON inputs and complete invocations](references/json-inputs.md) before
 choosing the two input carriers. Both parameters accept inline JSON, a regular
 UTF-8 JSON file, or `-` for stdin. Only one parameter may use `-`; the runtime

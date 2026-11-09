@@ -35,11 +35,41 @@ reference unchanged into its `binding_ref` input. Other discovery statuses
 return to this owner for establishment or selection. The formal
 `binding_established` output remains a TaskKey and does not supply a revision.
 
-Use `delivery_active_task`. Validate the public Task schema-2 identity and
+Use `delivery_active_task` for normal candidate establishment and exact
+read-only result recovery. Validate the public Task schema-2 identity and
 its C4/C5 resource association without reading any Task development status.
 The branch-binding input no longer carries `expected_status`; Delivery phase
 belongs exclusively to the upstream model. Old profiles are rejected rather
 than reinterpreted as Delivery calls.
+
+For a missing Task carrier, or a restored workspace whose unbound HEAD does
+not contain that Task, read the complete
+[same-identity recovery contract](references/task-carrier-recovery.md).
+Normal unbound candidates are checked in the HEAD Git tree; restoring an
+untracked directory alone does not qualify one. Repeated discovery is not
+carrier restoration, and recovery does not implicitly require a commit.
+
+Use `delivery_restored_checkout` only after this owner has reviewed the fixed
+carrier, same TaskId/generation, full Delivery plans and real historical gaps,
+and the explicitly selected target branch/checkout and write set. Complete
+the semantic Gate and the applicable dialogue boundary before invoke. Its
+input contains only profile/mode, TaskId/TaskRef/generation, `branch_name` and
+`expected_head`; `--root` is the current registered checkout. The executor
+validates workspace schema-2 active identity, registration, branch/HEAD and
+existing C4/C5 associations. It reuses matching controls and establishes only
+missing controls through the original transaction; mismatches stop. New
+ownership is caller-owned, with primary-worktree ownership `not_applicable`.
+Existing ownership remains unchanged. Primary and linked checkouts are
+supported; Creation's non-primary/non-base restrictions do not apply.
+
+The restored-checkout profile preserves the existing typed exits and consumers.
+`binding_established` enters the original Ensure owner, then the receiving
+chat's own Bind and current continuation. It writes no Task/Delivery content,
+Planning/Check/Review result, session pointer or recovery ledger. Historical
+Publication/Delivery/full_review/readiness gaps remain gaps. On lost stdout,
+use the existing discovery binding reference and read-only recover action;
+do not infer failure and repeat the write. The normal discovery/recorder
+commands still accept only `delivery_active_task` with `action=establish`.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
