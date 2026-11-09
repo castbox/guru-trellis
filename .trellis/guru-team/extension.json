@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-09T07:28:06Z",
+  "installed_at": "2026-11-09T08:50:33Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "77382145174f079e5bfd2aecd45bccecf2d8aa9a",
-    "commit": "77382145174f079e5bfd2aecd45bccecf2d8aa9a",
+    "ref": "8e68563677aac06c9d50c3fe8ff89c2c6cf1a75a",
+    "commit": "8e68563677aac06c9d50c3fe8ff89c2c6cf1a75a",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1559,7 +1559,7 @@
       {
         "id": "guru-upgrade-tools",
         "interface_sha256": "c8772e3f68f055736463e17ea878a0e637110b663933643a5c1ac57ffdf801e0",
-        "tree_sha256": "71fd72e60b59558e5d31e264dbb1c57b807ec92376bb6467ddd116ccdaa31923"
+        "tree_sha256": "a029d550f63e522f0e8560232911c89059b539d10c34ceee85f07b72dcb7707e"
       },
       {
         "id": "guru-verify-extension-installation",
@@ -20380,7 +20380,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-tools/runtime/tools_owner.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
-        "sha256": "56b6c372503d7929478df0c0389414718d4fb55cb9669097afc8631191276c5d",
+        "sha256": "744baa22cfbea202a2ff53becdd0b662405f0f173d6bc29be0a8f2c656351e1a",
         "executable": false,
         "action": "installed"
       },
