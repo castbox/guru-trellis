@@ -1,0 +1,176 @@
+{
+  "schema_version": "2.0",
+  "id": "778-delivery-scope-allocation",
+  "name": "778-delivery-scope-allocation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 778,
+    "disposition": "exact_source"
+  },
+  "title": "#778 新增范围的 Delivery 归属判断",
+  "description": "补充 Clarify 的差额归属判据与 Author 的当前片/剩余责任承接，并同步实际受管投影。",
+  "dev_type": null,
+  "scope": "仅 #778 R1–R3 和最小验收；复用 public I/O、typed exits、scope_ref、PRD 与 Policy。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-10",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/prd.md",
+    "revision": "sha256:50eb69092514127d481eb17f37ebc7b82ca0e58dcad779ba18072c355f29cd67"
+  },
+  "deliveries": [
+    {
+      "id": "6fbd5927-6045-42be-9d44-b4e01f8e86b3",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/prd.md",
+          "revision": "sha256:50eb69092514127d481eb17f37ebc7b82ca0e58dcad779ba18072c355f29cd67"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3"
+        ]
+      },
+      "planning_root": "deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/design.md",
+        "revision": "sha256:c0372103a7e16bb1f1ddf2509979d54e88133634dbe98baf3f3785c5c53b35e2"
+      },
+      "candidate": {
+        "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+        "content_ref": "sha256:43f912975cb55ecb1497ef20947ffe439a9f7a2c03f474cf7c3f264c997d5fc2",
+        "head_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-author-task-plan/references/authoring.md",
+          ".agents/skills/guru-clarify-requirements/references/contract.md",
+          ".claude/skills/guru-author-task-plan/references/authoring.md",
+          ".claude/skills/guru-clarify-requirements/references/contract.md",
+          ".cursor/skills/guru-author-task-plan/references/authoring.md",
+          ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:4de9deda-3eb8-4fb2-a7a8-acbec6bd20cd",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/prd.md",
+              "revision": "sha256:50eb69092514127d481eb17f37ebc7b82ca0e58dcad779ba18072c355f29cd67"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/design.md",
+            "revision": "sha256:c0372103a7e16bb1f1ddf2509979d54e88133634dbe98baf3f3785c5c53b35e2"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/prd.md",
+              "revision": "sha256:6e595ed39878295b406135a2ab78af2d0012569f78b6ec74584c820ae78661f9"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/design.md",
+              "revision": "sha256:c0372103a7e16bb1f1ddf2509979d54e88133634dbe98baf3f3785c5c53b35e2"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/implement.md",
+              "revision": "sha256:8186b41d4322bce012bd304a4d4073c2c6297fff3a22fcb410f75ef41e98170a"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:1085003dd121c8010b4d9ea9cd75f8126d118183a7457e02a1ca081b2fc4fe4a",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/prd.md",
+              "revision": "sha256:50eb69092514127d481eb17f37ebc7b82ca0e58dcad779ba18072c355f29cd67"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/design.md",
+            "revision": "sha256:c0372103a7e16bb1f1ddf2509979d54e88133634dbe98baf3f3785c5c53b35e2"
+          },
+          "candidate": {
+            "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+            "content_ref": "sha256:43f912975cb55ecb1497ef20947ffe439a9f7a2c03f474cf7c3f264c997d5fc2",
+            "head_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/references/authoring.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-author-task-plan/references/authoring.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-author-task-plan/references/authoring.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:4de9deda-3eb8-4fb2-a7a8-acbec6bd20cd",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/prd.md",
+              "revision": "sha256:6e595ed39878295b406135a2ab78af2d0012569f78b6ec74584c820ae78661f9"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/design.md",
+              "revision": "sha256:c0372103a7e16bb1f1ddf2509979d54e88133634dbe98baf3f3785c5c53b35e2"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-778-delivery-scope-allocation/deliveries/6fbd5927-6045-42be-9d44-b4e01f8e86b3/implement.md",
+              "revision": "sha256:8186b41d4322bce012bd304a4d4073c2c6297fff3a22fcb410f75ef41e98170a"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
