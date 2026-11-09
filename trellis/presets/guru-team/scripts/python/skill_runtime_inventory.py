@@ -50,6 +50,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("temporary-inventory.json"),
     Path("temporary_lifecycle.py"),
     Path("validate.py"),
+    Path("worktree_paths.py"),
     Path("delivery_projection/__init__.py"),
     Path("delivery_projection/adapter.py"),
     Path("delivery_projection/candidate_cli.py"),

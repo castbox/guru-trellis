@@ -493,3 +493,24 @@ workflow/Skill 混入旧安装 graph。
 `guru-reactivate-task` 的独立 `delivery_reactivate_existing_implementation`
 profile。原 clean-base profile 保持；入口、同操作接续、matching 安装和验证边界见
 [迁移合同](../../presets/guru-team/MIGRATION-669.md)。恢复身份后由原 Task/Delivery owners 审核当前工作。
+
+## 配置生成的 worktree 路径（#760）
+
+AI 自行新建 linked worktree 时，先读取 live Git topology 与确证 primary 的
+`.trellis/guru-team/config.yml`。空 `worktree_root` 使用
+`<primary-parent>/<primary-name>-worktrees`；相对值相对 primary 根解析，绝对值直接采用。
+从 primary、linked 或 detached 调用均使用同一项目锚点。不能以调用 cwd、common-dir
+父目录或 porcelain 首行代替确证；锚点不可确证或配置冲突时按诊断修正，不自动覆盖配置。
+
+公开 `guru-select-workflow-mode/scripts/check-env.sh --root <checkout> --json`
+返回解析后的绝对 `worktree_root`。传 `--worktree-name <name>` 生成目标，再传
+`--checkout-root <absolute-plan>` 可在创建前核对计划。正式 Task 的 AI 生成计划使用
+`acquisition.path_source=configured`、单目录 `worktree_name` 和该绝对路径，原 executor
+在任何创建副作用前再次核对。task-free 由原 owner 消费预检目标，继续普通 Git 创建并读回实际目录与注册。
+
+真实显式新位置仍可在生成 root 外；AI 自填绝对值不代表调用方指定位置。已有 checkout
+采用与原 Task 恢复保留原位置和身份检查，配置变化不触发搬移。
+旧省略字段的绝对路径输入、受影响 callers 和成套更新边界见 [MIGRATION-760](../../presets/guru-team/MIGRATION-760.md)。
+源码修改不表示已有安装已采用；已有 checkout 通过 `guru-upgrade-tools` 更新完整 matching
+工具投影并验证 drift/sidecar，保留 Task/session 和用户配置。完整多平台安装、升级及 Release
+矩阵不属于本项验证范围。

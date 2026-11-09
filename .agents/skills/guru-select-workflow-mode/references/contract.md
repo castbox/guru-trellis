@@ -85,3 +85,39 @@ stdout as one formal result under the selected original output schema:
 [blocked](../schemas/public-blocked-output.schema.json). Each output contains
 only `exit_id`. Preserve a failed command's exit status, stdout and stderr and
 follow its specific remediation; a failed invocation is not a selected route.
+
+## Environment and configured path query
+
+`scripts/check-env.sh --root <invocation-checkout> --json` remains the public
+read-only environment entry. `worktree_root` now reports the absolute generated
+root from the confirmed primary project's `.trellis/guru-team/config.yml`.
+The query confirms primary with live Git topology, actual toplevel and
+common-dir/gitdir identity. The common-dir parent and porcelain first row are
+not sufficient anchors. Empty configuration resolves to
+`<primary-parent>/<primary-name>-worktrees`; relative values resolve from
+primary; absolute values are used directly. The response includes `primary_root` and `worktree_config_path` for the calling
+AI to review. When a worktree name is supplied, `checkout_root` is the absolute
+generated target. Read these fields from the command receipt's `result`.
+It is a call-local
+query, not the selector's typed DTO or a persisted location map.
+
+Pass `--worktree-name <single-directory-name>` to derive a new target. Add
+`--checkout-root <absolute-planned-path>` to check that plan against the derived
+target before creation. A checkout-root check requires a worktree name. A path
+mismatch, unavailable primary anchor or conflicting nonempty invocation
+configuration produces a diagnostic; it does not silently choose another path
+or modify configuration. An empty linked template is not a separate location
+choice. Normal spaces and quoted scalar values follow the supported config
+scalar parsing contract.
+
+The formal creation owner consumes this fact and validates
+`acquisition.path_source=configured` again before acquisition. The task-free
+owner consumes the prechecked target through ordinary Git and rereads the
+actual directory and registration. Each owner first separates adoption or
+recovery from new generation. Genuine explicit locations, adopted external
+checkouts and original Task recovery retain their original checks, without a
+configured-root allowlist. Mode selection, semantic review, naming and exact
+side-effect confirmation remain with their original AI owners.
+
+See [MIGRATION-760](../../../../../presets/guru-team/MIGRATION-760.md) for
+published absolute-path input compatibility and the environment output change.

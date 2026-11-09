@@ -615,6 +615,49 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(self.git("branch", "--format=%(refname:short)", "--list", "codex/example-task"),
                          "codex/example-task")
 
+    def test_public_configured_creation_rejects_wrong_plan_then_binds_and_recovers(self):
+        config = self.primary / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True, exist_ok=True)
+        config.write_text("worktree_root: '../configured locations'\n")
+        target = Path(self.temporary.name).resolve() / "configured locations" / "new-task"
+        request = json.loads(json.dumps(self.payload))
+        request["acquisition"] = {
+            "route": "provision_linked_worktree", "branch_ref": "codex/configured-task",
+            "decision_head": self.head, "transaction_id": "acquisition:configured",
+            "result_id": "checkout:configured", "provision_disposition": "new_branch",
+            "path_source": "configured", "worktree_name": "new-task",
+            "checkout_root": str(Path(self.temporary.name) / "wrong"),
+        }
+        before = (self.git("show-ref"), self.git("worktree", "list", "--porcelain"))
+        with self.assertRaises(MODULE.CommandError) as raised:
+            MODULE.run(PACKAGE, {"id": "record-task-plan"}, ["--root", str(self.root), "--input", json.dumps(request)])
+        self.assertIn("configured_checkout_mismatch", raised.exception.remediation)
+        process, rejected = self.public_call(PACKAGE.parent, "guru-create-task", request)
+        self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+        self.assertEqual(rejected["reason_code"], "configured_checkout_mismatch")
+        self.assertIn("checkout_root", rejected["diagnostic"]["field_path"])
+        self.assertEqual((self.git("show-ref"), self.git("worktree", "list", "--porcelain")), before)
+        self.assertFalse(target.exists())
+        self.assertFalse((self.primary / ".git/trellis").exists())
+        request["acquisition"]["checkout_root"] = str(target)
+        process, created = self.public_call(PACKAGE.parent, "guru-create-task", request)
+        self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+        self.assertEqual(created["exit_id"], "created", created)
+        self.assertTrue((target / self.ref / "task.json").is_file())
+        self.assertEqual(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], cwd=target, text=True).strip(), str(target))
+        self.assertIn("worktree " + str(target), self.git("worktree", "list", "--porcelain"))
+        process, resolved = self.public_call(PACKAGE.parent, "guru-ensure-task-checkout", {
+            "profile": "delivery_active_task", "mode": "workflow", "task_id": "example-task", "lifecycle_generation": 0,
+        }, root=target)
+        self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+        self.assertEqual(resolved["checkout_path"], str(target))
+        task_bytes = (target / self.ref / "task.json").read_bytes()
+        config.write_text("worktree_root: '../changed-generation-root'\n")
+        process, recovered = self.public_call(PACKAGE.parent, "guru-create-task", {**request, "action": "recover_created_task_result"})
+        self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+        self.assertEqual(recovered, created)
+        self.assertEqual((target / self.ref / "task.json").read_bytes(), task_bytes)
+
 
 if __name__ == "__main__":
     unittest.main()
