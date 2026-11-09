@@ -330,7 +330,10 @@ primary_folder), create_child (issue, model, effort,
 message; cross-repository scenes also require repository, project_id,
 source_branch and target_branch), read_child (child_id), send_message (child_id, message), read_operation
 (operation_id), heartbeat_create (interval_minutes, prompt), heartbeat_read,
-heartbeat_stop, observe_external (issue), wait_events (seconds, at most 2).
+heartbeat_stop; cross-repository carriers expose automation_update (mode=update,
+id, status=ACTIVE|PAUSED, prompt, interval_minutes, target) to update an existing
+heartbeat while preserving its fields. observe_external (issue), wait_events
+(seconds, at most 2).
 For child only: inspect, inspect_inputs, inspect_provider, recover_operation
 (operation_id), execute (input_path), verify, record_gate (stage, status,
 explanation, evidence array), verify_supplement (fixture-output-checksum), merge,
@@ -391,7 +394,7 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
     model_root = output / "model"
     model_root.mkdir()
     project_provider(root, model_root, ref)
-    cross_scene = scene in ("cross-repo", "initiative", "environment-create", "environment-user")
+    cross_scene = scene in ("cross-repo", "initiative", "environment-create", "environment-user", "merge-pending")
     if cross_scene:
         from native_cross_repo import CrossCarrier
         carrier = CrossCarrier(scene, output, model_root)
@@ -419,6 +422,8 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
     model, effort = settings.get("model"), settings.get("model_reasoning_effort")
     if not model or not effort:
         raise RuntimeError("Current native configuration must resolve model and reasoning settings.")
+    if scene == "merge-pending":
+        carrier.prime_pending_merge(model, effort, limit)
     if not cross_scene:
         # Establish a real, bounded stopped turn before testing coordinator resume.
         # The priming prompt contains no coordinator instruction or expected route.
@@ -469,6 +474,8 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
         selection = carrier.selection()
     resume = ("" if cross_scene else f"Explicit resume: current owner thread_id={initial_id}, host_id=fixture-host, "
               f"Issue #{initial_issue}, Task fixture-{initial_issue}/generation 0, Delivery delivery-{initial_issue}. ")
+    if scene == "merge-pending":
+        resume = "Explicitly resume the existing formal child bindings and their current operations returned by native inspect; preserve the same run and owners. "
     scope = ("" if cross_scene else f"repository=fixture/orchestration; project_path={model_root / 'business'}; ")
     prompt = (f"Explicitly invoke ${skill} from trellis/skills/guru-team/packages/{skill}/SKILL.md.\n"
         f"Complete the entire selected run in this session. {scope}mode=auto; {selection}. "
@@ -531,7 +538,7 @@ if __name__ == "__main__":
     parser.add_argument("--mcp", action="store_true")
     parser.add_argument("--url"); parser.add_argument("--child", default="")
     parser.add_argument("--root", type=Path); parser.add_argument("--output", type=Path)
-    parser.add_argument("--scene", choices=["dag", "sequence", "completion-drift", "blocked", "cross-repo", "initiative", "environment-create", "environment-user"])
+    parser.add_argument("--scene", choices=["dag", "sequence", "completion-drift", "blocked", "cross-repo", "initiative", "environment-create", "environment-user", "merge-pending"])
     parser.add_argument("--source-ref"); parser.add_argument("--limit-seconds", type=int, default=1800)
     options = parser.parse_args()
     if options.mcp:

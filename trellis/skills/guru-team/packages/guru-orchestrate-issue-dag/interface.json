@@ -146,7 +146,7 @@
       },
       {
         "exit_id": "dag_blocked",
-        "contract": "Incomplete Issues, exact blockers, partial completed results and verified safe child/heartbeat disposition for user resolution."
+        "contract": "Incomplete repository-qualified nodes, exact blockers, partial results and safe settlement; environment gaps include target checkout path/remote, concrete supported user steps and factual same-run recheck conditions."
       },
       {
         "exit_id": "dag_stage_completed",

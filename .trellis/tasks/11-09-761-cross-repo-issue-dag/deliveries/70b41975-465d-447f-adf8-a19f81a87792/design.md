@@ -4,7 +4,7 @@
 
 承接本批 PRD D1-R1..R5、D1-S1..S5 及整体 AC1..AC5。D1 完整交付跨仓编排，不执行真实 Fizz 动议。固定开发基线 B 与 Planning H0 均为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa`，来自本次明确的 main；后续内容范围 B..H 与 PR 目标 `castbox/guru-trellis/main` 分开。最终 H 由实际实现/提交确定，不因 main 后续推进而重选 B。
 
-已消费独立 Architecture 正式 `candidate_assessment:baseline_current`，候选 freshness `sha256:35c83aa63dddd97e34d58f9ff8e61affe6bc06ffa702e2c7932b4df1ec5ba2d9`，结论 `no_architecture_impact`。baseline `docs/architecture/README.md` / `guru-trellis-architecture`，constitution `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1`，change contract `docs/architecture/06-governance/change-contract.md` 均沿原 authority。候选只展开既有会话身份，不新增 scheduler、状态库、owner、authority 或 exit。最终设计仍由原独立 owner 执行 final_plan。
+已消费独立 Architecture 正式 `candidate_assessment:baseline_current`，候选 freshness `sha256:3bd5a142d9c5a094a404a44ef09318935f3bee02d1bd72d8d11d0f78d1091655`，结论 `no_architecture_impact`。baseline `docs/architecture/README.md` / `guru-trellis-architecture`，constitution `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1`，change contract `docs/architecture/06-governance/change-contract.md` 均沿原 authority。修订候选按仓展开既有会话与原事务身份，不新增 scheduler、状态库、semantic owner、authority 或 exit。最终设计仍由原独立 owner 执行 final_plan。
 
 ## 2. 当前系统、边界与目标差额
 
@@ -50,7 +50,7 @@ Direct Source #761 的既有文件链接是问题证据，不是要求保持旧�
 3. 建立后通过原生项目列表和 Git 事实回读 primary repo、路径、base、checkout suitability。应用要求项目或 prompt/hooks 信任时，给用户目标和审阅步骤并暂停该环境，不修改 trust/private app state、不代点信任。setup 仅在实际缺失依赖、未追踪运行文件或构建前置有事实依据时按目标仓规则配置，复用已有设置。
 4. 无能力或权限时，说明 exact repo、缺失条件及用户步骤：取得 checkout、在 App 新增/编辑本地项目并选择正确 primary folder，完成应用显示的信任审阅；确有运行依赖才到本地环境设置配置 setup。步骤必须适配当前 UI/官方文档，不虚构按钮或 API。约定复查条件后保留同一 run。
 5. 初始环境缺口与依赖不等同图结构无效。`continue_independent` 可启动其余已就绪独立节点；`stop_dispatch` 遵守原无新 admission 策略。受影响节点及依赖保持 blocked/waiting；干扰全 run 的真实工具或 authority 缺口按实际影响处理。已有 admitted child 仍观察至安全边界。
-6. 原生 heartbeat 记录最小多仓选择/qualified graph 与模型设置，不记授权。按节点所属项目和 selected source 创建 child，先预留 pending 槽位，立即非阻塞观察。全局槽位和原单 integration owner 保持；跨仓不自动免除真实共享资源约束。
+6. 原生 heartbeat 记录最小多仓选择/qualified graph 与模型设置，不记授权。按节点所属项目和 selected source 创建 child，先预留 pending 槽位，立即非阻塞观察。全局执行槽位保持。每仓选择一个 integration owner，绑定该仓选定 base 和原合并事务；同仓未知结果及紧邻必要 shared-base closeout 先由原 owner 恢复。不同仓没有硬前驱或实际共享资源约束时，各自按自身 fresh gate 推进合并，不因另一仓结果待定而等待；跨仓仍遵守真实依赖与共享资源约束。
 7. 每轮观察/解阻、原事务恢复与 merge/Completion proof 按既有共享方法执行，所有 GitHub/remote/base事实都用该节点 repo/base。一个仓成功不证明另一仓成功。只有前驱整体完成才释放边。
 8. 环境补齐后重新列项目、核 primary/remote/base/trust和受影响依赖，恢复同一 run/原 child；未创建的节点首次 admission，已有 child 不重建。全图完成或真正无可推进工作时沿原 settlement 停妥 child/heartbeat并返回原出口。
 
@@ -75,6 +75,8 @@ Direct Source #761 的既有文件链接是问题证据，不是要求保持旧�
 现有 `tests/run_native_orchestration.py` 已提供独立 coordinator/child Codex 进程、事实 MCP 和外部 trace。优先复用其进程/隔离支持，跨仓状态按仓库+Issue寻址；原测试边界不扩大成生产调度器。host-only 预期不进入 Agent prompt，fixture不按消息关键词推进、不代写 semantic pass。
 
 行为测试为长期源私有回归；必要临时诊断只为具体疑问服务。先完成合同与工具边界，再运行跨仓/环境行为和受影响回归，最后检查分发。核行为轨迹而非计数/exit关键词。证据足够后停止附加实验；设施失败必须保留首失败并重新评估，不能降低断言制造通过。真实 App 后台调度、业务仓生产操作及 Release 全矩阵仍为明确未验证边界。
+
+| V6 | R4、AC1 | 真实 Agent 同入口、两个独立仓ready PR；A原merge结果pending、B自身gate通过 | B在A结果仍未知时沿自身原owner合并；A原事务继续回读且不重复；同仓单owner保留。事实carrier仅供pending状态/原操作结果，不代选路；这是机制收窄差额，原跨仓/动议/环境与单仓事实按实际适用性采用 |
 
 ## 9. Canonical 引用、本轮差额与实际未决项
 

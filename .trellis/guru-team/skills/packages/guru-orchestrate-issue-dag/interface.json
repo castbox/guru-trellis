@@ -3,7 +3,7 @@
   "schema_version": "1.9",
   "id": "guru-orchestrate-issue-dag",
   "name": "guru-orchestrate-issue-dag",
-  "description": "Explicitly coordinate a GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.",
+  "description": "Explicitly coordinate a cross-repository GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.",
   "state": "active",
   "judgment_mode": "semantic",
   "execution_kind": "instruction_only",
@@ -25,12 +25,12 @@
     {
       "id": "provider_and_tools",
       "evidence": "The complete same-provider package and shared method, current native Codex capabilities and supported explicit child model/effort settings.",
-      "binding": "This instruction-only invocation and the exact saved target project.",
+      "binding": "This instruction-only invocation and each exact target repository’s saved project and primary folder.",
       "freshness": "Read current provider files and tool contracts before preflight; verify native heartbeat readback before dispatch."
     },
     {
       "id": "run_scope",
-      "evidence": "Current selected repository/Issues, live prerequisite and accepted scope facts, and actual human messages in the current coordinator conversation.",
+      "evidence": "Current repository-qualified explicit or formally bound initiative Issue selection, per-repository project/base/environment, live prerequisites and accepted scope, and actual human messages in this coordinator conversation.",
       "binding": "One current run; endpoint and execution authorization remain dialogue-only.",
       "freshness": "Resolve before first child/heartbeat; recover original same-run human messages after context loss or changed scope."
     },
@@ -107,7 +107,7 @@
     }
   ],
   "reentry": {
-    "identity": "The current coordinator conversation, exact repository/Issue selection and existing formal or pending child bindings.",
+    "identity": "The current coordinator conversation, exact repository-qualified Issue selection, per-repository project/base bindings and existing formal or pending children.",
     "freshness": "Recover original human messages and current native/GitHub facts; preserve existing owners and refresh affected gates without repeating sufficient current delegation.",
     "stale_behavior": "fail_closed"
   },
@@ -146,7 +146,7 @@
       },
       {
         "exit_id": "dag_blocked",
-        "contract": "Incomplete Issues, exact blockers, partial completed results and verified safe child/heartbeat disposition for user resolution."
+        "contract": "Incomplete repository-qualified nodes, exact blockers, partial results and safe settlement; environment gaps include target checkout path/remote, concrete supported user steps and factual same-run recheck conditions."
       },
       {
         "exit_id": "dag_stage_completed",

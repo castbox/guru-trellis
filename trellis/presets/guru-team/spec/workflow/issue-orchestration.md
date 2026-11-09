@@ -229,7 +229,11 @@ Codex; verify the repository folder is primary; review any App-displayed trust
 request; and use local-environment setup settings only for actual prerequisites.
 Adapt these steps to the current UI/tool help or official Projects and Local
 environments documentation rather than inventing buttons. State what to reread
-before resume. An unsupported generic project-registration API is a present
+before resume. In the blocked response, give each affected repository’s exact
+checkout path/remote and actionable user steps, including the supported local
+project/primary-folder action and displayed trust review when applicable. These
+steps are the user’s direct means to resolve the reported gap.
+An unsupported generic project-registration API is a present
 capability gap, not a permanent prohibition on supported UI creation.
 
 Retain this environment block with its affected nodes and descendants in the
@@ -372,8 +376,8 @@ or a still-valid handled wait. Stop the heartbeat only after verified settlement
 
 Qualify each node, pending reservation, child/host/cursor, Task/Delivery and PR
 with its repository. Never recover cross-repository owners by bare Issue number.
-Keep bindings, pending operations, cursors, consumed events and the integration
-owner in conversation context. App-owned configuration carries only minimum
+Keep bindings, pending operations, cursors, consumed events and each repository’s
+integration owner in conversation context. App-owned configuration carries only minimum
 replayable run inputs. No new persistent coordination or authorization store.
 After context loss, recover original identities and live facts before dispatch.
 
@@ -492,7 +496,11 @@ their concrete blocker. Other admitted DAG children still receive observation.
 
 ## Fresh Merge Gate And Integration
 
-Choose one integration owner among ready children in package order. First
+For each repository, choose one integration owner among its ready children in
+package order. Keep the global execution slot limit and actual cross-repository
+dependencies/resource constraints. Independent repositories can integrate under
+their own passing gates while another repository’s result remains pending.
+First
 recover whether merge is inside this run's current human delegation. Then
 freshly read that node’s exact repository/PR, target branch, current head and reviewed
 candidate; current selected-base head, mergeability and merge policy; required
@@ -508,10 +516,13 @@ original Merge Skill, semantic confirmation gate, expected-head transaction and
 any explicit direct-human-only exception. `auto` and a previous `确认继续`
 neither establish merge scope nor waive readiness.
 
-After a sibling merge, reconcile the evolved base and refresh affected gates
-through the waiting child's normal owners. Keep one integration owner until
-its live result and immediately required shared-base closeout have known
-dispositions. Do not send a second merge while that transaction is unresolved.
+After a same-repository sibling merge, reconcile that evolved base and refresh
+affected gates through the waiting child’s normal owners. Retain that
+repository’s integration owner until its live result and immediately required
+shared-base closeout have known dispositions. Do not send another merge in
+that repository while its original transaction is unresolved. Keep observing
+and advancing other independent repositories; a pending result does not create
+a dependency or shared resource constraint between them.
 Recover original transaction and GitHub state after lost results; do not repeat
 remote mutation on an uncertain response. Then re-read the next owner’s own repository/base. A merge in a different
 repository does not advance or prove this node’s base; refresh only actually

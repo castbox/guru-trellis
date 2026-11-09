@@ -83,3 +83,56 @@ reachability. A stale unrelated `main` needs no fast-forward or exemption.
 For behavioral regression inputs and expected observations, read
 `tests/forward-cases.md` from canonical source. Those source-only tests are not
 part of the installed runtime and never authorize execution of their examples.
+
+## Cross-Repository Nodes With Different Bases
+
+```yaml
+repositories:
+  example/api:
+    project_path: /absolute/path/to/api
+    base_branch: dev
+  example/web:
+    project_path: /absolute/path/to/web
+    base_branch: main
+nodes:
+  - repository: example/api
+    issue: 7
+    depends_on: []
+  - repository: example/web
+    issue: 7
+    depends_on: [example/api#7]
+  - repository: example/web
+    issue: 8
+    depends_on: []
+max_parallel: 2
+mode: dry-run
+```
+
+`example/api#7` and `example/web#7` are distinct nodes. Web #8 may run
+independently; web #7 waits for API #7’s full completion on API’s `dev`.
+Each child uses its repository’s actual saved project and primary folder.
+The coordinator and provider can be in a third repository. Do not create
+anything during this dry-run.
+
+## Initiative And Missing Environment
+
+```text
+显式使用 $guru-orchestrate-issue-dag，先 dry-run。
+读取动议 https://github.com/example/product/issues/42 的正式成员绑定和职责，
+从当前权威解析成员及依赖。产品总控负责最终验收，工程项消费已经就绪的需求。
+相关资料链接不自动进入本轮集合。每仓读取自己的 Codex 项目与默认基线。
+```
+
+Read the actual initiative before deriving a graph. A product requirement
+being ready and that control Issue’s final acceptance are different obligations;
+references to ready requirements do not create a cycle with final acceptance.
+
+If web has no local project, inspect current creation/UI capabilities and
+permissions. Dry-run reports the exact gap. In a covered live run, use a
+supported creation entry and reread primary repository/remote/base. If none is
+available, give current user steps to register the correct checkout and primary
+folder. If App trust is required, the user reviews it; the Agent never clicks
+or edits trust. Configure setup only for a demonstrated runtime prerequisite.
+With `continue_independent`, ready API work can continue while web and its
+descendants wait. After the user supplies the missing condition, reread the
+same bindings and resume this run, preserving any existing children.

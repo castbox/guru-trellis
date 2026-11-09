@@ -11,3 +11,5 @@
 | 原R731-01..06（全部保留） | 原D731-01..05 | 原T731-01..07 |
 
 Architecture沿用 guru-trellis-architecture 的现有AI/Markdown控制面与确定性工具边界。最终实现及proposed内容仍由原独立Architecture与候选Check审查，无impact时不制造贡献/ADR。原RDT owner仅在candidate_checked后final_integration重读真实current、整合并回读，再由implementation重绑候选进入最终质量链。真实行为结果由原测试轨迹和Task/PR提供；本文件不复制审查历史或预填通过。
+
+机制收窄追踪：R761-03 → D761-04 → T761-06。相同仓库的原合并顺序/恢复保持，不同仓无实际共同约束时独立推进。该变更已由同Delivery原规划修订承接，不增加整体scope或第二authority。

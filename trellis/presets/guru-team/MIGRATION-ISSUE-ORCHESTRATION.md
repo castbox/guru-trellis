@@ -38,7 +38,9 @@ preflight 报告真实选择，不能在执行途中静默改成 DAG。
 
 DAG 为每仓分别解析项目、primary repository 和基线；协调仓/provider 不决定业务仓。
 新输入使用 `repositories` 映射及含 `repository` 的节点；依赖、互斥和完成附加条件
-采用仓库限定引用。旧 `repository/project_path/base_branch` 加整数节点进入同一规范图。
+采用仓库限定引用。全局执行槽位不变，合并归属按仓独立；一个仓的未知合并
+结果由原事务恢复，不阻塞无依赖/资源约束的另一仓。同仓仍先恢复原合并及必要
+shared-base closeout 后再进行下一次合并。旧 `repository/project_path/base_branch` 加整数节点进入同一规范图。
 动议只采用正式绑定成员，按实际产品总控和工程职责区分初始需求就绪与最终验收，
 不把所有链接当成员或制造相互依赖。Sequence 仍为单仓严格串行。
 

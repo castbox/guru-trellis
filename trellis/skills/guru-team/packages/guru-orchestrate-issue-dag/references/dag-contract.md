@@ -59,8 +59,11 @@ Resolve each repository’s current saved local project, primary repository,
 remote and selected base through the shared method. Reuse that binding for its
 nodes. Retain per-node formal/pending child, host/cursor, Task/Delivery and PR
 associations in this conversation. All observation, merge and completion proof
-uses the node’s repository and selected base. There is one global slot pool and
-one integration owner, including across repositories.
+uses the node’s repository and selected base. There is one global execution slot pool. Each repository has one integration
+owner for its selected base and original merge transaction. An unresolved
+transaction holds another merge in that same repository; it does not serialize
+an independent repository with passing gates and no dependency or actual shared
+resource constraint.
 
 ## Preflight And Endpoint Compatibility
 
@@ -236,7 +239,7 @@ they are concise action/results for their named consumer, not audit artifacts.
 | `dry_run_blocked` | Concrete failed preconditions or missing choice and useful available facts; user resolves them before re-entry. |
 | `auto_started` | Admitted Issue/formal or pending chat bindings and heartbeat identity; next observation cycle in this coordinator. |
 | `progressing` | Changed node results, concrete blockers or incomplete settlement, and next observation condition; next coordinator cycle. |
-| `dag_blocked` | Incomplete nodes, concrete blockers and descendants, partial results and verified child/heartbeat disposition; user resolves the block before same-run resume. |
+| `dag_blocked` | Incomplete nodes, concrete blockers and descendants, partial results and verified child/heartbeat disposition. For each environment gap, include the exact repository and checkout path/remote, concrete supported user steps to establish the checkout/project/primary folder or complete the displayed trust review, and what will be reread before same-run resume; the user consumes those steps to resolve the block. |
 | `dag_stage_completed` | Per-node original-owner stage evidence, unfinished Issue/Task work and safe child/heartbeat settlement; user receives the requested stage result. |
 | `dag_completed` | Per-Issue verified delivery, applicable release identity, validation limits and verified heartbeat stop; user receives final completion. |
 

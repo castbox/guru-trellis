@@ -32,4 +32,8 @@ Identity：RDT-TST-ISSUE-ORCHESTRATION；别名：T731、主动解阻多轮验�
 
 ## 本次变更来源与适用边界
 
-新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件全部保留，新增 R761/D761/T761。原语义 owner 在本 Delivery candidate Check 后才可整合 shared current；本拟稿不证明软件行为或 Task 完成。
+新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。原语义 owner 在本 Delivery candidate Check 后才可整合 shared current；本拟稿不证明软件行为或 Task 完成。
+
+| 验证/场景 | 需求 → 设计 | 入口、输入与必须观察的行为 |
+| --- | --- | --- |
+| T761-06 / SC761-INDEPENDENT-MERGE | R761-03 → D761-04 | 真实Agent公开DAG入口，两个无依赖/排它资源的仓库PR ready，A原合并操作结果pending。观察B按自身gate和原owner在A仍pending时merge，A原事务回读完成且不重复；同仓单owner和global slots保持。事实carrier返回原操作状态，不按Agent消息或正确路由推进。 |

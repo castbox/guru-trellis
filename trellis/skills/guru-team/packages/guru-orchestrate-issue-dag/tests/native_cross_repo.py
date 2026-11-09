@@ -5,6 +5,7 @@ trace implementation. It never parses child messages or chooses coordinator
 routes. Host-only observations live in forward-cases.md, outside model context.
 """
 from pathlib import Path
+import time
 
 from run_native_orchestration import Carrier, WORKFLOW
 
@@ -13,6 +14,8 @@ class CrossCarrier(Carrier):
     def __init__(self, scene: str, output: Path, model_root: Path):
         super().__init__("dag", output, model_root)
         self.scene = scene
+        self.merge_service_ready_at = None
+        self.coordinator_started = False
         repositories = ("fixture/api", "fixture/web")
         if scene == "initiative":
             repositories += ("fixture/product",)
@@ -46,7 +49,7 @@ class CrossCarrier(Carrier):
         elif scene == "initiative":
             pairs += [("fixture/product", 4), ("fixture/product", 99)]
         elif scene == "environment-user":
-            pairs += [("fixture/cms", 7), ("fixture/product", 7)]
+            pairs += [("fixture/cms", 7), ("fixture/product", 7), ("fixture/api", 8)]
         for repository, issue in pairs:
             key = f"{repository}#{issue}"
             binding = projects[repository]
@@ -54,6 +57,8 @@ class CrossCarrier(Carrier):
             dependencies = []
             if scene == "cross-repo" and key == "fixture/web#7":
                 dependencies = ["fixture/api#7"]
+            if scene == "environment-user" and key == "fixture/api#8":
+                dependencies = ["fixture/web#7"]
             if scene == "initiative" and key == "fixture/product#4":
                 dependencies = ["fixture/api#7", "fixture/web#7"]
             nodes[key] = {
@@ -82,7 +87,9 @@ class CrossCarrier(Carrier):
                 "environment_read": "inspect_environment(repository)",
                 "environment_creation": "establish_environment(repository, path, remote, primary_folder)",
                 "project_list": "list_projects", "trust_mutation": None,
+                "heartbeat_update": "automation_update(mode=update, id, status=ACTIVE|PAUSED, prompt, interval_minutes, target); preserve existing fields, then heartbeat_read",
                 "user_ui": "Codex Projects: add/edit local project and choose primary folder; review App-displayed trust prompt; local environment setup only when actual prerequisites exist",
+                "operation_read": "read_operation(operation_id); child recover_operation(operation_id) reads its original transaction",
                 "child_creation": "create_child(repository, issue, project_id, source_branch, target_branch, model, effort, message)",
             },
         }
@@ -95,6 +102,73 @@ class CrossCarrier(Carrier):
                     {"issue": "fixture/web#7", "role": "Web engineering delivery"}],
                 "related_links": [{"issue": "fixture/product#99", "role": "historical research, information only"}],
             }
+
+    def prime_pending_merge(self, model: str, effort: str, limit: int) -> None:
+        """Create genuine existing readiness and one unknown merge before resume."""
+        for key, node in self.state["nodes"].items():
+            project = self.state["repositories"][node["repository"]]
+            self.coordinator_call("create_child", {
+                "repository": node["repository"], "issue": node["issue"],
+                "project_id": project["project_id"], "source_branch": project["selected_base"],
+                "target_branch": project["selected_base"], "model": model, "effort": effort,
+                "message": "Read current Issue facts and original workflow. Own this Issue’s implementation, required verification, semantic Check, full-range Review and readiness. Stop before merge and report actual results and exact next operation.",
+            })
+        self.wait_for_children(limit)
+        for node in self.state["nodes"].values():
+            if any(node["gates"].get(stage, {}).get("status") != "passed"
+                   for stage in ("check", "review", "readiness")):
+                raise RuntimeError("Original real child readiness was not established; inspect preserved traces.")
+        self.launch("child-fixture-api-7", "合并PR fixture/api#1007, exact candidate candidate-fixture/api#7 into dev. Recheck its current merge prerequisites, perform the original merge once and report its actual operation result. This segment stops after that result; do not repeat an unknown operation or perform Closure/Finish.")
+        self.wait_for_children(limit)
+        if not self.state["nodes"]["fixture/api#7"].get("merge_operation"):
+            raise RuntimeError("Original real child did not execute the pending merge boundary.")
+        self.coordinator_started = True
+
+    def wait_for_children(self, limit: int) -> None:
+        deadline = time.monotonic() + min(limit, 600)
+        while self.running and time.monotonic() < deadline:
+            time.sleep(1)
+            self.refresh()
+        if self.running:
+            raise RuntimeError("Priming original child did not settle; preserve process logs.")
+
+    def resolve_merge_service(self) -> None:
+        if self.scene != "merge-pending" or not self.coordinator_started:
+            return
+        if self.merge_service_ready_at is None:
+            self.merge_service_ready_at = time.monotonic() + 120
+        node = self.state["nodes"]["fixture/api#7"]
+        operation = node.get("merge_operation")
+        if operation and operation["status"] == "pending" and time.monotonic() >= self.merge_service_ready_at:
+            node["pr"].update(merged=True, merge_result="merge-fixture/api#7",
+                              reachable_from_base="dev", reachable_from_default=False)
+            operation.update(status="succeeded", result=dict(node["pr"]))
+            self.trace("external-merge-service", "operation_completed", {"operation_id": operation["id"]}, operation)
+
+    def child_call(self, child: str, op: str, a: dict) -> object:
+        self.resolve_merge_service()
+        row = self.state["children"][child]
+        node = self.state["nodes"][row["node_key"]]
+        if op == "inspect" and ("node_ref" in a or "repository" in a):
+            key = self.key(a)
+            return self.state["nodes"][key] if key else {"error": "repository_qualified_identity_required"}
+        if self.scene == "merge-pending" and node["node_key"] == "fixture/api#7":
+            if op == "merge":
+                if node.get("merge_operation"):
+                    return {"error": "existing_merge_operation", "operation": node["merge_operation"]}
+                missing = [stage for stage in ("check", "review", "readiness")
+                           if node["gates"].get(stage, {}).get("status") != "passed"]
+                if missing or not (node["verification"] or {}).get("passed"):
+                    return {"error": "merge_prerequisites_missing", "missing": missing}
+                operation = {"id": "merge-operation-fixture-api-7", "repository": "fixture/api",
+                             "issue": 7, "status": "pending", "candidate": node["pr"]["head"],
+                             "base": "dev", "owner": child, "result": None,
+                             "recheck": "bounded merge service completion"}
+                node["merge_operation"] = operation
+                node["operations"][operation["id"]] = operation
+                return {"status": "unknown", "operation_id": operation["id"],
+                        "result_available": False}
+        return super().child_call(child, op, a)
 
     def selection(self) -> str:
         if self.scene == "initiative":
@@ -120,7 +194,10 @@ class CrossCarrier(Carrier):
         return matches[0] if len(matches) == 1 else None
 
     def coordinator_call(self, op: str, a: dict) -> object:
+        self.resolve_merge_service()
         s = self.state
+        if op == "read_operation" and self.scene == "merge-pending":
+            return s["nodes"]["fixture/api#7"]["operations"].get(a["operation_id"], {"error": "unknown_operation"})
         if op == "inspect":
             if "issue" in a or "node_ref" in a:
                 key = self.key(a)
@@ -145,6 +222,17 @@ class CrossCarrier(Carrier):
                 return {"error": "environment_arguments_mismatch", "expected": expected}
             row.update(checkout_exists=True, saved_project=True)
             return {"operation": "created_checkout_and_saved_project", "repository": row["repository"], "project_id": row["project_id"]}
+        if op == "automation_update":
+            heartbeat = s["heartbeat"]
+            if not heartbeat or a.get("id") != heartbeat["id"] or a.get("mode") != "update":
+                return {"error": "unknown_heartbeat_or_update_mode"}
+            if a.get("status") not in ("ACTIVE", "PAUSED"):
+                return {"error": "unsupported_status"}
+            fields = ("prompt", "interval_minutes", "target")
+            if any(a.get(field) != heartbeat[field] for field in fields):
+                return {"error": "existing_heartbeat_fields_required", "heartbeat": heartbeat}
+            heartbeat["active"] = a["status"] == "ACTIVE"
+            return heartbeat
         if op == "create_child":
             key = self.key(a)
             if not key:

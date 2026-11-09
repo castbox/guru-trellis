@@ -10,7 +10,7 @@
 
 | 步骤 | Owner、前置、文件与动作 | 完成观察 |
 | --- | --- | --- |
-| I1 合同实现 | trellis-implement，规划已激活；修改 DAG SKILL/interface/local contract/examples/forward-cases、共享 issue-orchestration 方法及必要 sequence 说明 | 多仓 identity/project/base/initiative/environment 贯穿原输入、调度、heartbeat、child和核证，单仓简写进入同一路径 |
+| I1 合同实现 | trellis-implement，规划已激活；修改 DAG SKILL/interface/local contract/examples/forward-cases、共享 issue-orchestration 方法及必要 sequence 说明 | 多仓 identity/project/base/initiative/environment 贯穿原输入、调度、heartbeat、child和核证；integration按仓独立，单仓简写进入同一路径 |
 | I2 行为验证载体 | trellis-implement，在 I1 明确消费边界后扩展 DAG tests 的真实 coordinator/child进程载体 | 跨仓同号、依赖、成员与环境各分支有独立事实观察；复用现有进程/MCP支持，源私有、不按自然语言造下一路由 |
 | I3 RDT候选与用户说明 | 原 RDT owner 基于实际实现写隔离完整 proposed R/D/T及traceability；实现 owner 更新相关 README与同一 migration说明 | 不直接写shared current，不新增根索引；来源/拟稿/验证边界可查 |
 | I4 最小自检及早期反馈 | 实现 owner 自检、敏感内容检查；原 TaskCommit/Publication owners 按早期 Draft profiles提交/发布可审阅候选，按原 router 并行独立反馈及 HEAD验证 | 原事务可恢复，Draft不代替正式Check；反馈修复回同Delivery |
@@ -26,6 +26,7 @@
 | --- | --- | --- |
 | V1/V2/V3 | DAG `tests/` 的真实 Codex隔离 runner正常公开Skill入口；具体命令由I2新增scene/help公开后记录 | 多仓同号/跨仓边/各仓base、动议总控与工程、环境可建/不可建/信任/恢复；人工独立读取真实动作和结果，不用fixture自证 |
 | V4 | `python3 trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_orchestration.py --root . --scene dag --output <新外部目录>`，及 `--scene sequence` | 原单仓DAG/Sequence受影响回归；保留首失败/未知发送恢复；按真实trace判行为，外部目录不提交。若新载体已完整覆盖同一路径，采用可验证等价事实并说明，不重复无价值场景 |
+| V7 | 新增真实 Agent pending跨仓merge scene（原runner复用） | 两独立仓ready，A原事务pending；观察B自身gate通过后在A未知期间merge，A原事务不重复，保留同仓单owner与global slots；采用其余仍适用场景，不重复无关全链 |
 | V5a | `python3 -B -m unittest discover -s trellis/skills/guru-team/tests -p test_instruction_only_packages.py`（使用项目managed Python缺依赖时沿原resolver） | 原interface/discovery、源私有tests排除、Codex-only安装、reapply及冲突逻辑；不证明AI调度 |
 | V5b | `bash .trellis/guru-team/scripts/bash/check-skill-packages.sh --root . --mode source --json`，同步后 `--mode installed` | canonical/interface与实际投影一致，未改公开exit/schema |
 | V5c | `bash trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`，原tools同候选reapply与target-native入口回读 | 无drift/未处置sidecar，mode正确，Task/session和peer不变；不是Release矩阵 |
@@ -47,7 +48,7 @@
 
 ## 6. Docs SSOT Plan（唯一）
 
-`strategy=delta_first`，原writer为 `guru-maintain-requirements-design-test-ssot`。以 `docs/{requirements,design,test}/current/issue-orchestration.md` 的R731/D731/T731为适用现有来源，新增R761/D761/T761的跨仓与环境定义及必要关系，在 `docs/requirements-design-test-contributions/761-cross-repo-issue-dag/` 给出完整proposed目标。保持原稳定能力identity、现有条件和source provenance，不复制未改authority，不写共享根/current索引。
+`strategy=delta_first`，原writer为 `guru-maintain-requirements-design-test-ssot`。以 `docs/{requirements,design,test}/current/issue-orchestration.md` 的R731/D731/T731为适用现有来源，新增R761/D761/T761的跨仓、每仓integration及环境定义与必要关系，在 `docs/requirements-design-test-contributions/761-cross-repo-issue-dag/` 给出完整proposed目标。保持原稳定能力identity、现有条件和source provenance，不复制未改authority，不写共享根/current索引。
 
 原RDT owner在phase2 task_impact_sync检查完整拟稿与追踪，交原candidate Check；仅candidate_checked后在final_integration回读真实目标、整合实际重叠、晋升并回读。Implementation随后重绑全部正文/关系/说明变化进入最终Architecture/Check与完整committed Review。直接consumer为后续维护/查询和本Delivery最终质量链。
 

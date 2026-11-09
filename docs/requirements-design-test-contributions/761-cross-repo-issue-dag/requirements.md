@@ -34,7 +34,7 @@ DAG 只暂停真正依赖障碍的工作，按原 failure policy 继续合法独
 
 实施前刷新采用历史的入口、provider、版本、终点、原约束及首失当处置；提供可移植去敏说明，不能只给本机聊天链接。确证缺陷保留首失当/修复后对照；不复现或历史缺项时诚实说明。源码/package、实际受管投影和真实 Agent 行为分别报告；关键词、parity或案例存在不替行为，无法运行记未验证。
 
-保留显式调用、Codex-only/instruction-only、原调度/身份/资源/单集成 owner/gate/确认/public exits。按原安装 owner 同步并核定向回归、reapply/drift、mode/sidecar，报告实际平台与mode边界。普通本项不承担完整Release/Upgrade矩阵，不接管原业务会话、操作生产或发布版本，不新增脚本调度器、授权记录、持久协调台账或固定审批链。
+保留显式调用、Codex-only/instruction-only、原调度/身份/资源/各仓单集成 owner/gate/确认/public exits。按原安装 owner 同步并核定向回归、reapply/drift、mode/sidecar，报告实际平台与mode边界。普通本项不承担完整Release/Upgrade矩阵，不接管原业务会话、操作生产或发布版本，不新增脚本调度器、授权记录、持久协调台账或固定审批链。
 
 ## R761-01 / BEH761-IDENTITY：跨仓图与单仓兼容
 
@@ -46,7 +46,7 @@ DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、�
 
 ## R761-03 / BEH761-BINDING：各仓执行与完成核证
 
-每仓独立解析 Codex 已保存项目、正确 primary repository、remote、可用 checkout 与适用 base；每节点创建及恢复使用所属仓绑定。各仓执行自己的 workflow 和操作边界。心跳、pending、child、host、Task/Delivery、PR、merge ancestry、来源 Issue 和整体完成证明均保持同一仓库与 base，禁止按裸编号串仓。全局并行槽位、原单 integration owner、资源排它与 failure policy 保持；硬前驱完整完成后才释放边。Sequence 仍是原单仓严格串行入口。
+每仓独立解析 Codex 已保存项目、正确 primary repository、remote、可用 checkout 与适用 base；每节点创建及恢复使用所属仓绑定。各仓执行自己的 workflow 和操作边界。心跳、pending、child、host、Task/Delivery、PR、merge ancestry、来源 Issue 和整体完成证明均保持同一仓库与 base，禁止按裸编号串仓。全局并行槽位、每仓单 integration owner、资源排它与 failure policy 保持；硬前驱完整完成后才释放边。Sequence 仍是原单仓严格串行入口。
 
 ## R761-04 / BEH761-ENVIRONMENT：建立、信任与恢复
 
@@ -56,4 +56,6 @@ DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、�
 
 ## 本次变更来源与适用边界
 
-新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件全部保留，新增 R761/D761/T761。原语义 owner 在本 Delivery candidate Check 后才可整合 shared current；本拟稿不证明软件行为或 Task 完成。
+新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。原语义 owner 在本 Delivery candidate Check 后才可整合 shared current；本拟稿不证明软件行为或 Task 完成。
+
+各仓 integration owner 负责本仓选定 base 的原 merge 事务与未知结果恢复；同仓不同时发送第二个未知合并，紧邻必要 shared-base closeout 保持。不同仓没有硬前驱或实际共享资源约束时，A 合并结果待定不能阻止 B 按自身 fresh gate 与原 owner 推进；global 执行槽位仍统一。仓库身份不是绕过真实共享资源约束的理由。

@@ -4,7 +4,7 @@ Identity：RDT-DES-ISSUE-ORCHESTRATION；别名：D731、DAG/Sequence协调闭�
 
 ## D731-01 / CON731-OWNER：共享方法单写
 
-canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话边界、主动解阻、等待有效性及结果核证方法。两 canonical SKILL 显式加载同provider正文；DAG/chain contract 独占调度差异、依赖推进和原出口。心跳加载同一方法并应用于实际轮次，不维护独立决策规则。保留原模型设置、创建pending、资源归属和单集成owner。
+canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话边界、主动解阻、等待有效性及结果核证方法。两 canonical SKILL 显式加载同provider正文；DAG/chain contract 独占调度差异、依赖推进和原出口。心跳加载同一方法并应用于实际轮次，不维护独立决策规则。保留原模型设置、创建pending、资源归属和各仓单集成owner。
 
 直接在原 Markdown 方法收敛，避免新增协调Skill、调度脚本、台账或固定问答链。新增状态与授权记录会重复既有会话/owner职责，并不能替代语义判断；本选择的维护成本限于共享正文、薄消费及必要验证。未来出现新的真实caller或接口约束时回原Planning/Architecture重审，不能提前预留。
 
@@ -38,7 +38,7 @@ canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话
 
 ## D761-02 / CON761-PER-REPO：绑定贯穿原闭环
 
-共享 issue-orchestration 方法按节点仓库定位已保存项目、primary folder、remote 与 selected base。原 DAG owner 调度整个图，节点创建、heartbeat replay、child prompt、恢复及结果核证消费同一绑定。一个仓的默认分支不覆盖另一个仓；协调者/provider 路径不决定目标。pending 槽位、host/cursor、单 integration owner 和原权限继续复用，无新增台账。
+共享 issue-orchestration 方法按节点仓库定位已保存项目、primary folder、remote 与 selected base。原 DAG owner 调度整个图，节点创建、heartbeat replay、child prompt、恢复及结果核证消费同一绑定。一个仓的默认分支不覆盖另一个仓；协调者/provider 路径不决定目标。pending 槽位、host/cursor、每仓单 integration owner 和原权限继续复用，无新增台账。
 
 ## D761-03 / CON761-PROVISION：环境是 admission 前置
 
@@ -50,4 +50,8 @@ canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话
 
 ## 本次变更来源与适用边界
 
-新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件全部保留，新增 R761/D761/T761。原语义 owner 在本 Delivery candidate Check 后才可整合 shared current；本拟稿不证明软件行为或 Task 完成。
+新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。原语义 owner 在本 Delivery candidate Check 后才可整合 shared current；本拟稿不证明软件行为或 Task 完成。
+
+## D761-04 / CON761-INTEGRATION：各仓原事务责任
+
+同仓仅一 integration owner，直到该仓原 merge 结果和紧邻必要 shared-base closeout 有已知 disposition；原 expected-head、gate 与未知操作恢复不变。无跨仓硬依赖或资源组时，各仓原 child/事务可分别推进，协调者继续观察全部 admitted 工作。原单仓流程只有一个此 owner；不新增共享锁、队列、持久owner表或语义owner。按仓责任已可完整覆盖独立Git/GitHub目标，故不再把原单仓等待扩为全局等待。真实共享资源仍按原排它条件处理。

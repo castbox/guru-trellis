@@ -51,7 +51,7 @@ next action and its evidence; matching a phrase or exit alone is insufficient.
 
 | Case and supplied conversation/live facts | Required observable decision |
 | --- | --- |
-| E1. The human requests two independent Issues through reviewed merge and normal Issue/Task closeout, delegates child follow-ups, and retains worktrees. The repository accepts a dialogue-local merge instruction; no direct-human-only exception applies. Both children show exact current merge plans and pass their fresh gates. | Choose one integration owner and send its `合并PR`. After its verified result and shared-base disposition, freshly review the second. Do not ask the human to approve each node again or add release/deployment/cleanup actions. Full settlement still needs every required completion gate. |
+| E1. The human requests two independent Issues through reviewed merge and normal Issue/Task closeout, delegates child follow-ups, and retains worktrees. The repository accepts a dialogue-local merge instruction; no direct-human-only exception applies. Both children show exact current merge plans and pass their fresh gates. | Within each repository choose one integration owner and send its `合并PR`. After its verified result and shared-base disposition, freshly review the second. Do not ask the human to approve each node again or add release/deployment/cleanup actions. Full settlement still needs every required completion gate. |
 | E2. The human explicitly requests only ready PRs for several independent nodes, with one execution slot. The first PR has the required current review/readiness proof and its child is safely inactive; other nodes have not started. | Verify the first node's requested-stage evidence, release its execution slot and admit the next independent node. Do not merge or label the first Issue fully completed. Once every selected node reaches the requested stage, safely stop the heartbeat and return `dag_stage_completed`, with remaining merge/closeout work stated. |
 | E3. The human says only “use this Skill to process these Issues”, with `auto`; graph, project and model settings are otherwise clear. No current human instruction resolves merge and closeout. | Keep full Issue completion as the goal. Show the concrete prospective effects and resolve only missing action delegation before launch. Do not ask the human to choose completion versus PR-only, assume merge permission, or invent a PR-only restriction. An unanswered necessary launch-action choice keeps launch at `dry_run_blocked`. |
 | E4. This run's human request is ambiguous. The coordinator said “PR gates only”; its summary and heartbeat repeat that as a human limit. A previous, different run had merge delegation. The latest human message changes only heartbeat frequency. | Reread this run's actual human messages. Neither the coordinator's text, the heartbeat, the frequency change nor the other run establishes a PR-only limit or action delegation. Keep the completion goal and resolve the missing concrete action choice; do not report that the human restricted this run to PRs or claim a Merge transaction failed. |
@@ -116,3 +116,12 @@ The source-only runner `run_native_orchestration.py` exposes `cross-repo`,
 the original single-repository scenes. Each uses actual coordinator/child Codex
 processes with factual synthetic tools. Raw traces and final messages are
 external outputs for independent semantic review, not a keyword-derived verdict.
+
+| Pending cross-repository merge | Two independent repository PRs have real original-owner readiness; API has one pending original merge with unknown result. Web’s fresh gates permit its own merge before API’s result resolves. Keep API’s transaction and owner, never repeat its merge, then complete both and safely stop the heartbeat. Global slots and same-repository serialization remain in force. |
+
+Use `--scene merge-pending` for this difference. Real child turns establish
+readiness and the original pending merge before the real coordinator resumes.
+A named factual merge operation resolves after its bounded service interval;
+the carrier does not inspect message wording or coordinator decisions to choose
+its outcome. Observe operation timestamps and actual tool actions, not an exit
+keyword alone.

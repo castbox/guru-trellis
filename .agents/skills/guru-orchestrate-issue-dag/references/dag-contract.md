@@ -2,12 +2,15 @@
 
 ## Graph And Live Dependency Authority
 
-An Issue is a node. `depends_on: [A, B]` means that both A and B must satisfy
+A node is the canonical pair `owner/repo + positive Issue number`. Use
+`owner/repo#N` as its conversation identity. Different repositories’ #N are
+different nodes; neither the coordinator directory nor Skill provider selects
+a node’s repository. `depends_on: [A, B]` means that both A and B must satisfy
 their complete completion contracts before this node can start. An edge is a
 completion dependency, not permission to start from an unmerged branch.
 
-Normalize graph input in the conversation. Require unique positive Issue
-numbers, included predecessor identities, no self-edge, and no directed cycle. Repeated edges
+Normalize graph input in the conversation. Require unique repository-qualified
+node identities, included predecessor identities, no self-edge, and no directed cycle. Repeated edges
 may be collapsed without changing meaning. Report a concrete cycle path when
 one exists. Preserve node input order as the ready-set tie-breaker, never as an
 implicit dependency. A serial list must explicitly become adjacent edges.
@@ -29,12 +32,49 @@ If it becomes unsatisfied after launch, apply the runtime failure policy.
 Conflicting product or architecture authority needs a human decision. A stale
 child summary is a discovery hint, not a change to accepted Issue scope.
 
+## Membership And Repository Bindings
+
+Accept an explicit selected node set or an explicit initiative authority locator.
+For an initiative, read its current formal member table/bindings, each member’s
+actual role, accepted requirements and completion gates. Follow necessary linked
+authority, but do not promote every related link to membership or every reference
+to a hard dependency. Preserve the selected set; explain a real membership or
+scope conflict before the affected admission.
+
+Distinguish product coordination from engineering delivery by actual duties,
+not repository names. For example, product requirements already being ready is
+an initial prerequisite fact; a product control Issue’s final acceptance may
+wait for the engineering Issues. An engineering reference to those requirements
+does not also require final product-Issue completion. Do not manufacture a cycle
+by conflating those two obligations. A genuinely contradictory authority returns
+to its original scope owner rather than being silently reordered.
+
+Normalize every node, edge, exclusion and completion override before graph
+validation. Canonical Issue URLs and equivalent graph notation may become
+`owner/repo#N`. An unqualified integer is usable only with one unambiguous
+repository context. Resolve conflicting repository/project/base choices before
+affected admission; never guess from the current checkout or a same-number node.
+
+Resolve each repository’s current saved local project, primary repository,
+remote and selected base through the shared method. Reuse that binding for its
+nodes. Retain per-node formal/pending child, host/cursor, Task/Delivery and PR
+associations in this conversation. All observation, merge and completion proof
+uses the node’s repository and selected base. There is one global execution slot pool. Each repository has one integration
+owner for its selected base and original merge transaction. An unresolved
+transaction holds another merge in that same repository; it does not serialize
+an independent repository with passing gates and no dependency or actual shared
+resource constraint.
+
 ## Preflight And Endpoint Compatibility
 
 Apply the same-provider `issue-orchestration.md` shared preflight and AI Gate.
 Additionally verify graph membership/acyclicity, feasible positive-integer
 concurrency, independent child branches/worktrees and Task/session evidence,
-and explicit shared-resource exclusions where required. Exclusion groups
+and explicit shared-resource exclusions where required. Apply shared environment
+readiness per repository. An initial environment gap holds its nodes and
+descendants; it does not make an otherwise valid graph invalid or suppress
+independent work under `continue_independent`. Dry-run reports the gap without
+provisioning. Global capability/authority gaps still hold all affected work. Exclusion groups
 contain only included Issue identities and do not create dependency edges. File overlap alone does not prove
 that independent worktrees cannot run in parallel.
 
@@ -64,6 +104,7 @@ Calculate eligibility from live proof:
 eligible(v) = v has no existing admitted owner
               AND every predecessor is verified completed
               AND external prerequisites pass
+              AND the node’s repository environment is verified ready
               AND v is not blocked or descended from a blocked node
               AND failure policy allows admission
               AND no occupied node shares an exclusive group with v
@@ -160,15 +201,30 @@ Shared settlement failure returns `progressing`, never a false terminal result.
 
 ## Public Conversation Contract
 
-The input is one repository and saved project path, ordered nonempty `nodes`
-with unique positive `issue` and included `depends_on` predecessors, optional
-positive-integer `max_parallel` (default 3), `mode` (dry-run/auto/live; default auto),
-optional native `child_model`/`child_thinking`, per-Issue `completion_overrides`,
-`exclusive_groups`, `failure_policy` (default continue_independent), and explicit
-resume selection, and an optional explicitly selected `base_branch`. Equivalent
-graph notation may be normalized in conversation. Resolve the base under the
-shared method: explicit branch first, live default only when omitted. Carry the
-same target into child creation, PRs and completion proof.
+The conversation accepts an ordered nonempty `nodes` set, or an explicit
+`initiative` authority locator whose formally bound members become that set.
+For multi-repository selection, provide `repositories`, keyed by canonical
+`owner/repo`; each value may provide `project_path` and `base_branch`. Resolve
+omitted paths from actual saved projects and omitted bases from that repository’s
+live default. Nodes contain `repository`, positive `issue`, and `depends_on`.
+Dependencies, `exclusive_groups` and per-node `completion_overrides` use
+`owner/repo#N` (or equivalent canonical Issue URLs). All graph references must
+resolve unambiguously. Included predecessors refer to selected identities;
+external prerequisites use the existing live-proof rule, without expanding scope.
+
+Existing single-repository input remains a shorthand: `repository`,
+`project_path`, optional `base_branch`, and integer Issue nodes/edges/overrides
+expand into the same repository-qualified graph. There is no second scheduler
+or legacy execution path. Multi-repository configuration does not apply one
+repository’s base or path to another. Keep this shorthand for existing callers;
+removing it requires an explicit breaking change and caller migration.
+
+Both forms accept optional positive-integer `max_parallel` (default 3), `mode`
+(dry-run/auto/live; default auto), supported `child_model`/`child_thinking`,
+`exclusive_groups`, `completion_overrides`, `failure_policy` (default
+continue_independent), and explicit same-run resume selection. Equivalent graph
+notation may be normalized in conversation. Carry each resolved repository/base
+into child creation, PRs and completion proof under the shared method.
 Full Issue completion is the goal. Resolve execution limits and authority only
 from the human conversation under the shared method; they are not public data
 fields or persistent state. A missing action permission does not select an
@@ -183,7 +239,7 @@ they are concise action/results for their named consumer, not audit artifacts.
 | `dry_run_blocked` | Concrete failed preconditions or missing choice and useful available facts; user resolves them before re-entry. |
 | `auto_started` | Admitted Issue/formal or pending chat bindings and heartbeat identity; next observation cycle in this coordinator. |
 | `progressing` | Changed node results, concrete blockers or incomplete settlement, and next observation condition; next coordinator cycle. |
-| `dag_blocked` | Incomplete nodes, concrete blockers and descendants, partial results and verified child/heartbeat disposition; user resolves the block before same-run resume. |
+| `dag_blocked` | Incomplete nodes, concrete blockers and descendants, partial results and verified child/heartbeat disposition. For each environment gap, include the exact repository and checkout path/remote, concrete supported user steps to establish the checkout/project/primary folder or complete the displayed trust review, and what will be reread before same-run resume; the user consumes those steps to resolve the block. |
 | `dag_stage_completed` | Per-node original-owner stage evidence, unfinished Issue/Task work and safe child/heartbeat settlement; user receives the requested stage result. |
 | `dag_completed` | Per-Issue verified delivery, applicable release identity, validation limits and verified heartbeat stop; user receives final completion. |
 
