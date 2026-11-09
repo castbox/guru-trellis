@@ -26,3 +26,10 @@ Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 asking for a real choice or write confirmation, and
 `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10`
 for intermediate receipts. Do not use full installation migration as fallback.
+
+For a repair-before-existing-operation boundary, select `recover_frozen_source`
+with the original `recovery_ref` and `action=resume|rollback`. The repaired
+executor keeps the original checkpoint's complete asset source and frozen public
+pair/plan/preimages. Read the contract's frozen-source section before judgment.
+`frozen_recovery_required` returns the same profile/action/ref to this owner;
+never turn it into the old same-source `resume` input.

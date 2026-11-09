@@ -1,0 +1,30 @@
+{
+  "$id": "guru-upgrade-tools-public-frozen_recovery_required-output-1.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "profile",
+    "action",
+    "recovery_ref"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "frozen_recovery_required"
+    },
+    "profile": {
+      "const": "recover_frozen_source"
+    },
+    "action": {
+      "enum": [
+        "resume",
+        "rollback"
+      ]
+    },
+    "recovery_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

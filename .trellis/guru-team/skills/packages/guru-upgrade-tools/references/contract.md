@@ -65,7 +65,10 @@ handles the concrete case before an overlapping new operation can proceed.
    or switches a branch/worktree, nor invokes Task Identity/Reconcile.
    Identify registered peers through the Git common directory and inspect the
    actual shared paths before freezing this one-checkout write set. Common-dir
-   membership alone does not prohibit ordinary parallel work.
+   membership alone does not prohibit ordinary parallel work. Preserve every
+   original observation key/value. New registered peers must be physically
+   isolated from the actual frozen tool destinations; new keys alone do not
+   fail the preservation check and never enlarge the operation's backup/write/delete set.
 3. Read current upstream tools inspection, old Guru manifest/source hashes,
    actual managed edits, user config/spec/platform choice, and pointer layout.
    `preview.sh --root CONTEXT --input INPUT --upstream-source SOURCE_JSON`
@@ -180,12 +183,60 @@ concrete unresolved gap instead of claiming success if that smoke is missing.
 The original recovery is the only rollback consumer of the retained private
 preimages; rollback does not create a new anchor or future authorization.
 
+## Frozen-source recovery of schema1.0 operations
+
+`recover_frozen_source` is an explicit additive profile for existing schema1.0
+operations, including the operation blocked in #766. Read the original failure,
+phase, target, source and frozen public pair/plan/ref and preimages. Establish
+that the repaired complete executor source is applicable to this peer-growth
+repair. The original `cp.source` remains the complete logical asset source;
+its HEAD/tree token and root binding still must match. Existing `resume` and
+`rollback` remain same-source profiles and do not gain implicit cross-source
+fallback.
+
+Invoke from the complete repaired source with only
+`{profile: recover_frozen_source, action: resume|rollback, recovery_ref: original}`
+and the original target as `--root`. Do not supply a new plan/source override,
+prepare another operation, edit the old checkpoint, refresh its peer snapshot
+or backups, or incorporate later owned/business edits. The current repaired
+engine loads the installation helper and preset assets from the original
+logical package. Its sibling helper dependency is loaded from that same source;
+a prior import cache cannot choose different asset code. Source mismatch,
+owned mismatch and changed original peer values still block.
+
+The current engine follows the original recorded phases. `preset` means the
+original preset action is still pending and may continue the original installer
+with its original public recovery reference. Existing projected files are not
+proof of `complete`. At `complete`, recovery validates without installing again.
+Public work already completed is recovered by the public owner; there is no
+new prepare or operation. Rollback still checks public compatibility before
+restoring original Guru preimages. Verify the target's own resolver, installed
+runtime and native entry, and peer preservation independently. A tool result
+does not establish Task or Delivery success.
+
+When that engine returns a retry requirement, this profile emits
+`frozen_recovery_required` with the same profile/action/ref. Its sole consumer
+is this owner at `recover_frozen_source`; keep `action=rollback` on rollback
+retry. Read and review the new failure before re-entry. Success and permanent
+blocking retain the original independent output contracts. No checkpoint
+fields, data conversion or backup migration are added.
+
+This owner retains compatibility until the existing schema1.0 operations have
+reached a terminal state and their original recovery retention responsibility
+has ended. Removal then requires an explicit migration by this owner; this
+change adds no transaction scanner, automatic API retirement or general
+migration framework. The complete support and adoption boundary is in
+`trellis/presets/guru-team/MIGRATION-769.md`.
+
 ## Public output consumers
 
 - `tools_upgraded`: result stop consumes installed_version for actual target
   status, recovery_ref for this owner's optional rollback, and unverified for
   the formal-source boundary. No Task/session inventory or digest crosses it.
 - `resume_required`: same owner consumes only profile and recovery_ref.
+- `frozen_recovery_required`: this same owner consumes only profile, action and
+  recovery_ref through the explicit frozen-source input; the projection removes
+  only exit_id and preserves the original action.
 - `rolled_back`: result stop consumes the actually restored installation version.
 - `blocked`: result stop consumes the concrete missing prerequisite/conflict.
 

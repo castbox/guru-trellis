@@ -43,3 +43,13 @@ Discovery读固定tree的实际blob/history/archive证据，草案通过独立ca
 配置生成新位置由 root 与本次已审目录名形成，在任何 branch/worktree/Task 创建前核对计划路径。真正显式新位置保持原合法合同；已有外部 checkout 采用及原 Task 恢复先分流，不受生成 root 限制或重定位。旧绝对输入的兼容与新字段迁移由原 create-task 合同和 MIGRATION-760 拥有，绝对值本身不证明用户选址。
 
 该共享能力有三个当前 consumer，避免复制解析且不建立第二执行或状态authority。代价限定为位置事实模块、原接口差额和定向验证；不引入缓存、锁、清理进程或长期证明。只有 Git topology、配置语义、公开位置策略或真实旧 consumer 边界变化时重新评估。配置与普通Git行为验证、分发、业务采用和Release分别成立，实际观察由对应Test单元拥有。
+
+## tools peer 增长与冻结资产源恢复（#769）
+
+本节承接Issue #769，适用before为main `a5f3ceeabbaccddae65935d97763f5a798f71ca9`，决定为[ADR-TOOLS-FROZEN-SOURCE-RECOVERY](../adr/tools-frozen-source-recovery.md)。原upgrade-tools仍是唯一工具维护owner。原common/peer已观测键的值保持；正常新增registered peer在与原实际工具写集物理隔离时不因新增观测键被拒绝。新增peer不进入原备份/写入/删除集，原snapshot不刷新。#759只跳过prunable且.git不存在的失效注册条件保持。
+
+既有install/resume/rollback继续原同源语义。新recover_frozen_source从完整修复源执行当前恢复engine；原cp.source完整源仍提供资产、legacy installation helper及preset installer，原root/source HEAD/tree token、public CLI/Core pair/plan/ref、preimages和rollback anchor继续验证。该区分只服务修复前schema1.0事务，包括#766，不改旧数据、不reprepare、不接收新源覆盖，也不吸收后续业务编辑。
+
+原phase逐项续接；preset仍是pending，允许原installer同操作续接，不能从投影文件推断complete。complete只验证。rollback先核公共tools/data兼容，再原Guru preimages恢复。目标own resolver/installed/native与peer保持独立证明。新frozen_recovery_required只携同profile/action/ref回同owner，不能回旧同源resume；永久不匹配仍阻塞。工具成功不提供Task/Delivery gate。
+
+代价限定为原比较修正、一个明示兼容profile及直接retry consumer；复用原engine避免第二阶段机，不增加checkpoint字段、registry、锁或通用迁移平台。旧事务终态且原恢复保留责任结束后，通过明确迁移移除兼容入口；不自动扫描删除API。只有原资产/执行边界、阶段协议、实际旧consumer或隔离写集变化才重新评估。原Architecture/RDT的candidate Check、final_integration/readback和最终质量链保持；目标安装与完整Release分别成立。

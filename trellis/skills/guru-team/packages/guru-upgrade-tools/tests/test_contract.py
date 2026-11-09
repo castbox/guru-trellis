@@ -22,7 +22,7 @@ class ToolsContractTests(unittest.TestCase):
             schema = json.loads((PACKAGE / contract['schema']['path']).read_text())
             example = json.loads((PACKAGE / contract['example']['path']).read_text())
             Draft202012Validator(schema).validate(example)
-        self.assertEqual([x['id'] for x in interface['public_contracts']['input']['profiles']], ['install', 'resume', 'rollback'])
+        self.assertEqual([x['id'] for x in interface['public_contracts']['input']['profiles']], ['install', 'resume', 'rollback', 'recover_frozen_source'])
         self.assertEqual(interface['judgment_mode'], 'semantic')
         self.assertEqual(interface['modes']['workflow']['routing'], 'not_applicable')
         self.assertEqual(interface['ordered_stages'], ['forward_behavior','ai_review_gate','conditional_human_confirmation','recorder_validator','typed_exit'])
@@ -160,3 +160,18 @@ class ToolsContractTests(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError):
                 owner.peer_pointers(root, old)
             self.assertIn(damaged.resolve(), rev_parse_paths)
+
+    def test_frozen_retry_projection_preserves_the_original_action_and_reference(self):
+        interface = json.loads((PACKAGE / 'interface.json').read_text())
+        row = next(x for x in interface['public_contracts']['projections']
+                   if x['exit_id'] == 'frozen_recovery_required')
+        profile = next(x for x in interface['public_contracts']['input']['profiles']
+                       if x['id'] == 'recover_frozen_source')
+        schema = json.loads((PACKAGE / profile['schema']['path']).read_text())
+        for action in ('resume', 'rollback'):
+            output = json.loads((PACKAGE / 'examples/public-frozen_recovery_required-output.json').read_text())
+            output['action'] = action
+            projected = {m['target']: output[m['source']] for m in row['mappings']}
+            Draft202012Validator(schema).validate(projected)
+            self.assertEqual(projected, {'profile': 'recover_frozen_source', 'action': action,
+                                         'recovery_ref': output['recovery_ref']})

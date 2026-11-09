@@ -9,6 +9,7 @@ import importlib.util
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
 import uuid
@@ -25,10 +26,23 @@ def legacy_owner(package):
     directory = package.parent / 'guru-upgrade-installation/runtime'
     if str(directory) not in sys.path:
         sys.path.insert(0, str(directory))
-    spec = importlib.util.spec_from_file_location('tools_original_installation_owner', directory / 'owner.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    # The installation owner imports its sibling as ``files``. Bind that
+    # dependency to the same asset source instead of a prior invocation's cache.
+    previous = sys.modules.get('files')
+    files_spec = importlib.util.spec_from_file_location('files', directory / 'files.py')
+    files = importlib.util.module_from_spec(files_spec)
+    files_spec.loader.exec_module(files)
+    sys.modules['files'] = files
+    try:
+        spec = importlib.util.spec_from_file_location('tools_original_installation_owner', directory / 'owner.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        if previous is None:
+            sys.modules.pop('files', None)
+        else:
+            sys.modules['files'] = previous
 
 
 def compose_agents_input(tools, module, contract):
@@ -159,9 +173,55 @@ def peer_pointers(root, old):
     return result
 
 
+def isolated_write_set(root, paths, old):
+    """Check the frozen tool destinations, without adding peer preimages."""
+    isolated_layout(root, old)
+
+    def observed_stat(path, *, follow_symlinks=True):
+        try:
+            return path.stat(follow_symlinks=follow_symlinks)
+        except OSError:
+            # Retain this Python/platform's original Path.is_file error policy.
+            path.is_file()
+            return None
+
+    # Target paths and their facts are identical for every peer in this call.
+    destinations = {}
+    for relative in paths:
+        target = old.relative_file(root, relative)
+        destinations[relative] = (target.resolve(), observed_stat(target))
+    for other in peers(root, old):
+        if other == root:
+            continue
+        parents = {}
+        for relative, (target, target_stat) in destinations.items():
+            peer_path = other / relative
+            peer_stat = observed_stat(peer_path, follow_symlinks=False)
+            if peer_stat is not None and stat.S_ISLNK(peer_stat.st_mode):
+                resolved = peer_path.resolve()
+                peer_stat = observed_stat(peer_path)
+            else:
+                parent = peer_path.parent
+                if parent not in parents:
+                    parents[parent] = parent.resolve()
+                # Missing leaves still resolve through their physical parent.
+                resolved = parents[parent] / peer_path.name
+            if (resolved == target or (peer_stat is not None and target_stat is not None
+                    and stat.S_ISREG(peer_stat.st_mode) and stat.S_ISREG(target_stat.st_mode)
+                    and os.path.samestat(peer_stat, target_stat))):
+                raise ValueError('Selected tool write set physically overlaps a peer')
+
+
 def unchanged_peers(root, cp, old):
-    if peer_pointers(root, old) != cp['peer_pointers']:
+    observed = peer_pointers(root, old)
+    if any(key not in observed or observed[key] != value for key, value in cp['peer_pointers'].items()):
         raise ValueError('A peer/common Python pointer changed; review before recovery')
+    # New observations are legal only outside this operation's fixed write set.
+    # Never refresh the original observation or backup collections.
+    paths = {key[5:] for key in cp['preimages'] if key.startswith('repo:')}
+    paths.update(row['path'] for row in cp['plan']['upstream_plan']['actions']
+                 if row.get('kind', 'file') == 'file')
+    isolated_write_set(root, paths, old)
 
 
 def validate_tools_plan(root, public, plan, old):
@@ -209,6 +269,8 @@ def inventory(package, root, public, descriptor, plan=None):
     forbidden = [path for path in paths if path.startswith(('.trellis/tasks/', '.trellis/workspace/', '.trellis/agent-traces/'))]
     if forbidden:
         raise ValueError('Tools installer projection includes Task/history paths; revise original owner before execution')
+    isolated_write_set(root, paths | ({row['path'] for row in plan['upstream_plan']['actions']
+                                     if row.get('kind', 'file') == 'file'} if plan else set()), old)
     facts = {'root': str(root), 'installed_version': manifest['extension']['version'], 'managed': managed,
              'guru_paths': sorted(paths), 'guru_inventory': [
                  {'path': path, **old.state(old.relative_file(root, path)),
@@ -487,6 +549,21 @@ def rollback(package, root, recovery, cp):
     return rollback(package, root, recovery, cp)
 
 
+def recover_frozen_source(root, recovery, cp, action):
+    """Use the repaired engine with the original complete asset package."""
+    source = Path(cp['source'])
+    package = source / 'trellis/skills/guru-team/packages/guru-upgrade-tools'
+    if not (package / 'SKILL.md').is_file():
+        raise ValueError('Original complete tools asset source is unavailable')
+    # resume/rollback still validate the original root, source HEAD/tree token,
+    # public pair and owned freshness before their original stage transitions.
+    result = (rollback if action == 'rollback' else resume)(package, root, recovery, cp)
+    if result['exit_id'] == 'resume_required':
+        return {'exit_id': 'frozen_recovery_required', 'profile': 'recover_frozen_source',
+                'action': action, 'recovery_ref': recovery.name}
+    return result
+
+
 def run(package_root, metadata, argv):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--root', required=True)
@@ -496,8 +573,8 @@ def run(package_root, metadata, argv):
     args = parser.parse_args(argv)
     public = read_json(args.input, 'input')
     profile = public.get('profile')
-    if profile not in ('install', 'resume', 'rollback'):
-        raise CommandError('schema_mismatch', 'input.profile', 'Use install, resume or rollback.')
+    if profile not in ('install', 'resume', 'rollback', 'recover_frozen_source'):
+        raise CommandError('schema_mismatch', 'input.profile', 'Use install, resume, rollback or recover_frozen_source.')
     validate_json(public, package_root / ('schemas/public-' + profile + '-input.schema.json'), 'input')
     plan = read_json(args.plan, 'plan') if args.plan else None
     old = legacy_owner(package_root)
@@ -544,7 +621,10 @@ def run(package_root, metadata, argv):
             recovery = recovery_path(root, public['recovery_ref'], old)
             cp = json.loads((recovery / 'checkpoint.json').read_text())
             validate_json(cp, package_root / 'schemas/private-recovery.schema.json', 'recovery')
-            result = rollback(package_root, root, recovery, cp) if profile == 'rollback' else resume(package_root, root, recovery, cp)
+            if profile == 'recover_frozen_source':
+                result = recover_frozen_source(root, recovery, cp, public['action'])
+            else:
+                result = rollback(package_root, root, recovery, cp) if profile == 'rollback' else resume(package_root, root, recovery, cp)
         validate_json(result, package_root / ('schemas/public-' + result['exit_id'] + '-output.schema.json'), 'output')
         return result
     except (ValueError, OSError, KeyError, old.MigrationError, CommandError) as exc:
