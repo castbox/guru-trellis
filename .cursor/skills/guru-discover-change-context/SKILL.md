@@ -45,6 +45,16 @@ Before current-state, duplicate, or history retrieval, read
 this Skill's semantic evidence gate. A one-language zero result cannot establish
 that a mechanism, duplicate, or historical decision is absent.
 
+For history preview, capture complete stdout bytes in call-local memory, check
+command success, then decode UTF-8 and parse the receipt's `result`. Show all
+returned candidates in compact batches and supplement missing fields by
+candidate ID and offset before your selection/exclusion judgments. Follow
+[examples/history-preview.md](examples/history-preview.md) for the executable
+capture and reading path. If only the tool display is truncated, automatically
+read smaller batches from memory and continue this same Discovery. If memory
+is lost, recover with the same fixed baseline and query. Actual command or
+freshness failures retain the contract's original routes.
+
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
 does not create a repository artifact. Pass the current Discovery `pre_task` 4.0 or `context_request` 2.0 input and
