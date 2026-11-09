@@ -10,6 +10,9 @@
     },
     {
       "$ref": "public-rollback-input.schema.json"
+    },
+    {
+      "$ref": "public-recover_frozen_source-input.schema.json"
     }
   ]
 }

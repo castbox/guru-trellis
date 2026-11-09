@@ -26,3 +26,18 @@ Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 asking for a real choice or write confirmation, and
 `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10`
 for intermediate receipts. Do not use full installation migration as fallback.
+
+For a repair-before-existing-operation boundary, select `recover_frozen_source`
+with the original `recovery_ref` and `action=resume|rollback`. The repaired
+executor keeps the original checkpoint's complete asset source and frozen public
+pair/plan/preimages. Read the contract's frozen-source section before judgment.
+`frozen_recovery_required` returns the same profile/action/ref to this owner;
+never turn it into the old same-source `resume` input.
+
+For an original peer whose owner has normally finished and removed its checkout,
+read that owner's actual terminal result before judging applicability. Only the
+frozen profile may carry the reviewed absolute `retired_peer_roots` locations.
+Missing paths or observations alone do not prove normal exit. The executor checks
+association with original local observations, full Git registration and path
+absence; it never supplies this judgment. Preserve this field's presence and
+value in a frozen retry, including an explicit empty array.

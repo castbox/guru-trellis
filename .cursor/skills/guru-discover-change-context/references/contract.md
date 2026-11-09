@@ -110,10 +110,16 @@ Execute in this exact order:
 5. AI-review code, API, config, schema and ownership;
 6. AI-review tests, fixtures, throwaway and update coverage;
 7. record current-state observations and canonical query clues;
-8. run `history_previewer` exactly once;
-9. AI-select one to three candidates when any exist, record every exclusion,
-   and deep-read only explicit selected evidence; use an empty selection when
-   the preview has no candidates;
+8. run `history_previewer` once for this investigation with complete stdout
+   captured in call-local memory; check the real exit status before decoding
+   UTF-8 and parsing the receipt's `result`. Follow
+   [the executable preview example](../examples/history-preview.md), then show
+   all returned candidates in compact batches;
+9. AI-review every returned candidate, supplementing long or missing fields
+   by candidate ID, field and offset before judging selection or exclusion.
+   AI-select one to three candidates when any exist, record every exclusion,
+   and deep-read only explicit selected evidence through the original source
+   reader; use an empty selection when the preview has no candidates;
 10. run the AI Review Gate;
 11. record and objectively validate the result, then return one typed exit.
 
@@ -168,6 +174,33 @@ facts and their aggregate digest. This replaces the former 3.0 handoff for the
 current graph; missing or mismatched projections require context refresh.
 
 ## History Preview And Deep Read
+
+Use [examples/history-preview.md](../examples/history-preview.md) for complete
+byte capture, successful receipt parsing, compact batches and field reads.
+The full result stays in this invocation's memory; each display is only a fact
+projection. Preserve candidate IDs, archive paths, matched clues and sufficient
+problem/outcome content for the current AI's judgment. Compact snippets do not
+establish that full fields were read or that evidence is sufficient. Supplement
+any information needed to judge each candidate; code must not silently filter
+candidates or decide relevance, sufficiency, selection or exclusion.
+
+Apply the shared two-layer budget rules in
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`
+and its `Intermediate Command Stdout 1.0` section. Never parse already truncated
+tool text as JSON. A shortened display is not command failure, no candidates,
+a missing business prerequisite, semantic pass or a final blocker. This owner
+automatically reduces the batch or field range and reads the missing content
+from the complete in-memory result, without asking the user to continue. If the
+result was lost, recover through the same public preview with the same fixed
+baseline, query and source transition, then continue this Discovery. This
+same-scope recovery is not another broad investigation and does not select a
+new baseline. Real command failures, source gaps and stale/mismatch facts keep
+the existing error or re-entry routes. Recovery does not relax freshness.
+
+After candidate judgments and selected evidence deep reads, continue the
+original AI Gate and record/check/invoke sequence and consume the actual typed
+exit. Capture or display success does not complete the Skill. Do not add a
+preview cache, checkpoint, tracked evidence file or authorization record.
 
 History uses `guru-context-history-score-1.0`. The runtime enumerates only
 `.trellis/tasks/archive/**/finish-summary.json`, applies lexical repository and
@@ -421,10 +454,9 @@ print(json.dumps({
 PY
 ```
 
-Capture complete preview stdout in caller memory and inspect its `result` candidate
-projection before choosing history. A shortened tool display is not a new
-preview or proof of absence; it does not require rebuilding private preview
-bytes. Record rebuilds the deterministic preview itself from the current clues.
+Follow History Preview And Deep Read and its executable example before
+choosing history. Record rebuilds the deterministic preview itself from the
+current clues; callers do not rebuild private preview bytes.
 Check and invoke consume the complete recorder result unchanged, not the
 pre-record authoring subset.
 

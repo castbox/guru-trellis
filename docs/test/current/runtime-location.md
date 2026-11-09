@@ -110,3 +110,41 @@ trellis/skills/guru-team/runtime` 选定受管 Python；需要 Fork 的 suite �
 定向真实Git测试可证明其入口和后继观察，不能自动证明完整真实Agent业务链或生产效果。
 不要求业务#1232重新复现、不触发Codex清理、不运行业务恢复或完整多平台安装/升级/Release。
 本单元写回不代表Task Completion、Architecture晋升或发布；这些结果分别由原owner消费。
+
+## T769 / peer增长与冻结源恢复验证
+
+承接R769-01—03 / D769。T769-01用真实Git topology和原peer_pointers入口观察新增独立peer、原值保持及peer文件不被写入；原peer合法选择变化和实际不隔离继续拒绝。T769-02用原owner正常创建的schema1.0事务执行新公共profile，观察resume/rollback阶段、preset pending/complete不重复安装、retry保持action/ref及原source/plan/preimages不变；unit外部隔离只证明该层。T769-03实际#766原操作从交付修复源恢复，核同public operation及目标own resolver/installed/native。T769-04定向package/source/installed/drift/sidecar/mode验证，不承担完整多平台矩阵。
+
+### #769 当前本地观察
+
+| 观察 | 实际结果与层次 | 边界 |
+| --- | --- | --- |
+| T769-01 / peer | 最终test_peer_growth.py 3项通过，1.590s；真实Git新增peer、原pointer变化拒绝、parent alias下缺失leaf、leaf symlink及hardlink隔离均经原检查入口 | fixture建立reader边界前的pointer状态；不声称完整环境选择或并发压力证明。 |
+| T769-02 / 冻结源 | test_frozen_recovery.py最终8项通过，12.576s；原完整Git资产源、原owner begin/checkpoint/preimages与阶段真实，覆盖pending preset、public pending、complete、resume/rollback retry及owned mismatch；真实公共wrapper拒绝普通原资产变化 | public SDK、preset writer/native在模块层隔离，不代替现场原操作成功。 |
+| T769-04 / package | 整包31项中30通过、1个opt-in native fixture跳过（24.217s）。最后等义路径解析收敛后，contract 8项（0.659s）、peer 3项、frozen 8项复验通过 | 使用固定aa898d09真实Fork CLI；末轮定向复验不能写成整包再次执行。 |
+| T769-04 / 源码 | 最终source validator通过43 active packages/128 commands；390个Guru Python内存compile、45个Bash语法及marketplace JSON通过 | 首次直接source验证未设置模块路径，未进入validator；纠正PYTHONPATH后实际通过。该设施错误不是产品缺陷。 |
+| T769-04 / 真实目标同步 | 原source-loaded guru-upgrade-tools返回tools_upgraded，版本0.7.0-guru.8；同固定public operation完成。目标自身resolver执行installed validator通过，conflicts=0、sidecars=0；native continuation退出0，公开current仍为本Task/Delivery、implementing；Task/config/AGENTS共10路径bytes与mode保持；drift退出0，shared/Claude/Codex/Cursor与canonical一致 | local_candidate的formal_fork_source_lock仍未验证。源执行与目标自身结果分别成立；本项不承担完整多平台矩阵。 |
+
+本观察截止为未提交候选、candidate Check前。实际#766原操作尚未恢复，T769-03由交付后的原tools owner与整体Completion继续核验。历史#718/#760结果保原观察，不能替代本项证据。知识晋升、最终Check/Review、Task/Delivery完成分别成立。
+
+## T769-D2 / 正常退出位置的恢复验证
+
+承接 R769-04—06 / D769-D2；before 为 D1 delivered head aaf7f939，历史观察保留各自截止。T769-D2-01：真实 Git peer 经原观测/begin 后正常移除，公开 frozen 入口携准确 roots 续接；独立核原 source/public operation/plan/preimages/snapshot 不变。T769-D2-02：省略/[]不建立例外，仍注册/仍存在/不关联原观测的普通选错拒绝；存续 peer/common 真实变化继续拒绝，保留 D1 和 #759 回归。T769-D2-03：真实 retry 生产结果有字段、无字段、显式空数组，经声明 presence-select 满足 consumer schema，action/ref/字段存在性和值保持。T769-D2-04：原 tools owner 更新本 Task 的 canonical/dogfood/声明平台，核目标自身 source/installed/native、drift/sidecar/mode 及 Task/config/AGENTS 保持。T769-D2-05：交付后的完整修复 source 实际恢复 #766 原 ref/action，核原固定 bundle/public operation/source 与目标自身入口；组件隔离不能代替此现场验收。
+
+规划时观察：D1 PR776 已合并，三平台 Targeted native CI run 42619232369 成功。随后实际 #766 frozen resume 返回 blocked；只发现 #759 已退出位置五键缺枚举，无存续值变化。原 Cleanup 公共入口已恢复同一 cleaned 结果。以上不建立 D2 实现或整体恢复成功；该规划观察截止时 D2 尚未实现。后续观察由原实现/质量 owners 在合法边界追加。local_candidate 的 formal_fork_source_lock 和完整多平台 Release 矩阵仍未验证。
+
+### D2 实现候选的后继观察
+
+原实施 owner 在本次未提交 D2 canonical 上使用固定 aa898d09 真实 Fork CLI 运行 guru-upgrade-tools 完整 package：37 项中 36 通过，1 个 opt-in native fixture 跳过，61.668s。source validator 通过 43 active packages / 128 commands，JSON、内存 Python 编译和 diff 检查通过。
+
+真实 Git 原 owner begin 冻结 peer 观测，peer 自身 resolver 建立 selection-v3；正常 Git remove 后，公开 frozen profile 携非空 roots 成功，省略/[]保持原 blocked。完整注册含 prunable、根路径残留/普通错位置、存续/common/原 gitdir 变化及未覆盖 runtime 缺失分别拒绝。真实 retry 生产者的 resume/rollback、有/无字段和显式[]经声明 projection 到 consumer schema；原固定 bundle 和 checkpoint 无 roots 字段均已观察。
+
+以上恢复组件中的公共 SDK、preset writer 和目标 native 仍在模块边界隔离；不证明实际 #766 恢复或安装分发。后两项由原 tools owner 继续，后继 Check/Review 与整体 Completion 不由本表预写。早期 D1/现场失败保持各自截止。
+
+### D2 实际目标同步与机械读回
+
+原 source-loaded tools owner 的 operation `45de5159-45a3-4e1d-a43d-830c5e4cdc30` 返回 tools_upgraded，版本 0.7.0-guru.8，recovery_ref `d43a310b-0beb-4858-ad71-aab30a0248dd`。15 个 Task/config/AGENTS 路径的字节与模式保持。目标自身 installed validator passed，43 active packages、128 commands、9124 managed files，conflicts=0、sidecars=0；实际 get_context.py --json 退出0，仍为本 Task/generation0、D2 implementing、Planning applicable。原 drift 退出0，shared/Claude/Codex/Cursor、workflow/spec 与 canonical 一致。
+
+主协调者本轮执行 canonical 三目录下 521 个 Python 文件内存 compile、两 scripts/bash 目录 45 个 Bash syntax 和 marketplace JSON 解析，均通过；分发后 git diff --check 退出0。采用实施 owner 的 source validator 原执行：43 active packages/128 commands passed，其后仅两处等义合同措辞修订，接口/runtime/schema未再改。
+
+以上仍为 local_candidate，formal_fork_source_lock 未验证。实际 #766 原 ref/action 的恢复仍待 D2 交付后执行；本表不预写现场、最终 Check/Review 或整体 Completion 成功。完整多平台安装/升级/Release 矩阵不在本项。

@@ -87,3 +87,13 @@ AI绝对值不反推用户选址。primary写入路径仍退役；既有其它�
 旧安装使用matching版本；新能力经原tools-only owner更新完整投影，保留配置/Task/session/peer，
 按原冲突与sidecar处理并验drift，不手抄dogfood。RDT与Architecture依原候选Check和
 final_integration晋升；原最终Check/Review独立审实际after。完整Release矩阵仍归专门owner。
+
+## D769 / 原事务、原资产与修复执行器
+
+承接R769-01—03。原upgrade-tools保持原观测键逐项同值，新增peer核物理隔离而不刷新基线。新recover_frozen_source原必填输入为profile/action/recovery_ref，D2按下节加性支持有限退出位置；完整修复源执行当前engine，cp.source完整原源加载原installation helper/installer和资产，保原身份及owned freshness。既有同源profiles保持原义。preset是pending续接，complete只验证；原公共operation恢复不reprepare。rollback先公共compatibility再原Guru preimages。frozen_recovery_required保同profile/action/ref回原owner，原成功/blocked语义保持。公开细节及schema由package/MIGRATION-769拥有；真实旧schema1.0消费者含#766，终态和原保留责任结束后明确迁移退出，无数据转换或第二台账。Architecture由ADR-TOOLS-FROZEN-SOURCE-RECOVERY与ARCH-RUNTIME-LOCATION约束。
+
+## D769-D2 / CON769-RETIRED：调用期退出位置
+
+承接 R769-04—06；Architecture 继承 ARCH-RUNTIME-LOCATION 和 ADR-TOOLS-RETIRED-PEER-OBSERVATIONS。原 tools Markdown owner 读取实际退出 owner 结果并作适用判断，非空 retired_peer_roots 只携准确绝对位置。executor 复用原 parser 读取包括 prunable 的完整注册；核 root 来自原 checkout-local 观测、不是目标、无注册且路径项不存在。仅这些 root 的已知 active/selection 与 installed/source runtime 观测承接对象终止；非空模式中其它缺枚举文件仍核原路径实际同值。common/gitdir 与存续真实变化不跳过，省略/[]及同源 profiles 无退出例外。
+
+字段薄传原 engine 前后保持检查，不写 checkpoint 或改原资产源。frozen_recovery_required 仅在输入实际含字段时原样携回，包括 []，唯一 consumer 用已有 presence-select；终态不携。完整 schema/Interface/runtime/consumer/examples/MIGRATION-769 成套采用，旧 D1 闭合 schema 不被声称接受新字段。实际 #766 恢复与目标自身验证在交付后成立；原事务终态及原保留责任结束后，原 owner 明确迁移退出。没有 C5、台账、复活 peer 或第二阶段机。

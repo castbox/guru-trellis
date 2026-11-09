@@ -24,7 +24,7 @@
   "entry_preconditions": [
     {
       "id": "target_source",
-      "evidence": "Complete matching canonical source and public maintenance API1.0 with actual CLI/Core package identity.",
+      "evidence": "Complete repaired executor source; normal profiles use that asset source, while recover_frozen_source validates the original complete asset source and frozen public maintenance pair.",
       "binding": "exact source and target checkout for this invocation",
       "freshness": "reread before preview, write, resume or rollback"
     },
@@ -94,6 +94,22 @@
     {
       "id": "public_tools_upgraded_output",
       "path": "examples/public-tools_upgraded-output.json"
+    },
+    {
+      "id": "public_recover_frozen_source_input",
+      "path": "examples/public-recover_frozen_source-input.json"
+    },
+    {
+      "id": "public_frozen_recovery_required_output",
+      "path": "examples/public-frozen_recovery_required-output.json"
+    },
+    {
+      "id": "public_recover_frozen_source_retired_input",
+      "path": "examples/public-recover_frozen_source-retired-input.json"
+    },
+    {
+      "id": "public_frozen_recovery_required_retired_output",
+      "path": "examples/public-frozen_recovery_required-retired-output.json"
     }
   ],
   "schemas": [
@@ -144,6 +160,14 @@
     {
       "id": "public_tools_upgraded_output_schema",
       "path": "schemas/public-tools_upgraded-output.schema.json"
+    },
+    {
+      "id": "public_recover_frozen_source_input_schema",
+      "path": "schemas/public-recover_frozen_source-input.schema.json"
+    },
+    {
+      "id": "public_frozen_recovery_required_output_schema",
+      "path": "schemas/public-frozen_recovery_required-output.schema.json"
     }
   ],
   "validators": [
@@ -198,17 +222,27 @@
         "kind": "stop",
         "id": "upgrade-tools-blocked"
       }
+    },
+    {
+      "id": "frozen_recovery_required",
+      "evidence": "Same original operation requires another frozen-source action; the AI reviews its actual failure before continuation.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-upgrade-tools"
+      }
     }
   ],
   "reentry": {
-    "identity": "Exact source, selected checkout and original recovery_ref",
+    "identity": "Exact target checkout and original recovery_ref; same-source profiles retain their original source, recover_frozen_source retains the original asset source with the repaired executor.",
     "freshness": "Fixed original plan and preimages, matching source/runtime and unchanged owned bytes",
     "stale_behavior": "fail_closed"
   },
   "tests": [
     "tests/test_contract.py",
     "tests/test_recovery.py",
-    "tests/test_native_install.py"
+    "tests/test_native_install.py",
+    "tests/test_peer_growth.py",
+    "tests/test_frozen_recovery.py"
   ],
   "platform_destinations": [
     "shared",
@@ -286,6 +320,21 @@
           "discriminator": {
             "field": "profile",
             "value": "rollback"
+          }
+        },
+        {
+          "id": "recover_frozen_source",
+          "schema": {
+            "schema_id": "guru-upgrade-tools-public-recover_frozen_source-input-1.0",
+            "path": "schemas/public-recover_frozen_source-input.schema.json"
+          },
+          "example": {
+            "id": "recover_frozen_source_retired_input",
+            "path": "examples/public-recover_frozen_source-retired-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "recover_frozen_source"
           }
         }
       ]
@@ -372,6 +421,20 @@
         "consumer_use_ids": [
           "project_blocked"
         ]
+      },
+      {
+        "exit_id": "frozen_recovery_required",
+        "schema": {
+          "schema_id": "guru-upgrade-tools-public-frozen_recovery_required-output-1.0",
+          "path": "schemas/public-frozen_recovery_required-output.schema.json"
+        },
+        "example": {
+          "id": "frozen_recovery_required_retired_output",
+          "path": "examples/public-frozen_recovery_required-retired-output.json"
+        },
+        "consumer_use_ids": [
+          "project_frozen_recovery_required"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -427,6 +490,20 @@
           "schema_id": "guru-upgrade-tools-stop-blocked-1.0",
           "path": "consumers/stop/production/upgrade-tools-blocked.schema.json"
         }
+      },
+      {
+        "id": "frozen_recovery_required_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-upgrade-tools"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "trellis/skills/guru-team/packages/guru-upgrade-tools/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "recover_frozen_source"
+        }
       }
     ],
     "projections": [
@@ -463,6 +540,30 @@
         "exit_id": "blocked",
         "consumer_input_id": "blocked_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_frozen_recovery_required",
+        "exit_id": "frozen_recovery_required",
+        "consumer_input_id": "frozen_recovery_required_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "profile",
+            "target": "profile"
+          },
+          {
+            "source": "action",
+            "target": "action"
+          },
+          {
+            "source": "recovery_ref",
+            "target": "recovery_ref"
+          },
+          {
+            "source": "retired_peer_roots",
+            "target": "retired_peer_roots"
+          }
+        ]
       }
     ],
     "private_artifacts": [
