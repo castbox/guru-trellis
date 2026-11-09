@@ -7,11 +7,44 @@
       "owner": "guru-select-workflow-mode",
       "entrypoint": "runtime/check.py",
       "arguments": [
-        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root or a path below it.", "repeatable": false, "conflicts": []}
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root or a path below it.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--worktree-name",
+          "required": false,
+          "kind": "string",
+          "description": "One reviewed directory name for a configured new worktree.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--checkout-root",
+          "required": false,
+          "kind": "string",
+          "description": "Absolute planned checkout path to compare with the configured target; requires --worktree-name.",
+          "repeatable": false,
+          "conflicts": []
+        }
       ],
       "stdin": "none",
       "stdout": "intermediate_receipt",
-      "errors": ["invalid_arguments", "conflicting_arguments", "environment_unavailable", "internal_error"],
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "environment_unavailable",
+        "internal_error",
+        "primary_anchor_unavailable",
+        "invalid_worktree_root",
+        "worktree_config_conflict",
+        "invalid_worktree_name",
+        "configured_checkout_mismatch"
+      ],
       "side_effect": "github_read",
       "schema_bindings": [],
       "validator_id": "workflow_environment_checker",

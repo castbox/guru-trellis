@@ -25,6 +25,7 @@ from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import find_registration, inspect_registered_worktree, inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.session_adapter import resolve_session
+from runtime.worktree_paths import resolve_worktree_paths
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -42,6 +43,10 @@ def _require_current_task_date(task_ref: str) -> None:
 
 def _plan(root: Path, data: dict[str, Any]) -> CheckoutAcquisitionPlan:
     value = data["acquisition"]
+    if (data["action"] == "create_task" and value.get("path_source") == "configured"
+            and value["route"] == "provision_linked_worktree"
+            and value.get("provision_disposition") != "existing_checkout"):
+        resolve_worktree_paths(root).target(value["worktree_name"], value["checkout_root"])
     return CheckoutAcquisitionPlan(
         route=value["route"], repository_context=root,
         task_id=data["creation"]["task_id"], task_ref=data["creation"]["task_ref"],
@@ -145,8 +150,8 @@ def _official_port(checkout: Path) -> Any:
 
 def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
     validate_json(data, PACKAGE / "schemas/public-input.schema.json", "input")
-    plan = _plan(root, data)
     try:
+        plan = _plan(root, data)
         if data["action"] == "recover_created_task_result":
             # Recovery must not run the pre-creation uniqueness check or repeat mutation.
             from runtime.task_lifecycle.composition import CreationInputs
@@ -222,6 +227,8 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
             "task_identity_already_exists", "invalid_task_identity", "invalid_task_metadata",
             "invalid_task_id", "unsupported_legacy_task", "invalid_lifecycle_generation",
             "invalid_task_ref", "task_not_found",
+            "primary_anchor_unavailable", "invalid_worktree_name", "invalid_worktree_root",
+            "configured_checkout_mismatch", "worktree_config_conflict",
         }:
             diagnostic = {"diagnostic": {"field_path": exc.field_path, "remediation": exc.remediation}}
         if exc.code in {"task_identity_already_exists", "creation_identity_mismatch", "creation_control_state_exists", "creation_result_mismatch", "invalid_task_identity"}:

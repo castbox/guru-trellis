@@ -1,0 +1,21 @@
+task_id: ad6d8fa0-4a68-496f-9b43-f6a57f914dc0
+source: https://github.com/castbox/guru-trellis/issues/760
+status: promoted
+strategy: delta_first
+unit_revision: worktree-config-path-760
+authority_identity: guru-trellis-rdt
+source_revision: 8c158381b5bdb61fd961cbb89e23c2d1f659c9aa
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/runtime-location.md
+  - docs/design/current/runtime-location.md
+  - docs/test/current/runtime-location.md

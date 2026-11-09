@@ -40,7 +40,14 @@ base_branch_candidates:
 # Allowed values: worktree, current
 workspace_mode: worktree
 
-# Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
+# Root for new AI-generated worktree locations, read from the live-confirmed
+# primary repository's .trellis/guru-team/config.yml. Empty means
+# <primary-parent>/<primary-name>-worktrees. Resolve relative values from the
+# primary root; use absolute values directly. Linked/detached invocation cwd
+# does not change the anchor. Report conflicting checkout configuration;
+# do not overwrite it. This root is not an allowlist for explicit new locations,
+# existing checkout adoption or original Task recovery. The AI reviews the
+# directory name and exact effects before the original owner creates it.
 worktree_root: ""
 
 # Gitignored local runtime namespace and task-local verification artifact.

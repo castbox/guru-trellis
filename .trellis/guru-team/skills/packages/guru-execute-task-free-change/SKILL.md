@@ -57,6 +57,11 @@ closure, or Task creation/activation/binding. Worktree/branch acquisition is thi
 owner's pre-write location action with its own exact authorization, never a
 Task lifecycle operation.
 
+New AI-generated locations consume the primary project's configured
+`worktree_root` through the public environment precheck before ordinary Git
+creation. Genuine explicit locations and suitable existing checkouts keep
+their own location rules; the generated root is not an allowlist.
+
 Read [references/contract.md](references/contract.md) before location selection
 or editing, including first-write isolation, continuation and partial-edit
 carryover boundaries. A read-only turn creates no resources.

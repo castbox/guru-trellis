@@ -1,8 +1,11 @@
 # Runtime、位置与明确Git基线
 
-导航别名：`R718/D718/T718`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+导航别名：`R718/D718/T718`；`R760/D760/T760`；`worktree配置路径`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。`R718/D718/T718` 与 `runtime与Git来源` 别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
 
 Identity：`RDT-REQ-RUNTIME-LOCATION`；状态：current。来源为[Issue #718](https://github.com/castbox/guru-trellis/issues/718)的完整行为与验收，适用前驱为Git `610a810d45bb30173906d55c77709389adf1cf31`。本单元只拥有本能力；设计由[对应Design](../../design/current/runtime-location.md)单写，验证由[对应Test](../../test/current/runtime-location.md)单写。知识定义与实际安装/交付/Release结果分别成立。
+
+本单元 RDT 定义修订：`worktree-config-path-760`。原 owner 在 #760 D1 candidate Check 后，
+以本Task固定来源与真实 current 重读整合并写回；该标识不表示软件版本或最终 Git HEAD。
 
 ## 概念与适用边界
 
@@ -33,3 +36,20 @@ A1—A8分别观察任意位置启动/物理复用、独立生命周期、稳定
 ## 前驱与替代范围
 
 保留#219的隔离Python/真实wrapper、#231共享identity、#556解释器及失败保护、#566单目标维护/rollback。仅替代旧pointer作为启动必要前置以及只读来源继承Sync checkout/clean/三方相等的组合要求。#566其他Task维护和公共模型义务不迁移；其完整历史与仍适用合同仍由原来源拥有。本单元不宣称整个RDT旧语料已迁移。
+
+## 新建 worktree 的项目配置合同
+
+来源：[Issue #760](https://github.com/castbox/guru-trellis/issues/760)完整行为及验收；
+本次适用前驱为 Git `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 的本完整单元。
+以下行为已纳入本单元定义；实际实现、安装与验证状态由对应 Test 观察限定。
+
+| Identity / Behavior | 完整行为与条件 |
+| --- | --- |
+| R760-01 / BEH760-ROOT | 新建配置生成位置以同一 Git common-dir 下 live topology 确证的 primary 为锚点，读取其 `.trellis/guru-team/config.yml`。空 root 为 primary.parent / (primary.name + '-worktrees')，相对 root 对 primary 解析，绝对 root 直接使用。同项目配置从 primary/linked/detached 调用结果一致；不能猜 common-dir.parent、调用 cwd.parent 或盲信 porcelain 首行。锚点、配置来源或位置真实冲突准确诊断，不覆盖各 checkout 配置。 |
+| R760-02 / BEH760-CONSUME | AI 先读 topology/config，再判断新建或采用、命名和精确副作用。环境查询、计划、创建及直接后继消费同一解析事实。正式 Task 由原 acquisition/checker/binding创建；task-free 用普通 Git，创建后读回目录、注册和 linked/non-base 适用性，不创建 TaskId/binding/session/task.json/位置台账。 |
+| R760-03 / BEH760-PRECHECK | 配置生成计划与 root/name 解析不符，在首次 branch/worktree/Task 创建副作用前诊断；原 owner 修正计划并重入，不能静默换位置。环境公开预检必须有两个新建入口的真实 consumer，脚本不决定策略或记录授权。 |
+| R760-04 / BEH760-LOCATION | 配置生成、调用方真实显式新位置、已有采用/原 Task 恢复分别处理。生成 root 不是 allowlist；真实显式 root 外位置、合法外部 checkout 采用继续合法。AI 自填绝对路径不构成显式意图。恢复按原绑定找原位置，配置变化不重定位或改变 TaskId/generation/Delivery/session/资源归属。 |
+| R760-05 / BEH760-MIGRATION | 公开输入加性支持策略，保留已发布省略字段的原绝对 checkout_root 调用；当前 AI 生成计划明确 configured。原 owner 说明实际旧consumer、切换与退出，完整 matching tools更新并核投影/drift/sidecar，保留用户配置与Task/session。不恢复primary写入，不改Codex清理/业务恢复/#759/暖池，不新增映射或长期路径证明。 |
+
+R760-01—05 的设计与测试关系由对应完整单元 D760/T760 单写。原 R718 行为、前驱替代范围和
+未迁移边界保持；#212仅提供历史配置承诺，不复用旧实现通过结论。

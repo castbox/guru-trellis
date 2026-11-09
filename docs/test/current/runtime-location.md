@@ -1,8 +1,11 @@
 # Runtime与Git来源验证
 
-导航别名：`R718/D718/T718`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+导航别名：`R718/D718/T718`；`R760/D760/T760`；`worktree配置路径`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。`R718/D718/T718` 与 `runtime与Git来源` 别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
 
 Identity：`RDT-TST-RUNTIME-LOCATION`；状态：current。本单元定义[Requirement](../../requirements/current/runtime-location.md)与[Design](../../design/current/runtime-location.md)的验证责任；实际观察按明确候选与层次记录，不把知识接受或命令绿色当整体完成。
+
+本单元 RDT 定义修订：`worktree-config-path-760`。原 owner 在 #760 D1 candidate Check 后，
+以本Task固定来源与真实 current 重读整合并写回；该标识不表示软件版本或最终 Git HEAD。
 
 ## 测试策略与可观察结果
 
@@ -71,3 +74,39 @@ Focused早期末段汇总脚本按平面对象读取现有公共diagnostic envel
 | T718-07 / 本轮dogfood | 原source-loaded工具更新返回tools_upgraded 0.7.0-guru.7。目标自身公开--check为ok，get_context原native退出0并识别718；installed validator通过43 active packages/128 commands，sidecars=0、conflicts=0。原drift脚本退出0，shared及Claude/Codex/Cursor、spec/workflow与canonical一致，bootstrap/manage字节一致 | Task元数据bytes保持；这些是目标本次安装与读回结果，不是formal_fork_source_lock、三平台CI或Release通过 |
 
 当前截止：修复后的原三平台CI尚待执行。原报告、Linux对照及本地机制结果保留各自对象和环境边界；后继完整候选的Check、晋升、Review、Publication与Task Completion继续由原owner消费实际结果，本单元不预写其结论。
+
+## worktree 配置路径的验证责任（#760）
+
+承接 R760-01—05 / D760-01—03；适用实现基线
+`8c158381b5bdb61fd961cbb89e23c2d1f659c9aa`。原 T718 策略、全部失败及后继观察保持各自
+截止点，不因本项新建修复扩大为已验证事实。
+
+| Test / Scenario | 需求→设计 | 入口、输入及独立观察 |
+| --- | --- | --- |
+| T760-01 / S760-ROOT | R760-01→D760-01 | 真实Git fixture解析空/相对/绝对root，代表性primary、linked、detached调用得到同一项目root；外置gitdir可确证时正确锚定，不可确证时明确诊断。正常空模板与非空配置冲突分别观察，不做全组合矩阵。 |
+| T760-02 / S760-TASK | R760-02/03→D760-02 | 正式create-task公开入口消费configured，真实Git创建后比较计划、实际目录、注册及原后继binding。正常错误计划在首副作用前拒绝，修正后成功；不得仅调用private helper证明创建链。 |
+| T760-03 / S760-TASK-FREE | R760-02/03/04→D760-02/03 | 公开环境预检生成目标→原task-free普通Git创建→直接后继位置读回，观察无Task身份。复用仍适用显式新位置、外部采用、恢复回归，补配置变化不重定位差额，保留原clean/identity/位置资格检查。 |
+| T760-04 / S760-DISTRIBUTE | R760-05→D760-03 | 命中runtime/package tests、source/installed validators；原tools owner同步canonical/dogfood/声明平台，drift、sidecar和JSON/Bash/内存compile/diff检查。源码、安装与Agent行为分别记录，不跑完整Release矩阵。 |
+
+### 本次观察截止与未验证边界
+
+以下为本次未提交实现候选的本地观察，由原 runtime owner 实际执行并报告。
+命令使用本 checkout 的 `trellis/skills/guru-team/runtime/resolve-python.sh .
+trellis/skills/guru-team/runtime` 选定受管 Python；需要 Fork 的 suite 通过
+`GURU_UPSTREAM_DELIVERY_SCRIPTS` 指向本次固定 source-lock 对应的真实 Fork scripts。
+本表保留 suite 与最终定向复验的先后边界，不把局部重跑写成全套再次执行。
+
+| 观察 | 实际入口与结果 | 覆盖边界 |
+| --- | --- | --- |
+| T760-02/03 / 正式 Task | 受管 Python `-m unittest discover -s trellis/skills/guru-team/packages/guru-create-task/tests -p test_contract.py -v`：26项通过，73.742s。当时 `_plan` 集中调整后，新增场景单独复验1项通过，4.467s | 公开configured错计划拒绝且refs/worktrees不变，纠正后真实Git创建、Ensure读回原binding；修改配置后公开recover返回原结果且Task字节/位置保持。最终单例还观察record-task-plan在创建前拒错。原省略字段绝对路径、external adopt与恢复回归仍适用；外部GitHub provider隔离。 |
+| T760-01/03 / 路径与 task-free | 受管 Python `-m unittest discover -s trellis/skills/guru-team/packages/guru-select-workflow-mode/tests -p 'test_*.py' -v`：21项通过，11.386s；该阶段 `test_worktree_paths.py` 单独3项通过，3.376s | 空/相对/绝对root、primary与detached linked一致，linked空模板和非空冲突，separate-git-dir primary可确证、linked缺core.worktree拒绝、有core时核真。公开check-env错计划拒绝且refs/worktrees保持，正确result目标经普通Git创建，再读实际toplevel/注册/无Task身份。只有GitHub外部facts使用stub，topology/config/Git真实；不声称实际Agent执行完整语义链。 |
+| T760-04 / source机械检查 | `PYTHONPATH=trellis/skills/guru-team` 下受管 Python `-m runtime.validate --root . --mode source --json`通过，43 active packages / 128 commands；changed Python内存compile、JSON解析及 `git diff --check`通过 | 源码/声明/语法层证据。修复版目标工具、installed及drift观察见后续行，不以source通过代替安装成功。 |
+| T760-01/02/03 / 最终定位范围与创建复验 | `_primary_root` 只读已确证primary、必要core.worktree或待核primary候选，不逐项探测无关peer。原受管入口执行 `test_worktree_paths.py` 4项通过（2.611s）；configured公开创建/Ensure/改配置恢复单例1项通过（3.946s） | 新增真实3个peers的读取范围断言；同一现场单次解析保持primary/root不变，inspect 2次、Git 8次、0.124s。耗时只说明该次样本。前述26/21 suite其余事实按未变consumer及合同继续适用，不能把最终4/1重跑写成全部suite再次执行。 |
+| T760-04 / 修复版实际工具投影 | 原 `guru-upgrade-tools` 返回 `tools_upgraded`，installed_version=`0.7.0-guru.8`；目标自身installed validator通过43 active packages / 128 commands，conflicts=0、sidecars=0。`check-dogfood-overlay-drift.sh --repo .`退出0，所选Claude/Codex/Cursor投影一致；目标installed check-env读回正确primary_root、primary配置worktree_config_path、同级guru-trellis-worktrees根及760-validation目标 | 最后定位差额经原tools owner再次实际更新后验证；结果为local_candidate，formal_fork_source_lock仍unverified。首次并行drift调用返回runtime_dependency_missing，未进入drift判断；随后显式--repo .的实际成功独立成立。没有运行完整多平台升级/Release矩阵。 |
+
+这些行为与分发观察不能替代其原owner的正式阶段结果，也不代表最终Check/Review或Task Completion通过。
+后续按原owner实际结果承接，不把 #718 的历史通过替代 #760 的配置创建验证。
+
+定向真实Git测试可证明其入口和后继观察，不能自动证明完整真实Agent业务链或生产效果。
+不要求业务#1232重新复现、不触发Codex清理、不运行业务恢复或完整多平台安装/升级/Release。
+本单元写回不代表Task Completion、Architecture晋升或发布；这些结果分别由原owner消费。
