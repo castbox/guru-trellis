@@ -102,6 +102,14 @@
     {
       "id": "public_frozen_recovery_required_output",
       "path": "examples/public-frozen_recovery_required-output.json"
+    },
+    {
+      "id": "public_recover_frozen_source_retired_input",
+      "path": "examples/public-recover_frozen_source-retired-input.json"
+    },
+    {
+      "id": "public_frozen_recovery_required_retired_output",
+      "path": "examples/public-frozen_recovery_required-retired-output.json"
     }
   ],
   "schemas": [
@@ -321,8 +329,8 @@
             "path": "schemas/public-recover_frozen_source-input.schema.json"
           },
           "example": {
-            "id": "recover_frozen_source_input",
-            "path": "examples/public-recover_frozen_source-input.json"
+            "id": "recover_frozen_source_retired_input",
+            "path": "examples/public-recover_frozen_source-retired-input.json"
           },
           "discriminator": {
             "field": "profile",
@@ -421,8 +429,8 @@
           "path": "schemas/public-frozen_recovery_required-output.schema.json"
         },
         "example": {
-          "id": "frozen_recovery_required_output",
-          "path": "examples/public-frozen_recovery_required-output.json"
+          "id": "frozen_recovery_required_retired_output",
+          "path": "examples/public-frozen_recovery_required-retired-output.json"
         },
         "consumer_use_ids": [
           "project_frozen_recovery_required"
@@ -550,6 +558,10 @@
           {
             "source": "recovery_ref",
             "target": "recovery_ref"
+          },
+          {
+            "source": "retired_peer_roots",
+            "target": "retired_peer_roots"
           }
         ]
       }

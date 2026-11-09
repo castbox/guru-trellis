@@ -108,7 +108,7 @@ def upstream_source(public, descriptor):
     return descriptor
 
 
-def peers(root, old):
+def peers(root, old, *, include_prunable=False):
     raw = old.git(root, 'worktree', 'list', '--porcelain')
     result = []
     for record in raw.split('\n\n'):
@@ -118,7 +118,7 @@ def peers(root, old):
             continue
         path = Path(worktree)
         prunable = any(line == 'prunable' or line.startswith(('prunable ', 'prunable:')) for line in lines)
-        if prunable and not os.path.lexists(path / '.git'):
+        if not include_prunable and prunable and not os.path.lexists(path / '.git'):
             continue
         result.append(path.resolve())
     return result
@@ -212,10 +212,48 @@ def isolated_write_set(root, paths, old):
                 raise ValueError('Selected tool write set physically overlaps a peer')
 
 
-def unchanged_peers(root, cp, old):
+def retired_peer_observations(root, cp, retired_peer_roots, old):
+    """Validate call-local retired objects; the Skill judges normal owner exit."""
+    if not retired_peer_roots:
+        return set()
+    registered = set(peers(root, old, include_prunable=True))
+    retired = set()
+    local = Path('.trellis/.runtime/guru-team/python')
+    for value in retired_peer_roots:
+        path = Path(value)
+        if not path.is_absolute():
+            raise ValueError('Retired peer root must be an absolute checkout location')
+        resolved = path.resolve()
+        if resolved == root:
+            raise ValueError('The target checkout cannot be a retired peer')
+        if str(resolved / local / 'active.json') not in cp['peer_pointers']:
+            raise ValueError('Retired peer root has no original checkout-local observation')
+        if resolved in registered:
+            raise ValueError('Retired peer root is still registered, including prunable registrations')
+        if os.path.lexists(path):
+            raise ValueError('Retired peer root still has a filesystem entry')
+        retired.update(str(resolved / local / name) for name in ('active.json', 'selection-v3.json'))
+        retired.update('runtime:' + str(resolved / assets) for assets in
+                       ('.trellis/guru-team/runtime', 'trellis/skills/guru-team/runtime'))
+    return retired
+
+
+def unchanged_peers(root, cp, old, retired_peer_roots=None):
+    retired = retired_peer_observations(root, cp, retired_peer_roots, old)
     observed = peer_pointers(root, old)
-    if any(key not in observed or observed[key] != value for key, value in cp['peer_pointers'].items()):
-        raise ValueError('A peer/common Python pointer changed; review before recovery')
+    for key, expected in cp['peer_pointers'].items():
+        if key in retired:
+            continue
+        if key in observed:
+            current = observed[key]
+        elif retired_peer_roots and not key.startswith('runtime:'):
+            # A removed worktree's gitdir may no longer be enumerated. Read its
+            # original file fact; only the explicit local object is retired.
+            current = old.state(Path(key))
+        else:
+            raise ValueError('A peer/common Python pointer changed; review before recovery')
+        if current != expected:
+            raise ValueError('A peer/common Python pointer changed; review before recovery')
     # New observations are legal only outside this operation's fixed write set.
     # Never refresh the original observation or backup collections.
     paths = {key[5:] for key in cp['preimages'] if key.startswith('repo:')}
@@ -331,7 +369,7 @@ def begin(package, root, public, plan):
     return recovery, cp
 
 
-def check_source(package, root, cp, old):
+def check_source(package, root, cp, old, retired_peer_roots=None):
     source = old.source_root(package)
     if cp['source'] != str(source) or cp['root'] != str(root):
         raise ValueError('Tools recovery belongs to another source or checkout')
@@ -339,7 +377,7 @@ def check_source(package, root, cp, old):
         raise ValueError('Tools recovery source identity or canonical content changed')
     upstream_source(cp['public'], cp['plan']['upstream_source'])
     isolated_layout(root, old)
-    unchanged_peers(root, cp, old)
+    unchanged_peers(root, cp, old, retired_peer_roots)
 
 
 NATIVE_OPERATION_PROBE = r"""
@@ -435,12 +473,12 @@ def canonical_reconciliation(root, cp, old):
     return True
 
 
-def resume(package, root, recovery, cp):
+def resume(package, root, recovery, cp, retired_peer_roots=None):
     old = legacy_owner(package)
-    check_source(package, root, cp, old)
+    check_source(package, root, cp, old, retired_peer_roots)
     plan = cp['plan']
     if cp['phase'] == 'rolled_back':
-        return rollback(package, root, recovery, cp)
+        return rollback(package, root, recovery, cp, retired_peer_roots)
     # No newer owned-path edits are adopted into a refreshed rollback anchor.
     if not canonical_reconciliation(root, cp, old):
         return {'exit_id': 'blocked', 'reason': 'owned_tools_changed_since_operation'}
@@ -496,7 +534,7 @@ def resume(package, root, recovery, cp):
                     or result['skill_installed_validation'].get('returncode') != 0):
                 raise ValueError('Guru preset has unresolved edits or sidecars')
         validate_actual_target(root, old)
-        unchanged_peers(root, cp, old)
+        unchanged_peers(root, cp, old, retired_peer_roots)
         cp['phase'] = 'complete'
         cp.pop('failure', None)
         save(root, recovery, cp, old)
@@ -521,9 +559,9 @@ def old_native_smoke(root, old):
     old.command(argv, root)
 
 
-def rollback(package, root, recovery, cp):
+def rollback(package, root, recovery, cp, retired_peer_roots=None):
     old = legacy_owner(package)
-    check_source(package, root, cp, old)
+    check_source(package, root, cp, old, retired_peer_roots)
     if cp['phase'] == 'rolled_back':
         try:
             old_native_smoke(root, old)
@@ -543,13 +581,13 @@ def rollback(package, root, recovery, cp):
     expected = {key: {name: row[name] for name in ('sha256', 'mode')} for key, row in cp['preimages'].items()}
     if old.current_baseline(root, cp) != expected:
         raise ValueError('Guru tool restoration does not match its original preimages')
-    unchanged_peers(root, cp, old)
+    unchanged_peers(root, cp, old, retired_peer_roots)
     cp['phase'] = 'rolled_back'
     save(root, recovery, cp, old)
-    return rollback(package, root, recovery, cp)
+    return rollback(package, root, recovery, cp, retired_peer_roots)
 
 
-def recover_frozen_source(root, recovery, cp, action):
+def recover_frozen_source(root, recovery, cp, action, retired_peer_roots=None):
     """Use the repaired engine with the original complete asset package."""
     source = Path(cp['source'])
     package = source / 'trellis/skills/guru-team/packages/guru-upgrade-tools'
@@ -557,10 +595,13 @@ def recover_frozen_source(root, recovery, cp, action):
         raise ValueError('Original complete tools asset source is unavailable')
     # resume/rollback still validate the original root, source HEAD/tree token,
     # public pair and owned freshness before their original stage transitions.
-    result = (rollback if action == 'rollback' else resume)(package, root, recovery, cp)
+    result = (rollback if action == 'rollback' else resume)(package, root, recovery, cp, retired_peer_roots)
     if result['exit_id'] == 'resume_required':
-        return {'exit_id': 'frozen_recovery_required', 'profile': 'recover_frozen_source',
-                'action': action, 'recovery_ref': recovery.name}
+        retry = {'exit_id': 'frozen_recovery_required', 'profile': 'recover_frozen_source',
+                 'action': action, 'recovery_ref': recovery.name}
+        if retired_peer_roots is not None:
+            retry['retired_peer_roots'] = retired_peer_roots
+        return retry
     return result
 
 
@@ -622,7 +663,7 @@ def run(package_root, metadata, argv):
             cp = json.loads((recovery / 'checkpoint.json').read_text())
             validate_json(cp, package_root / 'schemas/private-recovery.schema.json', 'recovery')
             if profile == 'recover_frozen_source':
-                result = recover_frozen_source(root, recovery, cp, public['action'])
+                result = recover_frozen_source(root, recovery, cp, public['action'], public.get('retired_peer_roots'))
             else:
                 result = rollback(package_root, root, recovery, cp) if profile == 'rollback' else resume(package_root, root, recovery, cp)
         validate_json(result, package_root / ('schemas/public-' + result['exit_id'] + '-output.schema.json'), 'output')

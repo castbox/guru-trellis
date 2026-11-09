@@ -36,7 +36,7 @@ class ToolsContractTests(unittest.TestCase):
         self.assertEqual(set(output), {'exit_id','profile','recovery_ref'})
         interface = json.loads((PACKAGE / 'interface.json').read_text())
         row = next(x for x in interface['public_contracts']['projections'] if x['exit_id']=='resume_required')
-        projected = {m['target']: output[m['source']] for m in row['mappings']}
+        projected = {m['target']: output[m['source']] for m in row['mappings'] if m['source'] in output}
         Draft202012Validator(schema).validate(projected)
 
     def fixture(self, base):
@@ -171,7 +171,14 @@ class ToolsContractTests(unittest.TestCase):
         for action in ('resume', 'rollback'):
             output = json.loads((PACKAGE / 'examples/public-frozen_recovery_required-output.json').read_text())
             output['action'] = action
-            projected = {m['target']: output[m['source']] for m in row['mappings']}
+            projected = {m['target']: output[m['source']] for m in row['mappings'] if m['source'] in output}
             Draft202012Validator(schema).validate(projected)
             self.assertEqual(projected, {'profile': 'recover_frozen_source', 'action': action,
                                          'recovery_ref': output['recovery_ref']})
+
+    def test_retired_locations_are_not_an_input_to_same_source_recovery(self):
+        public = {'profile': 'resume', 'recovery_ref': '11111111-1111-4111-8111-111111111111',
+                  'retired_peer_roots': []}
+        with self.assertRaises(owner.CommandError) as error:
+            owner.run(PACKAGE, {'runtime_role': 'invoke'}, ['--root', '.', '--input', json.dumps(public)])
+        self.assertEqual(error.exception.code, 'schema_mismatch')

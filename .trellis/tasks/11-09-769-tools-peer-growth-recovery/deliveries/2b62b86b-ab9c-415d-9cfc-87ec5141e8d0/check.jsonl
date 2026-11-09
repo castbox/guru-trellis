@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "完整Check、测试价值与验证范围"}
+{"file": "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/", "type": "directory", "reason": "本批完整Architecture proposal及后继ADR"}
+{"file": "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/", "type": "directory", "reason": "本批完整RDT proposal与关系"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "检查三正文条件及Policy/Docs Plan承接"}

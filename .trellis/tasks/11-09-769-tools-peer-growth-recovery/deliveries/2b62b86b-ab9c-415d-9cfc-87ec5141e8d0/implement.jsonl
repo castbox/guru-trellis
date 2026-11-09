@@ -1,0 +1,5 @@
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/", "type": "directory", "reason": "原owner代码、公共I/O、consumer与现有恢复回归"}
+{"file": "trellis/presets/guru-team/MIGRATION-769.md", "reason": "实际旧consumer和兼容退出"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "最小公开I/O与私有状态职责"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性执行及正式候选操作"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整加载写作与语义保留"}
