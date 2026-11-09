@@ -1,7 +1,0 @@
-{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "所有实质输出执行同一清晰写作规范"}
-{"file": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/prd.md", "reason": "当前切片完整需求和验收"}
-{"file": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/design.md", "reason": "当前方案与唯一来源设计处置"}
-{"file": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/implement.md", "reason": "当前执行与验证、Delivery Policy及Docs Plan"}
-{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "完整输出捕获、双层预算和receipt消费者"}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证范围和行为证据边界"}
-{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "原规划正文合同与必要条件"}
