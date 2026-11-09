@@ -73,3 +73,10 @@ Author 在已有 PRD/design 位置区分局部确认、后台任务完成、可�
 - design：planning-body第2/3/5节、Clarify Questions And Convergence、quality-guidelines的Test And Validation Value、review-sufficiency形成覆盖段。
 - test：原planning-body/review-sufficiency分发测试及#735实际行为runner模式；需新增去敏实际观察。
 - Architecture：docs/architecture/README.md、03-domains/review-sufficiency.md、03-domains/ownership.md及04-integrations/distribution.md；保留Markdown控制、runtime事实、受管canonical/dogfood分发。
+
+
+### 本批同范围返工：最终结果与原承诺保全
+
+本次实际返工来源为原 Delivery Review 的 planning_revision_required，reason_ref 为 planning-journey-convergence。JQ-R1/R2/R6 与 AC1 的范围保持：已确认的最终保存结果须在普通前置条件满足后独立展开；上传中保存的未决选择只阻塞依赖该答案的分支。局部确认不向服务器提交；普通最终保存须观察服务器收到的标题和附件来自同一已确认内容。
+
+原 A/B 的多阶段推导核心表现大体相当，当前版本未同样清楚展开上述普通保存观察。E1 的自主检索组普通保存断言更明确，完整 upfront 组职责归属更稳，没有单向优胜。读取不完整是原轨迹中的事实，但不是已证明的唯一原因；现有来源保真和自检规则本来存在。方法改进需防止新增风险分析挤出原承诺，不能把完整读取或规则数量当作稳定收益证明。原始结果由 validation 正文承接，历史观察不改写为本轮结果。

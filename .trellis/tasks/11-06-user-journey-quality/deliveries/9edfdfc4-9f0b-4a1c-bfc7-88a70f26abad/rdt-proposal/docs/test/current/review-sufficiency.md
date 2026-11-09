@@ -26,10 +26,24 @@ Identity：`RDT-TST-REVIEW-SUFFICIENCY`；状态：`current`。关联 [R717](../
 
 ## T-JQ-INDEPENDENCE / SC-JQ-INDEPENDENCE：独立推导及裁剪观察
 
-承接 BEH-JQ-INDEPENDENCE → CON-JQ-INDEPENDENCE。来源为 Task `user-journey-quality` generation 0、Delivery `9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad` 的 V1—V4；新增策略待执行，T717 的历史观察不重写为本轮证据。
+承接 BEH-JQ-INDEPENDENCE → CON-JQ-INDEPENDENCE。来源为 Task `user-journey-quality` generation 0、Delivery `9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad` 的 V1—V4；本次已取得原生 Agent 只读方法执行观察，T717 的历史观察不重写为本轮证据。本次 JQ 定义由该 Delivery 的实际 candidate_checked 后，原 RDT owner 在 final integration 整合并读回；当前定义由包含本文件的精确 Git revision 绑定。方法实现、有限行为观察与受管采用分别判断，最终 Check、Review、Delivery 和 Completion 仍由原 owner 的实际结果建立。
 
 V1/V3 评价原职责入口在未收到缺陷答案时，是否从当前 authority 和真实材料推导连续操作、交接或验证缺口，再对照候选；检查原首读、隔离和资格规则保持。V2 观察已有入口与局部测试事实是否得到适当证明层级和验证顺序。V4 的 trim 纯函数合法对照检查方法不把简单任务扩大为 UI/设备验收。
 
 独立评价者在执行前持有预期，读取完整实际输出、工具调查和局限，区分遗漏、错误扩张与未执行。材料中的教学例子或已知历史答案不能替代原生观察；不以问题数量、关键词或多个 Agent 同意推断充分。适用证据沿原规则复用，不因执行者或阶段更换重跑。
 
 分发采用复用 SC-JQ-05..06；本单元不复制执行记录、固定评分或统计收益。真正阶段通过仍由原 Check/Review 等公共结果建立。
+
+
+## JQ 当前观察与证明边界
+
+实际结果由 TaskId `user-journey-quality`、generation `0`、DeliveryId `9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad` 的 `validation/behavior-evals.md` 与 `validation/implementation.md` 唯一承接，Task 活动或归档路径由原身份解析。V1—V4 使用完整 canonical provider 和执行前冻结的中性材料，记录实际原生 Agent 的输入、工具及输出。观察支持本组材料中的连续操作与交接推导、真实未决选择保留、局部证据范围限制及纯函数低成本对照；独立预期未提供给被测 Agent。
+
+该执行使用原职责的方法进行只读推导，没有运行四组正式公开 owner 的完整生命周期链或 formal Check/Branch Review，也没有操作真实业务应用。不能将方法观察提升为正式门禁通过、业务验收、任意未知缺陷检出或统计收益。V5/V6 的实际定向分发/reapply 和本 checkout tools 更新支持受管正文采用；`local_candidate` 保留 `formal_fork_source_lock` 未验证，完整 Release 矩阵、业务项目采用和 QA 缺陷率改善也未验证。知识晋升本身不补足这些证据。
+
+
+## 当前同批方法与证据差额（完整拟晋升，未生效）
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 的 proposed 差额，尚未共享晋升。
+
+原A/B显示外显独立问题首读顺序未改善，早期带排序提示的观察不能扩大为自然执行证明。后续已知六产物review比较首次因provider错误在读材料前失败；独立attempt2实际完成，before/after均检出保留收窄和版本生产消费链，after另检已提交重开读取合同。共同检出不计新增收益，补充建议不计已证缺陷。样本已用于方法开发，每条件一次，不能证明稳定优势或未知问题泛化。维修预约新领域首稿双方保真且成功主线完整，after仅异步接纳局部更具体，非review正式门禁或全胜证明。原始结果、隔离限制与语义判断由本Delivery validation正文唯一承接，历史失败不被后来成功覆盖。

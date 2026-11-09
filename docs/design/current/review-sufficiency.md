@@ -35,3 +35,10 @@ canonical provider 的 workflow-spec root 是 `trellis/presets/guru-team/spec/wo
 本设计的维护成本为共同正文、真实受影响引用和定向行为观察。若新方法与原隔离顺序冲突、引入新 owner 或扩大验证义务，应返回原设计/Architecture 判断；不能增加第二审查层。Architecture 归属由 ARCH-REVIEW-SUFFICIENCY 的原 owner 在本次晋升与后续阶段判断。
 
 关系：BEH-JQ-INDEPENDENCE → CON-JQ-INDEPENDENCE → SC-JQ-INDEPENDENCE；入口/替身证明边界仍由 D-JQ-JOURNEY 单写。
+
+
+## 当前同批方法与证据定义
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 经原 RDT owner final integration 整合并读回的当前定义。
+
+共同review-sufficiency的Form and cross-check coverage原段拥有条件等价及同对象连接的独立核对。reviewer先从自身适用authority形成必要条件，再与候选具体场景比较，检查结果是否被新增前置或更窄对象改变；分别存在的接口/状态不能替代consumer获得匹配内容与前提。缺读取/恢复/结果合同写清具体缺口、依赖分支和原责任，保持已确认承诺。此方法复用原读取顺序和隔离，不新增reviewer、轮次、identity/version协议或台账；canonical方法继续单写细节。

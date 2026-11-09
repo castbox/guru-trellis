@@ -20,7 +20,7 @@ Identity：RDT-DES-BEHAVIOR-VALIDATION；别名：D735/CON735。原语义 owner�
 
 ## D-JQ-JOURNEY / CON-JQ-METHOD：原职责内的方法增量
 
-承接 BEH-JQ-JOURNEY；适用来源为 Task `user-journey-quality` generation 0 的已接受整体范围和 D1 方案，相关说明为 Issue #747。新增方法为 accepted target，现有 D735 职责不被替代。
+承接 BEH-JQ-JOURNEY；适用来源为 Task `user-journey-quality` generation 0 的已接受整体范围和 D1 方案，相关说明为 Issue #747。新增方法已落实于 canonical 合同和必要消费者，现有 D735 职责不被替代。本次 JQ 定义由该 Delivery 的实际 candidate_checked 后，原 RDT owner 在 final integration 整合并读回；当前定义由包含本文件的精确 Git revision 绑定。方法实现、有限行为观察与受管采用分别判断，最终 Check、Review、Delivery 和 Completion 仍由原 owner 的实际结果建立。
 
 Clarify contract 的 Discover the actual choices 负责连续正常动作及真实选择发现。Author planning-body 负责在所属 PRD/design/implement 展开行为、阶段交接机制及验证顺序。交接条件依当前实际 writer/reader 和资源归属展开，不引入新的 scope writer 或公共状态。
 
@@ -28,6 +28,20 @@ quality-guidelines 的 Test And Validation Value 单写最小完整旅程的风�
 
 去敏过程例子在原 Author examples 内教学，不作为当前用户回答或验收。实际 Agent 采集沿已有执行方式，collector 运输输入、工具及输出，原审核 owner 判断语义。维护成本限于原正文、必要消费者与定向观察；没有新 Skill、gate、DTO、runtime/schema、账本或固定矩阵。需求/来源、真实入口、依赖或证明层级变化时重新评估相关方法及证据。
 
-既有无影响架构结论仅对应 #735 的原变化。本方法增量的职责关系由 ARCH-REVIEW-SUFFICIENCY 的本次隔离贡献及原 Architecture 后续阶段判断；不能将历史 no impact 扩张为本轮结论。
+既有无影响架构结论仅对应 #735 的原变化。本方法增量的职责关系由 ARCH-REVIEW-SUFFICIENCY 的原 Architecture 本次晋升及后续阶段判断；不能将历史 no impact 扩张为本轮结论。
 
 关系：BEH-JQ-JOURNEY → D-JQ-JOURNEY → T-JQ-NATIVE/T-JQ-DISTRIBUTE；共享独立审核关系由 docs/design/current/review-sufficiency.md 的 CON-JQ-INDEPENDENCE 承接。
+
+
+## D-JQ-JOURNEY 当前方法修订候选
+
+本段是同一 Task/Delivery 的拟晋升差额，基于 Git `7b14b6f83f274bd3b08e2721be8624516374b73d`。Clarify contract 在原连续旅程段反推最终结果并正向核对承诺；Author planning-body 在原来源读取与自检职责内承接完整单元加载、条件保全和最终观察对应。真实未决分支不替代独立明确的普通完成路径。教学 process 说明局部确认不提交及普通最终保存的服务端一致性观察，保持来源已有字段和真实未决项。
+
+原职责、单一方法来源、受管分发及知识维护关系不变，无新公共合同或持久状态。原 Architecture 独立判断本轮无职责和知识关系差额；当前阶段判断仍由原 owner 亲自执行。完整读取不能单独证明模型持续保全原承诺；实际效果须检查独立产物，不能从规则增加推定改善。
+
+
+## 当前同批方法与证据差额（完整拟晋升，未生效）
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 的 proposed 差额，尚未共享晋升。
+
+Author planning-body §2 的来源等价比较、§3 的 design 展开和同对象推演、§5 的复核分别服务原承诺保全、实际机制形成和正文一致性。design 形成之初先带入关键条件与结果，再细化接口/状态/顺序；内容变化后既说明旧结果适用边界，也连接新内容取得匹配结果到普通成功终点。具体结论写回原 design 所属段，不制造表或账本。必要读取/恢复/结果合同缺失由原合同/工程职责补齐，只阻塞依赖分支，不能偷换为更窄需求。方法的唯一细节仍由 canonical planning-body 拥有。

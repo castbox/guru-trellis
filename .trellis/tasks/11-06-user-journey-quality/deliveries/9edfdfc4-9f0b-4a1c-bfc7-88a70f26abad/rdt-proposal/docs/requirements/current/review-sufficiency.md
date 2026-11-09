@@ -28,10 +28,17 @@ Guru 为自己的现有审核职责提供一份可加载的共同充分性规范
 
 ## JQ-R5..6 / BEH-JQ-INDEPENDENCE：先推导问题与最小结果
 
-适用来源为 Task `user-journey-quality` generation 0 的整体 PRD JQ-R5/6，相关公开说明为 Issue #747；此增量为 accepted target。R717 的共同唯一源、provider 和原阶段职责继续适用。
+适用来源为 Task `user-journey-quality` generation 0 的整体 PRD JQ-R5/6，相关公开说明为 Issue #747；此增量为当前方法定义。R717 的共同唯一源、provider 和原阶段职责继续适用。本次 JQ 定义由该 Delivery 的实际 candidate_checked 后，原 RDT owner 在 final integration 整合并读回；当前定义由包含本文件的精确 Git revision 绑定。方法实现、有限行为观察与受管采用分别判断，最终 Check、Review、Delivery 和 Completion 仍由原 owner 的实际结果建立。
 
 原审核 owner 在既有读取顺序及隔离边界内，先从适用来源或其职责 authority 推导关键行为与关系问题，再对照候选设计、实现、测试和实施论证。不预置缺陷答案或通过叙述，不增加 reviewer 或轮次。Architecture 仍保持 authority-first 的原限制；新方法不要求其它 owner 复制其读取顺序。
 
 旅程、阶段、交接条件与验证顺序写入既有 PRD/design/implement 的所属正文；只保留直接消费所需的覆盖、失败与未执行范围。已适用证据可复用，不新建覆盖台账、评分器或跨阶段证明链。既有审核完成、对象通过、修复/验收完成仍分别判断。
 
 关系：CON-JQ-INDEPENDENCE 位于 docs/design/current/review-sufficiency.md；SC-JQ-INDEPENDENCE 位于 docs/test/current/review-sufficiency.md。旅程验证职责见 BEH-JQ-JOURNEY，不在本单元重建验证标准。
+
+
+## 当前同批方法与证据差额（完整拟晋升，未生效）
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 的 proposed 差额，尚未共享晋升。
+
+原独立审核在自身authority-first/隔离顺序内，先从来源导出主体、触发、前置、结果与例外，再对比具体场景及跨正文。原来源条件成立却因新增前置无法获得结果的正常例子，构成须回原来源owner处置的承诺差额；retain标签或需求编号不能抵消。对同对象的产出、交接、读取和可见结果核内容/身份/版本/持有方的实际对应，只展开当前合同概念。缺合同明确依赖与原补齐责任，不造新协议或能力。

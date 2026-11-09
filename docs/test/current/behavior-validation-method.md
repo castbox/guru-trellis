@@ -38,3 +38,17 @@ Task/session 和其它会话内容保持。local_candidate 不证明 formal sour
 实际结果由 TaskId `user-journey-quality`、generation `0`、DeliveryId `9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad` 的 `validation/behavior-evals.md` 与 `validation/implementation.md` 唯一承接，Task 活动或归档路径由原身份解析。V1—V4 使用完整 canonical provider 和执行前冻结的中性材料，记录实际原生 Agent 的输入、工具及输出。观察支持本组材料中的连续操作与交接推导、真实未决选择保留、局部证据范围限制及纯函数低成本对照；独立预期未提供给被测 Agent。
 
 该执行使用原职责的方法进行只读推导，没有运行四组正式公开 owner 的完整生命周期链或 formal Check/Branch Review，也没有操作真实业务应用。不能将方法观察提升为正式门禁通过、业务验收、任意未知缺陷检出或统计收益。V5/V6 的实际定向分发/reapply 和本 checkout tools 更新支持受管正文采用；`local_candidate` 保留 `formal_fork_source_lock` 未验证，完整 Release 矩阵、业务项目采用和 QA 缺陷率改善也未验证。知识晋升本身不补足这些证据。
+
+
+## T-JQ-NATIVE 当前修订验证观察
+
+本轮承接原 JQ 方法范围，基于 Git `7b14b6f83f274bd3b08e2721be8624516374b73d`。旧 V1—V6 保留其原观察与限界。原 A/B 与同 H 的 E1 加载对照未显示整体单向改善；E1 自主检索组普通最终保存断言更明确，完整方法组职责归属更稳。读取不完整是轨迹事实，尚不能证明其造成遗漏或是唯一原因。
+
+E2 使用独立仓储调拨领域的分散来源，比较固定 H 与只修三份方法正文的候选，观察实际 PRD、design、implement 的承诺连续性、最终普通成功和未决依赖分支；缺失 API 合同如实保留，不编造接口。预期在执行前冻结并由独立评价者持有；完整产物与原始轨迹单独保存。两次已实际生成三份文档。独立评价先完整盲读六份产物，随后最终答复路径暴露版本身份，因此只属部分盲化。双方保留普通最终成功及未决依赖分支；候选对丢弃合同缺口更明确，但将恢复前置收窄为保存成功，双方也未完整闭合保存版本与预留衔接、已提交重开读取合同。没有整体改善证明，不能将本轮方法候选宣告成功。一次配对不证明稳定收益、完整正式 owner 链或业务 QA 效果。实际结果由本 Delivery 原 validation 正文唯一承接。
+
+
+## 当前同批方法与证据定义
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 经原 RDT owner final integration 整合并读回的当前定义。
+
+旧 V1—V6、原A/B、E1/E2保留原结果。原对照未证明全面改善，E2候选存在恢复前置收窄和双方跨阶段合同缺口。后续已知六产物review第一次启动失败，不可评价；单独attempt2中after多检已提交读取合同，双方共同检出不计新增收益，已知样本不能证明泛化。新维修预约首稿以V3/V4各一次实际三产物比较，七类承诺双方充分，无全面优胜，V4异步接纳局部更具体。父目录匹配检索、路径探索和自身快照/全局入口读取意味着并非严格密封；一例无法建立稳定收益或确定因果。完整证据和限制只由本Delivery validation正文承接，不复制日志/成本为SSOT。结构/分发及tools采用支持各自边界，formal source lock、业务QA、正式质量结果和线上效果不能由此推定。

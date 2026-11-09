@@ -31,3 +31,17 @@ quality-guidelines 的 Test And Validation Value 单写最小完整旅程的风�
 既有无影响架构结论仅对应 #735 的原变化。本方法增量的职责关系由 ARCH-REVIEW-SUFFICIENCY 的原 Architecture 本次晋升及后续阶段判断；不能将历史 no impact 扩张为本轮结论。
 
 关系：BEH-JQ-JOURNEY → D-JQ-JOURNEY → T-JQ-NATIVE/T-JQ-DISTRIBUTE；共享独立审核关系由 docs/design/current/review-sufficiency.md 的 CON-JQ-INDEPENDENCE 承接。
+
+
+## D-JQ-JOURNEY 当前方法修订
+
+本段是同一 Task/Delivery 的已整合方法差额，基于 Git `7b14b6f83f274bd3b08e2721be8624516374b73d`。Clarify contract 在原连续旅程段反推最终结果并正向核对承诺；Author planning-body 在原来源读取与自检职责内承接完整单元加载、条件保全和最终观察对应。真实未决分支不替代独立明确的普通完成路径。教学 process 说明局部确认不提交及普通最终保存的服务端一致性观察，保持来源已有字段和真实未决项。
+
+原职责、单一方法来源、受管分发及知识维护关系不变，无新公共合同或持久状态。原 Architecture 独立判断本轮无职责和知识关系差额；当前阶段判断仍由原 owner 亲自执行。完整读取不能单独证明模型持续保全原承诺；实际效果须检查独立产物，不能从规则增加推定改善。
+
+
+## 当前同批方法与证据定义
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 经原 RDT owner final integration 整合并读回的当前定义。
+
+Author planning-body §2 的来源等价比较、§3 的 design 展开和同对象推演、§5 的复核分别服务原承诺保全、实际机制形成和正文一致性。design 形成之初先带入关键条件与结果，再细化接口/状态/顺序；内容变化后既说明旧结果适用边界，也连接新内容取得匹配结果到普通成功终点。具体结论写回原 design 所属段，不制造表或账本。必要读取/恢复/结果合同缺失由原合同/工程职责补齐，只阻塞依赖分支，不能偷换为更窄需求。方法的唯一细节仍由 canonical planning-body 拥有。

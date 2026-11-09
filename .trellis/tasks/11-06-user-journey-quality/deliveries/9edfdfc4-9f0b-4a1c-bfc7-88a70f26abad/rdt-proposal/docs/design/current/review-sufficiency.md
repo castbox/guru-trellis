@@ -26,12 +26,19 @@ canonical provider 的 workflow-spec root 是 `trellis/presets/guru-team/spec/wo
 
 ## D-JQ-INDEPENDENCE / CON-JQ-INDEPENDENCE：原首读顺序内的问题推导
 
-承接 BEH-JQ-INDEPENDENCE；来源为 Task `user-journey-quality` generation 0 的已接受 D1 方案及 Issue #747 说明。新增行为为 accepted target，D717 的依赖方向和证据复用保持。
+承接 BEH-JQ-INDEPENDENCE；来源为 Task `user-journey-quality` generation 0 的已接受 D1 方案及 Issue #747 说明。新增方法已落实于 canonical 共同正文，D717 的依赖方向和证据复用保持。本次 JQ 定义由该 Delivery 的实际 candidate_checked 后，原 RDT owner 在 final integration 整合并读回；当前定义由包含本文件的精确 Git revision 绑定。方法实现、有限行为观察与受管采用分别判断，最终 Check、Review、Delivery 和 Completion 仍由原 owner 的实际结果建立。
 
 共同 review-sufficiency 的覆盖形成段补充原 reviewer 从有效 authority 独立形成问题，再对照候选论证的方法。它只拥有审核覆盖方法，不新增审核阶段，不读取另一 owner 私有结果或改变原 formal entry。Clarify/Author 继续分别拥有正常动作与阶段交接展开；Test And Validation Value 拥有验证入口、替身、样本和顺序。
 
 原 Architecture 的 authority-first 独立评估与其它 owner 的现有首读规则优先。检查者可复用适用事实，不能继承实施者的通过叙述作为语义结论。所属正文保留必要结论，原始观察与阶段结果由原消费者承接，不另造账本。
 
-本设计的维护成本为共同正文、真实受影响引用和定向行为观察。若新方法与原隔离顺序冲突、引入新 owner 或扩大验证义务，应返回原设计/Architecture 判断；不能增加第二审查层。Architecture 归属见 ARCH-REVIEW-SUFFICIENCY 的本次拟写。
+本设计的维护成本为共同正文、真实受影响引用和定向行为观察。若新方法与原隔离顺序冲突、引入新 owner 或扩大验证义务，应返回原设计/Architecture 判断；不能增加第二审查层。Architecture 归属由 ARCH-REVIEW-SUFFICIENCY 的原 owner 在本次晋升与后续阶段判断。
 
 关系：BEH-JQ-INDEPENDENCE → CON-JQ-INDEPENDENCE → SC-JQ-INDEPENDENCE；入口/替身证明边界仍由 D-JQ-JOURNEY 单写。
+
+
+## 当前同批方法与证据差额（完整拟晋升，未生效）
+
+适用基础为 Git `7b14b6f83f274bd3b08e2721be8624516374b73d` 的原完整单元；现有 identity、历史晋升和原观察保持。本节是 Task user-journey-quality、generation 0、同一 Delivery 的 proposed 差额，尚未共享晋升。
+
+共同review-sufficiency的Form and cross-check coverage原段拥有条件等价及同对象连接的独立核对。reviewer先从自身适用authority形成必要条件，再与候选具体场景比较，检查结果是否被新增前置或更窄对象改变；分别存在的接口/状态不能替代consumer获得匹配内容与前提。缺读取/恢复/结果合同写清具体缺口、依赖分支和原责任，保持已确认承诺。此方法复用原读取顺序和隔离，不新增reviewer、轮次、identity/version协议或台账；canonical方法继续单写细节。

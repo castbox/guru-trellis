@@ -64,3 +64,28 @@ V1-V4材料在执行前冻结，独立评价者拥有预期，不由实施者修
 RDT在本Task的rdt-proposal下准备behavior-validation-method与review-sufficiency实际命中单元的完整after，原RDT owner于final integration整合。Architecture在architecture-proposal下准备docs/architecture/03-domains/review-sufficiency.md完整after，保ARCH-REVIEW-SUFFICIENCY身份与原关系，无新ADR或总索引。共享定义仍由canonical方法正文单写，长文档只解释职责和对应测试。
 
 对应Evolution EVO-001需求忠实、EVO-002架构治理、EVO-003跨层一致性及EVO-004低开销执行，保持原目标及非目标。当前没有必要产品未决项；实际Agent、CLI/Core工具维护能力与目标分发的执行结果仍待发生。
+
+
+## 本轮同批修订（保留上述首次规划与历史身份）
+
+### 当前依赖与目标差额
+
+本轮独立 Architecture candidate_assessment 实际返回 baseline_current、no_architecture_impact，baseline_identity 为 guru-trellis-architecture，constitution_identity 为 guru-trellis-design-constitution-v1。结论只适用于候选机制，不替代本轮 final_plan。内容基线 B 保持第1节原固定值，当前实现起点为 7b14b6f83f274bd3b08e2721be8624516374b73d；上文 Planning H0 是首次规划观察。
+
+本轮只修三个 canonical 方法文件：
+
+- trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md：在现有连续旅程段，从已确认最终可观察结果反推必要阶段和交接，再沿真实入口正向核对；未决选择只阻塞依赖答案的分支，不删独立明确的最终路径。
+- trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md：第2节完整读取标题边界内适用单元、嵌套条件/例外和必要链接定义；固定行切片和截断不证明加载完整。第5节在原自检中反查最终结果前提，再正向核对原承诺到条件、设计和验证，不增加台账或模板。
+- trellis/skills/guru-team/packages/guru-author-task-plan/examples/planning-body/journey/process.md：保留普通最终保存的独立服务器观察，即标题和已确认附件一致，局部确认不提交。上传中保存未决不阻塞已具备前置条件的普通保存验证。
+
+第3节来源设计处置继续 retain。没有 runtime/schema/DTO/阶段或新 reviewer；受管投影沿原 upgrade-tools 生成，不手改副本。RDT/Architecture 文档维护仍由第9节原 owner 承接，属于既有知识单元的真实差额，不扩充方法源码边界。
+
+### 验证差额与证明限界
+
+原 V1—V6 结果保持原样，原 A/B 的冻结材料、标准、输出及盲评不变。读取不完整已观察到，但完整 upfront 的 E1 未呈现单向改善；不能据此断言唯一原因或稳定收益。原自检规则存在，方法修订将“最终结果完整性”具体化，不声称新建来源保真职责。
+
+E1 是同一当前 H provider、原冻结 V1 事实与标准下的自主检索和提前提供完整适用方法单元对照，只观察加载条件。实际盲评显示自主检索组普通保存断言更明确，完整 upfront 组职责归属更稳；两组只读推理均不证明业务验证。
+
+E2 使用仓储调拨领域的分散交互、服务与补充要求及局部设计，按原职责分别生成 PRD、design、implement，对比当前 H 与正式激活后实施并冻结的修订候选。运行前冻结共同事实和独立评价标准，不给缺陷答案。保留一个真实产品选择；缺失的放弃/读取已确认内容 API 合同如实写为依赖，不能编造接口或删除原产品义务。观察普通最终完成、原承诺及条件/交接到验证的对应，而非只看缺陷识别。E2 尚未执行的候选结果不得预填通过。
+
+E1/E2 是外部 fixture 的原方法行为观察，不冒充完整正式 owner 生命周期或业务 QA。一次配对不能证明稳定胜率、唯一原因、成本收益或线上缺陷率下降。验证正文保存本轮结论和限制；SSOT 不复制逐轮日志或成本记录。

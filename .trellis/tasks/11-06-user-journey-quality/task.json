@@ -47,11 +47,11 @@
       "phase": "reviewing",
       "plan_ref": {
         "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
-        "revision": "sha256:b3c89479c75111a78e3de70a91d0ca8bf4d8dd9a9ef17aac91966d16716c458a"
+        "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
       },
       "candidate": {
         "kind": "git",
-        "content_ref": "sha256:eb64aaf265d20a0776dad41e321c27f23e816623da1d05c44e6ca951c5573022",
+        "content_ref": "sha256:8006e321b194c5819995011dcca1d0cbfb28d370e96c2031bb73a911a63abcbc",
         "paths": [
           ".agents/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
           ".agents/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
@@ -77,7 +77,9 @@
           ".trellis/spec/workflow/quality-guidelines.md",
           ".trellis/spec/workflow/review-sufficiency.md",
           ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/architecture-proposal/docs/architecture/03-domains/review-sufficiency.md",
+          ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/check.jsonl",
           ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
+          ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.jsonl",
           ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
           ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/prd.md",
           ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/README.md",
@@ -108,12 +110,12 @@
           "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
           "trellis/workflows/guru-team/workflow.md"
         ],
-        "head_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1",
+        "head_ref": "7b14b6f83f274bd3b08e2721be8624516374b73d",
         "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
       },
       "results": {
         "planning": {
-          "result_id": "planning-accepted:ebc348dd-097f-452e-93b3-39836099fd94",
+          "result_id": "planning-accepted:269532ee-2000-4886-a6cb-0a3cda5a3acf",
           "owner_role": "planning",
           "owner_id": "guru-activate-delivery",
           "outcome": "accepted",
@@ -133,7 +135,7 @@
           },
           "plan_ref": {
             "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
-            "revision": "sha256:b3c89479c75111a78e3de70a91d0ca8bf4d8dd9a9ef17aac91966d16716c458a"
+            "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
           },
           "candidate": null,
           "predecessor_result_id": null,
@@ -141,20 +143,20 @@
           "evidence": [
             {
               "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/prd.md",
-              "revision": "sha256:5315914e1ed75ca21bf28c03ac4a1b3063a041286fc2c4002fa9f1b27e5b1256"
+              "revision": "sha256:78f3239610d24442eb27ab3bcd26c58b5205508d5b7f9d3f7abe7b0c8f12dd16"
             },
             {
               "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
-              "revision": "sha256:b3c89479c75111a78e3de70a91d0ca8bf4d8dd9a9ef17aac91966d16716c458a"
+              "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
             },
             {
               "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
-              "revision": "sha256:79cc2765200344ef8bed6807fc9711957fe89e2db57303cfae945f76d090283b"
+              "revision": "sha256:c74a96874550c6d321649d38acffbcd39bf53e270836568300869ac7c03648a7"
             }
           ]
         },
         "check": {
-          "result_id": "check:c079a7be267cb6ba2b112f3cc96123bcca602fc659c721b5292f8e755f23ae2c",
+          "result_id": "check:47781c68e044d6e396841cd09c7397958ccc5651234962906edebce7f84acbc8",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -174,11 +176,11 @@
           },
           "plan_ref": {
             "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
-            "revision": "sha256:b3c89479c75111a78e3de70a91d0ca8bf4d8dd9a9ef17aac91966d16716c458a"
+            "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
           },
           "candidate": {
             "kind": "git",
-            "content_ref": "sha256:eb64aaf265d20a0776dad41e321c27f23e816623da1d05c44e6ca951c5573022",
+            "content_ref": "sha256:8006e321b194c5819995011dcca1d0cbfb28d370e96c2031bb73a911a63abcbc",
             "paths": [
               ".agents/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
               ".agents/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
@@ -204,7 +206,9 @@
               ".trellis/spec/workflow/quality-guidelines.md",
               ".trellis/spec/workflow/review-sufficiency.md",
               ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/architecture-proposal/docs/architecture/03-domains/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/check.jsonl",
               ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.jsonl",
               ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
               ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/prd.md",
               ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/README.md",
@@ -235,23 +239,23 @@
               "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
               "trellis/workflows/guru-team/workflow.md"
             ],
-            "head_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1",
+            "head_ref": "7b14b6f83f274bd3b08e2721be8624516374b73d",
             "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
           },
-          "predecessor_result_id": "planning-accepted:ebc348dd-097f-452e-93b3-39836099fd94",
+          "predecessor_result_id": "planning-accepted:269532ee-2000-4886-a6cb-0a3cda5a3acf",
           "obligations": [],
           "evidence": [
             {
               "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/prd.md",
-              "revision": "sha256:5315914e1ed75ca21bf28c03ac4a1b3063a041286fc2c4002fa9f1b27e5b1256"
+              "revision": "sha256:78f3239610d24442eb27ab3bcd26c58b5205508d5b7f9d3f7abe7b0c8f12dd16"
             },
             {
               "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
-              "revision": "sha256:b3c89479c75111a78e3de70a91d0ca8bf4d8dd9a9ef17aac91966d16716c458a"
+              "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
             },
             {
               "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
-              "revision": "sha256:79cc2765200344ef8bed6807fc9711957fe89e2db57303cfae945f76d090283b"
+              "revision": "sha256:c74a96874550c6d321649d38acffbcd39bf53e270836568300869ac7c03648a7"
             }
           ]
         },

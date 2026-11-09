@@ -1,7 +1,9 @@
-# 用户旅程与交接方法的 RDT 完整拟写
+# 用户旅程方法 RDT 整合前提案快照
 
-状态：proposed，尚未晋升共享 current。适用基础为 Git `3a4b65ab08cdfe05d97f68e7f2e7512254d728f1` 的 `guru-trellis-rdt` 与 `guru-trellis-architecture`。Task `user-journey-quality` generation 0，Delivery `9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad` 的已接受 JQ-R1..6 和 D1 方案提供本次目标；Issue #747 是公开整理，未改变 Task 的 no_issue 来源关系。
+本目录保留 final integration 前的完整 proposed 快照，作为该次整合的来源；其中“未共享晋升”“未生效”等措辞描述提案形成时的状态，不代表共享 current 的当前状态。适用基础 Git `7b14b6f83f274bd3b08e2721be8624516374b73d`，authority 为 guru-trellis-rdt，Architecture 为 guru-trellis-architecture。Task user-journey-quality generation 0，Delivery 9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad，source 仍为 no_issue。
 
-`docs/{requirements,design,test}/current/behavior-validation-method.md` 与同层 `review-sufficiency.md` 是各同路径目标的完整 after。保留既有稳定身份、R735/D735/T735、R717/D717/T717 及历史观察；新增 JQ 身份承接正常旅程、交接、验证和独立问题推导，不替代原能力。
+本轮完整 after 为 docs/{requirements,design,test}/current/behavior-validation-method.md 与 docs/{requirements,design,test}/current/review-sufficiency.md，共六份同路径完整单元。保留原stable identity及历史观察，差额分别承接Author条件保真/同对象design形成、独立review条件与consumer覆盖、实际有界观察和未证范围。两个能力原本均有三层完整单元和真实trace关系，本次各层职责差额明确，不新建平行规范。
 
-本目录供原 Architecture/candidate Check 读取，所有 shared current 尚未写入。新 JQ 条款保留 accepted target 状态；实施、真实 Agent 与分发结果由本 Delivery 的实际观察另行建立。后续原 RDT final integration 应重读真实目标与完整拟写，整合仍有效的变化并读回，再进入实际候选重绑及最终质量链。无需修改 root/current README、全局版本或历史运行记录。
+各 proposed 文件对应删除本根前缀后的共享目标。当前完整定义读取仓库根目录下的 `docs/{requirements,design,test}/current/behavior-validation-method.md` 与 `docs/{requirements,design,test}/current/review-sufficiency.md`；精确内容由包含相应文件的 Git revision 或当前已绑定候选确定，不从本目录重新组装。原 RDT owner 已将本提案整合进这六份共享定义；本目录保留整合前正文，不回写其历史状态。
+
+原整合顺序仍为独立 Architecture 与完整 candidate Check，随后由原 RDT owner 在 final integration 重读真实 current、整合并读回。此处说明不新增晋升，不代写 Architecture 或质量阶段结果，也不更新根导航或全局版本。各轮原运行事实及当时未执行范围由本 Delivery 的 validation 正文承接；后续正式 Check 与交付状态读取原 owner 的公共结果。提案、结构通过或有限模型观察均不能提升为交付完成或统计改善。
