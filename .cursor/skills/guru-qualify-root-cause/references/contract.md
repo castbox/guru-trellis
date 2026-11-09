@@ -115,7 +115,10 @@ proof of issuance according to actual facts; none automatically requires a
 particular cipher, long-lived key, global coordinator or ledger. Preserve
 necessary protection and existing secret/redaction and permission boundaries.
 Use the Architecture contract's adopted-mechanism review for the Architecture
-tradeoff; this owner retains Protection admission and its existing routes.
+tradeoff. Protection eligibility is necessary when applicable but does not by
+itself approve the design: the original Architecture owner still judges simpler
+alternatives, minimum scope and complete normal-path cost through that method.
+This owner retains Protection admission and its existing routes.
 
 A new protection without sufficient basis must obtain evidence, be revised or
 be withdrawn before it becomes an acceptance obligation, a required test or a
