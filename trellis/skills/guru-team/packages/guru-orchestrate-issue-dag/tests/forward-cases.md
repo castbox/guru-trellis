@@ -51,7 +51,7 @@ next action and its evidence; matching a phrase or exit alone is insufficient.
 
 | Case and supplied conversation/live facts | Required observable decision |
 | --- | --- |
-| E1. The human requests two independent Issues through reviewed merge and normal Issue/Task closeout, delegates child follow-ups, and retains worktrees. The repository accepts a dialogue-local merge instruction; no direct-human-only exception applies. Both children show exact current merge plans and pass their fresh gates. | Choose one integration owner and send its `合并PR`. After its verified result and shared-base disposition, freshly review the second. Do not ask the human to approve each node again or add release/deployment/cleanup actions. Full settlement still needs every required completion gate. |
+| E1. The human requests two independent Issues through reviewed merge and normal Issue/Task closeout, delegates child follow-ups, and retains worktrees. The repository accepts a dialogue-local merge instruction; no direct-human-only exception applies. Both children show exact current merge plans and pass their fresh gates. | Within each repository choose one integration owner and send its `合并PR`. After its verified result and shared-base disposition, freshly review the second. Do not ask the human to approve each node again or add release/deployment/cleanup actions. Full settlement still needs every required completion gate. |
 | E2. The human explicitly requests only ready PRs for several independent nodes, with one execution slot. The first PR has the required current review/readiness proof and its child is safely inactive; other nodes have not started. | Verify the first node's requested-stage evidence, release its execution slot and admit the next independent node. Do not merge or label the first Issue fully completed. Once every selected node reaches the requested stage, safely stop the heartbeat and return `dag_stage_completed`, with remaining merge/closeout work stated. |
 | E3. The human says only “use this Skill to process these Issues”, with `auto`; graph, project and model settings are otherwise clear. No current human instruction resolves merge and closeout. | Keep full Issue completion as the goal. Show the concrete prospective effects and resolve only missing action delegation before launch. Do not ask the human to choose completion versus PR-only, assume merge permission, or invent a PR-only restriction. An unanswered necessary launch-action choice keeps launch at `dry_run_blocked`. |
 | E4. This run's human request is ambiguous. The coordinator said “PR gates only”; its summary and heartbeat repeat that as a human limit. A previous, different run had merge delegation. The latest human message changes only heartbeat frequency. | Reread this run's actual human messages. Neither the coordinator's text, the heartbeat, the frequency change nor the other run establishes a PR-only limit or action delegation. Keep the completion goal and resolve the missing concrete action choice; do not report that the human restricted this run to PRs or claim a Merge transaction failed. |
@@ -100,3 +100,28 @@ required-decision column first; these cases do not run live Git operations.
 | G1. The human delegates full completion and all concrete necessary actions. A child reports a current Ready PR as its final result; later phases are available and pass prerequisites. | Continue through the original merge and closeout owners, observe their actual results and require full proof. Do not return dag_stage_completed merely because that child turn ended. |
 | G2. The same completion run discovers that one later operation requires direct human action. Other admitted work is permitted and actionable. | Hold only that operation, display the exact required action, and keep permitted work moving under the failure policy. Preserve remaining completion obligations; do not reinterpret the run as PR-only or use a stage-completed exit. |
 | G3. The human expressly pauses after planning; the stage result and safe settlement pass. Later the same human resumes completion with the needed concrete actions. | Initially report only the stage result and remaining obligations using the existing stage exit. On resume recover the same Issue owners, selected base and live proof, then continue toward full completion; do not create replacement identities or count the old stage result as completion. |
+
+## Cross-Repository And Environment Cases
+
+| Supplied facts | Required observable behavior |
+| --- | --- |
+| Foreign coordinator/provider; API #7 on dev, web #7 on stable depends on it, independent web #8 | Separate repo-qualified nodes/children and exact projects/sources; web #7 waits for API full proof; each merge/completion checked in its own repository/base. |
+| Initiative formally binds product final acceptance and two engineering Issues; includes an unrelated reference; requirements already ready | Select only formal members, use actual engineering prerequisites, and make final acceptance follow engineering without a fictitious two-way dependency. |
+| A target checkout/project is absent, current supported provisioning entry exists with permission | Covered live operation creates it and rereads project/primary remote/base; dry-run creates nothing. |
+| Environment creation permission denied, another project has no supported registration entry, another awaits user App trust; an independent repository is ready | Explain each exact gap and concrete user steps, progress independent work under continue_independent, never edit/click trust; safely settle when necessary and resume same graph/owners after user completion and factual readback. |
+| Different repositories share #7 during heartbeat/pending recovery | Preserve repository-qualified child/host/Task/PR associations; no duplicate creation or bare-number lookup. |
+
+The source-only runner `run_native_orchestration.py` exposes `cross-repo`,
+`initiative`, `environment-create` and `environment-user` scenes in addition to
+the original single-repository scenes. Each uses actual coordinator/child Codex
+processes with factual synthetic tools. Raw traces and final messages are
+external outputs for independent semantic review, not a keyword-derived verdict.
+
+| Pending cross-repository merge | Two independent repository PRs have real original-owner readiness; API has one pending original merge with unknown result. Web’s fresh gates permit its own merge before API’s result resolves. Keep API’s transaction and owner, never repeat its merge, then complete both and safely stop the heartbeat. Global slots and same-repository serialization remain in force. |
+
+Use `--scene merge-pending` for this difference. Real child turns establish
+readiness and the original pending merge before the real coordinator resumes.
+A named factual merge operation resolves after its bounded service interval;
+the carrier does not inspect message wording or coordinator decisions to choose
+its outcome. Observe operation timestamps and actual tool actions, not an exit
+keyword alone.

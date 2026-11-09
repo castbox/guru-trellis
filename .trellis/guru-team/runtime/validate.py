@@ -42,6 +42,7 @@ APPROVED_KERNEL_FILES = {
     "temporary-inventory.json",
     "temporary_lifecycle.py",
     "validate.py",
+    "worktree_paths.py",
 }
 
 

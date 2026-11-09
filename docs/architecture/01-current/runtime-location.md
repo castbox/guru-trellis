@@ -33,3 +33,13 @@ Discovery读固定tree的实际blob/history/archive证据，草案通过独立ca
 本机制只增加原owner必要的需求匹配/hint与局部来源variant，以及真实旧reader的格式切换。hint可重建，显式选择只在原checkout私有载体，不建立全局偏好或业务authority。没有时间排序、每位置venv、通用绑定器、第二恢复台账、上游patch或永久双writer。
 
 只有实际兼容类别、依赖/API/layout、受支持旧consumer或原副作用合同变化时重新评估。ADR-027单目标/peer隔离/source-target/data先校验、ADR-006实际Sync约束仍有效；仅其被用于环境启动/独立只读的组合解释由本单元和新ADR替代。Architecture/RDT先完整proposed，经candidate Check后原final_integration/readback，实际after重绑最终质量链。知识接受、实现、目标安装、Release与业务采用分开；实际观察仅由Test拥有，完整Release矩阵独立。
+
+## 配置驱动的新建位置（#760）
+
+本节承接 Issue #760，适用 before 为 main `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa`。原 AI owner 判断位置策略、命名、冲突和副作用；共享 runtime 只提供 live Git topology 与项目配置的确定性路径事实。环境查询、正式 Task 新建、task-free 新建消费同一解析能力。Task 继续原 acquisition/绑定；task-free 继续普通 Git，不引入 Task validator、Task身份或位置映射。
+
+项目锚点是 live Git 事实唯一确认的 primary；不能将调用 cwd.parent、porcelain 首行 metadata 或 common-dir.parent 直接当作主仓库。读取确证 primary 的 `.trellis/guru-team/config.yml`：空 worktree_root 为 primary.parent / (primary.name + '-worktrees')，相对值对 primary 解析，绝对值直接采用。linked 空模板不独立竞争；非空配置解析与 primary 项目配置冲突时准确诊断。锚点不可唯一确认则报告原 owner 可处理的缺口，不猜测或新增映射。
+
+配置生成新位置由 root 与本次已审目录名形成，在任何 branch/worktree/Task 创建前核对计划路径。真正显式新位置保持原合法合同；已有外部 checkout 采用及原 Task 恢复先分流，不受生成 root 限制或重定位。旧绝对输入的兼容与新字段迁移由原 create-task 合同和 MIGRATION-760 拥有，绝对值本身不证明用户选址。
+
+该共享能力有三个当前 consumer，避免复制解析且不建立第二执行或状态authority。代价限定为位置事实模块、原接口差额和定向验证；不引入缓存、锁、清理进程或长期证明。只有 Git topology、配置语义、公开位置策略或真实旧 consumer 边界变化时重新评估。配置与普通Git行为验证、分发、业务采用和Release分别成立，实际观察由对应Test单元拥有。

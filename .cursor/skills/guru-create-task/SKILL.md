@@ -60,6 +60,37 @@ This create-only precondition does not govern read-only recovery of an already
 created primary Task; old-Task migration, base Sync and Cleanup retain their
 existing owners and clean-checkout requirements.
 
+For a newly provisioned directory (`new_branch` or `existing_branch`), read
+live Git topology and the confirmed primary repository's
+`.trellis/guru-team/config.yml` before selecting the path. Confirm the primary
+with actual toplevel, gitdir and common-dir facts; neither the porcelain first
+row nor the common-dir parent alone establishes it. Use the existing
+`guru-select-workflow-mode/scripts/check-env.sh --root <invocation-checkout>
+--worktree-name <reviewed-name>` public query from the shared installation.
+Its `worktree_root` is absolute: empty configuration uses
+`<primary-parent>/<primary-name>-worktrees`, relative configuration resolves
+from primary, and absolute configuration is used directly. Resolve a real
+configuration or anchor conflict through its diagnostic; never overwrite
+another checkout's configuration or substitute the current desktop directory.
+
+When the AI generates the new location, set acquisition
+`path_source=configured`, `worktree_name` to one reviewed directory name, and
+`checkout_root` to the query's absolute `checkout_root` target. Use `--checkout-root <plan>`
+with `--worktree-name` to precheck that exact plan. The creation runtime repeats
+the configured target comparison before any branch, worktree or Task creation;
+a mismatch requires this owner to correct and rereview the plan, never silent
+relocation. A caller's genuine explicit location uses `path_source=explicit`
+and the original absolute `checkout_root` contract. An absolute value authored
+by the AI does not establish explicit caller intent.
+
+Existing published inputs that omit the new fields retain their absolute-path
+meaning under [MIGRATION-760](../../../../presets/guru-team/MIGRATION-760.md).
+Current AI-generated plans use `configured`. Adopted invocation checkouts,
+`existing_checkout`, and result recovery retain their original identity and
+location checks; the generation root is not an allowlist for existing or
+explicit locations. Recovery finds the verified original binding and location,
+even after configuration changes, without relocation or another acquisition.
+
 Review the actual branch and absolute call-local checkout path, plus the five
 cleanup ownership projections. Show the exact task and Git side effects in
 the current dialogue before invoking the executor.

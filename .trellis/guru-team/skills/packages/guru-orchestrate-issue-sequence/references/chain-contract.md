@@ -16,6 +16,10 @@ Normalize in the current conversation:
 | `coordinator_role` | `coordinator` in this chat; no extra coordinator chat is created. |
 | `resume` | Optional explicit recovery/adoption selection; fresh ownership and completion proof are required. |
 
+The shared per-node repository/project/base/environment rules resolve to this
+one repository. Environment recovery never expands Sequence into a multi-repository
+DAG or admits a later Issue before the current one fully completes.
+
 Preserve supplied order exactly. Numeric order and example length add no
 requirements. Keep the same selected base through child creation, reconciliation,
 PRs, merge and completion proof. Full Issue completion is the goal. Execution

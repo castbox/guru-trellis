@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-09T08:04:07Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-09-761-cross-repo-issue-dag",
+    "title": "支持从任意仓库发起跨仓 Issue DAG 编排",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-09-761-cross-repo-issue-dag",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/761-cross-repo-issue-dag",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "支持从任意仓库发起跨仓 Issue DAG 编排",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag",
+          ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag/prd.md",
+          ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#761"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/761-cross-repo-issue-dag"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag",
+        ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag/prd.md",
+        ".trellis/tasks/archive/2026-11/11-09-761-cross-repo-issue-dag/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "支持从任意仓库发起跨仓 Issue DAG 编排；#761；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}

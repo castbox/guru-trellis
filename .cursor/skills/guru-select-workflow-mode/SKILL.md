@@ -76,6 +76,12 @@ creation consumes its exact independent dialogue-local authorization; no Task
 identity or lifecycle is introduced for task-free work. It never reads remote
 branch protection and does not add fields to this Skill's public DTO.
 
+The public `scripts/check-env.sh` query provides call-local environment and
+configured path facts; it does not select a mode or acquire resources. Read its
+[environment contract](references/contract.md#environment-and-configured-path-query)
+before using the root or generating a location. The task-free execution owner
+and formal Task creation owner retain their respective creation contracts.
+
 The execution Skill re-enters this selector only for automatic scope/risk
 expansion. Explicit expansion stays in that Skill's interaction re-entry.
 Commit, push, PR, merge, release, installation, cleanup, and Issue closure

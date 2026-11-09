@@ -39,7 +39,7 @@ review and readiness results plus successful verification. Merge is a separate
 coordinator-selected segment: stop before it until the coordinator instructs
 this exact action. Finish requires merge and the child's completion decision.
 Finish closes the synthetic Issue as completed, archives its Task and marks
-the exact merge result reachable from the synthetic default branch. Resource
+the exact merge result reachable from its selected integration base. Resource
 retention is an accepted nonblocking disposition; do not delete anything.
 The external producer can supply required outputs only through its own named
 capability. Direct evidence cannot replace a mandatory producer result.
@@ -173,7 +173,7 @@ class Carrier:
             "All operations affect synthetic data only. Do not send instructions to other children. "
             "Your own semantic judgments remain your responsibility; never report a storage receipt as a gate.\n"
             + self.state["workflow"] + "\nYour existing conversation:\n" + json.dumps(row["messages"], ensure_ascii=False))
-        if "scope_revision" in self.state["nodes"][str(row["issue"])]:
+        if "scope_revision" in self.state["nodes"][row.get("node_key", str(row["issue"]))]:
             prompt += ("\nGate evidence belongs to the scope_revision actually inspected. "
                 "The current accepted_validation list defines mandatory checks. "
                 "File reads may load the provided same-provider writing contract only.\n")
@@ -249,7 +249,7 @@ class Carrier:
 
     def child_call(self, child: str, op: str, a: dict) -> object:
         row = self.state["children"][child]
-        node = self.state["nodes"][str(row["issue"])]
+        node = self.state["nodes"][row.get("node_key", str(row["issue"]))]
         if op == "inspect":
             return {"workflow": self.state["workflow"], "facts": node, "conversation": row["messages"]}
         if op == "inspect_inputs":
@@ -297,7 +297,8 @@ class Carrier:
             required = [name for name in ("check", "review", "readiness") if node["gates"].get(name, {}).get("status") != "passed"]
             if required or not (node["verification"] or {}).get("passed"):
                 return {"error": "merge_prerequisites_missing", "missing": required, "verification": node["verification"]}
-            node["pr"].update(merged=True, merge_result=f"merge-{node['issue']}", reachable_from_default=True)
+            node["pr"].update(merged=True, merge_result=f"merge-{node.get('node_key', node['issue'])}",
+                              reachable_from_base=node["pr"]["base"], reachable_from_default=node["pr"]["base"] == node.get("default_branch", "main"))
             return node["pr"]
         if op == "finish":
             if not node["pr"]["merged"] or node["gates"].get("completion", {}).get("status") != "passed":
@@ -322,10 +323,17 @@ class Carrier:
 
 
 TOOL_HELP = """Factual isolated native carrier. Every value is synthetic.
-For coordinator: inspect (optional issue), create_child (issue, model, effort,
-message), read_child (child_id), send_message (child_id, message), read_operation
+For coordinator: inspect (optional issue; cross-repository lookups also need
+repository or node_ref), inspect_capabilities, read_initiative, list_projects,
+inspect_environment (repository), establish_environment (repository, path, remote,
+primary_folder), create_child (issue, model, effort,
+message; cross-repository scenes also require repository, project_id,
+source_branch and target_branch), read_child (child_id), send_message (child_id, message), read_operation
 (operation_id), heartbeat_create (interval_minutes, prompt), heartbeat_read,
-heartbeat_stop, observe_external (issue), wait_events (seconds, at most 2).
+heartbeat_stop; cross-repository carriers expose automation_update (mode=update,
+id, status=ACTIVE|PAUSED, prompt, interval_minutes, target) to update an existing
+heartbeat while preserving its fields. observe_external (issue), wait_events
+(seconds, at most 2).
 For child only: inspect, inspect_inputs, inspect_provider, recover_operation
 (operation_id), execute (input_path), verify, record_gate (stage, status,
 explanation, evidence array), verify_supplement (fixture-output-checksum), merge,
@@ -386,7 +394,12 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
     model_root = output / "model"
     model_root.mkdir()
     project_provider(root, model_root, ref)
-    carrier = Carrier(scene, output, model_root)
+    cross_scene = scene in ("cross-repo", "initiative", "environment-create", "environment-user", "merge-pending")
+    if cross_scene:
+        from native_cross_repo import CrossCarrier
+        carrier = CrossCarrier(scene, output, model_root)
+    else:
+        carrier = Carrier(scene, output, model_root)
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
@@ -409,56 +422,64 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
     model, effort = settings.get("model"), settings.get("model_reasoning_effort")
     if not model or not effort:
         raise RuntimeError("Current native configuration must resolve model and reasoning settings.")
-    # Establish a real, bounded stopped turn before testing coordinator resume.
-    # The priming prompt contains no coordinator instruction or expected route.
-    initial_issue = 101 if scene == "dag" else (201 if scene in ("sequence", "completion-drift") else 301)
-    initial_id = f"child-{initial_issue}"
-    carrier.state["children"][initial_id] = {"issue": initial_issue, "thread_id": initial_id,
-        "host_id": "fixture-host", "active": False, "safe": True, "model": model,
-        "effort": effort, "messages": []}
-    initial_segment = ("Read the existing old-201 transaction through its original recovery entry and report only "
-        "that operation's actual result. This current segment ends after that read." if scene == "sequence" else
-        "Read current Issue facts. Execute exactly the currently configured input_path once and report only "
-        "the operation's actual result. This current segment ends after that operation.")
-    if scene == "completion-drift":
-        initial_segment = ("Own Issue #201 in its current accepted scope. Inspect the current input catalog and "
-            "prior operation facts, carry out supported implementation and required validation, then conduct "
-            "your own Check, full-range Review and readiness. Preserve failed operations and current identities. "
-            "Stop before merge and report the actual accepted-scope result and remaining workflow obligations.")
-    carrier.launch(initial_id, initial_segment)
-    prime_deadline = time.monotonic() + min(limit, 600)
-    while carrier.running and time.monotonic() < prime_deadline:
-        time.sleep(1); carrier.refresh()
-    if carrier.running:
-        raise RuntimeError("Initial real child turn did not settle; preserve its process/logs before recovery.")
-    if scene == "completion-drift":
-        carrier.launch(initial_id, "合并PR\nSelect PR #1201, exact head candidate-201 into main after rechecking "
-            "its current prerequisites. Assess whole-Task Completion against the current accepted scope and "
-            "record your own supported decision with actual validation and merge evidence. Report whether "
-            "that accepted scope is fully complete. This segment stops before Closure/Finish; do not close "
-            "the Issue, archive the Task, or start #202.")
+    if scene == "merge-pending":
+        carrier.prime_pending_merge(model, effort, limit)
+    if not cross_scene:
+        # Establish a real, bounded stopped turn before testing coordinator resume.
+        # The priming prompt contains no coordinator instruction or expected route.
+        initial_issue = 101 if scene == "dag" else (201 if scene in ("sequence", "completion-drift") else 301)
+        initial_id = f"child-{initial_issue}"
+        carrier.state["children"][initial_id] = {"issue": initial_issue, "thread_id": initial_id,
+            "host_id": "fixture-host", "active": False, "safe": True, "model": model,
+            "effort": effort, "messages": []}
+        initial_segment = ("Read the existing old-201 transaction through its original recovery entry and report only "
+            "that operation's actual result. This current segment ends after that read." if scene == "sequence" else
+            "Read current Issue facts. Execute exactly the currently configured input_path once and report only "
+            "the operation's actual result. This current segment ends after that operation.")
+        if scene == "completion-drift":
+            initial_segment = ("Own Issue #201 in its current accepted scope. Inspect the current input catalog and "
+                "prior operation facts, carry out supported implementation and required validation, then conduct "
+                "your own Check, full-range Review and readiness. Preserve failed operations and current identities. "
+                "Stop before merge and report the actual accepted-scope result and remaining workflow obligations.")
+        carrier.launch(initial_id, initial_segment)
         prime_deadline = time.monotonic() + min(limit, 600)
         while carrier.running and time.monotonic() < prime_deadline:
             time.sleep(1); carrier.refresh()
-        node = carrier.state["nodes"]["201"]
-        if carrier.running or not node["pr"]["merged"] or node["gates"].get("completion", {}).get("status") != "passed":
-            raise RuntimeError("The real original owner did not establish the old-scope completion boundary; inspect preserved logs.")
-        # An ordinary accepted-scope update arrives after that genuine result.
-        # Retain the old claim, gates and operations exactly as produced.
-        node.update(scope_revision=2,
-            scope="Deliver the scoped fixture output, verify its value and checksum, and complete its Task.",
-            accepted_validation=["fixture-output-value", "fixture-output-checksum"])
-        carrier.trace("external-authority", "accepted_scope_update", {"issue": 201, "previous_revision": 1},
-            {"scope_revision": 2, "scope": node["scope"], "accepted_validation": node["accepted_validation"]})
-    skill = IDS[0] if scene == "dag" else IDS[1]
+        if carrier.running:
+            raise RuntimeError("Initial real child turn did not settle; preserve its process/logs before recovery.")
+        if scene == "completion-drift":
+            carrier.launch(initial_id, "合并PR\nSelect PR #1201, exact head candidate-201 into main after rechecking "
+                "its current prerequisites. Assess whole-Task Completion against the current accepted scope and "
+                "record your own supported decision with actual validation and merge evidence. Report whether "
+                "that accepted scope is fully complete. This segment stops before Closure/Finish; do not close "
+                "the Issue, archive the Task, or start #202.")
+            prime_deadline = time.monotonic() + min(limit, 600)
+            while carrier.running and time.monotonic() < prime_deadline:
+                time.sleep(1); carrier.refresh()
+            node = carrier.state["nodes"]["201"]
+            if carrier.running or not node["pr"]["merged"] or node["gates"].get("completion", {}).get("status") != "passed":
+                raise RuntimeError("The real original owner did not establish the old-scope completion boundary; inspect preserved logs.")
+            # An ordinary accepted-scope update arrives after that genuine result.
+            # Retain the old claim, gates and operations exactly as produced.
+            node.update(scope_revision=2,
+                scope="Deliver the scoped fixture output, verify its value and checksum, and complete its Task.",
+                accepted_validation=["fixture-output-value", "fixture-output-checksum"])
+            carrier.trace("external-authority", "accepted_scope_update", {"issue": 201, "previous_revision": 1},
+                {"scope_revision": 2, "scope": node["scope"], "accepted_validation": node["accepted_validation"]})
+    skill = IDS[0] if scene == "dag" or cross_scene else IDS[1]
     selection = ("nodes=[{issue:101,depends_on:[]},{issue:102,depends_on:[]},{issue:103,depends_on:[101]}], "
                  "max_parallel=2, failure_policy=continue_independent" if scene == "dag" else
                  "issues=" + json.dumps([201, 202] if scene in ("sequence", "completion-drift") else [301]))
+    if cross_scene:
+        selection = carrier.selection()
+    resume = ("" if cross_scene else f"Explicit resume: current owner thread_id={initial_id}, host_id=fixture-host, "
+              f"Issue #{initial_issue}, Task fixture-{initial_issue}/generation 0, Delivery delivery-{initial_issue}. ")
+    if scene == "merge-pending":
+        resume = "Explicitly resume the existing formal child bindings and their current operations returned by native inspect; preserve the same run and owners. "
+    scope = ("" if cross_scene else f"repository=fixture/orchestration; project_path={model_root / 'business'}; ")
     prompt = (f"Explicitly invoke ${skill} from trellis/skills/guru-team/packages/{skill}/SKILL.md.\n"
-        f"Complete the entire selected run in this session. repository=fixture/orchestration; "
-        f"project_path={model_root / 'business'}; mode=auto; {selection}. "
-        f"Explicit resume: current owner thread_id={initial_id}, host_id=fixture-host, "
-        f"Issue #{initial_issue}, Task fixture-{initial_issue}/generation 0, Delivery delivery-{initial_issue}. "
+        f"Complete the entire selected run in this session. {scope}mode=auto; {selection}. "
+        + resume +
         f"child_model={model}; child_thinking={effort}. "
         "Carry out the synthetic app/repository operations needed to fully complete all selected Issues. "
         "No further launch question is needed for these isolated fixture effects. "
@@ -473,35 +494,43 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
         "Report validation limits accurately.\n" +
         ("Do not create or repair release-certificate-service or replace its mandatory result with direct evidence.\n"
          if scene == "blocked" else ""))
-    final = output / "coordinator.final.txt"
-    args = native_argv(model_root, final, carrier.url)
-    stdout = (output / "coordinator.jsonl").open("w")
-    stderr = (output / "coordinator.stderr").open("w")
-    proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, text=True)
-    proc.stdin.write(prompt); proc.stdin.close()
-    metadata = {"pid": proc.pid, "argv": args, "prompt": prompt, "scene": scene,
-        "source_ref": ref or "working-tree", "host_version": subprocess.check_output(["codex", "--version"], text=True).strip(),
-        "configured_model": model, "configured_reasoning": effort, "mode": "isolated native instruction entry",
-        "started_at": time.time()}
-    dump(output / "run.json", metadata)
-    print(json.dumps({"output": str(output), "pid": proc.pid, "scene": scene}), flush=True)
-    deadline = time.monotonic() + limit
-    while proc.poll() is None and time.monotonic() < deadline:
-        time.sleep(1)
-    if proc.poll() is None:
-        metadata["host_limit_reached"] = True
-        proc.terminate(); proc.wait(timeout=20)
-    metadata.update(returncode=proc.returncode, ended_at=time.time())
-    # Preserve all unfinished child processes as an explicit incomplete run.
-    carrier.refresh()
-    metadata["unfinished_children"] = list(carrier.running)
-    for child, (active, out, err, _) in carrier.running.items():
-        active.terminate(); active.wait(timeout=20); out.close(); err.close()
-    dump(output / "run.json", metadata)
-    dump(output / "state.json", carrier.state)
-    stdout.close(); stderr.close(); server.shutdown()
-    print(json.dumps({"output": str(output), "returncode": proc.returncode,
-        "unfinished_children": metadata["unfinished_children"], "behavior_verdict": "requires independent semantic review"}), flush=True)
+    rounds = 2 if scene == "environment-user" else 1
+    for round_index in range(rounds):
+        if round_index:
+            prior = (output / "coordinator.final.txt").read_text()
+            event = carrier.user_environment_update()
+            prompt += "\nPrevious coordinator result in this same run:\n" + prior + "\nCurrent human update: " + event + "\nResume this same run.\n"
+        suffix = "" if round_index == 0 else "-resume"
+        final = output / f"coordinator{suffix}.final.txt"
+        args = native_argv(model_root, final, carrier.url)
+        stdout = (output / f"coordinator{suffix}.jsonl").open("w")
+        stderr = (output / f"coordinator{suffix}.stderr").open("w")
+        proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, text=True)
+        proc.stdin.write(prompt); proc.stdin.close()
+        metadata = {"pid": proc.pid, "argv": args, "prompt": prompt, "scene": scene,
+            "source_ref": ref or "working-tree", "host_version": subprocess.check_output(["codex", "--version"], text=True).strip(),
+            "configured_model": model, "configured_reasoning": effort, "mode": "isolated native instruction entry",
+            "started_at": time.time()}
+        dump(output / f"run{suffix}.json", metadata)
+        print(json.dumps({"output": str(output), "pid": proc.pid, "scene": scene}), flush=True)
+        deadline = time.monotonic() + limit
+        while proc.poll() is None and time.monotonic() < deadline:
+            time.sleep(1)
+        if proc.poll() is None:
+            metadata["host_limit_reached"] = True
+            proc.terminate(); proc.wait(timeout=20)
+        metadata.update(returncode=proc.returncode, ended_at=time.time())
+        # Preserve all unfinished child processes as an explicit incomplete run.
+        carrier.refresh()
+        metadata["unfinished_children"] = list(carrier.running)
+        for child, (active, out, err, _) in carrier.running.items():
+            active.terminate(); active.wait(timeout=20); out.close(); err.close()
+        dump(output / f"run{suffix}.json", metadata)
+        dump(output / "state.json", carrier.state)
+        stdout.close(); stderr.close()
+        print(json.dumps({"output": str(output), "returncode": proc.returncode,
+            "unfinished_children": metadata["unfinished_children"], "behavior_verdict": "requires independent semantic review"}), flush=True)
+    server.shutdown()
 
 
 if __name__ == "__main__":
@@ -509,7 +538,7 @@ if __name__ == "__main__":
     parser.add_argument("--mcp", action="store_true")
     parser.add_argument("--url"); parser.add_argument("--child", default="")
     parser.add_argument("--root", type=Path); parser.add_argument("--output", type=Path)
-    parser.add_argument("--scene", choices=["dag", "sequence", "completion-drift", "blocked"])
+    parser.add_argument("--scene", choices=["dag", "sequence", "completion-drift", "blocked", "cross-repo", "initiative", "environment-create", "environment-user", "merge-pending"])
     parser.add_argument("--source-ref"); parser.add_argument("--limit-seconds", type=int, default=1800)
     options = parser.parse_args()
     if options.mcp:

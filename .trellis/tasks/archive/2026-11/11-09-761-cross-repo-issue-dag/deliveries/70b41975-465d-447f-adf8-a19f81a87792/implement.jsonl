@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整读取并遵守本批自然语言规则"}
+{"file": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md", "reason": "本批公开DAG入口与本地合同定位"}
+{"file": "trellis/presets/guru-team/spec/workflow/issue-orchestration.md", "reason": "共享方法唯一来源及受影响Sequence条件"}
+{"file": "docs/requirements/current/issue-orchestration.md", "reason": "现有R731完整行为及本批差额"}
+{"file": "docs/design/current/issue-orchestration.md", "reason": "现有D731责任与复用边界"}
+{"file": "docs/test/current/issue-orchestration.md", "reason": "真实Agent行为和投影证据边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实际读取本批规划正文及必要引用条件"}
