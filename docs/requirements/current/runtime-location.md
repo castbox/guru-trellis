@@ -57,3 +57,7 @@ R760-01—05 的设计与测试关系由对应完整单元 D760/T760 单写。�
 ## R769 / tools peer 增长与既有事务
 
 来源Issue #769；适用before为a5f3ceeabbaccddae65935d97763f5a798f71ca9。R769-01：单目标维护保原common/peer观测值，新增独立peer不因新增键误阻塞，且不进入原backup/write/delete集。R769-02：修复前schema1.0事务有明示同操作恢复；修复executor与原资产source区分，保持原root/source绑定、public pair/plan/ref、preimages和rollback anchor，不reprepare或吸收后续编辑。R769-03：原source/owned/peer真实不匹配仍阻塞，目标own resolver/installed/native独立验证；实际#766原操作恢复是本项验收，工具结果不代表Task完成。设计由D769承接，验证由T769承接。
+
+## R769-D2 / 已核正常退出对象
+
+来源仍为 Issue #769 原事务恢复责任，before 为 D1 delivered head `aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff`。R769-04：原 owner 正常退出的位置不再作为存续 peer 改值处理；AI 必须先读原退出结果，缺失本身不证明正常退出。R769-05：只有 frozen 恢复的显式有限位置建立该例外；存续 peer、common/gitdir、原 source/owned 保持和 #759 精确 prunable 边界继续成立。省略/空数组及同源调用保持原义。R769-06：同 ref/action/source/public operation/plan/preimages/snapshot 续接，无重 prepare 或第二状态；retry 保持实际字段存在性和值，完整 matching I/O 配套。D769-D2/T769-D2 单写设计和验证；实际 #766 恢复仍是整体 AC3，工具成功不建立 Task 完成。

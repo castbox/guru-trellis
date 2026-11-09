@@ -10,6 +10,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -18,6 +19,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+from jsonschema import Draft202012Validator
 
 PACKAGE = Path(__file__).resolve().parents[1]
 SOURCE = PACKAGE.parents[4]
@@ -53,7 +55,7 @@ class FrozenSourceRecoveryTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-    def fixture(self, base, *, pending=False, initial=False):
+    def fixture(self, base, *, pending=False, initial=False, prepare_peers=None):
         root = repository(base)
         asset = root / 'asset'
         asset.write_text('original tool')
@@ -61,6 +63,8 @@ class FrozenSourceRecoveryTests(unittest.TestCase):
         manifest.parent.mkdir(parents=True)
         manifest.write_text('{"extension":{"version":"old-guru"}}')
         old = owner.legacy_owner(self.asset_package)
+        if prepare_peers is not None:
+            prepare_peers(root)
         plan = {'upstream_source': {'dependency_mode': 'local_candidate'},
                 'upstream_plan': {'operation_id': 'original-public-operation', 'actions': []},
                 'selected_platforms': ['codex'], 'guru_decisions': []}
@@ -107,8 +111,10 @@ class FrozenSourceRecoveryTests(unittest.TestCase):
         self.assertEqual({key: cp[key] for key in before}, before)
         return root, recovery, cp, old, installer, writes, before
 
-    def invoke(self, root, ref, action, old, installer, *, native_error=None, target_error=None, public_result=None):
+    def invoke(self, root, ref, action, old, installer, *, native_error=None, target_error=None, public_result=None, retired_peer_roots=None):
         public = {'profile': 'recover_frozen_source', 'action': action, 'recovery_ref': ref}
+        if retired_peer_roots is not None:
+            public['retired_peer_roots'] = retired_peer_roots
         current = owner.legacy_owner(PACKAGE)
         def helper(package):
             return old if package == self.asset_package else current
@@ -225,3 +231,160 @@ class FrozenSourceRecoveryTests(unittest.TestCase):
         self.assertEqual(Path(original.state.__code__.co_filename).resolve(),
                          (self.source / 'trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/files.py').resolve())
         self.assertNotEqual(original.state.__code__.co_filename, current.state.__code__.co_filename)
+
+    def add_observed_peer(self, root, path, *, activate=True):
+        peer = path.resolve()
+        git(root, 'worktree', 'add', '-q', '-b', path.name, str(peer))
+        runtime = peer / '.trellis/guru-team/runtime'
+        shutil.copytree(SOURCE / 'trellis/skills/guru-team/runtime', runtime)
+        shutil.copytree(SOURCE / 'trellis/skills/guru-team/runtime', peer / 'trellis/skills/guru-team/runtime')
+        if activate:
+            # The peer's own real environment owner establishes its selection.
+            subprocess.run(['bash', str(runtime / 'resolve-python.sh'), str(peer), str(runtime),
+                            '-c', 'import sys; print(sys.executable)'], check=True, capture_output=True, text=True)
+        return peer
+
+    def frozen_projection(self, output):
+        interface = json.loads((PACKAGE / 'interface.json').read_text())
+        row = next(x for x in interface['public_contracts']['projections']
+                   if x['exit_id'] == output['exit_id'])
+        projected = {m['target']: output[m['source']] for m in row['mappings'] if m['source'] in output}
+        consumer = next(x for x in interface['public_contracts']['consumer_inputs']
+                        if x['id'] == row['consumer_input_id'])
+        profile = next(x for x in interface['public_contracts']['input']['profiles']
+                       if x['id'] == consumer['contract']['profile_id'])
+        Draft202012Validator(json.loads((PACKAGE / profile['schema']['path']).read_text())).validate(projected)
+        return projected
+
+    def test_normal_peer_retirement_requires_explicit_nonempty_roots(self):
+        with tempfile.TemporaryDirectory(prefix='guru769-d2-retirement-') as directory:
+            base = Path(directory)
+            peer = (base / 'retired').resolve()
+            root, recovery, cp, old, installer, writes, before = self.fixture(
+                base, prepare_peers=lambda root: self.add_observed_peer(root, peer))
+            selection = str(peer / '.trellis/.runtime/guru-team/python/selection-v3.json')
+            self.assertIsNotNone(cp['peer_pointers'][selection]['sha256'])
+            gitdir = Path(git(peer, 'rev-parse', '--absolute-git-dir'))
+            gitdir_pointer = str(gitdir / 'guru-team/python/active.json')
+            self.assertEqual(cp['peer_pointers'][gitdir_pointer], {'sha256': None, 'mode': None})
+            self.assertIn('runtime:' + str(peer / '.trellis/guru-team/runtime'), cp['peer_pointers'])
+            self.assertIn('runtime:' + str(peer / 'trellis/skills/guru-team/runtime'), cp['peer_pointers'])
+            git(root, 'worktree', 'remove', '--force', str(peer))
+            for roots in (None, []):
+                self.assertEqual(self.invoke(root, recovery.name, 'resume', old, installer,
+                                            retired_peer_roots=roots)['exit_id'], 'blocked')
+            result = self.invoke(root, recovery.name, 'resume', old, installer,
+                                 retired_peer_roots=[str(peer)])
+            self.assertEqual(result['exit_id'], 'tools_upgraded')
+            self.assertEqual(result['recovery_ref'], recovery.name)
+            self.assertNotIn('retired_peer_roots', result)
+            after = json.loads((recovery / 'checkpoint.json').read_text())
+            self.assertEqual({key: after[key] for key in before}, before)
+            self.assertNotIn('retired_peer_roots', after)
+            self.assertNotIn(gitdir_pointer, owner.peer_pointers(root, old))
+            self.assertEqual(old.state(Path(gitdir_pointer)), cp['peer_pointers'][gitdir_pointer])
+
+    def test_retirement_checks_full_registration_and_the_root_entry(self):
+        for state in ('registered', 'prunable', 'residue', 'not_observed', 'target', 'relative'):
+            with self.subTest(state=state), tempfile.TemporaryDirectory(prefix='guru769-d2-root-facts-') as directory:
+                base = Path(directory)
+                peer = (base / 'retired').resolve()
+                root, recovery, cp, old, installer, writes, before = self.fixture(
+                    base, prepare_peers=lambda root: self.add_observed_peer(root, peer, activate=False))
+                selected = peer
+                if state == 'prunable':
+                    shutil.rmtree(peer)  # ordinary removal without Git cleanup leaves a registration
+                    self.assertNotIn(peer, owner.peers(root, old))
+                    self.assertIn(peer, owner.peers(root, old, include_prunable=True))
+                elif state != 'registered':
+                    git(root, 'worktree', 'remove', '--force', str(peer))
+                    if state == 'residue':
+                        peer.mkdir()
+                        (peer / 'business').write_text('remaining local data')
+                    elif state == 'not_observed':
+                        selected = (base / 'unobserved').resolve()
+                    elif state == 'target':
+                        selected = root
+                    elif state == 'relative':
+                        selected = Path('retired')
+                result = self.invoke(root, recovery.name, 'resume', old, installer,
+                                     retired_peer_roots=[str(selected)])
+                self.assertEqual(result['exit_id'], 'blocked')
+                expected_reason = {'registered': 'still registered', 'prunable': 'still registered',
+                                   'residue': 'filesystem entry', 'not_observed': 'no original checkout-local observation',
+                                   'target': 'target checkout', 'relative': 'absolute checkout'}
+                self.assertIn(expected_reason[state], result['reason'])
+                after = json.loads((recovery / 'checkpoint.json').read_text())
+                self.assertEqual({key: after[key] for key in before}, before)
+                if state == 'residue':
+                    self.assertEqual((peer / 'business').read_text(), 'remaining local data')
+
+    def test_retired_roots_do_not_hide_other_file_changes_or_missing_runtime(self):
+        for change in ('surviving_peer', 'common', 'gitdir', 'uncovered_runtime'):
+            with self.subTest(change=change), tempfile.TemporaryDirectory(prefix='guru769-d2-preservation-') as directory:
+                base = Path(directory)
+                retired, surviving = (base / 'retired').resolve(), (base / 'surviving').resolve()
+                def setup(root):
+                    self.add_observed_peer(root, retired)
+                    self.add_observed_peer(root, surviving, activate=False)
+                    if change == 'gitdir':
+                        original_gitdir = Path(git(retired, 'rev-parse', '--absolute-git-dir'))
+                        owner.legacy_owner(self.asset_package).write_json(original_gitdir / 'guru-team/python/active.json',
+                            {'schema_version': '2.0', 'runtime_id': 'original legacy choice'})
+                root, recovery, cp, old, installer, writes, before = self.fixture(base, prepare_peers=setup)
+                git(root, 'worktree', 'remove', '--force', str(retired))
+                if change == 'surviving_peer':
+                    pointer = surviving / '.trellis/.runtime/guru-team/python/active.json'
+                    old.write_json(pointer, {'schema_version': '2.0', 'runtime_id': 'ordinary changed choice'})
+                elif change == 'common':
+                    common = Path(git(root, 'rev-parse', '--path-format=absolute', '--git-common-dir'))
+                    old.write_json(common / 'guru-team/python/active.json',
+                                   {'schema_version': '2.0', 'runtime_id': 'ordinary changed common choice'})
+                elif change == 'uncovered_runtime':
+                    self.assertEqual(cp['peer_pointers'][str(surviving / '.trellis/.runtime/guru-team/python/selection-v3.json')],
+                                     {'sha256': None, 'mode': None})
+                    git(root, 'worktree', 'remove', '--force', str(surviving))
+                result = self.invoke(root, recovery.name, 'resume', old, installer,
+                                     retired_peer_roots=[str(retired)])
+                self.assertEqual(result['exit_id'], 'blocked')
+                self.assertIn('peer/common Python pointer changed', result['reason'])
+                after = json.loads((recovery / 'checkpoint.json').read_text())
+                self.assertEqual({key: after[key] for key in before}, before)
+
+    def test_retired_roots_follow_both_original_retry_actions_without_checkpoint_fields(self):
+        for action in ('resume', 'rollback'):
+            with self.subTest(action=action), tempfile.TemporaryDirectory(prefix='guru769-d2-retired-retry-') as directory:
+                base = Path(directory)
+                peer = (base / 'retired').resolve()
+                root, recovery, cp, old, installer, writes, before = self.fixture(
+                    base, pending=action == 'resume', prepare_peers=lambda root: self.add_observed_peer(root, peer))
+                git(root, 'worktree', 'remove', '--force', str(peer))
+                error = {'target_error': OSError('target temporarily unavailable')} if action == 'resume' else {
+                    'native_error': ValueError('native temporarily unavailable')}
+                output = self.invoke(root, recovery.name, action, old, installer,
+                                     retired_peer_roots=[str(peer)], **error)
+                self.assertEqual(output, {'exit_id': 'frozen_recovery_required', 'profile': 'recover_frozen_source',
+                                         'action': action, 'recovery_ref': recovery.name,
+                                         'retired_peer_roots': [str(peer)]})
+                projected = self.frozen_projection(output)
+                result = self.invoke(root, projected['recovery_ref'], projected['action'], old, installer,
+                                     retired_peer_roots=projected['retired_peer_roots'])
+                self.assertEqual(result['exit_id'], 'tools_upgraded' if action == 'resume' else 'rolled_back')
+                after = json.loads((recovery / 'checkpoint.json').read_text())
+                self.assertEqual({key: after[key] for key in before}, before)
+                self.assertNotIn('retired_peer_roots', after)
+
+    def test_retry_presence_select_preserves_omission_and_explicit_empty_array(self):
+        for roots in (None, []):
+            with self.subTest(roots=roots), tempfile.TemporaryDirectory(prefix='guru769-d2-presence-') as directory:
+                root, recovery, cp, old, installer, writes, before = self.fixture(Path(directory), pending=True)
+                output = self.invoke(root, recovery.name, 'resume', old, installer,
+                                     retired_peer_roots=roots, target_error=OSError('target temporarily unavailable'))
+                self.assertEqual(output['exit_id'], 'frozen_recovery_required')
+                projected = self.frozen_projection(output)
+                self.assertEqual('retired_peer_roots' in output, roots is not None)
+                self.assertEqual('retired_peer_roots' in projected, roots is not None)
+                if roots is not None:
+                    self.assertEqual(projected['retired_peer_roots'], roots)
+                self.assertEqual(self.invoke(root, projected['recovery_ref'], projected['action'], old, installer,
+                                            retired_peer_roots=projected.get('retired_peer_roots'))['exit_id'], 'tools_upgraded')

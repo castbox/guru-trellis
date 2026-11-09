@@ -194,7 +194,7 @@ its HEAD/tree token and root binding still must match. Existing `resume` and
 `rollback` remain same-source profiles and do not gain implicit cross-source
 fallback.
 
-Invoke from the complete repaired source with only
+Invoke from the complete repaired source with the original identity
 `{profile: recover_frozen_source, action: resume|rollback, recovery_ref: original}`
 and the original target as `--root`. Do not supply a new plan/source override,
 prepare another operation, edit the old checkpoint, refresh its peer snapshot
@@ -214,10 +214,39 @@ restoring original Guru preimages. Verify the target's own resolver, installed
 runtime and native entry, and peer preservation independently. A tool result
 does not establish Task or Delivery success.
 
+### Explicit normally retired peer locations
+
+Before using `retired_peer_roots`, read the original peer owner's real terminal
+exit and exact checkout location, then judge whether that normal retirement is
+applicable to this recovery. Directory or observation absence alone is not that
+judgment. Missing owner evidence returns to this same semantic owner for the
+concrete evidence gap; do not infer success or automatically select roots.
+
+Only `recover_frozen_source` additionally accepts optional
+`retired_peer_roots: string[]`. Omission and `[]` retain the original preservation
+check. A nonempty list names the finite, reviewed absolute retired checkout
+locations. Runtime verifies each location is not the target, has the original
+checkout-local active pointer marker in the frozen observation, is absent from
+all Git worktree registrations including prunable records, and has no filesystem
+entry of its own. Reuse the original peer parser with its default #759 filter
+unchanged; a complete-registration read is only for this object check.
+
+For those exact locations, retire only original local active/selection-v3 and
+installed/source runtime observations. Do not skip a path prefix or common/gitdir
+state. In this nonempty explicit mode, other original file observations that
+current enumeration no longer lists are reread from their original paths and
+must retain the same state. Uncovered runtime observations missing from current
+enumeration still block. Same-source profiles gain no exception. Pass the same
+call-local roots through the original engine's before/after preservation checks;
+never rewrite `cp.public`, peer observations, plan or preimages.
+
 When that engine returns a retry requirement, this profile emits
 `frozen_recovery_required` with the same profile/action/ref. Its sole consumer
 is this owner at `recover_frozen_source`; keep `action=rollback` on rollback
-retry. Read and review the new failure before re-entry. Success and permanent
+retry. If the caller actually provided `retired_peer_roots`, include that same
+value in the retry, including `[]`; otherwise omit the field. The existing
+presence-select projection copies it only when present. Read and review the new
+failure before re-entry. Success and permanent
 blocking retain the original independent output contracts. No checkpoint
 fields, data conversion or backup migration are added.
 
@@ -234,9 +263,10 @@ migration framework. The complete support and adoption boundary is in
   status, recovery_ref for this owner's optional rollback, and unverified for
   the formal-source boundary. No Task/session inventory or digest crosses it.
 - `resume_required`: same owner consumes only profile and recovery_ref.
-- `frozen_recovery_required`: this same owner consumes only profile, action and
+- `frozen_recovery_required`: this same owner consumes profile, action and
   recovery_ref through the explicit frozen-source input; the projection removes
-  only exit_id and preserves the original action.
+  exit_id, preserves the original action, and copies retired_peer_roots only
+  when that field is present.
 - `rolled_back`: result stop consumes the actually restored installation version.
 - `blocked`: result stop consumes the concrete missing prerequisite/conflict.
 
