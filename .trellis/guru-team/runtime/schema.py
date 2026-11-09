@@ -39,7 +39,7 @@ def _constraint_diagnostic(error: Any) -> tuple[list[Any], str]:
 
 
 def _diagnostic_error(errors: list[Any]) -> Any:
-    """Prefer a uniquely closest union branch for display, without changing validity."""
+    """Prefer a declared exit or uniquely closest branch, without changing validity."""
     from jsonschema.exceptions import best_match
 
     selected = best_match(errors)
@@ -55,6 +55,30 @@ def _diagnostic_error(errors: list[Any]) -> Any:
             if not isinstance(branch, int):
                 return selected
             branches.setdefault(branch, []).append(child)
+        if isinstance(root.instance, dict) and "exit_id" in root.instance:
+            # Object-level errors retain the resolved branch schema, including
+            # declarations loaded through the validator's existing relative refs.
+            matching = []
+            declarations_known = True
+            for group in branches.values():
+                declarations = []
+                pending = list(group)
+                while pending:
+                    child = pending.pop()
+                    if child.absolute_path != root.absolute_path:
+                        continue
+                    if isinstance(child.schema, dict):
+                        declaration = child.schema.get("properties", {}).get("exit_id", {})
+                        if isinstance(declaration, dict) and "const" in declaration:
+                            declarations.append(declaration["const"])
+                    if child.validator in {"oneOf", "anyOf"}:
+                        pending.extend(child.context)
+                if not declarations:
+                    declarations_known = False
+                if root.instance["exit_id"] in declarations:
+                    matching.append(group)
+            if declarations_known and len(matching) == 1:
+                return _diagnostic_error(matching[0])
         fewest = min(len(group) for group in branches.values())
         closest = [group for group in branches.values() if len(group) == fewest]
         if len(closest) == 1:

@@ -20,6 +20,26 @@ PACKAGES = ROOT / "packages"
 
 
 class PublicContractDiagnosticsTests(unittest.TestCase):
+    def test_author_scope_union_error_names_extra_mode_in_the_declared_exit(self):
+        package = PACKAGES / "guru-author-task-plan"
+        value = json.loads((package / "examples/semantic-result-2.0.json").read_text())
+        value["public_input"] = json.loads((package / "examples/public-task-scope-requirements-input.json").read_text())
+        value["output"] = json.loads((package / "examples/public-scope-requirements-ready-output.json").read_text())
+        value["output"]["mode"] = "workflow"
+        schema = package / "schemas/semantic-result-2.0.schema.json"
+        with self.assertRaises(CommandError) as raised:
+            validate_json(value, schema, "owner_result")
+        error = raised.exception
+        self.assertEqual(error.code, "schema_mismatch")
+        self.assertEqual(error.exit_status, 2)
+        self.assertEqual(error.field_path, "owner_result.output.mode")
+        self.assertIn("field is not declared", error.remediation)
+        self.assertIn("packages/guru-author-task-plan/schemas/semantic-result-2.0.schema.json", error.remediation)
+        self.assertNotIn("workflow", error.remediation)
+        self.assertNotIn(value["output"]["requirements_locator"], error.remediation)
+        del value["output"]["mode"]
+        validate_json(value, schema, "owner_result")
+
     def test_architecture_union_error_names_the_extra_field_in_the_current_branch(self):
         package = PACKAGES / "guru-maintain-architecture-baseline"
         value = json.loads((package / "examples/public-input-delivery-task-impact-sync-3.0.json").read_text())

@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "执行当前写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "核对来源与规划正文职责"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核对本批需求模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核对本批方案模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对实施验证和 Policy/Docs Plan"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "保持确定性脚本及托管运行时边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按验收选择有效且有限的验证"}
+{"file": "trellis/skills/guru-team/runtime/schema.py", "reason": "共享诊断生产实现"}
+{"file": "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py", "reason": "既有诊断覆盖与真实 Author 回归"}
