@@ -1,5 +1,6 @@
 {
   "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-09-769-tools-peer-growth-recovery",
   "id": "769-tools-peer-growth-recovery",
   "name": "769-tools-peer-growth-recovery",
   "lifecycle_generation": 0,
@@ -853,7 +854,7 @@
       },
       "planning_root": "deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0",
       "profile": "pull_request",
-      "phase": "reviewing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
         "revision": "sha256:2c86c66e329fda1fe4c42d69c94329a554f9c7a1f62f56559e6f3d542bc5e139"
@@ -861,7 +862,7 @@
       "candidate": {
         "base_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
         "content_ref": "sha256:9f9981091208d28d07a3bc35ee743513dc168a744e83ea6bb7cf856c79c3e2cc",
-        "head_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+        "head_ref": "abbf607382903fba5f17aade2d1513945397f369",
         "kind": "git",
         "paths": [
           ".agents/skills/guru-upgrade-tools/SKILL.md",
@@ -975,7 +976,7 @@
           ]
         },
         "check": {
-          "result_id": "check:88bf98b38e92ad6893a02968ef312c3b7d5651d48f8a2eb50d45b1ebe1602712",
+          "result_id": "check:c1beb74aa6b2d857a015002ac7141e3dc7b3f7c670cf22d3d74fada4acada2ee",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -1002,7 +1003,7 @@
           "candidate": {
             "base_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
             "content_ref": "sha256:9f9981091208d28d07a3bc35ee743513dc168a744e83ea6bb7cf856c79c3e2cc",
-            "head_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+            "head_ref": "abbf607382903fba5f17aade2d1513945397f369",
             "kind": "git",
             "paths": [
               ".agents/skills/guru-upgrade-tools/SKILL.md",
@@ -1088,14 +1089,476 @@
             }
           ]
         },
-        "full_review": null,
-        "readiness": null
+        "full_review": {
+          "result_id": "full-review:f6462197b8e8935f32661790bc9cd7c440633a72a2ab86715982f35deee853f6",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/prd.md",
+              "revision": "sha256:05efa296599f46f1299305898cf457d256e82ec6caec4f0cb6fb511e998f4a81"
+            },
+            "anchors": [
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
+            "revision": "sha256:2c86c66e329fda1fe4c42d69c94329a554f9c7a1f62f56559e6f3d542bc5e139"
+          },
+          "candidate": {
+            "base_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+            "content_ref": "sha256:9f9981091208d28d07a3bc35ee743513dc168a744e83ea6bb7cf856c79c3e2cc",
+            "head_ref": "abbf607382903fba5f17aade2d1513945397f369",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-upgrade-tools/SKILL.md",
+              ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".agents/skills/guru-upgrade-tools/interface.json",
+              ".agents/skills/guru-upgrade-tools/references/contract.md",
+              ".agents/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".agents/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".claude/skills/guru-upgrade-tools/SKILL.md",
+              ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".claude/skills/guru-upgrade-tools/interface.json",
+              ".claude/skills/guru-upgrade-tools/references/contract.md",
+              ".claude/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".claude/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".cursor/skills/guru-upgrade-tools/SKILL.md",
+              ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".cursor/skills/guru-upgrade-tools/interface.json",
+              ".cursor/skills/guru-upgrade-tools/references/contract.md",
+              ".cursor/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".cursor/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/interface.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/runtime/tools_owner.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/check.jsonl",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.jsonl",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.md",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/prd.md",
+              "docs/architecture/01-current/runtime-location.md",
+              "docs/architecture/adr/tools-retired-peer-observations.md",
+              "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+              "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/01-current/runtime-location.md",
+              "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/adr/tools-retired-peer-observations.md",
+              "docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/requirements/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/test/current/runtime-location.md",
+              "docs/requirements/current/runtime-location.md",
+              "docs/test/current/runtime-location.md",
+              "trellis/presets/guru-team/MIGRATION-769.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/interface.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_frozen_recovery.py"
+            ]
+          },
+          "predecessor_result_id": "check:c1beb74aa6b2d857a015002ac7141e3dc7b3f7c670cf22d3d74fada4acada2ee",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.md",
+              "revision": "sha256:638c1d5173e87c7dcab0e078b614d10de2470d07ccd6e4518e36c7c5e1e42791"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:da1e6199c8de6b79c4bf1a6e62e38ed09b818134ed40437acbb4a64489760c0b",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/prd.md",
+              "revision": "sha256:05efa296599f46f1299305898cf457d256e82ec6caec4f0cb6fb511e998f4a81"
+            },
+            "anchors": [
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
+            "revision": "sha256:2c86c66e329fda1fe4c42d69c94329a554f9c7a1f62f56559e6f3d542bc5e139"
+          },
+          "candidate": {
+            "base_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+            "content_ref": "sha256:9f9981091208d28d07a3bc35ee743513dc168a744e83ea6bb7cf856c79c3e2cc",
+            "head_ref": "abbf607382903fba5f17aade2d1513945397f369",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-upgrade-tools/SKILL.md",
+              ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".agents/skills/guru-upgrade-tools/interface.json",
+              ".agents/skills/guru-upgrade-tools/references/contract.md",
+              ".agents/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".agents/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".claude/skills/guru-upgrade-tools/SKILL.md",
+              ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".claude/skills/guru-upgrade-tools/interface.json",
+              ".claude/skills/guru-upgrade-tools/references/contract.md",
+              ".claude/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".claude/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".cursor/skills/guru-upgrade-tools/SKILL.md",
+              ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".cursor/skills/guru-upgrade-tools/interface.json",
+              ".cursor/skills/guru-upgrade-tools/references/contract.md",
+              ".cursor/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".cursor/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/interface.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/runtime/tools_owner.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/check.jsonl",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.jsonl",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.md",
+              ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/prd.md",
+              "docs/architecture/01-current/runtime-location.md",
+              "docs/architecture/adr/tools-retired-peer-observations.md",
+              "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+              "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/01-current/runtime-location.md",
+              "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/adr/tools-retired-peer-observations.md",
+              "docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/requirements/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/test/current/runtime-location.md",
+              "docs/requirements/current/runtime-location.md",
+              "docs/test/current/runtime-location.md",
+              "trellis/presets/guru-team/MIGRATION-769.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/interface.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_frozen_recovery.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:f6462197b8e8935f32661790bc9cd7c440633a72a2ab86715982f35deee853f6",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.md",
+              "revision": "sha256:638c1d5173e87c7dcab0e078b614d10de2470d07ccd6e4518e36c7c5e1e42791"
+            }
+          ]
+        }
       },
-      "publication_result": null,
-      "delivery_result": null,
+      "publication_result": {
+        "result_id": "publication:f47d313e309106d422528ab2e86c09cbf31f91527c6c860da8a49f42b61139c6",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/780",
+            "revision": "sha256:22f90d2e2b34d48794b868e8c5af9e282a2f51f4b046451911fb543f985ecaf5"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+          "content_ref": "sha256:9f9981091208d28d07a3bc35ee743513dc168a744e83ea6bb7cf856c79c3e2cc",
+          "head_ref": "abbf607382903fba5f17aade2d1513945397f369",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-upgrade-tools/SKILL.md",
+            ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+            ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+            ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".agents/skills/guru-upgrade-tools/interface.json",
+            ".agents/skills/guru-upgrade-tools/references/contract.md",
+            ".agents/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".agents/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".claude/skills/guru-upgrade-tools/SKILL.md",
+            ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+            ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+            ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".claude/skills/guru-upgrade-tools/interface.json",
+            ".claude/skills/guru-upgrade-tools/references/contract.md",
+            ".claude/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".claude/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".cursor/skills/guru-upgrade-tools/SKILL.md",
+            ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+            ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+            ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".cursor/skills/guru-upgrade-tools/interface.json",
+            ".cursor/skills/guru-upgrade-tools/references/contract.md",
+            ".cursor/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".cursor/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/interface.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/runtime/tools_owner.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/check.jsonl",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.jsonl",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.md",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/prd.md",
+            "docs/architecture/01-current/runtime-location.md",
+            "docs/architecture/adr/tools-retired-peer-observations.md",
+            "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+            "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/01-current/runtime-location.md",
+            "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/adr/tools-retired-peer-observations.md",
+            "docs/design/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/design/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/requirements/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/test/current/runtime-location.md",
+            "docs/requirements/current/runtime-location.md",
+            "docs/test/current/runtime-location.md",
+            "trellis/presets/guru-team/MIGRATION-769.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/interface.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_contract.py",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_frozen_recovery.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 780,
+        "reviewed_head": "abbf607382903fba5f17aade2d1513945397f369",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/780",
+          "revision": "sha256:22f90d2e2b34d48794b868e8c5af9e282a2f51f4b046451911fb543f985ecaf5"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:63827f3ffc04812ed56e36f26a955893a6e0d63d",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/780",
+            "revision": "63827f3ffc04812ed56e36f26a955893a6e0d63d"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+          "content_ref": "sha256:9f9981091208d28d07a3bc35ee743513dc168a744e83ea6bb7cf856c79c3e2cc",
+          "head_ref": "abbf607382903fba5f17aade2d1513945397f369",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-upgrade-tools/SKILL.md",
+            ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+            ".agents/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+            ".agents/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".agents/skills/guru-upgrade-tools/interface.json",
+            ".agents/skills/guru-upgrade-tools/references/contract.md",
+            ".agents/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".agents/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".claude/skills/guru-upgrade-tools/SKILL.md",
+            ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+            ".claude/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+            ".claude/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".claude/skills/guru-upgrade-tools/interface.json",
+            ".claude/skills/guru-upgrade-tools/references/contract.md",
+            ".claude/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".claude/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".cursor/skills/guru-upgrade-tools/SKILL.md",
+            ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-output.json",
+            ".cursor/skills/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-input.json",
+            ".cursor/skills/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".cursor/skills/guru-upgrade-tools/interface.json",
+            ".cursor/skills/guru-upgrade-tools/references/contract.md",
+            ".cursor/skills/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".cursor/skills/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/interface.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/runtime/tools_owner.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/check.jsonl",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/design.md",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.jsonl",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/implement.md",
+            ".trellis/tasks/11-09-769-tools-peer-growth-recovery/deliveries/2b62b86b-ab9c-415d-9cfc-87ec5141e8d0/prd.md",
+            "docs/architecture/01-current/runtime-location.md",
+            "docs/architecture/adr/tools-retired-peer-observations.md",
+            "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+            "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/01-current/runtime-location.md",
+            "docs/architecture/contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/architecture/adr/tools-retired-peer-observations.md",
+            "docs/design/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/contribution.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/design/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/requirements/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/769-tools-peer-growth-recovery/d2-retired-peer-observations/proposed/docs/test/current/runtime-location.md",
+            "docs/requirements/current/runtime-location.md",
+            "docs/test/current/runtime-location.md",
+            "trellis/presets/guru-team/MIGRATION-769.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-frozen_recovery_required-retired-output.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/examples/public-recover_frozen_source-retired-input.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/interface.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-frozen_recovery_required-output.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/schemas/public-recover_frozen_source-input.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_contract.py",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_frozen_recovery.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 780,
+        "reviewed_head": "abbf607382903fba5f17aade2d1513945397f369",
+        "merge_commit": "63827f3ffc04812ed56e36f26a955893a6e0d63d",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
-  "completion_results": [],
-  "closure_results": []
+  "completion_results": [
+    {
+      "result_id": "completion:fb82c329-b1f0-409c-8cf0-89d5839d8ddd",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/776",
+          "revision": "4b92335054fd5d6cb9de9844110ba01d56a3f00a"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/780",
+          "revision": "63827f3ffc04812ed56e36f26a955893a6e0d63d"
+        },
+        {
+          "locator": "tools-upgrade:05d804ba-1a5d-4975-93bd-9909ff00e719",
+          "revision": "complete:8838ed00-b7c3-4ab3-97cd-0fd392e0740b"
+        },
+        {
+          "locator": "validation:766-frozen-preservation",
+          "revision": "unchanged:plan-preimages-peer-public-source-and-11-paths"
+        },
+        {
+          "locator": "validation:766-own-installed-native-drift",
+          "revision": "passed:43-packages-128-commands-9102-managed-zero-sidecars"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/42647188613",
+          "revision": "success:ubuntu-macos-windows"
+        },
+        {
+          "locator": "validation:tools-d2-package",
+          "revision": "37-total-36-pass-1-opt-in-skip-and-postcommit-frozen-13-pass"
+        },
+        {
+          "locator": "boundary:local_candidate",
+          "revision": "formal_fork_source_lock-unverified-no-full-matrix"
+        },
+        {
+          "locator": "architecture:task_impact_sync:acceptance_finish",
+          "revision": "reviewed_promoted:sha256:d3df56e4a0ef4ffbbb2cad64a318ea46696fb0983810bb739cf0d5a40db923e5"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/prd.md",
+        "revision": "sha256:05efa296599f46f1299305898cf457d256e82ec6caec4f0cb6fb511e998f4a81"
+      },
+      "delivery_result_ids": [
+        "delivery:4b92335054fd5d6cb9de9844110ba01d56a3f00a",
+        "delivery:63827f3ffc04812ed56e36f26a955893a6e0d63d"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:7819f28439209ce7e1d07310",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/769",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-09-769-tools-peer-growth-recovery/closeout/closure/Y2xvc3VyZTo3ODE5ZjI4NDM5MjA5Y2U3ZTFkMDczMTA.json",
+          "revision": "sha256:331a6ff8a414506c37f747405c2cbd4c6d4288b991bd608084920c5ee41ecb1d"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:fb82c329-b1f0-409c-8cf0-89d5839d8ddd",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/769",
+        "revision": "CLOSED"
+      }
+    }
+  ]
 }
