@@ -139,7 +139,7 @@ workflow `--create-new` 只生成预览；实际替换使用同一 provider 的�
 - **交付收口**：使用当前平台的 `guru-finish-work` 入口，由 workflow 接续交付和完成步骤。
   一个 Delivery 合并后，Task 可能仍有剩余工作。
 - **跨 Issue 协调**：Codex 可显式调用 `guru-orchestrate-issue-dag` 或
-  `guru-orchestrate-issue-sequence`；见 [编排说明](trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
+  `guru-orchestrate-issue-sequence`。DAG 支持跨仓依赖及各仓环境恢复，Sequence 保持单仓串行；见 [编排说明](trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
 
 专项需求、设计、Go-Guru 实现等方法按项目采用情况从 `guru-ai-guides` 加载，
 不随 preset 安装。已归档任务的复审、恢复和手动 Git/GitHub 操作分别遵从

@@ -1,12 +1,12 @@
 ---
 name: guru-orchestrate-issue-dag
-description: Explicitly coordinate a GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.
+description: Explicitly coordinate a cross-repository GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.
 ---
 
 # Guru Issue DAG Orchestrator
 
-`judgment_mode=semantic`. This standalone Codex Skill owns one repository's
-cross-Issue DAG. The coordinator reads live evidence, schedules eligible nodes,
+`judgment_mode=semantic`. This standalone Codex Skill owns a cross-repository
+Issue DAG. The coordinator and Skill provider may be in other repositories. The coordinator reads live evidence, schedules eligible nodes,
 judges progress and proves full Issue completion. Explicit human stage limits
 only bound the current execution segment. Each Issue has its own child
 chat/worktree and executes the target repository's complete current workflow.
@@ -38,12 +38,17 @@ failure propagation, stage settlement and this Skill's public I/O.
 
 ## Execute The DAG
 
-1. Resolve the conversation inputs from the local contract. Normalize equivalent
-   edge notation; `A -> B` means B waits for A's full completion. Input order
+1. Resolve explicit nodes or the initiative’s formally bound members under the
+   local contract. Normalize repository-qualified identities and each repository’s
+   project/base binding into one graph. Preserve single-repository shorthand.
+   Normalize equivalent edge notation; `A -> B` means B waits for A's full completion. Input order
    breaks ties among eligible nodes, never creates implicit edges. Clarify only
    actual ambiguous dependencies or choices before affected admission.
 2. Perform the shared read-only preflight and AI Gate for the entire graph.
-   Resolve the selected base and full-completion goal. Verify acyclicity, hard
+   Resolve each repository’s selected base, environment readiness and the
+   full-completion goal. Investigate missing environments through the shared
+   supported-capability method; hold affected nodes and descendants under the
+   failure policy while independent ready work can proceed. Verify acyclicity, hard
    prerequisites, exclusions and any explicit execution-limit compatibility.
    A dry-run returns `dry_run_ready|dry_run_blocked` and stops. Auto/live consume
    ready preflight internally and launch only within current human instructions.

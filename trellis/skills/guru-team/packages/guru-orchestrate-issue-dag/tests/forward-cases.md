@@ -100,3 +100,19 @@ required-decision column first; these cases do not run live Git operations.
 | G1. The human delegates full completion and all concrete necessary actions. A child reports a current Ready PR as its final result; later phases are available and pass prerequisites. | Continue through the original merge and closeout owners, observe their actual results and require full proof. Do not return dag_stage_completed merely because that child turn ended. |
 | G2. The same completion run discovers that one later operation requires direct human action. Other admitted work is permitted and actionable. | Hold only that operation, display the exact required action, and keep permitted work moving under the failure policy. Preserve remaining completion obligations; do not reinterpret the run as PR-only or use a stage-completed exit. |
 | G3. The human expressly pauses after planning; the stage result and safe settlement pass. Later the same human resumes completion with the needed concrete actions. | Initially report only the stage result and remaining obligations using the existing stage exit. On resume recover the same Issue owners, selected base and live proof, then continue toward full completion; do not create replacement identities or count the old stage result as completion. |
+
+## Cross-Repository And Environment Cases
+
+| Supplied facts | Required observable behavior |
+| --- | --- |
+| Foreign coordinator/provider; API #7 on dev, web #7 on stable depends on it, independent web #8 | Separate repo-qualified nodes/children and exact projects/sources; web #7 waits for API full proof; each merge/completion checked in its own repository/base. |
+| Initiative formally binds product final acceptance and two engineering Issues; includes an unrelated reference; requirements already ready | Select only formal members, use actual engineering prerequisites, and make final acceptance follow engineering without a fictitious two-way dependency. |
+| A target checkout/project is absent, current supported provisioning entry exists with permission | Covered live operation creates it and rereads project/primary remote/base; dry-run creates nothing. |
+| Environment creation permission denied, another project has no supported registration entry, another awaits user App trust; an independent repository is ready | Explain each exact gap and concrete user steps, progress independent work under continue_independent, never edit/click trust; safely settle when necessary and resume same graph/owners after user completion and factual readback. |
+| Different repositories share #7 during heartbeat/pending recovery | Preserve repository-qualified child/host/Task/PR associations; no duplicate creation or bare-number lookup. |
+
+The source-only runner `run_native_orchestration.py` exposes `cross-repo`,
+`initiative`, `environment-create` and `environment-user` scenes in addition to
+the original single-repository scenes. Each uses actual coordinator/child Codex
+processes with factual synthetic tools. Raw traces and final messages are
+external outputs for independent semantic review, not a keyword-derived verdict.

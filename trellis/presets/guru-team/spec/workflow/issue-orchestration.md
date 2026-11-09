@@ -21,7 +21,8 @@ If a personal discovery entry is a filesystem link, resolve its real path before
 locating the containing provider. The target project or current working directory
 does not establish which provider supplied the Skill.
 
-The target business repository may be elsewhere. It supplies its own current
+Each target business repository may be elsewhere, independently of the
+coordinator and provider. It supplies its own current
 AGENTS.md, workflow, Skills, accepted Issue scope, and live Git/GitHub facts.
 The coordinator does not install or replace its workflow. These Skills are
 Codex-only, explicitly invoked, instruction-only standalone operations. They
@@ -89,8 +90,10 @@ Repository rules expressly requiring direct human confirmation still apply.
 
 ## Selected Base
 
-Resolve one selected base branch for this run from the human's explicit choice;
-only when no base was specified, use the live repository default branch. Keep
+Resolve one selected base branch per target repository from the human's explicit choice;
+only when that repository has no explicit base, use its live default branch.
+For DAG, use its repository map; Sequence resolves its one repository. Never
+apply the coordinator’s base or one target’s choice to all repositories. Keep
 the exact repository, remote and branch consistent through initial preflight,
 child creation/instructions, heartbeat recovery, base reconciliation, PR target,
 merge and completion proof. A separately requested starting state does not
@@ -112,8 +115,11 @@ change to the target follows the original scope/base owners and affected gates.
 
 ## Public Inputs And Model Settings
 
-Each package owns its concise conversation input contract. Resolve one exact
-repository, saved local project, selected base and selected Issue identities.
+Each package owns its concise conversation input contract. Resolve every
+selected Issue’s canonical repository, saved local project and primary repository,
+selected base and exact identity. DAG may span repositories; Sequence keeps its
+one-repository input and strict complete-before-next rule. Their scheduling
+contracts remain package-owned.
 Do not put the endpoint or authorization in a normalized data object; resolve those from the
 human conversation. Optional completion overrides identify concrete accepted
 extra gates, not new release, deployment, cleanup, or publication permission.
@@ -144,14 +150,15 @@ Before a live launch, verify the whole selected run:
 | Check | Required proof |
 | --- | --- |
 | Provider/tools | Same-provider package and shared method; current native project, chat, message, wait, heartbeat and live-read capabilities. |
-| Repository/project | Authenticated exact `owner/repo`; one current saved project matching its path and repository remote. |
-| Initial base | Selected base is resolved under the rule above; its local branch, tracking ref and live remote OIDs agree. Report those facts without fetching. Unrelated branches add no equality or update requirement. |
-| Initial checkout | Clean and suitable for the target repository's normal intake; no unrelated work is reset or moved. |
+| Repository/project | For every target `owner/repo`, authenticate access and resolve its current saved local project, actual primary folder and repository remote. A coordinator/provider project or an added secondary folder is not proof of the target primary repository. |
+| Initial base | Each repository’s selected base is resolved under the rule above; its local branch, tracking ref and live remote OIDs agree. Report those facts without fetching. Unrelated branches add no equality or update requirement. |
+| Initial checkout | Clean and suitable for each target repository's normal intake; no unrelated work is reset or moved. |
 | Issues | Selected identities are accessible and open initially, with sufficient current scope and completion criteria. Explicit resume can adopt completed nodes only after fresh full proof. |
 | Dependencies | Package scheduling rules and live hard prerequisites are compatible with the requested endpoint. |
 | Existing owners | No competing coordinator, heartbeat, pending creation, child or Task for a selected `repository + Issue`; exact resume bindings are recovered instead. |
 | Gates | Accepted validation, normal closeout and explicit completion overrides are concrete. |
-| Effects/endpoint | Exact prospective app and Git/GitHub effects fit the current human endpoint and delegation. |
+| Effects/endpoint | Exact prospective app and Git/GitHub effects, including any environment provisioning, fit the current human endpoint and delegation. |
+| Environment | Current supported creation/UI capabilities, permissions, actual trust and necessary setup are known per repository. Missing conditions use Environment Readiness below; directory creation alone does not pass. |
 
 Inspect actual context behind a title or preview before asserting duplicate
 ownership. A different graph/order can still overlap; an unrelated active Task
@@ -173,14 +180,81 @@ affected gate freshness. Reconcile through original repository owners.
 The AI reviews scope, completeness, dependencies, isolation, tool capability,
 current human boundary and truthful evidence before entering live execution.
 For `dry-run`, return its one ready/blocked exit and stop. Auto/live enter
-execution only when ready and covered; an intermediate preflight is not a
-second final exit.
+execution only for covered ready nodes. A repository-local environment gap uses
+the selected package’s failure rules; a whole-run gap holds all dependent work.
+An intermediate preflight is not a second final exit.
+
+## Environment Readiness
+
+Inspect the current native tool schemas and supported App UI before declaring
+that a missing environment can or cannot be created. Check the target repository,
+local checkout/remote, saved project and primary folder, permissions, selected
+base/source, app trust requirements and actual execution prerequisites. Do not
+infer capability from an old tool list or treat a cloud/LaTeX project operation
+or a projectless chat as local repository-project registration.
+
+Dry-run only reports these facts, supported actions and remaining conditions.
+It creates no checkout, project, setup, child or heartbeat. In live execution,
+show exact repositories, paths, project changes, source/base and necessary
+setup effects. Consume the current action boundary; when it already covers
+these effects, do not ask again. Otherwise obtain only the missing action choice.
+
+When a supported entry and permissions exist, establish the missing prerequisite
+through that entry. A checkout may be cloned from its verified remote into a
+nonexistent intended path; never overwrite existing local work. Register or edit
+a local App project only through its actual supported tool or UI. Afterwards,
+reread the saved project and its primary folder, Git remote, selected local/
+tracking/live base and checkout suitability. Correct repository binding is a
+separate condition from creation success. Preserve existing project folders,
+settings and unrelated work.
+
+App trust is a user review boundary. If the App requires project, prompt or
+hooks trust, tell the user the exact target and displayed review action and
+hold this environment until the user completes it. Never edit private App
+state or trust configuration, or click a trust confirmation for the user.
+A successfully created directory/project does not establish trust. Use actual
+App evidence or the user’s completed review; do not invent a trust API or require
+an unavailable status field when the supported UI is the source of that fact.
+
+Setup serves actual missing execution prerequisites, such as required dependencies
+or untracked runtime files in new worktrees. Inspect existing local-environment
+settings and target-repository instructions first. Configure only what those
+facts require, through a supported entry and its ordinary action boundary.
+Do not require new hooks/scripts or an environment file for every repository.
+
+If no supported creation entry or permission is available, name the exact
+repository, missing prerequisite and responsible party. Give concrete current
+user steps: obtain its checkout when absent; add/edit that local project in
+Codex; verify the repository folder is primary; review any App-displayed trust
+request; and use local-environment setup settings only for actual prerequisites.
+Adapt these steps to the current UI/tool help or official Projects and Local
+environments documentation rather than inventing buttons. State what to reread
+before resume. An unsupported generic project-registration API is a present
+capability gap, not a permanent prohibition on supported UI creation.
+
+Retain this environment block with its affected nodes and descendants in the
+same conversation. DAG `continue_independent` may progress other ready nodes;
+`stop_dispatch` stops new admissions. Sequence holds its current position.
+Observe admitted children to safe boundaries; do not discard their owners.
+When no permitted work remains, use normal terminal-block settlement, including
+heartbeat stop, with the exact missing condition. Once the condition changes,
+reread project/primary remote/base/trust and affected dependencies, then resume
+the same run and existing children. Unadmitted nodes receive their first child;
+environment recovery never creates replacement owners or reapplies initial
+clean/equal checks to already active worktrees.
+
+Official documentation locators: [Projects](https://learn.chatgpt.com/docs/projects)
+(primary folder controls Git/worktree operations) and
+[Local environments](https://learn.chatgpt.com/docs/environments/local-environment)
+(setup for new worktrees). Read the current applicable documentation when the
+actual capability or UI requires clarification; these links do not prove runtime
+availability.
 
 ## Native Children And Async Ownership
 
 Use current native Codex tools. Separate user-visible Issue chats are intended
 execution carriers, rather than in-turn implementation subagents. Resolve the
-saved project afresh. Create each child with `target.type=project`, its actual
+node’s saved project and primary repository afresh. Create each child with `target.type=project`, its actual
 `projectId`, and `environment.type=worktree`. Start from the selected base
 unless the human explicitly requested a separate starting state. The original
 repository owners must verify that such a state fits the selected target and
@@ -221,7 +295,7 @@ Issue: #<number>
 Selected base: <remote>/<branch> (PR and completion target)
 Starting state: <actual source, only if separately specified>
 Coordinator: <current formal chat identity>
-Position/prerequisites: <only this child's sequence position or prerequisite refs>
+Position/prerequisites: <only this child's sequence position or repository-qualified prerequisite refs>
 Completion overrides: <only this Issue's additional accepted gates>
 Current execution segment: <work to do, then where to stop and report>
 
@@ -270,7 +344,8 @@ bounded native waits may use their supported event-wait behavior and cursors;
 do not replace the two-minute heartbeat with a two-second polling loop.
 
 The heartbeat prompt identifies the managed Skill/provider, normalized Issue
-selection/dependencies, project, selected base, concurrency/resources, selected
+selection/dependencies and the per-repository project/primary/base bindings,
+concurrency/resources, selected
 model settings,
 failure policy and accepted completion gates. It contains no selected endpoint
 or authorization record. Include this supervision instruction:
@@ -295,6 +370,8 @@ and advancement rules. Stay quiet after verifying unchanged working progress
 or a still-valid handled wait. Stop the heartbeat only after verified settlement.
 ```
 
+Qualify each node, pending reservation, child/host/cursor, Task/Delivery and PR
+with its repository. Never recover cross-repository owners by bare Issue number.
 Keep bindings, pending operations, cursors, consumed events and the integration
 owner in conversation context. App-owned configuration carries only minimum
 replayable run inputs. No new persistent coordination or authorization store.
@@ -417,7 +494,7 @@ their concrete blocker. Other admitted DAG children still receive observation.
 
 Choose one integration owner among ready children in package order. First
 recover whether merge is inside this run's current human delegation. Then
-freshly read the exact repository/PR, target branch, current head and reviewed
+freshly read that node’s exact repository/PR, target branch, current head and reviewed
 candidate; current selected-base head, mergeability and merge policy; required
 checks/reviews at that candidate with no unresolved required finding; truthful
 PR title/body, closure intent, validation and deployment/release claims; and
@@ -436,8 +513,9 @@ through the waiting child's normal owners. Keep one integration owner until
 its live result and immediately required shared-base closeout have known
 dispositions. Do not send a second merge while that transaction is unresolved.
 Recover original transaction and GitHub state after lost results; do not repeat
-remote mutation on an uncertain response. Then re-read the base for the next
-owner. A supported auto-merge/queue still needs its current original gates.
+remote mutation on an uncertain response. Then re-read the next owner’s own repository/base. A merge in a different
+repository does not advance or prove this node’s base; refresh only actually
+affected shared prerequisites and gates. A supported auto-merge/queue still needs its current original gates.
 An Issue's release/Task closeout may remain pending after its integration turn
 ends; package execution-slot rules remain separate.
 
@@ -471,6 +549,9 @@ Full Issue completion requires fresh proof of every applicable item:
    nonblocking disposition. Never clean another node's resources incidentally.
 7. Every accepted per-Issue completion override passes.
 
+Bind each proof to the node’s canonical repository/Issue, exact Task/Delivery,
+PR and selected base. A same-number Issue or successful merge in another
+repository is no evidence for this node.
 Use live GitHub and remote Git reads. During dry-run, use read-only compare or
 commit APIs if local objects cannot prove ancestry without fetch; report an
 actual proof gap if neither source suffices. Authorized execution may synchronize
