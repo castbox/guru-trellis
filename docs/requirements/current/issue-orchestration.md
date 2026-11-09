@@ -1,6 +1,6 @@
 # 跨 Issue 协调责任与主动解阻
 
-Identity：RDT-REQ-ISSUE-ORCHESTRATION；别名：R731、DAG、Sequence、整体完成、主动解阻。原语义 owner：guru-maintain-requirements-design-test-ssot。适用来源：https://github.com/castbox/guru-trellis/issues/731；定义晋升来源为 docs/requirements-design-test-contributions/731-coordinator-completion。目标位置：docs/requirements/current/issue-orchestration.md。Version：issue-orchestration-1；Status：current。原 RDT owner 在 final_integration 从上述隔离贡献晋升本完整定义。知识状态不证明软件安装、运行或整体任务完成。
+Identity：RDT-REQ-ISSUE-ORCHESTRATION；别名：R731、DAG、Sequence、整体完成、主动解阻。原语义 owner：guru-maintain-requirements-design-test-ssot。适用来源：https://github.com/castbox/guru-trellis/issues/731；定义晋升来源为 docs/requirements-design-test-contributions/731-coordinator-completion。目标位置：docs/requirements/current/issue-orchestration.md。Version：issue-orchestration-761；Status：current。原 RDT owner 在本 Delivery candidate Check 后的 final_integration 晋升本完整定义，保留 #731 有效条件并承接 #761。知识状态不证明软件安装、运行或整体任务完成。
 
 关系：RDT-DES-ISSUE-ORCHESTRATION（docs/design/current/issue-orchestration.md）；RDT-TST-ISSUE-ORCHESTRATION（docs/test/current/issue-orchestration.md）。完整运行合同为 canonical trellis/presets/guru-team/spec/workflow/issue-orchestration.md，调度分别归两 package 的 DAG/chain contract。
 
@@ -34,4 +34,28 @@ DAG 只暂停真正依赖障碍的工作，按原 failure policy 继续合法独
 
 实施前刷新采用历史的入口、provider、版本、终点、原约束及首失当处置；提供可移植去敏说明，不能只给本机聊天链接。确证缺陷保留首失当/修复后对照；不复现或历史缺项时诚实说明。源码/package、实际受管投影和真实 Agent 行为分别报告；关键词、parity或案例存在不替行为，无法运行记未验证。
 
-保留显式调用、Codex-only/instruction-only、原调度/身份/资源/单集成 owner/gate/确认/public exits。按原安装 owner 同步并核定向回归、reapply/drift、mode/sidecar，报告实际平台与mode边界。普通本项不承担完整Release/Upgrade矩阵，不接管原业务会话、操作生产或发布版本，不新增脚本调度器、授权记录、持久协调台账或固定审批链。
+保留显式调用、Codex-only/instruction-only、原调度/身份/资源/各仓单集成 owner/gate/确认/public exits。按原安装 owner 同步并核定向回归、reapply/drift、mode/sidecar，报告实际平台与mode边界。普通本项不承担完整Release/Upgrade矩阵，不接管原业务会话、操作生产或发布版本，不新增脚本调度器、授权记录、持久协调台账或固定审批链。
+
+## R761-01 / BEH761-IDENTITY：跨仓图与单仓兼容
+
+DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、排它资源及完成覆盖引用使用相同身份。不同仓同号为不同节点。发起仓、Skill provider 与业务仓可不同，不能由当前目录推定节点归属。显式跨仓集合与动议正式绑定集合进入同一规范图。原单仓 repository/project_path/base_branch 及整数节点是该图的简写，保留原可调用性，不另建调度路径。
+
+## R761-02 / BEH761-MEMBERS：动议职责
+
+选择动议时读取当前正式成员绑定与各 Issue 的职责及验收。信息链接不自动入图，仓名不决定职责或依赖。产品需求初始就绪与产品总控最终验收是不同条件；工程依赖已就绪需求，不因此依赖最终验收节点。最终总控可依赖工程完整完成；真实来源冲突回原 authority，不人为制造或消除环。
+
+## R761-03 / BEH761-BINDING：各仓执行与完成核证
+
+每仓独立解析 Codex 已保存项目、正确 primary repository、remote、可用 checkout 与适用 base；每节点创建及恢复使用所属仓绑定。各仓执行自己的 workflow 和操作边界。心跳、pending、child、host、Task/Delivery、PR、merge ancestry、来源 Issue 和整体完成证明均保持同一仓库与 base，禁止按裸编号串仓。全局并行槽位、每仓单 integration owner、资源排它与 failure policy 保持；硬前驱完整完成后才释放边。Sequence 仍是原单仓严格串行入口。
+
+## R761-04 / BEH761-ENVIRONMENT：建立、信任与恢复
+
+环境缺口先调查当轮受支持的原生工具或 UI 与权限。live/auto 中有支持入口且权限足够时，按原动作边界建立并回读项目、primary repo、remote/base 与执行前置；dry-run 只读，不创建环境或会话。无入口或权限时给出具体 repo、缺失条件、用户建立 checkout/项目的操作及复查条件。应用要求项目或 prompt/hooks 信任时由用户审阅完成；环境创建不代表信任完成，不能改私有 app/trust 状态或代点信任。仅在真实运行前置需要时配置 setup，复用已有设置，不要求每仓新增脚本/hooks。
+
+缺口仅暂停受影响节点与后继，独立工作按原 failure policy 继续。条件补齐后重新核项目/primary/remote/base/trust，恢复同 run 与原 child；尚未 admission 的节点首次启动，已有 child 不重复创建。全局工具/authority 障碍按真实影响收口，沿 R731 的解阻、等待和终点方法执行。
+
+## 本次变更来源与适用边界
+
+新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。本完整定义已由原语义 owner 在本 Delivery candidate Check 后的 final_integration 整合并回读；软件验证与 Task 完成仍以原阶段结果和 Git/PR 事实为准。
+
+各仓 integration owner 负责本仓选定 base 的原 merge 事务与未知结果恢复；同仓不同时发送第二个未知合并，紧邻必要 shared-base closeout 保持。不同仓没有硬前驱或实际共享资源约束时，A 合并结果待定不能阻止 B 按自身 fresh gate 与原 owner 推进；global 执行槽位仍统一。仓库身份不是绕过真实共享资源约束的理由。

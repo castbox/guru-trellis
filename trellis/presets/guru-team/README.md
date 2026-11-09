@@ -8,7 +8,8 @@ Codex 的 Guru Skill 使用共享 `.agents/skills/`；新安装/reapply 不再�
 
 跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
 `guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
-分别处理依赖图与严格串行列表，默认协调器 heartbeat 为 2 分钟。
+DAG 可处理跨仓显式或动议正式绑定依赖图；Sequence 保持单仓严格串行。
+DAG 按仓核项目、基线及环境，保留旧单仓简写。默认协调器 heartbeat 为 2 分钟。
 始终以完成 Issue 为目标；显式基线用于启动、PR 和完成证明，无关分支不要求同步。
 入口边界、同源规范、个人副本迁移及验证范围见
 [Issue 编排迁移说明](./MIGRATION-ISSUE-ORCHESTRATION.md)。

@@ -1,0 +1,265 @@
+{
+  "schema_version": "2.0",
+  "id": "761-cross-repo-issue-dag",
+  "name": "761-cross-repo-issue-dag",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 761,
+    "disposition": "exact_source"
+  },
+  "title": "支持从任意仓库发起跨仓 Issue DAG 编排",
+  "description": "完成 Issue #761 的跨仓 DAG 身份、调度、环境就绪与单仓兼容",
+  "dev_type": null,
+  "scope": "https://github.com/castbox/guru-trellis/issues/761",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-09",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/prd.md",
+    "revision": "sha256:52097a2ff17bf73768b3230ea60aa4aba15da7a938c6f120d3f6c7849403b4a9"
+  },
+  "deliveries": [
+    {
+      "id": "70b41975-465d-447f-adf8-a19f81a87792",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/prd.md",
+          "revision": "sha256:52097a2ff17bf73768b3230ea60aa4aba15da7a938c6f120d3f6c7849403b4a9"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/70b41975-465d-447f-adf8-a19f81a87792",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/design.md",
+        "revision": "sha256:7d1f5f2c76b45e2e0ef42f9dbac4899ba6d3539b38c3de1a2db011b572e806a8"
+      },
+      "candidate": {
+        "base_ref": "8c158381b5bdb61fd961cbb89e23c2d1f659c9aa",
+        "content_ref": "sha256:ec9d8501881dcd007c26e1afab645c02877f6023be030b7cf79182af060f1baf",
+        "head_ref": "48da020c5969b67de56b09d65aa7776843c8c741",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-author-task-plan/references/authoring.md",
+          ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-dag/interface.json",
+          ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".agents/skills/guru-qualify-root-cause/references/contract.md",
+          ".claude/skills/guru-author-task-plan/references/authoring.md",
+          ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".claude/skills/guru-qualify-root-cause/references/contract.md",
+          ".cursor/skills/guru-author-task-plan/references/authoring.md",
+          ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".cursor/skills/guru-qualify-root-cause/references/contract.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/interface.json",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".trellis/guru-team/skills/packages/guru-qualify-root-cause/references/contract.md",
+          ".trellis/spec/workflow/issue-orchestration.md",
+          "README.md",
+          "docs/design/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/design.md",
+          "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/manifest.yaml",
+          "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/requirements.md",
+          "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/test.md",
+          "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/traceability.md",
+          "docs/requirements/current/issue-orchestration.md",
+          "docs/test/current/issue-orchestration.md",
+          "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/interface.json",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native_cross_repo.py",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_orchestration.py",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          "trellis/workflows/guru-team/README.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:eca2bfe1-a72f-4c3d-b26f-0046afd56afb",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/prd.md",
+              "revision": "sha256:52097a2ff17bf73768b3230ea60aa4aba15da7a938c6f120d3f6c7849403b4a9"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/design.md",
+            "revision": "sha256:7d1f5f2c76b45e2e0ef42f9dbac4899ba6d3539b38c3de1a2db011b572e806a8"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/prd.md",
+              "revision": "sha256:103df38f4bc0064568a7a9ee3358d29a790b77bcc2d494302280655ec7318e1d"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/design.md",
+              "revision": "sha256:7d1f5f2c76b45e2e0ef42f9dbac4899ba6d3539b38c3de1a2db011b572e806a8"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/implement.md",
+              "revision": "sha256:09e763099932ea27b35d2a5bea8edca8ed0775b691d65cb07ccb8e9840ac743f"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:1dddba2fce50b1baf44e9d8bd1702944e71be6e785ec93eef6105620b950ef14",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/prd.md",
+              "revision": "sha256:52097a2ff17bf73768b3230ea60aa4aba15da7a938c6f120d3f6c7849403b4a9"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/design.md",
+            "revision": "sha256:7d1f5f2c76b45e2e0ef42f9dbac4899ba6d3539b38c3de1a2db011b572e806a8"
+          },
+          "candidate": {
+            "base_ref": "8c158381b5bdb61fd961cbb89e23c2d1f659c9aa",
+            "content_ref": "sha256:ec9d8501881dcd007c26e1afab645c02877f6023be030b7cf79182af060f1baf",
+            "head_ref": "48da020c5969b67de56b09d65aa7776843c8c741",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/references/authoring.md",
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/interface.json",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/examples.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-qualify-root-cause/references/contract.md",
+              ".claude/skills/guru-author-task-plan/references/authoring.md",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-qualify-root-cause/references/contract.md",
+              ".cursor/skills/guru-author-task-plan/references/authoring.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-qualify-root-cause/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/interface.json",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-qualify-root-cause/references/contract.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "README.md",
+              "docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/design.md",
+              "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/manifest.yaml",
+              "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/requirements.md",
+              "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/test.md",
+              "docs/requirements-design-test-contributions/761-cross-repo-issue-dag/traceability.md",
+              "docs/requirements/current/issue-orchestration.md",
+              "docs/test/current/issue-orchestration.md",
+              "trellis/presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/interface.json",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native_cross_repo.py",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_orchestration.py",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:eca2bfe1-a72f-4c3d-b26f-0046afd56afb",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/prd.md",
+              "revision": "sha256:103df38f4bc0064568a7a9ee3358d29a790b77bcc2d494302280655ec7318e1d"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/design.md",
+              "revision": "sha256:7d1f5f2c76b45e2e0ef42f9dbac4899ba6d3539b38c3de1a2db011b572e806a8"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-761-cross-repo-issue-dag/deliveries/70b41975-465d-447f-adf8-a19f81a87792/implement.md",
+              "revision": "sha256:09e763099932ea27b35d2a5bea8edca8ed0775b691d65cb07ccb8e9840ac743f"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
