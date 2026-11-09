@@ -612,6 +612,50 @@ whole-task authority and the affected Delivery plan when present. Return the
 original source_selection/revision_refs and scope_action (revised, no_change
 or withdrawal_required) to Author task_scope_requirements. This pre-Author
 judgment does not accept_scope or write PRD.
+
+When new requirements affect an existing Delivery, decide their allocation
+before adding implementation or acceptance work to that slice. Read the
+complete introduced source and compare it with the already accepted
+requirements, behavior and acceptance contract. Distinguish a correction of
+an original defect or omission, a requirement replacing old behavior, and an
+independent added capability. An instruction to continue the same Task does
+not require the same Delivery; preserve an explicit choice to deliver together
+in the current batch.
+
+Explain what the current candidate still lacks, how the new requirement
+depends on it, and whether postponement preserves a lawful independently
+deliverable slice. Apply these conditions through the existing owners:
+
+- Original-contract repairs, inseparable dependencies and requirements that
+  must replace behavior immediately follow same-slice rework and the affected
+  planning reviews.
+- An independently postponable capability whose source permits staged delivery
+  stays in the same Task's remaining responsibility. Author refreshes only the
+  current slice's necessary sources, boundaries, dependencies and Policy; the
+  added implementation and acceptance do not automatically enter that slice.
+  When successor implementation is needed, original Creation establishes the
+  next Delivery without creating a second current execution selection.
+- If the new requirement makes the old slice invalid, its current stage owner
+  performs legal rework or withdrawal/replanning. Old behavior that is no
+  longer accepted cannot be published under the old contract.
+
+Ask only for a real business-scope or delivery-timing choice under Interaction
+Budget; consume an existing concrete delegation within its actual scope. Do
+not add a fixed question or approval round. If content is already mixed,
+judge its actual separability before selecting the route. Preserve the
+complete fixed B..HEAD and dirty content under the existing Candidate/base
+and Review contracts; a new Delivery identity, fewer selected paths or an
+undelivered commit presented as a delivered predecessor cannot narrow them.
+
+Clarify owns this allocation judgment. The current stage owner executes its
+legal rework/stop, Author writes the actual slice boundary and unique Policy,
+and Creation owns successor creation. Approval and Delivery Review retain
+their independent-delivery judgments; the workflow only routes existing exits.
+Carry the result through the existing source_selection/revision_refs,
+scope_action, scope_ref and planning bodies without adding an allocation field,
+ledger or review step. Whole-Task acceptance still follows the Author and
+Clarify publication sequence below before affected-stage execution.
+
 Partial revision returns to the same Delivery's earliest affected owner after
 post-Author scope acceptance. Whole withdrawal returns to its current stage
 owner for legal public stop and automatic selection release: task_scope must
