@@ -1,5 +1,0 @@
-{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "生成和审核文本的唯一写作规范"}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "本项定向验证及测试价值"}
-{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与已发布输入兼容"}
-{"file": ".trellis/tasks/11-09-760-worktree-config-path/deliveries/0c1737fc-2d2e-426e-9edc-ecae8c6ca923/design.md", "reason": "本批唯一方案与迁移边界"}
-{"file": ".trellis/tasks/11-09-760-worktree-config-path/deliveries/0c1737fc-2d2e-426e-9edc-ecae8c6ca923/implement.md", "reason": "本批验证和Docs晋升计划"}
