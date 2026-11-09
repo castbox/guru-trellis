@@ -87,3 +87,7 @@ AI绝对值不反推用户选址。primary写入路径仍退役；既有其它�
 旧安装使用matching版本；新能力经原tools-only owner更新完整投影，保留配置/Task/session/peer，
 按原冲突与sidecar处理并验drift，不手抄dogfood。RDT与Architecture依原候选Check和
 final_integration晋升；原最终Check/Review独立审实际after。完整Release矩阵仍归专门owner。
+
+## D769 / 原事务、原资产与修复执行器
+
+承接R769-01—03。原upgrade-tools保持原观测键逐项同值，新增peer核物理隔离而不刷新基线。新recover_frozen_source输入仅profile/action/recovery_ref；完整修复源执行当前engine，cp.source完整原源加载原installation helper/installer和资产，保原身份及owned freshness。既有同源profiles保持原义。preset是pending续接，complete只验证；原公共operation恢复不reprepare。rollback先公共compatibility再原Guru preimages。frozen_recovery_required保同profile/action/ref回原owner，原成功/blocked语义保持。公开细节及schema由package/MIGRATION-769拥有；真实旧schema1.0消费者含#766，终态和原保留责任结束后明确迁移退出，无数据转换或第二台账。Architecture由ADR-TOOLS-FROZEN-SOURCE-RECOVERY与ARCH-RUNTIME-LOCATION约束。

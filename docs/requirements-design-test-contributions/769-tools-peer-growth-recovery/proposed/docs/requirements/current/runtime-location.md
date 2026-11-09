@@ -1,0 +1,59 @@
+# Runtime、位置与明确Git基线
+
+导航别名：`R718/D718/T718`；`R760/D760/T760`；`worktree配置路径`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。`R718/D718/T718` 与 `runtime与Git来源` 别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
+Identity：`RDT-REQ-RUNTIME-LOCATION`；状态：current。来源为[Issue #718](https://github.com/castbox/guru-trellis/issues/718)的完整行为与验收，适用前驱为Git `610a810d45bb30173906d55c77709389adf1cf31`。本单元只拥有本能力；设计由[对应Design](../../design/current/runtime-location.md)单写，验证由[对应Test](../../test/current/runtime-location.md)单写。知识定义与实际安装/交付/Release结果分别成立。
+
+本单元 RDT 定义修订：`worktree-config-path-760`。原 owner 在 #760 D1 candidate Check 后，
+以本Task固定来源与真实 current 重读整合并写回；该标识不表示软件版本或最终 Git HEAD。
+
+## 概念与适用边界
+
+worktree承载文件和执行位置，branch承载Git历史，Task承载accepted scope/Delivery/生命周期，Python环境提供解释器与锁定依赖。创建者、路径、分支名或环境能启动均不能建立Task/阶段资格。工具代码来自实际采用的安装/检出版本；source-loaded维护的来源、共享环境与目标分别验证。
+
+## 当前行为
+
+| Identity / Behavior | 完整行为与条件 |
+| --- | --- |
+| R718-01 / BEH718-DISCOVER | canonical/installed/platform公开入口依据实际assets的manifest、lock、runtime API/layout和平台/解释器类别发现并验证共享环境。自动local/gitdir/common指针缺失或失效不能单独阻塞已有兼容cache；启动不要求Task、特定分支或Guru创建的位置。各操作仍核自己的身份和权限。 |
+| R718-02 / BEH718-IDENTITY | 同OS用户和平台，相同有效需求复用同物理环境；依赖/API/layout、implementation/major/minor、OS/architecture/ABI变化选择对应identity并允许并存。patch和可执行文件路径不进入identity；不按HEAD、Task、worktree数量建venv。不同解释器兼容类别不是同一有效需求。 |
+| R718-03 / BEH718-CODE | 正常目标入口执行其实际assets代码；环境只供运行能力。不能借其他checkout新版代码证明目标安装成功。维护从明确完整matching来源启动，不依赖坏目标dispatcher，完成后调用目标自身入口。 |
+| R718-04 / BEH718-SELECTION | 真实显式选择优先，类别不兼容或不可用时准确拒绝并指向恢复，不能静默换类别。无显式选择时使用公开稳定规则复用兼容cache；有效选择不因新增cache、PATH或无关分支变化而改变。初始化/apply/reapply未传解释器使用当时PATH python3；显式--python优先且失效不回退。日常不随PATH重建、不用global site-packages。 |
+| R718-05 / BEH718-RECOVERY | 缺cache、损坏、旧自动hint失效及依赖失配须有独立公开check/resolve/repair和准确诊断。维护需要真实CPython3/锁来源时报告具体缺口；不以Task迁移或完整工具重装为前置。日常不安装，维护失败保留旧可用环境和合法选择。 |
+| R718-06 / BEH718-LIFECYCLE | worktree/branch/Task创建、采用、切换、结束和位置删除不直接创建、迁移或删除共享环境。依赖需求变化才重新解析，确实缺环境时经独立维护构建。cache清理保留原独立边界，无GC或资源调度。 |
+| R718-07 / BEH718-BASELINE | 只读基线明确repo/ref/固定commit，Git对象可读时不要求分支检出或其checkout干净。刷新时明确远端ref、采用提交和适用性。未提交/未跟踪内容单独作为候选；不得冒充已提交或已发布authority。 |
+| R718-08 / BEH718-OPERATION | 基线读取、候选审核、实际Sync和发布各用自身前置。真实同步仍核目标checkout、dirty、可ff历史和identity。正式Branch Review要求已提交范围，发布要求真实远端候选，Task阶段要求保留原义；只读成功不制造任何正式gate。 |
+| R718-09 / BEH718-DRAFT | 外部或已有worktree、无Task和正常草案组合可经实际公开入口读审。结果准确绑定来源与候选，普通变化刷新受影响结果；不能为入口资格要求草案先commit/push或隐式移动其他checkout分支。通用Issue创建仍核目标、最终正文、重复判断、当前审核和真实副作用。 |
+| R718-10 / BEH718-CONSUMER | 错选基线提供准确诊断和原入口纠正，不因此取消所有门禁。Sync/Discovery至实际创建consumer成套承接相同来源语义，失败不能只移动到下一步。 |
+| R718-11 / BEH718-MIGRATION | 现行指针、公开I/O、维护与rollback给出适用版本、原owner、切换和退出条件。单checkout工具更新不写peer工具/Task/session/用户配置/显式状态，增加cache不改变peer合法实际选择。旧格式来源未知时保留有效兼容选择、公开处理失效hint，不编造历史用户意图；真实显式类别可通过公开入口重表达。 |
+
+## 验收与责任
+
+A1—A8分别观察任意位置启动/物理复用、独立生命周期、稳定显式/默认及版本并存、真实只读consumer终点、必要拒绝/纠正、独立恢复、单目标维护/回滚/旧格式迁移、canonical/dogfood/installed/平台投影与reapply/drift/sidecar。真实正常before/after、正确正向结果及必要拒绝均由本仓准备，行为等价场景共享证据。Markdown路由变化须有代表性实际Agent行为；确定性链路不能冒充该观察。
+
+本项完整性由本仓实现/文档/隔离验收自闭环，不要求业务仓重跑或发布产品Issue。完整多平台Release矩阵、业务采用、Unity pool、共享文档竞争、legacy归档和telemetry保持各自范围。honest正常模型、敏感数据保护和副作用权限保持；不引入恶意伪造/TOCTOU/锁/压力/crash加固。
+
+## 前驱与替代范围
+
+保留#219的隔离Python/真实wrapper、#231共享identity、#556解释器及失败保护、#566单目标维护/rollback。仅替代旧pointer作为启动必要前置以及只读来源继承Sync checkout/clean/三方相等的组合要求。#566其他Task维护和公共模型义务不迁移；其完整历史与仍适用合同仍由原来源拥有。本单元不宣称整个RDT旧语料已迁移。
+
+## 新建 worktree 的项目配置合同
+
+来源：[Issue #760](https://github.com/castbox/guru-trellis/issues/760)完整行为及验收；
+本次适用前驱为 Git `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 的本完整单元。
+以下行为已纳入本单元定义；实际实现、安装与验证状态由对应 Test 观察限定。
+
+| Identity / Behavior | 完整行为与条件 |
+| --- | --- |
+| R760-01 / BEH760-ROOT | 新建配置生成位置以同一 Git common-dir 下 live topology 确证的 primary 为锚点，读取其 `.trellis/guru-team/config.yml`。空 root 为 primary.parent / (primary.name + '-worktrees')，相对 root 对 primary 解析，绝对 root 直接使用。同项目配置从 primary/linked/detached 调用结果一致；不能猜 common-dir.parent、调用 cwd.parent 或盲信 porcelain 首行。锚点、配置来源或位置真实冲突准确诊断，不覆盖各 checkout 配置。 |
+| R760-02 / BEH760-CONSUME | AI 先读 topology/config，再判断新建或采用、命名和精确副作用。环境查询、计划、创建及直接后继消费同一解析事实。正式 Task 由原 acquisition/checker/binding创建；task-free 用普通 Git，创建后读回目录、注册和 linked/non-base 适用性，不创建 TaskId/binding/session/task.json/位置台账。 |
+| R760-03 / BEH760-PRECHECK | 配置生成计划与 root/name 解析不符，在首次 branch/worktree/Task 创建副作用前诊断；原 owner 修正计划并重入，不能静默换位置。环境公开预检必须有两个新建入口的真实 consumer，脚本不决定策略或记录授权。 |
+| R760-04 / BEH760-LOCATION | 配置生成、调用方真实显式新位置、已有采用/原 Task 恢复分别处理。生成 root 不是 allowlist；真实显式 root 外位置、合法外部 checkout 采用继续合法。AI 自填绝对路径不构成显式意图。恢复按原绑定找原位置，配置变化不重定位或改变 TaskId/generation/Delivery/session/资源归属。 |
+| R760-05 / BEH760-MIGRATION | 公开输入加性支持策略，保留已发布省略字段的原绝对 checkout_root 调用；当前 AI 生成计划明确 configured。原 owner 说明实际旧consumer、切换与退出，完整 matching tools更新并核投影/drift/sidecar，保留用户配置与Task/session。不恢复primary写入，不改Codex清理/业务恢复/#759/暖池，不新增映射或长期路径证明。 |
+
+R760-01—05 的设计与测试关系由对应完整单元 D760/T760 单写。原 R718 行为、前驱替代范围和
+未迁移边界保持；#212仅提供历史配置承诺，不复用旧实现通过结论。
+
+## R769 / tools peer 增长与既有事务
+
+来源Issue #769；适用before为a5f3ceeabbaccddae65935d97763f5a798f71ca9。R769-01：单目标维护保原common/peer观测值，新增独立peer不因新增键误阻塞，且不进入原backup/write/delete集。R769-02：修复前schema1.0事务有明示同操作恢复；修复executor与原资产source区分，保持原root/source绑定、public pair/plan/ref、preimages和rollback anchor，不reprepare或吸收后续编辑。R769-03：原source/owned/peer真实不匹配仍阻塞，目标own resolver/installed/native独立验证；实际#766原操作恢复是本项验收，工具结果不代表Task完成。设计由D769承接，验证由T769承接。

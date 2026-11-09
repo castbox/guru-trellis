@@ -110,3 +110,19 @@ trellis/skills/guru-team/runtime` 选定受管 Python；需要 Fork 的 suite �
 定向真实Git测试可证明其入口和后继观察，不能自动证明完整真实Agent业务链或生产效果。
 不要求业务#1232重新复现、不触发Codex清理、不运行业务恢复或完整多平台安装/升级/Release。
 本单元写回不代表Task Completion、Architecture晋升或发布；这些结果分别由原owner消费。
+
+## T769 / peer增长与冻结源恢复验证
+
+承接R769-01—03 / D769。T769-01用真实Git topology和原peer_pointers入口观察新增独立peer、原值保持及peer文件不被写入；原peer合法选择变化和实际不隔离继续拒绝。T769-02用原owner正常创建的schema1.0事务执行新公共profile，观察resume/rollback阶段、preset pending/complete不重复安装、retry保持action/ref及原source/plan/preimages不变；unit外部隔离只证明该层。T769-03实际#766原操作从交付修复源恢复，核同public operation及目标own resolver/installed/native。T769-04定向package/source/installed/drift/sidecar/mode验证，不承担完整多平台矩阵。
+
+### #769 当前本地观察
+
+| 观察 | 实际结果与层次 | 边界 |
+| --- | --- | --- |
+| T769-01 / peer | 最终test_peer_growth.py 3项通过，1.590s；真实Git新增peer、原pointer变化拒绝、parent alias下缺失leaf、leaf symlink及hardlink隔离均经原检查入口 | fixture建立reader边界前的pointer状态；不声称完整环境选择或并发压力证明。 |
+| T769-02 / 冻结源 | test_frozen_recovery.py最终8项通过，12.576s；原完整Git资产源、原owner begin/checkpoint/preimages与阶段真实，覆盖pending preset、public pending、complete、resume/rollback retry及owned mismatch；真实公共wrapper拒绝普通原资产变化 | public SDK、preset writer/native在模块层隔离，不代替现场原操作成功。 |
+| T769-04 / package | 整包31项中30通过、1个opt-in native fixture跳过（24.217s）。最后等义路径解析收敛后，contract 8项（0.659s）、peer 3项、frozen 8项复验通过 | 使用固定aa898d09真实Fork CLI；末轮定向复验不能写成整包再次执行。 |
+| T769-04 / 源码 | 最终source validator通过43 active packages/128 commands；390个Guru Python内存compile、45个Bash语法及marketplace JSON通过 | 首次直接source验证未设置模块路径，未进入validator；纠正PYTHONPATH后实际通过。该设施错误不是产品缺陷。 |
+| T769-04 / 真实目标同步 | 原source-loaded guru-upgrade-tools返回tools_upgraded，版本0.7.0-guru.8；同固定public operation完成。目标自身resolver执行installed validator通过，conflicts=0、sidecars=0；native continuation退出0，公开current仍为本Task/Delivery、implementing；Task/config/AGENTS共10路径bytes与mode保持；drift退出0，shared/Claude/Codex/Cursor与canonical一致 | local_candidate的formal_fork_source_lock仍未验证。源执行与目标自身结果分别成立；本项不承担完整多平台矩阵。 |
+
+本观察截止为未提交候选、candidate Check前。实际#766原操作尚未恢复，T769-03由交付后的原tools owner与整体Completion继续核验。历史#718/#760结果保原观察，不能替代本项证据。知识晋升、最终Check/Review、Task/Delivery完成分别成立。

@@ -53,3 +53,7 @@ A1—A8分别观察任意位置启动/物理复用、独立生命周期、稳定
 
 R760-01—05 的设计与测试关系由对应完整单元 D760/T760 单写。原 R718 行为、前驱替代范围和
 未迁移边界保持；#212仅提供历史配置承诺，不复用旧实现通过结论。
+
+## R769 / tools peer 增长与既有事务
+
+来源Issue #769；适用before为a5f3ceeabbaccddae65935d97763f5a798f71ca9。R769-01：单目标维护保原common/peer观测值，新增独立peer不因新增键误阻塞，且不进入原backup/write/delete集。R769-02：修复前schema1.0事务有明示同操作恢复；修复executor与原资产source区分，保持原root/source绑定、public pair/plan/ref、preimages和rollback anchor，不reprepare或吸收后续编辑。R769-03：原source/owned/peer真实不匹配仍阻塞，目标own resolver/installed/native独立验证；实际#766原操作恢复是本项验收，工具结果不代表Task完成。设计由D769承接，验证由T769承接。
