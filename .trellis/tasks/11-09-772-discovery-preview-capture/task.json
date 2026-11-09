@@ -50,12 +50,35 @@
       },
       "planning_root": "deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2",
       "profile": "pull_request",
-      "phase": "implementing",
+      "phase": "reviewing",
       "plan_ref": {
         "locator": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/design.md",
         "revision": "sha256:10418a1a5fda63de9b53db1b359fd20daa7e29d5d4025bb9728c8a897b36b176"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "fd52fbd69a8161d037bf6d4548b04b7247b60c03",
+        "content_ref": "sha256:c8b77f7b97b97e5275e5c316a534d8ef897ffa75872ea1ee33297ec5ed78af22",
+        "head_ref": "e7d97d6bd2caa93aafcccc6558b1c92abdd79d1f",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-discover-change-context/SKILL.md",
+          ".agents/skills/guru-discover-change-context/examples/history-preview.md",
+          ".agents/skills/guru-discover-change-context/references/contract.md",
+          ".claude/skills/guru-discover-change-context/SKILL.md",
+          ".claude/skills/guru-discover-change-context/examples/history-preview.md",
+          ".claude/skills/guru-discover-change-context/references/contract.md",
+          ".cursor/skills/guru-discover-change-context/SKILL.md",
+          ".cursor/skills/guru-discover-change-context/examples/history-preview.md",
+          ".cursor/skills/guru-discover-change-context/references/contract.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/history-preview.md",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/examples/history-preview.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md"
+        ]
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:53e11a6c-838d-48e8-8982-64d6e1d34fcc",
@@ -101,7 +124,73 @@
             }
           ]
         },
-        "check": null,
+        "check": {
+          "result_id": "check:beadb3451ca5ebb83e30ea7c94e08b8bf27fe1e090d39c97b50b3932d5dfa10e",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-09-772-discovery-preview-capture/prd.md",
+              "revision": "sha256:c7b071ef5b613236109f361010285b92c23ca2db9e8978122638957775cc22f7"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/design.md",
+            "revision": "sha256:10418a1a5fda63de9b53db1b359fd20daa7e29d5d4025bb9728c8a897b36b176"
+          },
+          "candidate": {
+            "base_ref": "fd52fbd69a8161d037bf6d4548b04b7247b60c03",
+            "content_ref": "sha256:c8b77f7b97b97e5275e5c316a534d8ef897ffa75872ea1ee33297ec5ed78af22",
+            "head_ref": "e7d97d6bd2caa93aafcccc6558b1c92abdd79d1f",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-discover-change-context/SKILL.md",
+              ".agents/skills/guru-discover-change-context/examples/history-preview.md",
+              ".agents/skills/guru-discover-change-context/references/contract.md",
+              ".claude/skills/guru-discover-change-context/SKILL.md",
+              ".claude/skills/guru-discover-change-context/examples/history-preview.md",
+              ".claude/skills/guru-discover-change-context/references/contract.md",
+              ".cursor/skills/guru-discover-change-context/SKILL.md",
+              ".cursor/skills/guru-discover-change-context/examples/history-preview.md",
+              ".cursor/skills/guru-discover-change-context/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/history-preview.md",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/examples/history-preview.md",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:53e11a6c-838d-48e8-8982-64d6e1d34fcc",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/prd.md",
+              "revision": "sha256:b72e4e8104f0283ab9add7cbc6b144212473f4c74b2b2aa149f6590767af437e"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/design.md",
+              "revision": "sha256:10418a1a5fda63de9b53db1b359fd20daa7e29d5d4025bb9728c8a897b36b176"
+            },
+            {
+              "locator": ".trellis/tasks/11-09-772-discovery-preview-capture/deliveries/454554d2-356c-43b1-98cb-75ec3bc2f0b2/implement.md",
+              "revision": "sha256:7e28d16c1904a3640dfe31e28dc611dbfc766295db1dbc1d827a26a1baab7656"
+            }
+          ]
+        },
         "full_review": null,
         "readiness": null
       },
