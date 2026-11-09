@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-09T14:36:10Z",
+  "installed_at": "2026-11-09T16:40:07Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
-    "commit": "aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff",
+    "ref": "a995dcbcd221ddc98c778e88900aec1f21a3eead",
+    "commit": "a995dcbcd221ddc98c778e88900aec1f21a3eead",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -21136,7 +21136,7 @@
       {
         "path": ".trellis/guru-team/runtime/schema.py",
         "source": "trellis/skills/guru-team/runtime/schema.py",
-        "sha256": "4e262be137fb437e5745265af3a80241b6eb333d4d5bb020a97e6c71889ce0a5",
+        "sha256": "b2051ef0b2b665f6e7477f1f51cc0b505b65cdcaa208ff4774ca116576ac1b90",
         "executable": false,
         "action": "installed"
       },
