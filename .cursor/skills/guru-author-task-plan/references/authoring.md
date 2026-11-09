@@ -132,6 +132,9 @@ solution and acceptance, refreshing only dependent judgments.
 
 Converge PRD without lowering accepted scope to fit current Architecture.
 Identify interfaces, mechanisms, ordering, compatibility and semantic owners.
+Derive the direct feasible path to the supported caller's promised result before
+selecting additional coordination. For asynchronous choices, follow completion
+through the usable result; an earlier acceptance response is not completion.
 Use Adopted-mechanism review in
 `.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md`
 when forming and comparing the candidate, including reuse without an original

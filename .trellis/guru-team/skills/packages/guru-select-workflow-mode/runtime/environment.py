@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from runtime.io import CommandError
+from runtime.worktree_paths import resolve_worktree_paths
+from runtime.task_lifecycle.errors import LifecycleContractError
 
 
 EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
@@ -157,6 +159,8 @@ def _extension_payload(root: Path) -> dict[str, Any]:
 def run(argv: list[str]) -> dict[str, Any]:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
+    parser.add_argument("--worktree-name")
+    parser.add_argument("--checkout-root")
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -166,6 +170,14 @@ def run(argv: list[str]) -> dict[str, Any]:
             "Use the exact command help contract.",
         ) from exc
     root = _repo_root(Path(args.root or Path.cwd()))
+    if args.checkout_root is not None and args.worktree_name is None:
+        raise CommandError("invalid_arguments", "arguments.--checkout-root", "Supply --worktree-name when checking a configured target.")
+    try:
+        paths = resolve_worktree_paths(root)
+        target = paths.target(args.worktree_name, args.checkout_root) if args.worktree_name is not None else None
+    except LifecycleContractError as exc:
+        code = "environment_unavailable" if exc.code == "git_fact_unavailable" else exc.code
+        raise CommandError(code, exc.field_path, exc.remediation) from exc
     config = _config(root)
     repo = str(config.get("github_repo") or "").strip() or _origin_repo(root)
     base, candidates = _base(root, config)
@@ -207,9 +219,13 @@ def run(argv: list[str]) -> dict[str, Any]:
         "base_branch": base,
         "base_branch_candidates": candidates,
         "dirty": bool(_git(root, "status", "--porcelain")),
-        "worktree_root": str(config.get("worktree_root") or root.parent),
+        "worktree_root": str(paths.worktree_root),
+        "primary_root": str(paths.primary_root),
+        "worktree_config_path": str(paths.config_path),
         "existing_worktrees": _git(root, "worktree", "list", "--porcelain").splitlines(),
     }
+    if target is not None:
+        payload["checkout_root"] = str(target)
     if warnings:
         payload.update(warnings=warnings, next_steps=next_steps)
     return payload

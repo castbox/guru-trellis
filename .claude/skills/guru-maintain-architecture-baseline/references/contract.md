@@ -113,16 +113,40 @@ into a new path even when the original utility has no diff. Ordinary helpers
 and causally unrelated dependencies do not each require a review unit. No actual
 Architecture impact retains the original lightweight route.
 
-First reconstruct supported normal completion and its necessary business, data,
-permission and external constraints. After locating the design basis, independently
-judge whether the adopted choice is necessary, appropriately scoped and worth its
-total operating and maintenance cost. Establish the actual behavior it serves;
-who decides, supplies facts and maintains state; and which objects and periods it
-coordinates or rejects. Examine relevant shared writes, scans, blocking, retries,
-keys, state, dependencies and recovery prerequisites. Compare feasible removal,
-narrowing, replacement or retention and risk-matched evidence. These are focused
-reasoning questions, not a required questionnaire, fixed sequence or global
-optimization exercise. Finally check effects on legitimate normal requests.
+First reconstruct supported observable completion and its necessary business,
+data, permission and external constraints. Derive a direct feasible completion
+path before choosing coordination or recovery machinery. Compare the complete
+path to the caller's promised result; an earlier acceptance response alone does
+not establish lower completion latency.
+
+Additional shared writes, serialization, waiting stages and independently
+maintained state are inadmissible by default unless the current assessment
+establishes why a simpler path cannot satisfy an accepted requirement. This
+applies to new, modified, extended and reused choices. Purpose, generic safety
+claims, existing technical rules and tests asserting a mechanism do not establish
+admission. Do not classify necessity from mechanism names.
+
+The author first attempts removal, narrower consistency scope, existing atomic
+capabilities or a more direct responsibility boundary. The independent reviewer
+actively attempts simpler alternatives and judges their feasibility instead of
+only checking the author's argument for consistency. When the original choice
+is already minimal or no simpler alternative is feasible, explain the actual
+constraints; do not invent a feasible replacement to satisfy the review.
+
+After locating the design basis, judge correctness and completion cost together.
+Establish the actual behavior served; who decides, supplies facts and maintains
+state; and which objects and periods the mechanism coordinates or rejects.
+Examine added I/O, shared write contention, sequential dependencies, queue
+waiting and recovery prerequisites across affected users, resources and process
+instances. Retain necessary constraints at their minimum justified scope and
+cost. Reject avoidable coordination cost on supported normal requests even when
+functional assertions pass. Fewer lines or a faster acceptance response cannot
+justify moving that cost to another stage or owner.
+
+Compare removal, narrowing, replacement or retention using risk-matched evidence.
+These are focused reasoning questions, not a required questionnaire, a new
+approval stage, a global optimization exercise or a performance benchmark for
+every helper. Finally check effects on legitimate normal requests.
 
 Use applicable complete RDT and Architecture units under the shared
 current-knowledge contract. Sufficient documentation can establish capability,
@@ -152,12 +176,17 @@ For new or strengthened protection, consume the original
 an author, reviewer or template, bears the evidence burden. A missing technical
 measure alone does not create a finding or validation obligation. Necessary
 confidentiality or permission protection does not require a prior incident.
+Protection eligibility alone does not approve the Architecture choice; apply
+the simpler-path and completion-cost judgment above.
 When a new protection lacks basis, obtain evidence, revise or withdraw it before
 making it mandatory. When an existing protection lacks basis, do not delete it
 or treat missing evidence as successful reuse. Limit only the adoption or
 promotion conclusion that depends on that basis; unrelated work continues.
 Established necessity, disproved necessity or scope, and insufficient evidence
 must remain distinct conclusions under the existing revision owners and routes.
+An established defect requires bounded correction and necessary consumer
+adaptation through those owners. An evidence gap requires bounded investigation,
+not expansion of the mechanism or an unsupported deletion.
 
 ## Public and owner boundary
 

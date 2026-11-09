@@ -29,6 +29,46 @@ No authorization or unavailable location means no dependent write. Use explicit
 isolated cwd for commands and absolute isolated paths for file tools, output
 and artifacts. Read-only work does not acquire resources.
 
+Before generating a new location, distinguish adoption/continuation from new
+creation. Review suitable existing checkouts under the rules above without
+requiring them to be under the generated root. Continuation retains its actual
+suitable checkout; a configuration change does not relocate it.
+
+For AI-generated creation, read live topology and the confirmed primary
+repository's `.trellis/guru-team/config.yml`. Confirm primary through actual
+toplevel, gitdir and common-dir facts, not just the porcelain first row or
+common-dir parent. Empty `worktree_root` means
+`<primary-parent>/<primary-name>-worktrees`; a relative value resolves from
+primary; an absolute value is used directly. Primary, linked and detached
+invocations of the same project configuration use that same root. A nonempty
+invocation root that resolves differently from the primary configuration is a
+configuration conflict. Follow the diagnostic and correct the source or plan;
+never overwrite checkout configurations or guess a different anchor.
+
+Choose one directory name in this owner's semantic review, then call the
+existing public environment query from the shared installation:
+
+```sh
+bash .trellis/guru-team/skills/packages/guru-select-workflow-mode/scripts/check-env.sh \
+  --root <invocation-checkout> --worktree-name <reviewed-name> \
+  --checkout-root <absolute-planned-path> --json
+```
+
+The query derives the target and, when `--checkout-root` is supplied, checks it
+against the plan. Read the command receipt's `result`; consume that result's
+`checkout_root` for the displayed exact
+side-effect plan and ordinary `git worktree add`. A mismatch, unavailable
+primary or configuration conflict stops before branch/worktree creation;
+correct and recheck through this owner. Do not replace configuration with the
+current desktop cwd, adjacent candidates or an example path. After creation,
+read the actual directory and Git worktree registration, enter that directory,
+and repeat linked/non-base suitability before editing.
+
+A caller's genuine explicit new location keeps the original ordinary Git and
+location suitability rules, including outside the configured root. The AI's
+own absolute path does not establish explicit caller intent. No Task-specific
+`path_source` input or acquisition executor is introduced for this route.
+
 Task-free location acquisition uses ordinary Git facts and operations. It does
 not invoke Task APIs, Task-specific checkout checks, creation/activation/session
 binding or acquisition wrappers; it creates no TaskId, TaskBranchBinding,

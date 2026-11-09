@@ -1,0 +1,45 @@
+# Runtime、执行位置与Git来源职责
+
+Identity：`ARCH-RUNTIME-LOCATION`；状态：current。适用before为main `610a810d45bb30173906d55c77709389adf1cf31`，来源为Issue #718；决定见[ADR-RUNTIME-LOCATION](../adr/runtime-location-decoupling.md)，需求/设计/验证分别由[RDT](../../requirements/current/runtime-location.md)、[Design](../../design/current/runtime-location.md)、[Test](../../test/current/runtime-location.md)拥有。
+
+## 独立身份与原owners
+
+worktree拥有文件和执行位置，branch拥有Git引用/历史，Task拥有accepted scope、Delivery与生命周期，Python环境拥有解释器和锁定依赖。环境可运行、分支名或目录不能建立Task身份与阶段资格。公共Task/Delivery/session及合法绑定仍由Trellis与原Guru lifecycle owners验证，环境维护不要求创建或转换Task。
+
+工具代码来自实际采用的assets；原bootstrap单写环境选择及cache，原Sync单写Git来源事实，Discovery判断证据充分性。Markdown负责语义、scope、路由及门禁，脚本执行和校验确定性事实。source-loaded工具维护仍由原upgrade-tools从明确完整匹配来源执行，不能用来源代执行证明目标成功。
+
+## 共享环境与选择
+
+环境identity包含runtime API/layout、lock、Python implementation/major/minor、OS/architecture/ABI；patch/path、Git HEAD、Task或位置不进入identity。相同有效需求复用同一物理venv，不同兼容类别/依赖可并存。日常wrapper不安装依赖、不使用global site-packages。
+
+当前checkout-private `selection-v3.json`只保存自动模式或显式兼容类别、需求指纹到runtime identity的hint。原owner优先验证当前需求有效hint；自动hint缺失/失效时按identity字典序验证已有cache。新增cache/PATH不改变有效hint；不同需求分支切回使用原hint。真实显式类别不可被自动fallback消除。
+
+初始化及明确apply/reapply未传--python时使用当时PATH python3；显式--python优先且失效不回退。独立check只读、resolve只缓存已验证定位、repair沿原candidate/锁定安装/真实wrapper验证后成功切换。缺seed、锁来源、cache或不兼容有具体诊断；失败不提前替换合法环境/选择。位置和Task生命周期不删除共享cache；不新增GC。
+
+## 格式切换、旧consumer与原rollback
+
+旧local/gitdir/common `active.json` v2没有选择来源，不能据此编造历史显式意图。只有新载体不存在时，当前owner按原顺序一次读取旧来源：兼容有效则保同物理环境，失效按自动hint查兼容cache。当前显式类别由公开--python重表达。新文件成立后唯一writer只维护新格式；新文件存在但无效时拒绝，不以旧v2覆盖当前约束。旧v2原文保留供同位置旧installed继续使用，不双写。
+
+原单checkout工具更新只写目标新选择。peer/common工具、Task/session、用户配置与新旧选择bytes及实际合法选择保持。原tools/upgrade rollback同时快照新旧载体真实preimage，先核公共tools/data兼容，恢复旧工具及载体实际存在/原文。公开print-active-pointer定位当前writer，实际选择通过公开check/resolver读取。旧完整安装继续固定原合同；匹配维护切换及退出由原runtime/installer/maintenance owners完成，历史Git来源仍可读。
+
+## 明确Git对象与实际副作用
+
+原guru-sync-base的operation=read以明确repo/ref/commit返回baseline_ready，固定Git tree来源与工作区候选分别绑定。对象可读时无需该分支检出或无关checkout干净；不fetch/ff、不隐式追ref变化。原operation=sync保留唯一目标、dirty/ff及HEAD/local/remote一致性，返回synced。只读成功不等于同步或正式gate。
+
+Discovery读固定tree的实际blob/history/archive证据，草案通过独立candidate_file字节绑定；current→history→语义审核仍由原owner执行。来源variant经原五阶段transition、Clarify回程、Wording、Readiness及实际Issue/Task创建consumer成套承接。无Task、外部worktree和正常未提交草案可以读审，不能借此冒充committed Review或远端发布。错基线、候选普通变化和缺正式身份均回原纠正/刷新/拒绝。
+
+## 代价、替代与重新评估
+
+本机制只增加原owner必要的需求匹配/hint与局部来源variant，以及真实旧reader的格式切换。hint可重建，显式选择只在原checkout私有载体，不建立全局偏好或业务authority。没有时间排序、每位置venv、通用绑定器、第二恢复台账、上游patch或永久双writer。
+
+只有实际兼容类别、依赖/API/layout、受支持旧consumer或原副作用合同变化时重新评估。ADR-027单目标/peer隔离/source-target/data先校验、ADR-006实际Sync约束仍有效；仅其被用于环境启动/独立只读的组合解释由本单元和新ADR替代。Architecture/RDT先完整proposed，经candidate Check后原final_integration/readback，实际after重绑最终质量链。知识接受、实现、目标安装、Release与业务采用分开；实际观察仅由Test拥有，完整Release矩阵独立。
+
+## 配置驱动的新建位置（#760）
+
+本节承接 Issue #760，适用 before 为 main `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa`。原 AI owner 判断位置策略、命名、冲突和副作用；共享 runtime 只提供 live Git topology 与项目配置的确定性路径事实。环境查询、正式 Task 新建、task-free 新建消费同一解析能力。Task 继续原 acquisition/绑定；task-free 继续普通 Git，不引入 Task validator、Task身份或位置映射。
+
+项目锚点是 live Git 事实唯一确认的 primary；不能将调用 cwd.parent、porcelain 首行 metadata 或 common-dir.parent 直接当作主仓库。读取确证 primary 的 `.trellis/guru-team/config.yml`：空 worktree_root 为 primary.parent / (primary.name + '-worktrees')，相对值对 primary 解析，绝对值直接采用。linked 空模板不独立竞争；非空配置解析与 primary 项目配置冲突时准确诊断。锚点不可唯一确认则报告原 owner 可处理的缺口，不猜测或新增映射。
+
+配置生成新位置由 root 与本次已审目录名形成，在任何 branch/worktree/Task 创建前核对计划路径。真正显式新位置保持原合法合同；已有外部 checkout 采用及原 Task 恢复先分流，不受生成 root 限制或重定位。旧绝对输入的兼容与新字段迁移由原 create-task 合同和 MIGRATION-760 拥有，绝对值本身不证明用户选址。
+
+该共享能力有三个当前 consumer，避免复制解析且不建立第二执行或状态authority。代价限定为位置事实模块、原接口差额和定向验证；不引入缓存、锁、清理进程或长期证明。只有 Git topology、配置语义、公开位置策略或真实旧 consumer 边界变化时重新评估。配置与普通Git行为验证、分发、业务采用和Release分别成立，实际观察由对应Test单元拥有。

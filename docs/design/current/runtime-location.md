@@ -1,8 +1,11 @@
 # Runtime与Git来源的设计合同
 
-导航别名：`R718/D718/T718`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+导航别名：`R718/D718/T718`；`R760/D760/T760`；`worktree配置路径`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。`R718/D718/T718` 与 `runtime与Git来源` 别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
 
-Identity：`RDT-DES-RUNTIME-LOCATION`；状态：current。承接[完整需求](../../requirements/current/runtime-location.md) R718-01—11；[Test](../../test/current/runtime-location.md)拥有验证策略与实际观察。Architecture继承 `guru-trellis-architecture` / constitution v1 / ADR-RUNTIME-LOCATION。
+Identity：`RDT-DES-RUNTIME-LOCATION`；状态：current。承接[完整需求](../../requirements/current/runtime-location.md) R718-01—11 与 R760-01—05；[Test](../../test/current/runtime-location.md)拥有验证策略与实际观察。Architecture继承 `guru-trellis-architecture` / constitution v1 / ADR-RUNTIME-LOCATION。
+
+本单元 RDT 定义修订：`worktree-config-path-760`。原 owner 在 #760 D1 candidate Check 后，
+以本Task固定来源与真实 current 重读整合并写回；该标识不表示软件版本或最终 Git HEAD。
 
 ## D718-01 / CON718-ENV：环境身份与代码
 
@@ -41,3 +44,46 @@ Task Creation仍核同一Task/源码关系、选定base提交与合法目标；T
 canonical workflow/Skill负责操作选择与语义，确定性脚本只执行和校验。canonical/package/dogfood/installed/platform、mode、reapply/drift和sidecar使用matching安装owner成套更新，不能手抄受管副本。RDT与Architecture先写完整隔离proposal，candidate Check后原final_integration晋升，实际after重绑final Check/Review；promotion不替代实现或Completion。
 
 前驱替代范围与未迁移范围由对应Requirement单元定义；ADR-027的单目标维护、peer隔离、source/target分别验证、公共数据兼容及Task维护仍成立。没有新Task模型、资源池、GC、telemetry或通用依赖平台。
+
+## D760-01 / CON760-PATH-FACTS：项目路径事实
+
+承接 R760-01/02。现有 shared runtime 提供 topology/config/path 确定性解析，原 environment
+与 Task acquisition 直接消费；没有新 Skill、planner、cache、锁或位置台账。
+primary 候选来自 live worktree topology、可用 core.worktree，或调用位置 gitdir==common-dir
+事实。逐候选核 actual toplevel/gitdir/common identity，排除 linked 冒充 primary。
+separate-git-dir 的 porcelain 首行可能是 metadata，不能据其或common-dir.parent猜路径。
+无法唯一确证返回 `primary_anchor_unavailable`，原 AI owner处理。
+
+读取 primary 的 `.trellis/guru-team/config.yml`：空 root 采用primary父目录下
+`<primary-name>-worktrees`，相对值对primary解析，绝对值直接使用。linked空模板没有独立
+选址意图；调用checkout非空root解析后与primary不同则诊断冲突，不写任何配置。
+普通空格和引号遵循既定标量解析语义，不扩为通用YAML框架。
+
+## D760-02 / CON760-CREATE：两个创建 consumer 与分流
+
+承接 R760-02—04。原 `check-env.sh` 输出解析后的绝对 `worktree_root` 与 `primary_root`、
+`worktree_config_path` 来源事实，提供name时以 `checkout_root` 返回绝对目标；`--worktree-name`生成目标，配合 `--checkout-root` 核计划一致，后者需要前者。
+查询不产生selector typed DTO、Task身份或持久映射。
+
+create-task 对 provision 的 new_branch/existing_branch 新目录加性接收
+`path_source=configured|explicit` 与 `worktree_name`。当前 AI 自行生成必须configured，
+提供单目录名及绝对checkout_root；原runtime在任何创建副作用前重算root/name并比较，
+失配诊断后原owner修正，不静默替换。真实显式位置使用explicit及原绝对路径合同。
+Task-free原owner新建时消费公开预检的实际目标，经精确副作用审查后普通Git创建，
+读回实际目录、Git注册并重新审linked/non-base适用性，不调用Task acquisition。
+
+两个owner先分流合法采用或恢复。adopt_invocation_checkout、existing_checkout及原Task
+recovery保留原identity/clean/绑定/位置要求，不受生成root限制；配置变化不重定位。
+AI绝对值不反推用户选址。primary写入路径仍退役；既有其它身份/生命周期前置保持。
+
+## D760-03 / CON760-MIGRATION：兼容与维护
+
+承接 R760-04/05。完整公开支持合同由 [MIGRATION-760](../../../trellis/presets/guru-team/MIGRATION-760.md)
+拥有。旧已安装create-task公开输入及其创建/恢复脚本省略新字段仍按原绝对checkout_root，
+由同一schema/runtime消费；原create-task owner维护。调用方切换策略字段后，该调用退出省略
+用法，当前AI合同直接切configured。无新增兼容executor，不迁移Task持久数据。
+
+环境root从旧调用位置回退/原样配置值修正为项目解析绝对root，两个owner成套采用。
+旧安装使用matching版本；新能力经原tools-only owner更新完整投影，保留配置/Task/session/peer，
+按原冲突与sidecar处理并验drift，不手抄dogfood。RDT与Architecture依原候选Check和
+final_integration晋升；原最终Check/Review独立审实际after。完整Release矩阵仍归专门owner。

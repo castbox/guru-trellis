@@ -120,6 +120,16 @@
         "checkout_root": {
           "type": "string",
           "minLength": 1
+        },
+        "path_source": {
+          "enum": [
+            "configured",
+            "explicit"
+          ]
+        },
+        "worktree_name": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "allOf": [
@@ -159,6 +169,35 @@
               "required": [
                 "invocation_checkout"
               ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path_source": {
+                "const": "configured"
+              }
+            },
+            "required": [
+              "path_source"
+            ]
+          },
+          "then": {
+            "required": [
+              "worktree_name",
+              "checkout_root"
+            ],
+            "properties": {
+              "route": {
+                "const": "provision_linked_worktree"
+              },
+              "provision_disposition": {
+                "enum": [
+                  "new_branch",
+                  "existing_branch"
+                ]
+              }
             }
           }
         }
