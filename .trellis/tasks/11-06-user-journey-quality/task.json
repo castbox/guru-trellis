@@ -44,7 +44,7 @@
       },
       "planning_root": "deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad",
       "profile": "pull_request",
-      "phase": "reviewing",
+      "phase": "publishing",
       "plan_ref": {
         "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
         "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
@@ -110,7 +110,7 @@
           "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
           "trellis/workflows/guru-team/workflow.md"
         ],
-        "head_ref": "7b14b6f83f274bd3b08e2721be8624516374b73d",
+        "head_ref": "4d46999a419726fd6abde22def6b603e7d8fd1f2",
         "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
       },
       "results": {
@@ -156,7 +156,7 @@
           ]
         },
         "check": {
-          "result_id": "check:47781c68e044d6e396841cd09c7397958ccc5651234962906edebce7f84acbc8",
+          "result_id": "check:6eb028a2865af01612a234d6c1e9a28b458183cd3faaac31b70494ea0259f7d1",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -239,7 +239,7 @@
               "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
               "trellis/workflows/guru-team/workflow.md"
             ],
-            "head_ref": "7b14b6f83f274bd3b08e2721be8624516374b73d",
+            "head_ref": "4d46999a419726fd6abde22def6b603e7d8fd1f2",
             "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
           },
           "predecessor_result_id": "planning-accepted:269532ee-2000-4886-a6cb-0a3cda5a3acf",
@@ -259,8 +259,198 @@
             }
           ]
         },
-        "full_review": null,
-        "readiness": null
+        "full_review": {
+          "result_id": "full-review:90dd29dfddecb98c2aefc0ec9d00e185a1fc50e8b88463affec7f92b930a0b0e",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-user-journey-quality/prd.md",
+              "revision": "sha256:6928ee65c4174f7ff2b23632c9a4e3a222c8a609707dd8a1c35d8975e0e2f404"
+            },
+            "anchors": [
+              "JQ-R1",
+              "JQ-R2",
+              "JQ-R3",
+              "JQ-R4",
+              "JQ-R5",
+              "JQ-R6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
+            "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:8006e321b194c5819995011dcca1d0cbfb28d370e96c2031bb73a911a63abcbc",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".agents/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".agents/skills/guru-author-task-plan/references/planning-body.md",
+              ".agents/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".claude/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".claude/skills/guru-author-task-plan/references/planning-body.md",
+              ".claude/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".cursor/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".cursor/skills/guru-author-task-plan/references/planning-body.md",
+              ".cursor/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/architecture-proposal/docs/architecture/03-domains/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/check.jsonl",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.jsonl",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/prd.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/README.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/design/current/behavior-validation-method.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/design/current/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/requirements/current/behavior-validation-method.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/requirements/current/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/test/current/behavior-validation-method.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/test/current/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/validation/behavior-evals.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/validation/implementation.md",
+              ".trellis/tasks/11-06-user-journey-quality/prd.md",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/review-sufficiency.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/review-sufficiency.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/review-sufficiency.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/review-sufficiency.md",
+              "trellis/presets/guru-team/scripts/python/test_planning_body_distribution.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/examples/planning-body/journey/process.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/examples/planning-body/journey/source.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-implement.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "4d46999a419726fd6abde22def6b603e7d8fd1f2",
+            "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
+          },
+          "predecessor_result_id": "check:6eb028a2865af01612a234d6c1e9a28b458183cd3faaac31b70494ea0259f7d1",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
+              "revision": "sha256:c74a96874550c6d321649d38acffbcd39bf53e270836568300869ac7c03648a7"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:d3e21f761b3bc2babe9552c2cafbf29bd0aca201457555078764df4ef574bf76",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-user-journey-quality/prd.md",
+              "revision": "sha256:6928ee65c4174f7ff2b23632c9a4e3a222c8a609707dd8a1c35d8975e0e2f404"
+            },
+            "anchors": [
+              "JQ-R1",
+              "JQ-R2",
+              "JQ-R3",
+              "JQ-R4",
+              "JQ-R5",
+              "JQ-R6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
+            "revision": "sha256:75eae9b4789d331e1d07a4ca38ba42efd4e252361fd13f9887eb3f376027b7f6"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:8006e321b194c5819995011dcca1d0cbfb28d370e96c2031bb73a911a63abcbc",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".agents/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".agents/skills/guru-author-task-plan/references/planning-body.md",
+              ".agents/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".claude/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".claude/skills/guru-author-task-plan/references/planning-body.md",
+              ".claude/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".cursor/skills/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".cursor/skills/guru-author-task-plan/references/planning-body.md",
+              ".cursor/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/examples/planning-body/journey/process.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/examples/planning-body/journey/source.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/architecture-proposal/docs/architecture/03-domains/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/check.jsonl",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/design.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.jsonl",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/prd.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/README.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/design/current/behavior-validation-method.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/design/current/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/requirements/current/behavior-validation-method.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/requirements/current/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/test/current/behavior-validation-method.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/rdt-proposal/docs/test/current/review-sufficiency.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/validation/behavior-evals.md",
+              ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/validation/implementation.md",
+              ".trellis/tasks/11-06-user-journey-quality/prd.md",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/review-sufficiency.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/review-sufficiency.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/review-sufficiency.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/review-sufficiency.md",
+              "trellis/presets/guru-team/scripts/python/test_planning_body_distribution.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/examples/planning-body/journey/process.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/examples/planning-body/journey/source.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-implement.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "4d46999a419726fd6abde22def6b603e7d8fd1f2",
+            "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
+          },
+          "predecessor_result_id": "full-review:90dd29dfddecb98c2aefc0ec9d00e185a1fc50e8b88463affec7f92b930a0b0e",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-user-journey-quality/deliveries/9edfdfc4-9f0b-4a1c-bfc7-88a70f26abad/implement.md",
+              "revision": "sha256:c74a96874550c6d321649d38acffbcd39bf53e270836568300869ac7c03648a7"
+            }
+          ]
+        }
       },
       "publication_result": null,
       "delivery_result": null,
