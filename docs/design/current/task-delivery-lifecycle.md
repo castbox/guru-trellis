@@ -159,3 +159,12 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 **D713-05 / CON713-ADOPTION** 承接 R713-05：原 tools owner 维护已有 Task/session 的本仓 dogfood，原 installer 维护 matching 安装、reapply、冲突与 mode。固定 B 的 43/127/180 声明清单、当前候选差额和 F1–F13 证据对应留在原规划/验证位置，不生成公共 DTO 或独立长期 manifest。采用完整且仍匹配的既有安装/投影、reapply/drift/sidecar/mode 实绩，仅刷新实际变更依赖；不为取消项再次安装、恢复损坏 clean 或准备环境。旧成功 consumer 保留既有合同；成功语义变化先显式迁移，无 consumer 的 deprecated 资产经原 owner 核实后退出。RDT/Architecture 完整隔离拟写先经候选 Check，再各原 owner final_integration/readback；实际 after 重绑后执行最终 Check、TaskCommit、完整 committed Review、Delivery Review/readiness、发布/交付及 Completion/Closure/Finish。合并前保留 fresh merge gate；本项取消验收不新增必需后续切片或 native 支线。
 
 这些职责沿既有D531/ADR-028及#710 recorder决定，不修改官方Trellis、全局包或node_modules实现。精确argv/profile/schema仍由canonical原package/step单写；此单元不复制私有算法或测试expected输出。
+
+
+## D779：原 Phase 2 协作职责
+
+**D779-01 / CON779-DELEGATION** 承接 R779-01。现有 workflow coordinator 与受委托执行者按 [canonical Phase 2 合同](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#phase-2--implementation-and-check) 执行委托后方法；全局 workflow 只加载该方法，平台入口沿同一 workflow/spec 路径消费。执行者拥有工作包内等待、常规诊断、断言、产物和终态，coordinator 拥有基于本次运行/缺口的介入、结果适用性与工作包完成判断。冲突写入交接仅约束实际冲突目标，无冲突工作继续；原 discovery、Check 和独立 Review 仍由原 owner 负责。
+
+命令/进程/日志/产物/句柄只提供执行事实，不担任业务或门禁 authority。最小结果留在当前对话，不产生新 DTO、state、台账或持久 handoff。原安装 owner 同步实际受影响的 canonical、dogfood 和声明平台投影；既有 Task/session checkout 使用原 tools-only 维护路径，保留历史及 peer，不手工覆盖受管文件。原 RDT owner 先准备隔离完整拟写，经候选 Check 后在 final_integration 写入并读回，随后重绑真实 after 并走最终质量链。
+
+本选择直接修改原方法，避免新增运行状态、调度器或逐轮审批的维护与等待成本。初始派工已完整仍出现委托后重复跟踪，因此本项承接后续执行事实和干预边界；它不取消必要查询/证据读取或 adb，也不把未知终态变为成功。若新的真实范围/机制/风险超出委托，回原 discovery；实际方法效果与成本需要各自证据，本次源码和同步验证不证明该效果。历史与窄增加边界见 [#779 追踪](../../requirements-design-test-contributions/779-delegation-results-intervention/traceability.md)。

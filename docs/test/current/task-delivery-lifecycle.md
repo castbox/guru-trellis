@@ -164,3 +164,13 @@ T713-03 的 #775 差额复用同组生产 Check fixture：从正常 current_scop
 本节定义 #713 当前保留验收，不预填本轮通过。观察截止于已有原命令/run 的实际记录及本 Task 验证结果，后续正式结果由原 owner 输出承接。原首输入、命令/退出状态/双输出、读取、消费与出口保持在原记录；最终 typed exit 或 no-source-read 断言单独不证明模型行为。源码工程诊断和 #710 旧 native 不计本轮正常入口通过；新修正不改写旧失败。
 
 N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不足/resume execution_error/Drift fitness_regression，以及污染、未知退出码和部分成功均保留原边界。R3 仅 runtime 准备通过，未启动 native；旧 clean 后续损坏不证明 installer 缺陷，也不证明当前可用。取消或缺失的 native 不记为 passed，不再作为本项必须补跑的验收。已知正确性缺陷仍须修复，当前范围仍须完成完整候选 Check、原知识 final integration/readback、after 重绑后的最终 Check、TaskCommit、完整 committed Review、Delivery Review/readiness、发布/交付和 Completion/Closure/Finish，合并前保留 fresh merge gate。受控 GitHub 替身只证明本地层次，不证明真实 GitHub 发布、部署或业务生产效果。
+
+
+## T779：委托方法与受管投影
+
+| 稳定身份 → requirement/design | 输入与原入口 | 必须观察与证明边界 |
+| --- | --- | --- |
+| T779-01 → R779-01/D779-01 | 当前 Phase 2 完整方法、加载引用及原 discovery/Check/Review consumers，经原完整语义 Check 与独立 Review | 六项来源行为的条件、例外及交接顺序完整；自主工作不越委托，介入先核本次运行及具体缺口；最小对话结果、事实层次、原句柄接管、实际冲突目标交接及结果采用保持；没有逐轮审批或持久运行状态。语义审核证明合同质量，不证明现场成本效果。 |
+| T779-02 → R779-01/D779-01 | 原安装/tools owner 同步实际受影响的 canonical/dogfood/声明平台；实际 drift、mode、sidecar 和适用 native/preservation 验证 | 实际受管内容采用且无未解决漂移/sidecar，当前 Task/session/peer 保留；source、installed 与 Agent 行为分别报告。无需为本项新增设备、评测框架、整场事故重放、消息计数或完整多平台/Release 矩阵。 |
+
+实际观察截止与命中验证由 [#779 Test](../../requirements-design-test-contributions/779-delegation-results-intervention/test.md) 维护。本文定义预期，不预填本项通过或节省比例；原候选 Check、真实 final integration/readback、after 重绑、最终 Check 和完整 committed Review 保持。未运行的外部业务采用与实际效果保持未验证。

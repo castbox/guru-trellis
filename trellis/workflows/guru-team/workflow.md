@@ -1298,6 +1298,10 @@ mode/profile. Neither a stopped slice nor the projection decides Completion.
 
 #### 2.1 Implementation
 
+Load `.trellis/spec/workflow/workflow-contract.md#phase-2--implementation-and-check`
+for delegated execution and result consumption before dispatching or continuing
+delegated work.
+
 A reviewable candidate may receive early remote feedback before complete Check.
 Explicitly invoke `guru-create-task-commit:delivery_draft_commit`, or its clean
 `delivery_draft_committed_reentry` for an already formed integration/fix commit.

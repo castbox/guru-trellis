@@ -178,3 +178,14 @@ Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交
 本节承接 #713 的 S1–S5、AC1–AC4、缩减后的 AC6–AC8 与 AC9；AC5 取消。取消的是本项新增验收，生产职责、公开支持域、已知正确性修复和原生命周期条件保持。N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不足/resume execution_error/Drift fitness_regression，以及旧 clean 后续损坏保留原观察边界；R3 仅 runtime 准备通过，未启动 native。不清理、续跑或改写这些结果，不将旧 clean 损坏归因 installer 或称其当前可用。
 
 本节不改变 #710 正常 11 字段 Phase2 authoring/完整 6.0 结果消费，不新增状态 authority、wrapper Skill 或长期账本。设计 D713、测试 T713 在同名三层完整单元拥有落点。当前完整候选 Check、原知识 final integration/readback、实际 after 重绑和最终 Check、TaskCommit、完整 committed Review、Delivery Review/readiness、发布/交付及 Completion/Closure/Finish 均保持；实际合并前保留 fresh merge gate。
+
+
+## R779：委托后的结果承接
+
+**R779-01 / BEH779-DELEGATION**：已委托工作包由执行者自主完成等待、常规环境诊断、原断言、产物取回和终态汇总；计划外范围、机制或风险仍回原 discovery。正常推进时，主协调者推进互不影响的工作或按平台能力有界等待，不默认重复跟踪同一日志并连续补发过程指令。日志片段、页面 PASS、命令终态、产物通过和工作包完成分别判断。
+
+介入只针对需原 owner 决定的真实阻塞、范围/机制变化、冲突写入、用户停止或执行者无法继续。诊断先核本次进程、日志和产物的对应关系及具体缺口；未知终态保持未知。必要查询、证据读取和 adb 保留。接管先查已有工作并沿可用原句柄继续，不默认重启，也不要求逐命令上报 PID、句柄或 hash。
+
+执行者在当前对话提供最小完成内容、实际终态、结果位置及未完成项。冲突写入在自然边界暂停并确认当前终态且暂不启动下一轮后进行，完成后通知恢复；无冲突并行、无写入需求继续原委托。已交叠按实际影响披露失效证据并补必要验证，不一律重跑。主协调者仍核要求与结果、交新缺陷给原 owner；适用执行事实可采用，只有具体缺口或不一致才补查/重跑。新增要求作为明确差额，正式 Check/独立 Review 保持原职责。
+
+精确协作方法由 [canonical Phase 2 合同](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#phase-2--implementation-and-check) 单写，职责见 D779-01，验证见 T779-01/02。来源为 [#779](https://github.com/castbox/guru-trellis/issues/779)；本项只修方法及实际受管同步，不承接 #734 的预算、规模或设备/重放验收，不新增公共数据、运行状态、持久 handoff、授权记录或逐轮审批，也不承诺实际节省效果。来源、前驱与窄增加边界见 [#779 追踪](../../requirements-design-test-contributions/779-delegation-results-intervention/traceability.md)。
