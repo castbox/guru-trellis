@@ -47,7 +47,7 @@
     },
     {
       "id": "approved_planning",
-      "evidence": "the active task status plus the three live planning documents Scope revision instead consumes original Clarify current accepted scope and this current-stage semantic slice judgment; stale downstream gates are not prerequisites.",
+      "evidence": "the active task status plus the three live planning documents Scope revision instead consumes original Clarify current accepted scope and this current-stage semantic slice judgment; stale downstream gates are not prerequisites. Planning-stale recovery instead validates the retained original rollback binding or original public Delivery query; it never requires the cleared current Planning result.",
       "binding": "the planning contract already consumed by Phase 1 activation and implementation",
       "freshness": "the owner rereads the live plans and classifies semantic deltas without opening producer-private evidence"
     },
@@ -175,6 +175,10 @@
     {
       "id": "legacy_controls_retired_output",
       "path": "examples/legacy_controls_retired-output-1.0.json"
+    },
+    {
+      "id": "delivery_planning_stale_recovery_input",
+      "path": "examples/public-delivery-planning-stale-recovery-input-1.0.json"
     }
   ],
   "schemas": [
@@ -337,6 +341,18 @@
     {
       "id": "legacy_control_restore_input",
       "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_rollback_binding",
+      "path": "schemas/delivery-rollback-binding-1.0.schema.json"
+    },
+    {
+      "id": "delivery_planning_stale_recovery_owner",
+      "path": "schemas/delivery-planning-stale-recovery-owner-1.0.schema.json"
+    },
+    {
+      "id": "delivery_planning_stale_recovery_input",
+      "path": "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json"
     }
   ],
   "validators": [
@@ -344,7 +360,7 @@
       "id": "phase2_check_recorder",
       "command": "scripts/record-phase2-check.sh",
       "runtime_command": "record-phase2-check",
-      "objective_scope": "write the completed compact semantic result after current task, planning, candidate hygiene, and reviewed-path checks"
+      "objective_scope": "write the completed compact semantic result after current task, planning, candidate hygiene, and reviewed-path checks; planning_stale derives the original rollback binding, and recovery correction uses dry-run only"
     },
     {
       "id": "phase2_check_checker",
@@ -356,7 +372,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-check-task",
-      "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit"
+      "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit; the recovery profile validates original rollback facts without ordinary Check or another lifecycle write"
     },
     {
       "id": "resolved_reconciliation_projection",
@@ -622,6 +638,21 @@
           "discriminator": {
             "field": "profile",
             "value": "legacy_control_retirement"
+          }
+        },
+        {
+          "id": "delivery_planning_stale_recovery",
+          "schema": {
+            "schema_id": "guru-check-task-input-delivery-planning-stale-recovery-1.0",
+            "path": "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_planning_stale_recovery_input",
+            "path": "examples/public-delivery-planning-stale-recovery-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_planning_stale_recovery"
           }
         }
       ]

@@ -1,0 +1,20 @@
+task_id: 775-check-planning-recovery
+source: https://github.com/castbox/guru-trellis/issues/775
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 313d80215f65777fc70893a90c6d8dce8005d6dd
+architecture:
+  locator: docs/architecture/README.md
+  version: 313d80215f65777fc70893a90c6d8dce8005d6dd
+  status: active
+proposed_targets:
+  - path: docs/requirements/current/task-delivery-lifecycle.md
+    section: R713
+    definition: proposed-sections/requirements.md
+  - path: docs/design/current/task-delivery-lifecycle.md
+    section: D713
+    definition: proposed-sections/design.md
+  - path: docs/test/current/task-delivery-lifecycle.md
+    section: T713
+    definition: proposed-sections/test.md

@@ -97,7 +97,7 @@ retirement call and does not import or read private ports or pending inputs.
 | delivery_initial_review | Explicit Creation result plus original source_selection; converge slice requirements and actual candidate. |
 | delivery_active_task_scope_change | Original Clarify published scope_ready plus selection/revision_refs and affected key; revise only affected slice requirements/candidate after root requirements publication. |
 | delivery_wording_reentry | Actual Wording content_changed/change_refs; equivalent wording returns plan_ready; changed mechanism returns requirements_ready. |
-| delivery_approval_revision | Actual Approval revision_actions, or Check planning_stale/reapprove_plan revision_actions for a planning repair without scope decisions; execution-plan-only fixes may return plan_ready; requirements/design fixes re-enter candidate assessment. |
+| delivery_approval_revision | Actual Approval revision_actions, or Check planning_stale/reapprove_plan revision_actions for every current-scope planning repair, including retained current_scope decisions and same-owner recovered or corrected handoff; execution-plan-only fixes may return plan_ready; requirements/design fixes re-enter candidate assessment. |
 | delivery_delivery_plan_revision | Delivery Review delivery_policy_gap/revision_refs; revise the same key's actual slice policy. Completion next_independent_delivery goes to Creation first, then delivery_initial_review on its new UUID. |
 | delivery_requirements_revision | Original Clarify source_selection/revision_refs; converge the current slice without a caller-preselected decision. |
 | delivery_solution_planning | Actual current Architecture candidate_assessment; write design/implement/context using its thin assessment. |

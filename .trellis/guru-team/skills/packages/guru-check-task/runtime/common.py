@@ -104,6 +104,16 @@ def skill_content_identity(package, repo, task_ref, mode, public=None):
     """Select resolved capture only from a validated public Delivery input."""
     if public is None:
         return content_identity(repo)
+    if public.get("profile") == "delivery_planning_stale_recovery":
+        validate_json(public, package / "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json", "skill_input")
+        if public["task_ref"] != task_ref or public["mode"] != mode:
+            raise CommandError("stale_identity", "skill_input", "Use the same Task and mode for rollback correction.", 3)
+        if public["original_check_input"]["profile"] == "delivery_resolved_reconciliation":
+            from delivery import _current_delivery
+            from runtime.delivery_projection.adapter import DeliveryProjection
+            delivery = _current_delivery(DeliveryProjection(repo, task_ref), public)
+            return resolved_content_identity(repo, public["original_check_input"], delivery)
+        return content_identity(repo)
     from delivery import _binding
     from runtime.delivery_projection.adapter import DeliveryProjection
     profile = public.get("profile", "")

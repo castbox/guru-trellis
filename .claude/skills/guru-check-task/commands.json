@@ -43,7 +43,7 @@
           "flag": "--skill-input",
           "required": false,
           "kind": "string",
-          "description": "Original public Delivery input; required for resolved reconciliation capture.",
+          "description": "Original public Delivery input; required for planning_stale, resolved reconciliation and dry-run rollback correction.",
           "repeatable": false,
           "conflicts": []
         }
@@ -116,6 +116,14 @@
       "entrypoint": "runtime/invoke.py",
       "arguments": [
         {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Target checkout; a complete external provider uses its own runtime and this target installed Task schema 2 / Delivery API 1.0, C4 and current selection. Recover an unchanged old target before tool adoption.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
           "flag": "--invocation",
           "required": false,
           "kind": "json",
@@ -140,7 +148,7 @@
           "flag": "--owner-result",
           "required": false,
           "kind": "string",
-          "description": "Recorder-written complete result JSON file, obtained from record receipt result.artifact_path.",
+          "description": "Complete recorder result; recovery instead uses the same-owner original_result/corrected_result/original_delivery envelope.",
           "repeatable": false,
           "conflicts": [
             "--invocation"

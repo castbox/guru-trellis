@@ -26,6 +26,11 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if public.get("profile") == "delivery_scope_withdrawal":
   from runtime.delivery_projection.withdrawal import stop
   return stop(repo,package_root,public,owner,owner_role="check",expected_phase="checking")
+ if public.get("profile") == "delivery_planning_stale_recovery":
+  from planning_recovery import invoke as invoke_recovery
+  from runtime.task_lifecycle.errors import LifecycleContractError
+  try:return invoke_recovery(package_root,repo,public,owner)
+  except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
  if str(public.get("profile", "")).startswith("delivery_"):
   from delivery import invoke as invoke_delivery
   from runtime.task_lifecycle.errors import LifecycleContractError
