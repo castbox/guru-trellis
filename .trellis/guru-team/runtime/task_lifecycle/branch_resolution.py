@@ -17,6 +17,8 @@ from .git_facts import (
     RepositoryFacts,
     TaskObjectReader,
     discover_worktree_facts,
+    find_registration,
+    inspect_registered_worktree,
     list_local_branch_refs,
 )
 from .identity import normalize_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_resource_state
@@ -439,6 +441,82 @@ def establish_branch_binding(
             None,
             "checkout_acquisition_required",
         )
+    return _establish_control_state(store, ownership_port, key=key, resolution=resolution, selected=selected)
+
+
+def establish_restored_checkout_binding(
+    repository: RepositoryFacts,
+    store: BranchBindingStore,
+    ownership_port: OwnershipPort,
+    *,
+    key: TaskLifecycleKey,
+    task_ref: str,
+    branch_name: str,
+    expected_head: str,
+) -> EstablishmentResolution:
+    """Associate one explicitly selected checkout after its Task was restored."""
+    artifact = resolve_task_ref(repository.context_path, task_ref, expected_task_id=key.task_id)
+    if artifact.lifecycle_state != "active" or artifact.lifecycle_generation != key.lifecycle_generation:
+        raise LifecycleContractError(
+            "task_identity_mismatch", "task_ref", "Restore the selected active TaskId and generation.",
+        )
+    branch = normalize_branch_name(branch_name)
+    registration = find_registration(repository, repository.context_path)
+    if registration is None:
+        raise LifecycleContractError(
+            "checkout_not_registered", "root", "Use the selected registered Task checkout.",
+        )
+    facts = inspect_registered_worktree(repository, registration)
+    if (facts.inspection_error or facts.common_dir != repository.common_dir
+            or facts.branch_ref != f"refs/heads/{branch}"
+            or registration.registered_branch_ref != facts.branch_ref
+            or facts.head != expected_head or registration.registered_head != expected_head):
+        raise LifecycleContractError(
+            "branch_registration_mismatch", "branch_name",
+            "Reread the selected registered checkout, branch and expected HEAD before recovery.",
+        )
+    binding, ownership = _control_state(store, ownership_port, key)
+    retained = binding if binding is not None else ownership
+    if retained is not None and retained.branch_name != branch:
+        raise LifecycleContractError(
+            "branch_association_conflict", "branch_name",
+            "Keep the existing association; use the original branch owner to resolve a different target.",
+        )
+    revision = retained.binding_revision if retained is not None else None
+    if store.branch_owner(branch, excluding=key) is not None:
+        raise LifecycleContractError(
+            "branch_bound_to_other_task", "branch_name", "Select a branch not bound to another Task.",
+        )
+    if ownership_port.branch_has_unresolved_incarnation(
+        branch, key=key, allowed_current_revision=revision,
+    ):
+        raise LifecycleContractError(
+            "unresolved_resource_incarnation", "branch_name",
+            "Resolve the selected branch's existing resource responsibility with its original owner.",
+        )
+    selected = BranchCandidate(
+        _candidate_id(branch, "registered_checkout", facts.path), branch, expected_head,
+        "registered_checkout", facts.path, facts.topology, True, None,
+    )
+    if binding is not None and ownership is not None:
+        return EstablishmentResolution(
+            "already_established", binding, ownership, (selected,), selected,
+            "binding_and_ownership_current",
+        )
+    resolution = EstablishmentResolution(
+        "candidate_resolved", binding, ownership, (selected,), selected, "restored_checkout_validated",
+    )
+    return _establish_control_state(store, ownership_port, key=key, resolution=resolution, selected=selected)
+
+
+def _establish_control_state(
+    store: BranchBindingStore,
+    ownership_port: OwnershipPort,
+    *,
+    key: TaskLifecycleKey,
+    resolution: EstablishmentResolution,
+    selected: BranchCandidate,
+) -> EstablishmentResolution:
     binding_before = store.snapshot(key)
     ownership_before = ownership_port.snapshot(key)
     target_revision = (
@@ -552,6 +630,7 @@ __all__ = [
     "OwnershipPort",
     "discover_branch_candidates",
     "establish_branch_binding",
+    "establish_restored_checkout_binding",
     "recover_established_branch_binding",
     "resolve_establishment",
 ]

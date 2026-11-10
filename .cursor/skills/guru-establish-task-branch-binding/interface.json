@@ -79,6 +79,10 @@
     {
       "id": "invocation_error",
       "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "restored_checkout_input",
+      "path": "examples/public-delivery-restored-checkout-input.json"
     }
   ],
   "schemas": [
@@ -113,6 +117,10 @@
     {
       "id": "delivery_active_task_input",
       "path": "schemas/public-delivery-active-task-input.schema.json"
+    },
+    {
+      "id": "delivery_restored_checkout_input",
+      "path": "schemas/public-delivery-restored-checkout-input.schema.json"
     }
   ],
   "validators": [
@@ -150,13 +158,13 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-establish-task-branch-binding",
-      "objective_scope": "Resolve current candidates, establish the reviewed state, or recover the exact result."
+      "objective_scope": "Establish a validated normal candidate, associate an explicitly selected restored checkout, or recover the exact result."
     }
   ],
   "external_exits": [
     {
       "id": "binding_established",
-      "evidence": "current binding and ownership match a uniquely validated live candidate",
+      "evidence": "Current binding and ownership match the validated normal candidate or explicitly selected restored checkout.",
       "consumer": {
         "kind": "workflow",
         "id": "guru-task-branch-established-router"
@@ -224,7 +232,7 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-establish-task-branch-binding-input-delivery-1.0",
+        "schema_id": "guru-establish-task-branch-binding-input-delivery-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
@@ -241,6 +249,21 @@
           "discriminator": {
             "field": "profile",
             "value": "delivery_active_task"
+          }
+        },
+        {
+          "id": "delivery_restored_checkout",
+          "schema": {
+            "schema_id": "guru-establish-task-branch-binding-input-delivery-restored-checkout-1.0",
+            "path": "schemas/public-delivery-restored-checkout-input.schema.json"
+          },
+          "example": {
+            "id": "restored_checkout_input",
+            "path": "examples/public-delivery-restored-checkout-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_restored_checkout"
           }
         }
       ]

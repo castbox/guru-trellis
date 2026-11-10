@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实施与审核前完整加载写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "核对来源处置、正文与Policy/Docs边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核对九节设计承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对实施、验证与Docs计划"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "采用Test And Validation Value与定向验证范围"}
+{"file": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py", "reason": "共用诊断与新profile的原公开执行边界"}
+{"file": "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py", "reason": "复用C4/C5事务并保持HEAD候选规则"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "原独立评估、候选检查和最终整合顺序"}

@@ -7,7 +7,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.io import CommandError, fail, read_json, write_json
 from runtime.schema import validate_json
-from runtime.task_lifecycle.branch_resolution import establish_branch_binding, recover_established_branch_binding, resolve_establishment
+from runtime.task_lifecycle.branch_resolution import (
+    establish_branch_binding,
+    establish_restored_checkout_binding,
+    recover_established_branch_binding,
+    resolve_establishment,
+)
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import TaskObjectReader, inspect_repository
@@ -35,7 +40,12 @@ def invoke(root: Path, data: dict) -> dict:
         store = BranchBindingStore(repository)
         ownership = ResourceLedgerStore(repository)
         args = dict(key=key, task_ref=artifact.task_ref, expected_status="active")
-        if data["action"] == "recover":
+        if data["profile"] == "delivery_restored_checkout":
+            result = establish_restored_checkout_binding(
+                repository, store, ownership, key=key, task_ref=artifact.task_ref,
+                branch_name=data["branch_name"], expected_head=data["expected_head"],
+            )
+        elif data["action"] == "recover":
             result = recover_established_branch_binding(repository, store, ownership, **args, **data["recovery"])
         else:
             with TaskObjectReader(repository) as reader:
@@ -78,11 +88,20 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     validate_json(data, package_root / "schemas/public-input.schema.json", "input")
     command_id = command.get("id", "invoke-guru-establish-task-branch-binding")
     if command_id in {"discover-task-branch-binding-candidates", "record-task-branch-binding-plan"}:
-        if data["action"] != "establish":
+        if data["profile"] != "delivery_active_task" or data.get("action") != "establish":
             raise CommandError("invalid_arguments", "action", "Discovery and plan validation must not recover or mutate.")
         repository = inspect_repository(Path(args.root).resolve())
         key = TaskLifecycleKey(data["task_id"], data["lifecycle_generation"])
-        artifact = resolve_task_ref(Path(args.root).resolve(), data["task_ref"], expected_task_id=key.task_id)
+        try:
+            artifact = resolve_task_ref(Path(args.root).resolve(), data["task_ref"], expected_task_id=key.task_id)
+        except LifecycleContractError as exc:
+            remediation = f"{exc.code}: {exc.remediation}"
+            if exc.code == "task_not_found":
+                remediation += (
+                    " Use guru-establish-task-identity to verify the original Git carrier, then follow "
+                    "guru-establish-task-branch-binding/references/task-carrier-recovery.md."
+                )
+            raise CommandError("stale_identity", exc.field_path, remediation, 3) from exc
         if artifact.lifecycle_state != "active" or artifact.lifecycle_generation != key.lifecycle_generation:
             raise CommandError("stale_identity", "task_ref", "Resolve the current active task incarnation.", 3)
         resolution = resolve_establishment(
@@ -100,9 +119,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             }
         return output
     if command_id in {"recover-established-task-branch-binding-result", "check-task-branch-binding-result"}:
-        if data["action"] != "recover":
+        if data["profile"] != "delivery_active_task" or data.get("action") != "recover":
             raise CommandError("invalid_arguments", "action", "Use the read-only recovery action for this command.")
-    elif command_id == "establish-task-branch-binding" and data["action"] != "establish":
+    elif command_id == "establish-task-branch-binding" and (
+        data["profile"] != "delivery_active_task" or data.get("action") != "establish"
+    ):
         raise CommandError("invalid_arguments", "action", "Use the establishment action for this command.")
     output = invoke(Path(args.root).resolve(), data)
     validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")

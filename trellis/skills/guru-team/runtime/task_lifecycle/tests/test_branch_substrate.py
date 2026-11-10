@@ -17,6 +17,7 @@ from runtime.task_lifecycle.branch_resolution import (
     OwnershipCurrent,
     discover_branch_candidates,
     establish_branch_binding,
+    establish_restored_checkout_binding,
     recover_established_branch_binding,
     resolve_establishment,
 )
@@ -474,6 +475,76 @@ class BranchSubstrateTests(unittest.TestCase):
             result.binding.binding_revision,
             3,
         )
+
+    def restore_current_checkout(self, **overrides):
+        arguments = {"key": self.key, "task_ref": TASK_REF,
+                     "branch_name": "main", "expected_head": self.fixture.head, **overrides}
+        return establish_restored_checkout_binding(
+            self.repository, self.store, self.ownership, **arguments,
+        )
+
+    def test_restored_checkout_preserves_existing_binding_revision(self) -> None:
+        binding = self.store.establish(self.key, "main", binding_revision=3)
+        result = self.restore_current_checkout()
+        self.assertEqual(result.binding, binding)
+        self.assertEqual(result.ownership.binding_revision, 3)
+        before = (self.store.snapshot(self.key), self.ownership.snapshot(self.key))
+        self.assertEqual(self.restore_current_checkout().kind, "already_established")
+        self.assertEqual((self.store.snapshot(self.key), self.ownership.snapshot(self.key)), before)
+
+    def test_restored_checkout_preserves_existing_ownership(self) -> None:
+        ownership = self.ownership.establish_current(
+            self.key, binding_revision=4, branch_name="main",
+            branch_ownership="guru_owned", worktree_ownership="not_applicable",
+        )
+        before = self.ownership.snapshot(self.key)
+        result = self.restore_current_checkout()
+        self.assertEqual(result.binding.binding_revision, 4)
+        self.assertEqual(result.ownership, ownership)
+        self.assertEqual(self.ownership.snapshot(self.key), before)
+
+    def test_restored_linked_checkout_uses_conservative_resource_ownership(self) -> None:
+        self.fixture.branch("restored-topic")
+        linked = self.fixture.linked(self.root, "restored-topic")
+        result = establish_restored_checkout_binding(
+            inspect_repository(linked), self.store, self.ownership,
+            key=self.key, task_ref=TASK_REF,
+            branch_name="restored-topic", expected_head=self.fixture.head,
+        )
+        self.assertEqual(result.binding.branch_name, "restored-topic")
+        self.assertEqual(self.ownership.projections[-1], {
+            "action": "establish", "branch_ownership": "caller_owned",
+            "worktree_ownership": "caller_owned",
+        })
+
+    def test_restored_checkout_rejects_normal_head_or_branch_drift_before_writing(self) -> None:
+        reviewed_head = self.fixture.head
+        (self.fixture.repo / "tracked.txt").write_text("new normal work\n")
+        self.fixture.git("add", "tracked.txt")
+        self.fixture.git("commit", "-m", "advance target")
+        with self.assertRaisesRegex(LifecycleContractError, "branch_registration_mismatch"):
+            self.restore_current_checkout(expected_head=reviewed_head)
+        self.fixture.git("switch", "-c", "other-target")
+        with self.assertRaisesRegex(LifecycleContractError, "branch_registration_mismatch"):
+            self.restore_current_checkout()
+        self.assertIsNone(self.store.read(self.key))
+        self.assertIsNone(self.ownership.read_current(self.key))
+
+    def test_restored_checkout_keeps_other_task_branch_association(self) -> None:
+        other = TaskLifecycleKey("another-task", 0)
+        binding = self.store.establish(other, "main")
+        with self.assertRaisesRegex(LifecycleContractError, "branch_bound_to_other_task"):
+            self.restore_current_checkout()
+        self.assertEqual(self.store.read(other), binding)
+        self.assertIsNone(self.store.read(self.key))
+        self.assertIsNone(self.ownership.read_current(self.key))
+
+    def test_restored_checkout_keeps_unresolved_resource_responsibility(self) -> None:
+        self.ownership.unresolved_branches.add("main")
+        with self.assertRaisesRegex(LifecycleContractError, "unresolved_resource_incarnation"):
+            self.restore_current_checkout()
+        self.assertIsNone(self.store.read(self.key))
+        self.assertIsNone(self.ownership.read_current(self.key))
 
     def test_establishment_complete_control_loss_starts_at_revision_zero(self) -> None:
         self.establish_control()

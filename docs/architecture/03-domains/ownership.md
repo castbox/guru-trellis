@@ -25,11 +25,19 @@
 | `ARCH-DOM-021` | task lifecycle identity and stage evidence | Fork 独占 official TaskId/TaskRef/generation/session primitives；Guru shared lifecycle catalog/runtime 独占 package-neutral DTO、normalization、resolver adapter 与稳定错误；Reconcile 独占 integration commit，Task Commit 独占 exact committed candidate，Branch Review 独占 full/continuity review；本边界不替代 `ARCH-DOM-019` 的现有 deferred binding owner |
 | `ARCH-DOM-022` | task checkout substrate | Guru shared lifecycle runtime 独占 call-local checkout plan/candidate/resolution/selection、common-dir live facts、adopt/provision transaction、bounded rollback 与 read-only recovery；machine path 不进入 durable task/session/branch/resource authority；`guru-ensure-task-checkout` 仅是 planned ID，E434 独占完整 package 与 activation |
 | `ARCH-DOM-023` | checkout acquisition provenance | acquisition transaction独占transaction-created worktree marker写入，output-loss recovery是唯一只读consumer，direct handoff独占retirement；marker不成为task/session/branch/workspace/resource authority，replacement resource不得继承Guru ownership |
-| `ARCH-DOM-024` | task branch association | C4 shared lifecycle runtime 独占 Git common-dir TaskBranchBinding、live candidate discovery、establishment/rebind transaction 与 lost-output recovery；C5 ownership owner只通过窄 port提供current/snapshot/restore/establish/rebind/unresolved-ref能力，不向C4暴露ledger representation；E434独占planned package activation |
+| `ARCH-DOM-024` | task branch association | C4 shared lifecycle runtime 独占 Git common-dir TaskBranchBinding、live candidate discovery、establishment/rebind transaction 与 lost-output recovery；C5 ownership owner只通过窄 port提供current/snapshot/restore/establish/rebind/unresolved-ref能力，不向C4暴露ledger representation；已恢复工作区的显式关联准入见下文“C4/C5 同身份恢复关联”；E434独占planned package activation |
 | `ARCH-DOM-025` | session and resource control | Fixed Fork official schema-2 session store 独占持久化；C5 adapter 独占 path-free TaskId/generation 投影，缺 context key 不写 session。C5 resource ledger 独占 Git common-dir incarnation/ownership、active conservative recovery、remote HEAD advance、Finish seal 与 Cleanup resolution；C4 只消费 `OwnershipPort`，E434 独占 planned package/production activation |
 | `ARCH-DOM-026` | task creation and activation inputs | 独立 Issue owner 仍负责 draft Issue；C6 shared composition 消费 reviewed target 与 C2-C5 primitives，建立 TaskId/generation 0、初始 binding/ledger、optional path-free session，并只读恢复 exact creation result。未来 `guru-create-task` 与 `guru-activate-task` 在 E434 package/graph activation 才获得完整 semantic gate、status mutation 与 recovery；C6 input preparation 只校验 planning/current base 连续性，不越权执行 activation |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
+
+## C4/C5 同身份恢复关联
+
+原 `guru-establish-task-branch-binding` 拥有同身份工作区恢复的关联判断和最小确定性动作。AI 先核固定 Git 载体中的唯一 schema2 TaskId/generation、source/scope、Delivery、完整规划及真实历史缺口，并沿原交互边界选定目标基线和精确写集。原 Git 恢复文件，原 task.py 写选定基线，Identity 核工作区原身份；这些动作不产生新的 Task、Delivery 或阶段结果。
+
+普通未绑定候选仍用 HEAD Git 树核 Task，枚举和排序不变。显式 `delivery_restored_checkout` 仅承接已恢复工作区的首次或补缺 C4/C5 关联：原 Branch 验证 active schema2 身份、当前注册 checkout 的 branch/HEAD，以及同 key/branch/revision 控制和资源冲突。匹配项复用，缺失项经原 C4/C5 事务、窄 OwnershipPort 与回读建立，不覆盖不匹配关联或既有权属。新缺失 branch 权属为 caller_owned；primary worktree 为 not_applicable，linked 为 caller_owned。该既有 Task 恢复不继承 Creation 的非 primary/non-base 限制。
+
+成功仅交原 Ensure 解析唯一 checkout，再由接收聊天自身 Bind 并读 current/continuation。输出丢失使用原 discovery 和 exact read-only recovery；缺历史 Publication/Delivery/full_review/readiness 保持缺失，关联和 session 成功不构成交付或整体完成。没有新 owner、store、恢复账本、授权字段或隐含 commit。原共享/本机职责、冲突与 Cleanup 权限边界保持；取舍及重评条件见 [ADR-TASK-RECOVERY-ASSOCIATION](../adr/task-recovery-association.md)，行为/验证关系见 [同身份载体恢复设计](../../design/current/task-carrier-recovery.md)。
 
 ## #418 只读复审归属
 
