@@ -167,6 +167,10 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 **R713-03 / BEH713-RECOVERY**：原错误owner给出可机器判定的具体字段/约束、所属合同与原恢复入口。输入错误、真实stale和内部故障保持各自语义，未知根因只说明已确认范围。先捕获原exit/stdout/stderr，再按原合同消费receipt.result、checker receipt和唯一typed exit；运输成功不代表阶段通过。真实内容变化重新进入最早受影响owner，不重算旧摘要续命。
 
+Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交接具体 revision_actions；current_scope 不因记录了范围归属而成为新需求选择。真实需求范围变化仍交原 Clarify。每种 planning_stale 输出必须经声明薄投影满足其真实 consumer 输入，不能只由 producer schema 自证。
+
+同一次已执行规划回退后，原 Check 能依据原结果、同一 Task/Delivery 和当前实际状态恢复交接，或在真实当前判断后合法纠正。不得要求本次回退依法清除的 Planning pass，不重复回退，不创建替代身份或补造通过结果，不改旧 artifact/digest，不覆盖当前候选或业务改动。真实身份、内容或范围变化返回受影响原 owner。修复前已回退旧结果只使用实际既有原因果来源转换；来源缺失时报告具体缺口并返回原 owner，不能用当前值拼造原事实。恢复不代表 Planning/Check 通过或可发布；不新增通用事务、跨阶段账本、授权记录或全链 digest。
+
 **R713-04 / BEH713-EVIDENCE**：本项按当前适用性采用已有 source、组件、原公开命令、consumer、matching 安装、synthetic 与局部 native 结果，保留各自实际证明范围。普通字段/authoring/result/receipt 错误、真实 stale 和同结果恢复保留原首次失败、公开纠正、key/B 及仍适用证据。真实 Agent 的当前语义前提仍由原 owner 执行，host 不代填判断或私有身份；结构或命令结果不证明模型行为。#713 取消新增首次正确 preTask→Finish 完整 native 链、独立 N3 public-only 恢复链及旧 fixture 接续验收，取消不记为通过，也不形成必需补证支线。
 
 **R713-05 / BEH713-DISTRIBUTION**：固定 B 及本项差额的 43 active packages、127 commands、180 structured profiles 须完成导航、输入/输出与 consumer 核对。F1–F13 按真实调用语义定位证据和未验证行为，公开支持域保持；本项不追加 F10 或其余非等价 family/profile/caller/goal 的 native 代表。eval 三辅助逐职责对照生产入口，必要生产知识/事实归原 owner；合法 fixture、环境、替身、运输和独立观测保留。R5 保留职责与模块回归验收，取消完整方法加载、Planning→同 fixture Activation/resume 和 Drift 的新增模型补证。canonical、dogfood、声明平台与代表性 matching 安装经原 owner 成套采用；reapply/drift/sidecar/mode 与真实旧 consumer 保持。采用仍匹配的已有实绩，仅刷新实际变更依赖；取消为上述 native 重复准备环境、恢复损坏 clean 或再次安装。完整 Release 矩阵、部署、业务采用和 #711/#712 新范围不由此推定。

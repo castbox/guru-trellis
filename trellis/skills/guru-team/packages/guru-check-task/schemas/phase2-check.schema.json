@@ -60,7 +60,60 @@
     },
     "route": {"enum": [null, "reapprove_plan", "clarify_requirements"]},
     "reason": {"type": "string", "minLength": 1},
-    "consumer": {"$ref": "#/$defs/consumer"}
+    "consumer": {"$ref": "#/$defs/consumer"},
+    "rollback_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "delivery_key",
+        "planning_accepted_result_id",
+        "scope_ref",
+        "plan_ref",
+        "candidate",
+        "planning_evidence"
+      ],
+      "properties": {
+        "delivery_key": {
+          "type": "object"
+        },
+        "planning_accepted_result_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_ref": {
+          "type": "object"
+        },
+        "plan_ref": {
+          "type": "object"
+        },
+        "candidate": {
+          "type": "object"
+        },
+        "planning_evidence": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "locator",
+              "revision"
+            ],
+            "properties": {
+              "locator": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
   },
   "allOf": [
     {

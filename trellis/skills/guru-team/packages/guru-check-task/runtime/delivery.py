@@ -15,18 +15,25 @@ from runtime.task_lifecycle.active_checkout import resolve_active_task_checkout
 from runtime.task_lifecycle.errors import LifecycleContractError
 
 
-def _binding(projection, public):
+def _identity_binding(projection, public):
     try:
         resolve_active_task_checkout(projection.root, public["task_ref"])
     except LifecycleContractError as exc:
         raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
     key = public["delivery_key"]
-    delivery = projection.resolve(key)
-    planning = delivery["results"]["planning"]
-    if planning is None or planning["result_id"] != public["planning_accepted_result_id"]:
-        raise CommandError("stale_identity", "planning_accepted_result_id", "Consume the current public Planning result.", 3)
-    if projection.gate_applicability(key)["planning"]["kind"] != "applicable":
-        raise CommandError("stale_identity", "planning", "Reenter the affected Planning owner.", 3)
+    return projection.resolve(key)
+
+
+def _current_delivery(projection, public):
+    delivery = _identity_binding(projection, public)
+    key = public["delivery_key"]
+    current = projection.current(key)
+    if current.get("kind") != "current" or current.get("key") != key:
+        raise CommandError("stale_identity", "delivery_key", "Resolve this same Delivery through the original identity/selection owner.", 3)
+    return delivery
+
+
+def _candidate_binding(projection, delivery):
     try:
         projection._call(projection.api.delivery_store.verify_candidate, projection.root, delivery["candidate"])
     except LifecycleContractError as exc:
@@ -35,6 +42,32 @@ def _binding(projection, public):
         raise CommandError("stale_identity", "candidate.head_ref", "Begin Check for the actual current candidate.", 3)
     return delivery
 
+
+
+def _binding(projection, public):
+    delivery = _identity_binding(projection, public)
+    planning = delivery["results"]["planning"]
+    if planning is None or planning["result_id"] != public["planning_accepted_result_id"]:
+        raise CommandError("stale_identity", "planning_accepted_result_id", "Consume the current public Planning result.", 3)
+    if projection.gate_applicability(public["delivery_key"])["planning"]["kind"] != "applicable":
+        raise CommandError("stale_identity", "planning", "Reenter the affected Planning owner.", 3)
+    _candidate_binding(projection, delivery)
+    return delivery
+
+
+def planning_stale_output(public, owner):
+    changes = [row["id"] for row in owner["semantic_review"]["scope_decisions"]
+               if row["disposition"] == "scope_change_required"]
+    output = {"exit_id": "planning_stale", "task_ref": public["task_ref"],
+              "delivery_key": public["delivery_key"], "planning_route": owner["route"],
+              "proposal_refs": []}
+    if owner["route"] == "reapprove_plan":
+        if changes:
+            raise CommandError("schema_mismatch", "route", "Return real scope changes to original Clarify; reapprove_plan carries only current-scope repair actions.")
+        output["revision_actions"] = [owner["reason"]]
+    else:
+        output["proposal_refs"] = changes
+    return output
 
 def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
     profile = public["profile"]
@@ -101,9 +134,13 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
         output["finding_refs"] = [row["id"] for row in owner["semantic_review"]["findings"] if row["status"] == "open"]
         pending_rework = ("implementation", "implement.md", ["readiness"])
     elif exit_id == "planning_stale":
-        output.update(planning_route=owner["route"], proposal_refs=[row["id"] for row in owner["semantic_review"]["scope_decisions"]])
-        if owner["route"] == "reapprove_plan" and not output["proposal_refs"]:
-            output["revision_actions"] = [owner["reason"]]
+        from planning_recovery import rollback_binding, validate_result_content, verify_binding_authorities
+        expected = rollback_binding(projection, public, delivery)
+        if owner.get("rollback_binding") != expected:
+            raise CommandError("stale_identity", "rollback_binding", "Record the planning_stale result with --skill-input before the first rework; use the recovery profile only after actual rollback.", 3)
+        verify_binding_authorities(projection, expected)
+        validate_result_content(projection, owner, delivery, public)
+        output = planning_stale_output(public, owner)
         pending_rework = ("planning", "prd.md", ["planning", "check", "full_review", "readiness"])
     validate_json(output, package / "schemas" / ("public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json"), "stdout")
     if pending_rework is not None:

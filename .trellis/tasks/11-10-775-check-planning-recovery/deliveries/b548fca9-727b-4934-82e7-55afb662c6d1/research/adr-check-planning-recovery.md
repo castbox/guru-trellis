@@ -1,0 +1,31 @@
+# ADR-CHECK-PLANNING-RECOVERY：原 Check 的规划交接与已回退恢复
+
+状态：proposed；归属Task 775-check-planning-recovery / Delivery b548fca9-727b-4934-82e7-55afb662c6d1。决定作用于原Check的handoff、拒绝条件与结果生命周期，不是已实现或已晋升声明。
+
+## 背景
+
+Issue775的正常范围内修复形成current_scope+reapprove_plan；旧输出省略Author动作，回退又依法清除了普通Check入口要求的Planning pass。原6.0摘要排除Task目录，rework保留当前scope/plan/candidate，因此当前planning状态无法单独证明是原次回退。
+
+## 决定
+
+采用target_native。直接演进原Check输出、原workflow薄projection与受控consumer。AI保留scope分类、动作和路线判断；reapprove_plan输出具体revision_actions给原Author，真实scope变化进入原Clarify。旧非空refs→Author不可执行分支退出，不以放宽Author合同修复。
+
+原Check新增只读的已回退恢复profile。首次planning_stale前由原recorder在既有6.0结果中保存原key、scope/plan、candidate及规划evidence的最小rollback_binding。恢复比对真实当前对象；不要求当前已清Planning pass、不再次rework、不覆盖候选或业务改动，也不生成阶段通过。
+
+旧6.0没有binding时，原owner从仍持有的真实原公共query或精确Git Task对象选取同key的Planning/candidate事实作单次转换。不能从当前scope/plan反推原值。来源不足时blocked并返回原owner处理缺口；当前scope或计划已变化时重新判断，不宣称原恢复完成。该转换使用同一6.0 schema和上游公共事实，不增加长期历史parser、双写或通用事务。
+
+## 替代与取舍
+
+只清空scope_decisions会丢失真实分类；放宽Author缺actions不能形成可执行修复。继续普通Check重试仍缺Planning；重建pass或替代身份违反原生命周期。独立账本或第二checkpoint增加无必要状态。最小binding是回退后不可重推、且同owner恢复直接消费的事实，保存在已有结果中即可。
+
+代价限于首次planning_stale的局部事实记录和恢复时原对象/规划/候选比对，不新增跨任务协调或远端服务。binding随原结果由正常后继record替换或原owner退休而结束；公共handoff不携带它。上游rework、原结果生命周期或accepted scope变化时须重评。
+
+## provider 与目标采用顺序
+
+恢复前先保留旧目标候选和工具字节；由目标checkout之外的完整matching provider执行其公开Check wrapper，并以既有--root指向原目标。provider拥有当前执行代码与合同，目标已安装且兼容的Task2/Delivery API1继续拥有状态；缺兼容API或实际身份/选择时停止，不使用provider私有Task实现替代。
+
+先恢复公开交接，再由原Author/Clarify按真实输出接续；不再复用旧结果后，原tools owner才能按审查写集采用目标工具，并在后续Check前构造真实after候选。先升级tracked目标工具会改变旧内容身份，不豁免原校验。该顺序只明确既有--root、兼容前置和操作归属，无第二runtime、授权记录或账本。
+
+## 采用、验证与退出
+
+MIGRATION-775定义matching包、workflow、consumer和旧结果操作边界；受管副本经原tools owner同步。V1使用真实Check输出和Author输入schema；V2从真实回退观察同key恢复、无第二回退/pass及旧因果来源转换。未执行结果不记通过。该ADR在原Architecture final_integration审核完整拟写并readback之前保持proposed，不登记共享index，不替代RDT、Check、Review或Task Completion。

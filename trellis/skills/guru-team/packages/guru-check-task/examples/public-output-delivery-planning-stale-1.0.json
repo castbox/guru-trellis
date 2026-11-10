@@ -2,12 +2,13 @@
   "exit_id": "planning_stale",
   "task_ref": ".trellis/tasks/example-task",
   "planning_route": "reapprove_plan",
-  "proposal_refs": [
-    "scope-proposal:R13"
-  ],
+  "proposal_refs": [],
   "delivery_key": {
     "task_id": "example-task",
     "lifecycle_generation": 0,
     "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
-  }
+  },
+  "revision_actions": [
+    "Repair the missing implementation-plan design reference and reapprove this Delivery."
+  ]
 }
