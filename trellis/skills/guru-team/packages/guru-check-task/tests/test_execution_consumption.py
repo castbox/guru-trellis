@@ -105,12 +105,20 @@ class ExecutionConsumptionTests(unittest.TestCase):
                 decision = "current_scope"
             else:
                 value["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
-                value["route"] = "reapprove_plan"
+                value["route"] = "clarify_requirements"
                 decision = "scope_change_required"
             value["semantic_review"]["scope_decisions"] = [{"id": "scope-boundary", "candidate_ref": ref, "disposition": decision, "summary": "The endpoint contract requires current review.", "finding_id": "F-boundary" if result == "implementation_required" else None}]
         return value
 
     def invoke(self, fixture, public, owner, *, success=True):
+        if owner["typed_exit"] == "planning_stale":
+            fields = {"mode", "reviewed_paths", "validation", "docs_ssot", "delivery_policy",
+                      "candidate_classifications", "semantic_review", "typed_exit", "route", "reason", "consumer"}
+            authored = {name: copy.deepcopy(owner[name]) for name in fields}
+            recorded = fixture.wrapper("guru-check-task", "record-phase2-check.sh", "--task", fixture.task_ref,
+                "--skill-input", fixture.write("planning-original-public.json", public),
+                "--input", fixture.write("planning-original-semantic.json", authored))
+            owner = json.loads(Path(recorded["artifact_path"]).read_text())
         return fixture.wrapper("guru-check-task", "invoke.sh", "--input",
                                fixture.write("check-public.json", public), "--owner-result",
                                fixture.write("check-owner.json", owner), success=success)
@@ -199,10 +207,10 @@ class ExecutionConsumptionTests(unittest.TestCase):
                             authored["semantic_review"]["adequacy_dimensions"][2]["status"] = "failed"
                             authored["semantic_review"]["findings"] = [{"id": "F-command", "candidate_ref": ref, "severity": "P2", "summary": "Supported endpoint fails.", "path": "app.txt", "status": "open"}]
                         else:
-                            authored["route"] = "reapprove_plan"
+                            authored["route"] = "clarify_requirements"
                     # The host supplies only semantics. No private content helper
                     # or result identity is used before the real recorder.
-                    skill_args = ["--skill-input", fixture.write("public-capture.json", public)] if profile == "delivery_resolved_reconciliation" else []
+                    skill_args = ["--skill-input", fixture.write("public-capture.json", public)] if profile == "delivery_resolved_reconciliation" or exit_id == "planning_stale" else []
                     recorded = fixture.wrapper("guru-check-task", "record-phase2-check.sh", *skill_args, "--task", fixture.task_ref,
                         "--input", fixture.write("semantic-command.json", authored))
                     artifact = Path(recorded["artifact_path"])
@@ -213,6 +221,32 @@ class ExecutionConsumptionTests(unittest.TestCase):
                         "--owner-result", artifact)
                     self.assertEqual(exit_id, output["exit_id"])
                     self.assertEqual(before, artifact.read_bytes())
+                    if profile == "delivery_resolved_reconciliation" and exit_id == "planning_stale":
+                        # Reuse this real resolved first-rollback fixture. Recovery
+                        # and dry-run correction retain its explicit merge token.
+                        recovery = {"profile": "delivery_planning_stale_recovery",
+                            **{name: public[name] for name in ("mode", "task_ref", "delivery_key")},
+                            "original_check_input": public}
+                        original_result = json.loads(before)
+                        fixture.projection.select(fixture.key)
+                        task_file = fixture.repo / fixture.task_ref / "task.json"
+                        after_rework = task_file.read_bytes()
+                        recovered = fixture.wrapper("guru-check-task", "invoke.sh",
+                            "--input", fixture.write("resolved-recovery.json", recovery),
+                            "--owner-result", fixture.write("resolved-recovery-owner.json", {"original_result": original_result}))
+                        self.assertEqual(output, recovered)
+                        authored["reason"] = "Clarify the actual resolved-plan scope change using the retained original proposal."
+                        corrected_receipt = fixture.wrapper("guru-check-task", "record-phase2-check.sh",
+                            "--task", fixture.task_ref, "--skill-input", fixture.write("resolved-correction-public.json", recovery),
+                            "--input", fixture.write("resolved-correction-authoring.json", authored), "--dry-run")
+                        corrected = {name: value for name, value in corrected_receipt.items()
+                                     if name not in ("artifact_path", "dry_run")}
+                        self.assertEqual(output, fixture.wrapper("guru-check-task", "invoke.sh",
+                            "--input", fixture.write("resolved-corrected-public.json", recovery),
+                            "--owner-result", fixture.write("resolved-corrected-owner.json", {
+                                "original_result": original_result, "corrected_result": corrected})))
+                        self.assertEqual(before, artifact.read_bytes())
+                        self.assertEqual(after_rework, task_file.read_bytes())
                     if exit_id == "passed":
                         # Recover the exact recorded result after its metadata write.
                         fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref)

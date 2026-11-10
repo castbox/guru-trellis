@@ -92,7 +92,8 @@ Ordinary planning omissions return through `planning_stale` to the earliest
 affected original planning owner; implementation-only omissions keep their
 existing repair route. Technical elaboration is not itself a scope change.
 This owner does not rewrite planning or broaden accepted scope to repair it.
-For `planning_stale` with `route=reapprove_plan` and no scope decisions, write
+For every `planning_stale` with `route=reapprove_plan`, including nonempty
+`current_scope` decisions, write
 the concrete planning repair action in the existing `reason` field. The public
 result carries it as `revision_actions` to the original Author; do not invent
 proposal refs for a repair that changes no scope.
@@ -250,3 +251,21 @@ exception, with its bytes/index preserved. Follow the complete command sequence
 and capture contract in [references/contract.md](references/contract.md).
 Old child-sensitive private captures must be recorded and checked again.
 Reconcile remains the sole exact-commit owner.
+
+For an already completed planning rollback, load the contract's
+[original-result recovery](references/contract.md#recover-an-already-completed-planning-rollback)
+and enter `delivery_planning_stale_recovery`. Read the original full result,
+original Check input and actual public state. Judge any correction before the
+original recorder's dry-run; preserve the original result. This separate entry
+validates its rollback binding or retained original public query without the
+cleared Planning pass or ordinary checker, and performs no second rework.
+Missing original source is blocked; actual changes return to their affected
+original owner. Recovery grants only the existing planning handoff.
+
+For a pre-775 rollback, follow the contract's complete external-provider
+`--root` recipe before updating tracked tools in the target. The provider owns
+its matching runtime and handoff contracts; the unchanged target owns its
+compatible installed public Task/Delivery API, C4 and current selection.
+After original Author/Clarify consumes recovery and the old result is no
+longer reused, the original tools owner may apply its separately reviewed
+update. Actual tool/content changes retain the ordinary stale boundary.

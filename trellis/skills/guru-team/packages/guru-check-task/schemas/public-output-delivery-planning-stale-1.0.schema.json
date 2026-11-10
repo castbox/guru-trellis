@@ -51,6 +51,9 @@
       "properties": {
         "proposal_refs": {
           "minItems": 1
+        },
+        "planning_route": {
+          "const": "clarify_requirements"
         }
       },
       "not": {

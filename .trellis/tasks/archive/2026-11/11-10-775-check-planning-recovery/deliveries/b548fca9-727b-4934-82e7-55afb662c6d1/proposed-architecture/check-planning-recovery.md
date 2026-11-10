@@ -1,0 +1,53 @@
+# ADR-CHECK-PLANNING-RECOVERY：原Check规划交接与已回退恢复
+
+Identity：`ADR-CHECK-PLANNING-RECOVERY`。状态：proposed；change_path：target_native。原Architecture owner拥有此决定及其晋升；提出范围为 [Issue #775](https://github.com/castbox/guru-trellis/issues/775) 的Check到Planning交接链。本文保留决定、取舍和退出条件，不是实现、安装、Check或Task Completion结果。
+
+## 适用来源与精确替换边界
+
+适用before为Git `313d80215f65777fc70893a90c6d8dce8005d6dd` 中的Architecture Baseline、design-constitution及change-contract。该版本 `docs/architecture/04-integrations/distribution.md` 的“公开执行资料与原生产能力”把非空proposal_refs保留为旧分支，只为无scope_decisions的reapprove_plan提供Author actions。此决定仅替换该Check交接及其匹配迁移说明，并补同一原owner的已回退恢复；其他公开执行能力、原#710/#713观察和独立迁移边界继续有效。
+
+当前完整定义由 [分发集成单元](../04-integrations/distribution.md#公开执行资料与原生产能力)承载。精确profile、字段schema、命令与错误合同由原Check package单写；本文不复制第二接口。需求scope、规划正文和共享知识分别由原Clarify、Author、RDT及Architecture owners维护。
+
+## 背景与约束
+
+正常范围内修复可形成current_scope与reapprove_plan。旧Check把全部scope_decisions的ID输出为proposal_refs，非空时省略Author必需的修复动作。它随后依法把Delivery回退到planning并清Planning、Check、full_review和readiness结果；普通Check重试又要求已清Planning，交接无法接续。
+
+原6.0内容算法排除Task目录，原Planning accepted result id又不是规划字节摘要。上游rework和合法scope revision均能保留plan_ref/candidate并清结果，故当前planning、空slots以及当前scope等于当前accepted_scope不能证明仍是原次回退。恢复须保留原次绑定，也须识别普通后续scope、计划、候选或身份变化。
+
+## 决定及职责
+
+直接演进原Check输出、原workflow薄projection及受控consumer。Check AI判断scope分类、具体动作与路线。范围内reapprove_plan携带可执行actions给原Author；真实scope变化保留对应proposal_refs交原Clarify。scope_decisions继续保留在原Check语义结果中。旧非空refs到Author的路径退出，Author的必需actions合同不放宽。
+
+原recorder在首次planning_stale前，从明确原调用及当时的公共Delivery/Planning事实派生最小rollback_binding，放入同一既有6.0结果。它保存原key、scope/plan、Planning result id、candidate和三份规划evidence，供同Check恢复直接消费。AI不手填这些事实或摘要，后继consumer不接收该绑定。普通通过结果不增加恢复义务，原11字段authoring保持。
+
+原Check通过自己的已回退恢复profile读取原input/result和当前公共对象，核同Task/generation/key/C4、原scope/plan/三规划字节及原candidate的B、HEAD、内容和paths。只有仍在planning、四结果已清且原绑定与内容一致，才投影合法planning_stale。它不要求当前Planning pass，不再次rework、写pass或覆盖业务内容。真实变化保留具体字段与原owner路线，不扩为任意planning放行。
+
+交接需要语义纠正时，由原Check重新判断分类、动作和路线，保留旧6.0字节。新结果仍受同次原绑定约束；原recorder dry-run只生成新结果，不覆盖旧结果，恢复使用自己的事实校验，不走要求已清Planning的普通Check前置。
+
+旧6.0无绑定时，只从实际已持有的原公共query，或经原公共parser读取精确Git Task对象取得同key的原Planning/candidate事实，核原result id后作同owner一次转换。缺来源时blocked并说明缺什么及原Planning/Clarify的重新判断路线。不能用当前值补原事实、修改旧artifact/digest、读取旧Activation私有checkpoint或补造已清Planning pass。
+
+## 修复前现场的provider与目标边界
+
+旧现场保留目标checkout的原HEAD、candidate、三规划、tracked工具及业务字节，使用目标之外的完整matching Guru provider提供workflow/router、Check package、consumer合同及managed runtime。原owner从provider公开Check wrapper以既有 `--root <目标checkout>` 先恢复未变目标；launcher选择provider根的完整runtime，Check的root指向目标。该参数和目标兼容前置在公开命令元数据及help中声明，不复制单包或依赖目标旧dispatcher提供新入口。
+
+身份与状态authority仍是目标自己的Task schema2 / Delivery API1.0、C4和真实当前选择。目标缺兼容公共API、身份/选择不符或原来源缺失时按原诊断停止，不加载provider私有Task实现作fallback，不引入身份环境覆盖。
+
+原Author/Clarify consumer从完整provider承接实际恢复输出并进入当前重规划。确定不再复用旧结果后，原tools owner才按另行审查的写集成套采用目标工具；恢复本身不安装或更新目标。先原地改变tracked工具会改变旧结果覆盖的内容与candidate，受影响原owner须判断真实变化，不能补旧token或豁免内容校验来复用旧结果。后续implementation绑定真实after并重新Check。
+
+## 替代、必要性与代价
+
+仅删除scope_decisions会丢失真实分类；放宽Author缺actions无法形成可执行修复。继续普通Check重试仍缺Planning。补造旧pass或替代Task/Delivery改变原生命周期。只用当前状态会混淆正常后续scope修订，不能完成原次恢复。
+
+恢复时总要求调用者另行保留原公共Planning快照，会把原已掌握事实的保留责任移到每个调用者，并不能改善已丢失来源的旧现场。把不可重推且有直接consumer的最小事实放入已有Check结果即可；独立事务、第二checkpoint和永久账本增加无必要状态。
+
+先更新目标工具再恢复，会使普通tracked差额触发原内容校验，不能在不放宽原绑定的前提下复用旧结果。复用完整外部provider和既有root参数，可保留目标事实与公开API职责；新远程执行服务、备用runtime或恢复账本并无必要。
+
+代价限于首次planning_stale读取既有公共事实、在原结果写入中增加局部字段，以及恢复时读取原结果、当前公共对象、三份规划字节和候选内容。旧现场另由原owner明确选择完整provider与目标、核兼容前置及采用顺序。无跨Task串行、锁、服务或额外远端请求。binding随原结果正常替换或原owner退休，旧转换消费完毕后交原consumer；不新增授权记录、历史parser、恢复状态或第二authority。
+
+## 采用、验证、退出及重审
+
+[MIGRATION-775](../../../trellis/presets/guru-team/MIGRATION-775.md)定义matching package、workflow、consumer及旧结果操作边界。旧完整安装固定原发行，或由原tools/upgrade owner成套切换；受管用户内容、Task/session、mode和sidecar保持原机制。源变化与知识晋升不证明旧业务安装采用。
+
+验证应从真实Check入口产生范围内planning_stale，再将正式薄projection交Author真实输入schema；从同一次已执行回退观察恢复、纠正及旧因果来源转换，确认同key、无第二rework/pass和旧结果字节保持。旧现场通过目标外完整provider wrapper的root参数恢复未变目标，并观察目标tracked工具真实改变时旧恢复拒绝；局部fixture不称为完整升级链证明。合法后续scope/计划/内容变化及缺来源应保留原owner处理结果。定向source、installed、drift及实际行为分别报告，不继承无关native或完整Release矩阵。
+
+新增绑定在原结果退休时退出；旧结果转换仅支持有实际原事实的原次回退，不成为默认双读。上游rework保留字段、Planning evidence、Check结果生命周期、accepted scope或直接consumer变化时，由原owner重评对应机制。当前实现与安装验证尚待实际执行，本文不预填通过。共享目标仅在独立完整候选评估及candidate Check后，由原Architecture owner在final_integration整合、读回并判断适用性；随后重绑actual after并执行最终质量链。

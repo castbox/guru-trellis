@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-10T03:35:30Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-10-775-check-planning-recovery",
+    "title": "修复 Check 规划回退交接与原结果恢复",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-10-775-check-planning-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/775-check-planning-recovery",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "修复 Check 规划回退交接与原结果恢复",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery",
+          ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery/prd.md",
+          ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#775"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/775-check-planning-recovery"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery",
+        ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery/prd.md",
+        ".trellis/tasks/archive/2026-11/11-10-775-check-planning-recovery/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复 Check 规划回退交接与原结果恢复；#775；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}

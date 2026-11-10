@@ -514,3 +514,7 @@ AI 自行新建 linked worktree 时，先读取 live Git topology 与确证 prim
 源码修改不表示已有安装已采用；已有 checkout 通过 `guru-upgrade-tools` 更新完整 matching
 工具投影并验证 drift/sidecar，保留 Task/session 和用户配置。完整多平台安装、升级及 Release
 矩阵不属于本项验证范围。
+
+Check 对所有范围内规划修复传递真实 actions，原结果恢复使用同 owner 的独立入口。
+完整 matching 采用、已回退旧现场、缺来源 blocked 及验证边界见
+[MIGRATION-775](../../presets/guru-team/MIGRATION-775.md)；恢复不生成 Planning 或 Check pass。
