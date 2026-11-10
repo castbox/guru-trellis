@@ -21,6 +21,19 @@ Missing or multiple registered checkouts route to checkout acquisition. An
 identity or ownership contradiction fails closed. No task or Git mutation is
 performed here.
 
+For same-identity carrier recovery, read this owner's boundary in the original
+Branch [recovery contract](../guru-establish-task-branch-binding/references/task-carrier-recovery.md).
+First obtain the actual restored workspace Identity result. A normal missing
+C4 binding or C5 ownership returns to Branch; where unbound HEAD lacks the
+restored Task, that owner alone reviews and invokes `delivery_restored_checkout`.
+This Ensure owner does not relax candidate checks, restore files, set a base,
+create controls or require a commit. Reuse an already valid binding directly.
+After establishment, invoke this public entry again and require one current
+registered checkout with matching TaskId/generation, branch and ownership.
+An association contradiction or ambiguous checkout retains its original stop.
+Only `checkout_resolved` supplies the execution path to the receiving Bind
+consumer; it is not a session binding, Delivery selection or stage result.
+
 Invoke `scripts/invoke.sh --root . --input -` with the structured input on
 stdin. Return exactly one declared typed exit. Reinvoke after an acquisition
 or establishment route; never infer a branch from a task name or checkout path.

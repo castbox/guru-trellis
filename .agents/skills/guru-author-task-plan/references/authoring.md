@@ -186,6 +186,13 @@ owner; other technical constraints require their real upstream disposition.
 Implement owns one Delivery Policy: full by default; partial requires an
 independent slice, remaining work and whole Completion conditions; staged
 requires ordered/current stage, entry/exit, remaining stages and final conditions.
+Full describes the selected current coverage; it does not automatically assign
+every future Task requirement to the current Delivery. Consume original
+Clarify's [scope allocation judgment](../../guru-clarify-requirements/references/contract.md#delivery-scope-revision)
+in the Delivery PRD and this unique Policy. When responsibility remains for a
+successor, use the existing partial/staged semantics to state the actual slice,
+remaining work and whole-Task Completion conditions. Changing the Policy label
+alone does not change the implementation or acceptance boundary.
 Delivery Review and Completion inspect policy, never write it. Select one
 Docs SSOT strategy (ssot_first, delta_first, bootstrap_or_repair_docs,
 no_docs_update_needed) and name the original RDT writer/direct consumer.
@@ -347,7 +354,18 @@ judgments; the specific implementation scope-revision duties below still apply.
 
 After original Clarify publishes a whole-scope revision during implementing,
 the implementation coordinator checks the reviewed slice anchors against the
-actual `accepted_scope`. For its existing scope-revision path, use
+actual `accepted_scope` and consumes Clarify's allocation judgment before
+assigning current-slice work. For an independent capability left to successor
+responsibility, Author refreshes the current slice's necessary sources,
+boundaries, dependencies and unique Policy while preserving its actual
+implementation/acceptance boundary. Same-slice repairs and immediate
+replacement refresh the affected planning and reviews. An invalid old slice
+uses the original coordinator's legal rework or withdrawal/replanning; it
+cannot proceed to publication under superseded behavior. Creation establishes
+the next Delivery only when successor implementation is needed. Preserve the
+fixed range and actual predecessor facts described above in every route.
+
+For the existing current-slice scope-revision rework path, use
 `owner_role=implementation`, `expected_phase=implementing`,
 `target_role=planning`, `affected_results=[planning,check,full_review,readiness]`
 and the reviewed current `scope_ref`; `reason` is that current authority.

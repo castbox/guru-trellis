@@ -1,0 +1,777 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-10-773-task-recovery-diagnostics",
+  "id": "773-task-recovery-diagnostics",
+  "name": "773-task-recovery-diagnostics",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 773,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Task 分支发现诊断并补齐同身份恢复指引",
+  "description": "交付 #773 R1 准确诊断与 R2 原 owner 同身份有界恢复指引。",
+  "dev_type": null,
+  "scope": "#773 当前正文 R1/R2 和最小验收；原 owner 核实公开入口，仅在存在具体执行缺口时补最小动作，保留历史门禁缺口。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-10",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+    "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+  },
+  "deliveries": [
+    {
+      "id": "3481d721-813e-4d8c-8f8d-1a93d8caf757",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+          "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+        "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+      },
+      "candidate": {
+        "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+        "content_ref": "sha256:7e2e83887e721d03d0a130395ea65b87bd31da0e4654adc8e848810731d92adc",
+        "head_ref": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-author-task-plan/references/authoring.md",
+          ".agents/skills/guru-bind-task-session/SKILL.md",
+          ".agents/skills/guru-clarify-requirements/references/contract.md",
+          ".agents/skills/guru-ensure-task-checkout/SKILL.md",
+          ".agents/skills/guru-establish-task-branch-binding/SKILL.md",
+          ".agents/skills/guru-establish-task-branch-binding/commands.json",
+          ".agents/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+          ".agents/skills/guru-establish-task-branch-binding/interface.json",
+          ".agents/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+          ".agents/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+          ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+          ".agents/skills/guru-establish-task-identity/SKILL.md",
+          ".claude/skills/guru-author-task-plan/references/authoring.md",
+          ".claude/skills/guru-bind-task-session/SKILL.md",
+          ".claude/skills/guru-clarify-requirements/references/contract.md",
+          ".claude/skills/guru-ensure-task-checkout/SKILL.md",
+          ".claude/skills/guru-establish-task-branch-binding/SKILL.md",
+          ".claude/skills/guru-establish-task-branch-binding/commands.json",
+          ".claude/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+          ".claude/skills/guru-establish-task-branch-binding/interface.json",
+          ".claude/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+          ".claude/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+          ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+          ".claude/skills/guru-establish-task-identity/SKILL.md",
+          ".cursor/skills/guru-author-task-plan/references/authoring.md",
+          ".cursor/skills/guru-bind-task-session/SKILL.md",
+          ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          ".cursor/skills/guru-ensure-task-checkout/SKILL.md",
+          ".cursor/skills/guru-establish-task-branch-binding/SKILL.md",
+          ".cursor/skills/guru-establish-task-branch-binding/commands.json",
+          ".cursor/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+          ".cursor/skills/guru-establish-task-branch-binding/interface.json",
+          ".cursor/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+          ".cursor/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+          ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+          ".cursor/skills/guru-establish-task-identity/SKILL.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+          ".trellis/guru-team/skills/packages/guru-bind-task-session/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/commands.json",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/interface.json",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+          ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+          ".trellis/guru-team/skills/packages/guru-establish-task-identity/SKILL.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/adr/task-recovery-association.md",
+          "docs/design/current/task-carrier-recovery.md",
+          "docs/requirements/current/task-carrier-recovery.md",
+          "docs/test/current/task-carrier-recovery.md",
+          "trellis/presets/guru-team/MIGRATION-773.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+          "trellis/skills/guru-team/packages/guru-bind-task-session/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-ensure-task-checkout/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/commands.json",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/interface.json",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+          "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-establish-task-identity/SKILL.md",
+          "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:eb0d46f6-e3cb-4d0f-ac6d-5567f4039ac3",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+              "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+            "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/prd.md",
+              "revision": "sha256:3d13f5aaff904f300d4ca44fa8dbf016d062f69d5efc4e519146315a30823a82"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+              "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/implement.md",
+              "revision": "sha256:07a6fafd675eef7c745f1f2f8c7383aaa02128b8732db0b433238644c041a938"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:236b1af0934bbee4bdde32736ee05b50d7d61df46627c15e42ac393c4bf1bc74",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+              "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+            "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+          },
+          "candidate": {
+            "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+            "content_ref": "sha256:7e2e83887e721d03d0a130395ea65b87bd31da0e4654adc8e848810731d92adc",
+            "head_ref": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/references/authoring.md",
+              ".agents/skills/guru-bind-task-session/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-ensure-task-checkout/SKILL.md",
+              ".agents/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".agents/skills/guru-establish-task-branch-binding/commands.json",
+              ".agents/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".agents/skills/guru-establish-task-branch-binding/interface.json",
+              ".agents/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".agents/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".agents/skills/guru-establish-task-identity/SKILL.md",
+              ".claude/skills/guru-author-task-plan/references/authoring.md",
+              ".claude/skills/guru-bind-task-session/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-ensure-task-checkout/SKILL.md",
+              ".claude/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".claude/skills/guru-establish-task-branch-binding/commands.json",
+              ".claude/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".claude/skills/guru-establish-task-branch-binding/interface.json",
+              ".claude/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".claude/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".claude/skills/guru-establish-task-identity/SKILL.md",
+              ".cursor/skills/guru-author-task-plan/references/authoring.md",
+              ".cursor/skills/guru-bind-task-session/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-ensure-task-checkout/SKILL.md",
+              ".cursor/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".cursor/skills/guru-establish-task-branch-binding/commands.json",
+              ".cursor/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".cursor/skills/guru-establish-task-branch-binding/interface.json",
+              ".cursor/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".cursor/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".cursor/skills/guru-establish-task-identity/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+              ".trellis/guru-team/skills/packages/guru-bind-task-session/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/commands.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/interface.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-identity/SKILL.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/adr/task-recovery-association.md",
+              "docs/design/current/task-carrier-recovery.md",
+              "docs/requirements/current/task-carrier-recovery.md",
+              "docs/test/current/task-carrier-recovery.md",
+              "trellis/presets/guru-team/MIGRATION-773.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+              "trellis/skills/guru-team/packages/guru-bind-task-session/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-ensure-task-checkout/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/commands.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/interface.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-identity/SKILL.md",
+              "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:eb0d46f6-e3cb-4d0f-ac6d-5567f4039ac3",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/prd.md",
+              "revision": "sha256:3d13f5aaff904f300d4ca44fa8dbf016d062f69d5efc4e519146315a30823a82"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+              "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+            },
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/implement.md",
+              "revision": "sha256:07a6fafd675eef7c745f1f2f8c7383aaa02128b8732db0b433238644c041a938"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:f9088fd41c9e36c1ae0ce3ce7f806d832e37116fbb7cc544ccead099035ffca5",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+              "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+            "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+          },
+          "candidate": {
+            "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+            "content_ref": "sha256:7e2e83887e721d03d0a130395ea65b87bd31da0e4654adc8e848810731d92adc",
+            "head_ref": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/references/authoring.md",
+              ".agents/skills/guru-bind-task-session/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-ensure-task-checkout/SKILL.md",
+              ".agents/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".agents/skills/guru-establish-task-branch-binding/commands.json",
+              ".agents/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".agents/skills/guru-establish-task-branch-binding/interface.json",
+              ".agents/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".agents/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".agents/skills/guru-establish-task-identity/SKILL.md",
+              ".claude/skills/guru-author-task-plan/references/authoring.md",
+              ".claude/skills/guru-bind-task-session/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-ensure-task-checkout/SKILL.md",
+              ".claude/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".claude/skills/guru-establish-task-branch-binding/commands.json",
+              ".claude/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".claude/skills/guru-establish-task-branch-binding/interface.json",
+              ".claude/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".claude/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".claude/skills/guru-establish-task-identity/SKILL.md",
+              ".cursor/skills/guru-author-task-plan/references/authoring.md",
+              ".cursor/skills/guru-bind-task-session/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-ensure-task-checkout/SKILL.md",
+              ".cursor/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".cursor/skills/guru-establish-task-branch-binding/commands.json",
+              ".cursor/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".cursor/skills/guru-establish-task-branch-binding/interface.json",
+              ".cursor/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".cursor/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".cursor/skills/guru-establish-task-identity/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+              ".trellis/guru-team/skills/packages/guru-bind-task-session/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/commands.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/interface.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-identity/SKILL.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/adr/task-recovery-association.md",
+              "docs/design/current/task-carrier-recovery.md",
+              "docs/requirements/current/task-carrier-recovery.md",
+              "docs/test/current/task-carrier-recovery.md",
+              "trellis/presets/guru-team/MIGRATION-773.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+              "trellis/skills/guru-team/packages/guru-bind-task-session/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-ensure-task-checkout/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/commands.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/interface.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-identity/SKILL.md",
+              "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py"
+            ]
+          },
+          "predecessor_result_id": "check:236b1af0934bbee4bdde32736ee05b50d7d61df46627c15e42ac393c4bf1bc74",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/implement.md",
+              "revision": "sha256:07a6fafd675eef7c745f1f2f8c7383aaa02128b8732db0b433238644c041a938"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:d26017084fd5bfd5dbf08703259f5aa337f276deadff9f9e749b3d6fed89b004",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+              "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+            "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+          },
+          "candidate": {
+            "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+            "content_ref": "sha256:7e2e83887e721d03d0a130395ea65b87bd31da0e4654adc8e848810731d92adc",
+            "head_ref": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/references/authoring.md",
+              ".agents/skills/guru-bind-task-session/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-ensure-task-checkout/SKILL.md",
+              ".agents/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".agents/skills/guru-establish-task-branch-binding/commands.json",
+              ".agents/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".agents/skills/guru-establish-task-branch-binding/interface.json",
+              ".agents/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".agents/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".agents/skills/guru-establish-task-identity/SKILL.md",
+              ".claude/skills/guru-author-task-plan/references/authoring.md",
+              ".claude/skills/guru-bind-task-session/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-ensure-task-checkout/SKILL.md",
+              ".claude/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".claude/skills/guru-establish-task-branch-binding/commands.json",
+              ".claude/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".claude/skills/guru-establish-task-branch-binding/interface.json",
+              ".claude/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".claude/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".claude/skills/guru-establish-task-identity/SKILL.md",
+              ".cursor/skills/guru-author-task-plan/references/authoring.md",
+              ".cursor/skills/guru-bind-task-session/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-ensure-task-checkout/SKILL.md",
+              ".cursor/skills/guru-establish-task-branch-binding/SKILL.md",
+              ".cursor/skills/guru-establish-task-branch-binding/commands.json",
+              ".cursor/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".cursor/skills/guru-establish-task-branch-binding/interface.json",
+              ".cursor/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".cursor/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".cursor/skills/guru-establish-task-identity/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+              ".trellis/guru-team/skills/packages/guru-bind-task-session/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/commands.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/interface.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              ".trellis/guru-team/skills/packages/guru-establish-task-identity/SKILL.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/adr/task-recovery-association.md",
+              "docs/design/current/task-carrier-recovery.md",
+              "docs/requirements/current/task-carrier-recovery.md",
+              "docs/test/current/task-carrier-recovery.md",
+              "trellis/presets/guru-team/MIGRATION-773.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+              "trellis/skills/guru-team/packages/guru-bind-task-session/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-ensure-task-checkout/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/commands.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/interface.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-identity/SKILL.md",
+              "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:f9088fd41c9e36c1ae0ce3ce7f806d832e37116fbb7cc544ccead099035ffca5",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/implement.md",
+              "revision": "sha256:07a6fafd675eef7c745f1f2f8c7383aaa02128b8732db0b433238644c041a938"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:1aede0eb04ee56d425ec1217a0219a7e536896156d6bf611f42cefeb64613036",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/786",
+            "revision": "sha256:e4136f0a6a64760c3672643fce4434ca863ab195f7ca45392e00fa45b7e8353e"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+          "content_ref": "sha256:7e2e83887e721d03d0a130395ea65b87bd31da0e4654adc8e848810731d92adc",
+          "head_ref": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-author-task-plan/references/authoring.md",
+            ".agents/skills/guru-bind-task-session/SKILL.md",
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-ensure-task-checkout/SKILL.md",
+            ".agents/skills/guru-establish-task-branch-binding/SKILL.md",
+            ".agents/skills/guru-establish-task-branch-binding/commands.json",
+            ".agents/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".agents/skills/guru-establish-task-branch-binding/interface.json",
+            ".agents/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".agents/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".agents/skills/guru-establish-task-identity/SKILL.md",
+            ".claude/skills/guru-author-task-plan/references/authoring.md",
+            ".claude/skills/guru-bind-task-session/SKILL.md",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-ensure-task-checkout/SKILL.md",
+            ".claude/skills/guru-establish-task-branch-binding/SKILL.md",
+            ".claude/skills/guru-establish-task-branch-binding/commands.json",
+            ".claude/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".claude/skills/guru-establish-task-branch-binding/interface.json",
+            ".claude/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".claude/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".claude/skills/guru-establish-task-identity/SKILL.md",
+            ".cursor/skills/guru-author-task-plan/references/authoring.md",
+            ".cursor/skills/guru-bind-task-session/SKILL.md",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-ensure-task-checkout/SKILL.md",
+            ".cursor/skills/guru-establish-task-branch-binding/SKILL.md",
+            ".cursor/skills/guru-establish-task-branch-binding/commands.json",
+            ".cursor/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".cursor/skills/guru-establish-task-branch-binding/interface.json",
+            ".cursor/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".cursor/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".cursor/skills/guru-establish-task-identity/SKILL.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+            ".trellis/guru-team/skills/packages/guru-bind-task-session/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/commands.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/interface.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-identity/SKILL.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/adr/task-recovery-association.md",
+            "docs/design/current/task-carrier-recovery.md",
+            "docs/requirements/current/task-carrier-recovery.md",
+            "docs/test/current/task-carrier-recovery.md",
+            "trellis/presets/guru-team/MIGRATION-773.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+            "trellis/skills/guru-team/packages/guru-bind-task-session/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-ensure-task-checkout/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/commands.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/interface.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-identity/SKILL.md",
+            "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 786,
+        "reviewed_head": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/786",
+          "revision": "sha256:e4136f0a6a64760c3672643fce4434ca863ab195f7ca45392e00fa45b7e8353e"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:9ad318aed094f06af961e4a734f29300ccde4c88",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/786",
+            "revision": "9ad318aed094f06af961e4a734f29300ccde4c88"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+          "content_ref": "sha256:7e2e83887e721d03d0a130395ea65b87bd31da0e4654adc8e848810731d92adc",
+          "head_ref": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-author-task-plan/references/authoring.md",
+            ".agents/skills/guru-bind-task-session/SKILL.md",
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-ensure-task-checkout/SKILL.md",
+            ".agents/skills/guru-establish-task-branch-binding/SKILL.md",
+            ".agents/skills/guru-establish-task-branch-binding/commands.json",
+            ".agents/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".agents/skills/guru-establish-task-branch-binding/interface.json",
+            ".agents/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".agents/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".agents/skills/guru-establish-task-identity/SKILL.md",
+            ".claude/skills/guru-author-task-plan/references/authoring.md",
+            ".claude/skills/guru-bind-task-session/SKILL.md",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-ensure-task-checkout/SKILL.md",
+            ".claude/skills/guru-establish-task-branch-binding/SKILL.md",
+            ".claude/skills/guru-establish-task-branch-binding/commands.json",
+            ".claude/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".claude/skills/guru-establish-task-branch-binding/interface.json",
+            ".claude/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".claude/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".claude/skills/guru-establish-task-identity/SKILL.md",
+            ".cursor/skills/guru-author-task-plan/references/authoring.md",
+            ".cursor/skills/guru-bind-task-session/SKILL.md",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-ensure-task-checkout/SKILL.md",
+            ".cursor/skills/guru-establish-task-branch-binding/SKILL.md",
+            ".cursor/skills/guru-establish-task-branch-binding/commands.json",
+            ".cursor/skills/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".cursor/skills/guru-establish-task-branch-binding/interface.json",
+            ".cursor/skills/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".cursor/skills/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".cursor/skills/guru-establish-task-identity/SKILL.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+            ".trellis/guru-team/skills/packages/guru-bind-task-session/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/commands.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/interface.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            ".trellis/guru-team/skills/packages/guru-establish-task-identity/SKILL.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/adr/task-recovery-association.md",
+            "docs/design/current/task-carrier-recovery.md",
+            "docs/requirements/current/task-carrier-recovery.md",
+            "docs/test/current/task-carrier-recovery.md",
+            "trellis/presets/guru-team/MIGRATION-773.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+            "trellis/skills/guru-team/packages/guru-bind-task-session/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-ensure-task-checkout/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/commands.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-delivery-restored-checkout-input.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/interface.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/references/task-carrier-recovery.md",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-delivery-restored-checkout-input.schema.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-identity/SKILL.md",
+            "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 786,
+        "reviewed_head": "40647e4abb660a83864b50d4ef1ba2f3cfe0e219",
+        "merge_commit": "9ad318aed094f06af961e4a734f29300ccde4c88",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:9bb1a664-1e90-4756-8042-68dba0bd6fb7",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+          "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/786",
+          "revision": "9ad318aed094f06af961e4a734f29300ccde4c88"
+        },
+        {
+          "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/prd.md",
+          "revision": "sha256:3d13f5aaff904f300d4ca44fa8dbf016d062f69d5efc4e519146315a30823a82"
+        },
+        {
+          "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/design.md",
+          "revision": "sha256:54b4dcd742b989d446d1a0ff762f939fff47afefd102b88e5064fbf51b1b5f4b"
+        },
+        {
+          "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/deliveries/3481d721-813e-4d8c-8f8d-1a93d8caf757/implement.md",
+          "revision": "sha256:07a6fafd675eef7c745f1f2f8c7383aaa02128b8732db0b433238644c041a938"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/prd.md",
+        "revision": "sha256:ad19f6c52b59cda2c4e135d329629b7bb2ef6c9cbb0e5422d79cb2e977675627"
+      },
+      "delivery_result_ids": [
+        "delivery:9ad318aed094f06af961e4a734f29300ccde4c88"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:a93a46be71c9077756b50e67",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/773",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-10-773-task-recovery-diagnostics/closeout/closure/Y2xvc3VyZTphOTNhNDZiZTcxYzkwNzc3NTZiNTBlNjc.json",
+          "revision": "sha256:ea2e351f6f77dc57d4e410f86f2ff8639d998ce9f35b4c142d81de0977587bf0"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:9bb1a664-1e90-4756-8042-68dba0bd6fb7",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/773",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
