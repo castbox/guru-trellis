@@ -1,0 +1,20 @@
+task_id: 779-delegation-results-intervention
+source: https://github.com/castbox/guru-trellis/issues/779
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 221f74caef372414a1c7d700575742eb1e075af4
+architecture:
+  locator: docs/architecture/README.md
+  version: 221f74caef372414a1c7d700575742eb1e075af4
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/task-delivery-lifecycle.md
+  - docs/design/current/task-delivery-lifecycle.md
+  - docs/test/current/task-delivery-lifecycle.md

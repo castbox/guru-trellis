@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-09T23:11:02Z",
+  "installed_at": "2026-11-10T01:20:18Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "313d80215f65777fc70893a90c6d8dce8005d6dd",
-    "commit": "313d80215f65777fc70893a90c6d8dce8005d6dd",
+    "ref": "221f74caef372414a1c7d700575742eb1e075af4",
+    "commit": "221f74caef372414a1c7d700575742eb1e075af4",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1283,7 +1283,7 @@
       ".trellis/spec/workflow/requirements-design-test-ssot.md": "b4e319eabd07c6633843b0fb185327f23ba6c5d57098bfca722135f07a744bf3",
       ".trellis/spec/workflow/semantic-retrieval.md": "5a9e7cb44c772310c06c5aac7a139b6b6b2e69d7a1290c51ff1235c98a02da63",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "d580eb5a83487830550217c79920b3ad8f04661bcb89b369b98b56329b89fba7",
-      ".trellis/spec/workflow/workflow-contract.md": "48b5a42d34b300dcf4528340de273f6ef0445c7809a72dae16cb19a9ed9e44a2",
+      ".trellis/spec/workflow/workflow-contract.md": "063d664388c6ede684cc8a911546043398c14df3bd1991ee183bd8ba7b2fbf7a",
       ".trellis/spec/workflow/skill-package-contract.md": "e3a251537c9cc859d9fbae35b944151311ff988b6c848391aaa186ad525f437a",
       ".trellis/spec/workflow/data-contracts.md": "b0449e5b630564c0b8f45e07c4a4090cac8b2a3704c5727554a8e6721c26378b",
       ".trellis/spec/workflow/companion-scripts.md": "6f401433df1c3b1047f0447ab78b7310af86e1ea5c823b3c851261d268c91916",

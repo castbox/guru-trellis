@@ -554,6 +554,50 @@ implement/check agents. Their terminal results and live repository facts are
 ephemeral evidence for the mandatory `guru-check-task` semantic owner. Do not
 create an implementation handoff artifact.
 
+After delegation, the executor autonomously completes command waits, routine
+environment diagnosis, the original assertions, artifact retrieval and the
+terminal summary within the delegated work package. The planning-external
+observation rule below still applies to scope, mechanism or risk changes.
+
+While the executor progresses normally, the main coordinator advances
+independent work or waits within the platform's supported bounded-wait
+capability. Do not default to tracking the same log in parallel and repeatedly
+sending poll, continue or next-step instructions. Necessary progress queries,
+evidence reading and the main coordinator's use of adb remain permitted.
+
+Intervene only for a real blocker requiring the original owner's decision,
+a scope or mechanism change, a conflicting write, a user stop request, or an
+executor that cannot continue. Before diagnosis or intervention, match the
+process, logs and artifacts to this run and identify the concrete gap. Do not
+turn guesses into restart, rebuild or modification instructions. If the
+terminal state is unknown, report it as unknown.
+
+The executor reports the completed work, actual terminal state, result
+location and unfinished items in the current conversation, using only the
+information needed to consume the result. Normal collaboration does not
+require a PID, handle or hash report for every command. If takeover is needed,
+first inspect the existing work and continue through a usable original handle;
+do not restart by default. Judge log excerpts, a page's PASS, command terminal
+state, artifact validation and work-package completion separately.
+
+When the main coordinator needs a write that conflicts with the executor's
+current work, first request a pause at a natural boundary. Write the conflicting
+content only after the executor confirms the current terminal state and that
+it will not start the next round. Notify the executor to resume after the write.
+Non-conflicting work continues in parallel. Without a conflicting write need,
+the executor continues under the original delegation; do not add a fixed
+approval before each round. If writes have already overlapped, assess the
+actual impact, disclose invalidated evidence and perform the necessary
+validation. Do not require every check to run again.
+
+The main coordinator still checks results against the current requirements,
+identifies new defects and returns them to the original owner. Formal Check
+and independent Review retain their responsibilities. Adopt verifiable
+execution facts after judging their applicability; investigate or rerun only
+for a concrete gap or inconsistency. Treat new requirements as an explicit
+delta through the original owner, rather than changing implicit completion
+conditions through scattered messages.
+
 Every Guru-owned worker invocation prompt authorizes approved-plan work only.
 For any planning-external observation it requires only a candidate ref,
 observed behavior, locators, and a minimal reproduction hint; the worker must
