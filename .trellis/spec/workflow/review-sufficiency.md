@@ -54,6 +54,36 @@ Implementation and tests agreeing cannot establish complete requirements.
 Reading every file, complete chapter headings or filled dimension fields cannot
 replace behavior and relationship coverage.
 
+Within the original owner's read order and isolation, first derive the key
+behavior and relationship questions from its applicable authority, then compare
+those questions with the candidate and implementer's explanation. For a
+multi-stage path, consider the supported continuous actions and necessary
+handoff conditions, not only isolated final states. Derive the required actor,
+trigger, preconditions, result and exceptions from that authority before
+comparing the concrete scenarios across requirements, design and validation.
+Test a normal example that satisfies the source but would lose its promised
+result under an added prerequisite or narrowed result. A retained requirement
+ID or source-disposition label cannot discharge that discrepancy; a real
+commitment change returns to its original source owner.
+
+Trace the same business object's actual production, handoff, read and visible
+result. Check how its content, identity, version and holder correspond at each
+step when the current contract uses those concepts, including which earlier
+results remain usable after content changes. Separate interfaces, matching
+field names or locally correct states do not establish that the next consumer
+has the matching content and prerequisites. If a necessary read, recovery or
+result contract is missing, name that gap, its dependent branch and the
+original owner responsible for resolving it. Do not invent an existing
+capability or narrow the source promise to conceal the gap. Keep these checks
+within the original read order and isolation; they add no identity/version
+protocol or coverage ledger.
+
+The dispatch must not seed
+the independent reviewer with defect answers or a passing narrative. This does
+not move Authority-first Architecture behind requirements/acceptance reading,
+create another reviewer or round, or invalidate still-applicable evidence.
+Keep only the conclusions needed in the original review or planning body.
+
 Tailor units to the actual object and complexity. No universal table, coverage
 percentage, reading quota or unsupported input enumeration is required. Necessary
 unchanged consumers are evidence within the selected review, not automatic
