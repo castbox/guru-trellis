@@ -599,6 +599,126 @@ class SharedRuntimeTests(unittest.TestCase):
         self.assertEqual(failure.stdout, "")
         self.assertEqual(set(json.loads(failure.stderr)), {"code", "field_path", "remediation"})
 
+    def test_exit_discovery_cli_resolves_skill_workflow_stop_and_dynamic_selector(self) -> None:
+        wrapper, root = self.isolated_source_wrapper("trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh")
+        environment = os.environ.copy()
+        cases = (
+            ("guru-activate-delivery", "delivery_stopped", "skill", "guru-review-task-completion"),
+            ("guru-sync-base", "skipped", "workflow", "original-request-route"),
+            ("guru-sync-base", "blocked", "stop", "base-sync-blocked"),
+            ("guru-discover-change-context", "context_ready", "skill", "guru-clarify-requirements"),
+        )
+        for skill, exit_id, kind, consumer_id in cases:
+            with self.subTest(skill=skill, exit=exit_id):
+                process = subprocess.run(
+                    [str(wrapper), "--root", str(root), "--mode", "source", "--skill", skill, "--exit", exit_id, "--json"],
+                    env=environment, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(process.returncode, 0, process.stderr)
+                result = json.loads(process.stdout)
+                self.assertEqual(result["consumer"], {"kind": kind, "id": consumer_id})
+                self.assertEqual(result["exit_id"], exit_id)
+                self.assertNotIn("private_artifacts", result)
+                marker = result["workflow_exit"]
+                self.assertIn(f'"exit":"{exit_id}"', Path(marker["path"]).read_text().splitlines()[marker["line"] - 1])
+                target = result["consumer_entry"]
+                if kind != "skill":
+                    self.assertIn(consumer_id, Path(target["path"]).read_text().splitlines()[target["line"] - 1])
+                elif exit_id == "delivery_stopped":
+                    self.assertEqual(target["input"]["profile_id"], "delivery_completion")
+                    package = root / "trellis/skills/guru-team" / Path(target["interface_path"]).parent
+                    self.assertTrue((package / target["input"]["schema"]["path"]).is_file())
+                    self.assertTrue((package / target["input"]["example"]["path"]).is_file())
+                else:
+                    self.assertEqual(target["input"]["profile_selector"], {"source": "producer_output", "field": "handoff_profile"})
+                    self.assertNotIn("profile_id", target["input"])
+
+    def test_exit_discovery_cli_rejects_unknown_multiple_unmapped_and_mismatch(self) -> None:
+        wrapper, root = self.isolated_source_wrapper("trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh")
+        workflow = root / "trellis/workflows/guru-team/workflow.md"
+        original = workflow.read_text()
+        marker = next(line for line in original.splitlines() if '"skill":"guru-sync-base","exit":"skipped"' in line)
+        target = next(line for line in original.splitlines() if 'guru-workflow-target: {"id":"original-request-route"}' in line)
+        cases = (
+            ("unknown", original, "unknown_exit"),
+            ("skipped", original + "\n" + marker + "\n", "multiple_exit"),
+            ("skipped", original.replace(marker, ""), "unmapped_exit"),
+            ("skipped", original.replace(marker, marker.replace("original-request-route", "ordinary-wrong-target")), "consumer_mismatch"),
+            ("skipped", original.replace(target, ""), "unmapped_exit"),
+            ("skipped", original + "\n" + target + "\n", "multiple_exit"),
+        )
+        for exit_id, content, code in cases:
+            with self.subTest(code=code, exit=exit_id):
+                workflow.write_text(content)
+                process = subprocess.run(
+                    [str(wrapper), "--root", str(root), "--mode", "source", "--skill", "guru-sync-base", "--exit", exit_id, "--json"],
+                    env=os.environ.copy(), text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(process.returncode, 2, process.stdout + process.stderr)
+                self.assertEqual(process.stdout, "")
+                error = json.loads(process.stderr)
+                self.assertEqual(error["code"], code)
+                self.assertEqual(set(error), {"code", "field_path", "remediation"})
+
+    def test_exit_discovery_preserves_interface_mapping_and_installed_workflow_selection(self) -> None:
+        from runtime import discovery
+        workflow = SKILLS.parents[2] / "trellis/workflows/guru-team/workflow.md"
+        entry, _, interface = discovery._interface(SKILLS, "guru-activate-delivery")
+        result = discovery.discover(SKILLS, "guru-activate-delivery", "delivery_stopped", workflow=workflow)
+        self.assertTrue((SKILLS / result["producer_entry"]["skill_path"]).is_file())
+        self.assertEqual(result["producer_entry"]["invocation"]["wrapper"], "scripts/invoke.sh")
+        for key in ("outputs", "projections", "consumer_inputs"):
+            with self.subTest(section=key):
+                missing = copy.deepcopy(interface)
+                missing["public_contracts"][key] = []
+                with self.assertRaises(CommandError) as raised:
+                    discovery._discover_exit(SKILLS, entry, missing, "delivery_stopped", workflow)
+                self.assertEqual(raised.exception.code, "unmapped_exit")
+        mismatch = copy.deepcopy(interface)
+        target = next(item for item in mismatch["public_contracts"]["consumer_inputs"] if item["id"] == "delivery_stopped_completion_seed")
+        target["consumer"]["id"] = "guru-sync-base"
+        with self.assertRaises(CommandError) as raised:
+            discovery._discover_exit(SKILLS, entry, mismatch, "delivery_stopped", workflow)
+        self.assertEqual(raised.exception.code, "consumer_mismatch")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            installed_workflow = root / ".trellis/workflow.md"
+            installed_workflow.parent.mkdir()
+            installed_workflow.write_text(workflow.read_text())
+            stdout = StringIO()
+            with mock.patch.object(discovery, "_validated_skills_root", return_value=SKILLS), redirect_stdout(stdout):
+                status = discovery.main(["--root", str(root), "--mode", "installed", "--skill", "guru-sync-base", "--exit", "blocked"])
+            self.assertEqual(status, 0)
+            self.assertEqual(Path(json.loads(stdout.getvalue())["workflow_exit"]["path"]), installed_workflow.resolve())
+
+    def test_shared_workflow_parser_preserves_global_mapping_validation(self) -> None:
+        from runtime.installed import parse_workflow_markers, workflow_facts
+        consumer = {"kind": "workflow", "id": "example-route"}
+        invocation = '<!-- guru-skill-invoke: {"skill":"guru-example-action","required":true} -->'
+        marker = '<!-- guru-skill-exit: {"skill":"guru-example-action","exit":"completed","consumer":{"kind":"workflow","id":"example-route"}} -->'
+        target = '<!-- guru-workflow-target: {"id":"example-route"} -->'
+        active = {"guru-example-action": {"interface_data": {"external_exits": [{"id": "completed", "consumer": consumer}]}}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow = root / "workflow.md"
+            cases = (
+                ([invocation, marker, target], []),
+                ([invocation, marker, marker, target], ["active skill guru-example-action exit completed has 2 matching exit markers"]),
+                ([invocation, target], ["active skill guru-example-action exit completed has 0 matching exit markers"]),
+            )
+            for lines, expected_errors in cases:
+                with self.subTest(lines=len(lines), expected=expected_errors):
+                    workflow.write_text("\n".join(lines) + "\n")
+                    errors = []
+                    facts = workflow_facts(root, workflow, active, True, errors)
+                    self.assertEqual(errors, expected_errors)
+                    self.assertEqual(facts["invoke_markers"], 1)
+                    self.assertEqual(facts["target_markers"], 1)
+            workflow.write_text("\n".join([invocation, marker, target]) + "\n")
+            parsed = parse_workflow_markers(workflow, [])
+            self.assertEqual(parsed["exit"][0]["line"], 2)
+            self.assertEqual(parsed["target"][0]["kind"], "workflow")
+
     def test_launcher_direct_contract_and_missing_arguments(self) -> None:
         launcher, root = self.isolated_source_wrapper("trellis/skills/guru-team/runtime/launch.sh")
         package = root / "trellis/skills/guru-team/packages/guru-sync-base"

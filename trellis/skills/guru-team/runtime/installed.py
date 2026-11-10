@@ -275,15 +275,9 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
     return result
 
 
-def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]], required: bool, errors: list[str]) -> dict[str, Any]:
-    invokes: list[dict[str, Any]] = []
-    exits: list[dict[str, Any]] = []
-    targets: list[tuple[str, str]] = []
-    if required and lstat_path(root, workflow, "installed workflow", errors, kind="file") is None:
-        return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
-    if not workflow.is_file() or workflow.is_symlink():
-        return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
-    for line in workflow.read_text(encoding="utf-8").splitlines():
+def parse_workflow_markers(workflow: Path, errors: list[str]) -> dict[str, list[dict[str, Any]]]:
+    markers: dict[str, list[dict[str, Any]]] = {kind: [] for kind in MARKER_PATTERNS}
+    for line_number, line in enumerate(workflow.read_text(encoding="utf-8").splitlines(), start=1):
         for kind, pattern in MARKER_PATTERNS.items():
             match = pattern.fullmatch(line)
             if not match:
@@ -296,9 +290,22 @@ def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]]
             if not isinstance(payload, dict):
                 errors.append(f"installed workflow has invalid {kind} marker object")
                 continue
-            if kind == "invoke": invokes.append(payload)
-            elif kind == "exit": exits.append(payload)
-            else: targets.append((match.group(1), str(payload.get("id") or "")))
+            record = {"payload": payload, "line": line_number}
+            if kind == "target":
+                record["kind"] = match.group(1)
+            markers[kind].append(record)
+    return markers
+
+
+def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]], required: bool, errors: list[str]) -> dict[str, Any]:
+    if required and lstat_path(root, workflow, "installed workflow", errors, kind="file") is None:
+        return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
+    if not workflow.is_file() or workflow.is_symlink():
+        return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
+    markers = parse_workflow_markers(workflow, errors)
+    invokes = [record["payload"] for record in markers["invoke"]]
+    exits = [record["payload"] for record in markers["exit"]]
+    targets = [(record["kind"], str(record["payload"].get("id") or "")) for record in markers["target"]]
     if required:
         integrated = {
             skill_id: entry for skill_id, entry in active.items()

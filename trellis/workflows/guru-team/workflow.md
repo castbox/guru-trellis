@@ -272,6 +272,9 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-establish-task-branch-binding","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
 <!-- guru-skill-exit: {"skill":"guru-establish-task-branch-binding","exit":"blocked","consumer":{"kind":"stop","id":"task-branch-binding-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-ensure-task-checkout","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"current_context_ready","consumer":{"kind":"workflow","id":"guru-current-task-checkout-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"no_current_task","consumer":{"kind":"workflow","id":"guru-current-task-checkout-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"context_unavailable","consumer":{"kind":"workflow","id":"guru-current-task-checkout-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"checkout_resolved","consumer":{"kind":"workflow","id":"guru-current-task-checkout-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"binding_required","consumer":{"kind":"workflow","id":"guru-task-branch-binding-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"checkout_required","consumer":{"kind":"workflow","id":"guru-task-checkout-acquisition-router"}} -->
@@ -561,7 +564,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-task-source-review-router | Return ambiguous legacy source to fresh semantic review; do not guess Issue disposition from branch or PR text. |
 | guru-task-branch-established-router | Re-resolve the active checkout with the established branch binding. |
 | guru-task-branch-selection-router | Present current candidates for explicit choice, then revalidate through the binding owner. |
-| guru-current-task-checkout-router | Resume the exact current lifecycle owner with the live resolved checkout. |
+| guru-current-task-checkout-router | `checkout_resolved` resumes the exact current lifecycle owner. `current_context_ready` locates that owner with the checked Task/checkout and optional Delivery key/phase/planning_root; read its complete applicable contract and necessary dependencies before invocation. `no_current_task` reports an available context with no binding; `context_unavailable` reports `context_key_unavailable`. These two query exits stop after reporting and do not start Intake or write selection. |
 | guru-task-branch-binding-router | Invoke `guru-establish-task-branch-binding` for the exact active task. |
 | guru-task-checkout-acquisition-router | Acquire the reviewed checkout through its task owner and re-resolve the same TaskId. |
 | guru-task-branch-rebound-router | Re-resolve the task checkout at the new binding revision; do not carry an old session receipt. |
@@ -901,8 +904,13 @@ Load `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-co
 when continuing a changed candidate or recovering review output. Original
 owners apply that contract; this continuation does not copy their judgments.
 
-Resolve current TaskId/generation, C4 branch binding and unique checkout through
-`guru-ensure-task-checkout`, then use the installed public Delivery current query.
+For the caller's own current context, mandatory invoke
+`guru-ensure-task-checkout:delivery_current_task`. Its `current_context_ready`
+provides checked TaskId/generation, C4/C5 checkout and optional Delivery location.
+Consume its actual exit through `guru-current-task-checkout-router`; the query
+does not choose or execute the next business step. The existing
+`delivery_active_task` profile remains the explicit TaskId/generation entry;
+after `checkout_resolved`, use the installed public Delivery current query.
 Explicit-task mode requires a deliberately selected TaskId. Missing/stale/ambiguous
 binding, unsupported schema/API or missing workflow declaration stops at its
 original owner; inventory and directory names never select execution.

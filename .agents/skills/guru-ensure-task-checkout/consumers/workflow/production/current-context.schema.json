@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-current-task-context-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_id", "task_ref", "lifecycle_generation", "checkout_path"],
+  "properties": {
+    "exit_id": {"const": "current_context_ready"},
+    "task_id": {"type": "string"},
+    "task_ref": {"type": "string"},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "checkout_path": {"type": "string", "minLength": 1},
+    "current_delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delivery_key", "phase", "planning_root"],
+      "properties": {
+        "delivery_key": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["task_id", "lifecycle_generation", "delivery_id"],
+          "properties": {
+            "task_id": {"type": "string"},
+            "lifecycle_generation": {"type": "integer", "minimum": 0},
+            "delivery_id": {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"}
+          }
+        },
+        "phase": {"enum": ["planning", "implementing", "checking", "reviewing", "publishing"]},
+        "planning_root": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

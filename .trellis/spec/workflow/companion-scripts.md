@@ -494,7 +494,7 @@ exactly:
 
 ```bash
 discover-skill-contract --root <repo> --mode <source|installed> \
-  --skill <guru-id> --json
+  --skill <guru-id> [--exit <actual-exit>] --json
 ```
 
 The command resolves the registry row, validates the exact current
@@ -502,6 +502,23 @@ registry/Interface 1.4 identity, then returns package-relative locators for the
 input, invocation, every per-exit output/example, consumer input, projection,
 and private artifact. It does not execute the semantic Skill, read private
 artifact contents, or ask callers to import the Python runtime.
+
+With `--exit`, discovery returns only the selected exit's output contract,
+consumer input and projection, plus the original producer and consumer entry
+locators. It checks the Interface against the unique workflow exit marker
+through the marker parser shared with installed validation. Skill consumers
+locate their own public entry and input contract; workflow and stop consumers
+locate their original workflow target. A dynamic `profile_selector` remains a
+locator to the owning contract, not a profile inferred from the exit name.
+Unknown, missing, multiple or inconsistent mappings return a nonzero diagnostic.
+Without `--exit`, the existing complete contract index is unchanged.
+
+The caller loads the located applicable contract and its required dependencies
+in full before invoking the next owner. Discovery does not execute that owner
+or establish a semantic pass. Both discovery and the Ensure current-context
+profile are read-only with respect to Task, Delivery, session, Git and business
+state. The existing managed Python launcher can refresh its ignored runtime
+selection cache; these queries do not change that launcher behavior.
 
 Source package validation performs the separate representative invocation
 probe declared by each 1.3 fixture interface. It executes the package-local

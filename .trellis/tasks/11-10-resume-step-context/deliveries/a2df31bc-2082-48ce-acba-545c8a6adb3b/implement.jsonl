@@ -1,0 +1,9 @@
+{"file": ".trellis/tasks/11-10-resume-step-context/prd.md", "reason": "整体accepted scope与非目标"}
+{"file": ".trellis/tasks/11-10-resume-step-context/deliveries/a2df31bc-2082-48ce-acba-545c8a6adb3b/prd.md", "reason": "当前D1完整行为和验收"}
+{"file": ".trellis/tasks/11-10-resume-step-context/deliveries/a2df31bc-2082-48ce-acba-545c8a6adb3b/design.md", "reason": "原两个入口的具体机制与唯一来源处置"}
+{"file": ".trellis/tasks/11-10-resume-step-context/deliveries/a2df31bc-2082-48ce-acba-545c8a6adb3b/implement.md", "reason": "本批步骤、验证、Policy及Docs Plan"}
+{"file": ".trellis/tasks/11-10-resume-step-context/deliveries/a2df31bc-2082-48ce-acba-545c8a6adb3b/architecture-contribution.md", "reason": "本批原owner职责及真实架构差额"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整当前写作合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文完整适用条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/interface.json", "reason": "原显式查询兼容合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "测试价值及当前验证边界"}

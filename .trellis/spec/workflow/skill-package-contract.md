@@ -676,7 +676,8 @@ wrapper has the exact public form:
 
 ```bash
 .trellis/guru-team/scripts/bash/discover-skill-contract.sh \
-  --root <repo> --mode <source|installed> --skill <guru-id> --json
+  --root <repo> --mode <source|installed> --skill <guru-id> \
+  [--exit <actual-exit>] --json
 ```
 
 Discovery resolves the exact active registry row first and requires Interface
@@ -684,6 +685,14 @@ Discovery resolves the exact active registry row first and requires Interface
 consumer contract, projection, examples, and private artifacts. Discovery
 returns metadata only and does not execute the semantic Skill. Any other
 registry/interface identity fails closed rather than selecting another variant.
+
+An explicit `--exit` selects one declared output and its unique workflow
+consumer. The result locates that output, the consumer-owned input/projection,
+and the original entry contracts. Workflow and stop targets retain their
+workflow locators. Dynamic profile selectors remain owned by the original
+contract. Discovery never chooses a profile from a Skill/exit pair. The shared
+workflow-marker parser supplies this mapping; there is no second route table.
+The complete index remains the result when `--exit` is absent.
 
 Unknown skill, version/state mismatch, missing/unsafe contract path, invalid
 schema/example, or installed drift exits non-zero with stable `code`,

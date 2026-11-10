@@ -1,0 +1,1 @@
+{"exit_id":"current_context_ready","task_id":"demo","task_ref":".trellis/tasks/demo","lifecycle_generation":0,"checkout_path":"/workspace/demo","current_delivery":{"delivery_key":{"task_id":"demo","lifecycle_generation":0,"delivery_id":"22222222-2222-4222-8222-222222222222"},"phase":"implementing","planning_root":"deliveries/22222222-2222-4222-8222-222222222222"}}

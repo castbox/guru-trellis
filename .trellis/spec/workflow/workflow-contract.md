@@ -448,6 +448,17 @@ current identity/binding/checkout and actual continuation owner.
 Issue creation is not task creation. Identity, branch binding, checkout and
 session owners resolve the exact TaskId/generation for subsequent phases.
 
+Normal bound continuation uses the original `guru-ensure-task-checkout`
+`delivery_current_task` profile to read the caller's current binding and resolve
+its registered checkout through the existing Guru checks. Its minimal result
+locates the Task and, when selected, the current Delivery. The package owns the
+profile's complete validation and public fields. A confirmed context without a
+binding returns `no_current_task`; a carrier without a context key returns
+`context_unavailable`. Both report their facts through the original current-task
+checkout router. Neither query selects from inventory, binds a session or
+selects a Delivery. Explicit-task receiving-session recovery retains its original
+owners. Public current facts do not establish any semantic stage result.
+
 The producer's actual checked stdout is projected into the next stage and then
 combined only with that consumer's current semantic authoring input. Normal
 pre-task routing writes no owner-result, prerequisite, or transition file under

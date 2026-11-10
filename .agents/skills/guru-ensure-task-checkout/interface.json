@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-ensure-task-checkout",
   "name": "guru-ensure-task-checkout",
-  "description": "Resolve a unique active task checkout from TaskId, branch binding, ownership and live Git facts.",
+  "description": "Resolve an explicit or current Task checkout through the original branch binding, ownership and live Git checks.",
   "state": "active",
   "judgment_mode": "deterministic",
   "modes": {
@@ -25,8 +25,8 @@
   "entry_preconditions": [
     {
       "id": "active_task_identity",
-      "evidence": "current task artifact by immutable TaskId and generation",
-      "binding": "one active task",
+      "evidence": "delivery_active_task supplies TaskId/generation; delivery_current_task reads public task.py current --json after the original context resolver",
+      "binding": "one active task, or a distinct no-context/no-binding result for delivery_current_task",
       "freshness": "reread on every invocation"
     },
     {
@@ -54,6 +54,10 @@
       "id": "public_input",
       "path": "examples/public-input.json"
     },
+    {"id": "current_input", "path": "examples/public-current-input.json"},
+    {"id": "current_output", "path": "examples/public-current-context-ready-output.json"},
+    {"id": "absent_output", "path": "examples/public-no-current-task-output.json"},
+    {"id": "unavailable_output", "path": "examples/public-context-unavailable-output.json"},
     {
       "id": "resolved_output",
       "path": "examples/public-checkout-resolved-output.json"
@@ -107,7 +111,11 @@
     {
       "id": "delivery_active_task_input",
       "path": "schemas/public-delivery-active-task-input.schema.json"
-    }
+    },
+    {"id": "delivery_current_task_input", "path": "schemas/public-delivery-current-task-input.schema.json"},
+    {"id": "current_output", "path": "schemas/public-current-context-ready-output.schema.json"},
+    {"id": "absent_output", "path": "schemas/public-no-current-task-output.schema.json"},
+    {"id": "unavailable_output", "path": "schemas/public-context-unavailable-output.schema.json"}
   ],
   "validators": [
     {
@@ -118,6 +126,21 @@
     }
   ],
   "external_exits": [
+    {
+      "id": "current_context_ready",
+      "evidence": "public current identity and optional Delivery location match the original unique checkout checks",
+      "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"}
+    },
+    {
+      "id": "no_current_task",
+      "evidence": "the actual context key exists and public current confirms no Task binding",
+      "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"}
+    },
+    {
+      "id": "context_unavailable",
+      "evidence": "the original context resolver returns no key",
+      "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"}
+    },
     {
       "id": "checkout_resolved",
       "evidence": "unique live registered checkout matches the current binding",
@@ -188,7 +211,7 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-ensure-task-checkout-input-delivery-1.0",
+        "schema_id": "guru-ensure-task-checkout-input-delivery-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
@@ -206,6 +229,12 @@
             "field": "profile",
             "value": "delivery_active_task"
           }
+        },
+        {
+          "id": "delivery_current_task",
+          "schema": {"schema_id": "guru-ensure-task-checkout-input-delivery-current-task-1.0", "path": "schemas/public-delivery-current-task-input.schema.json"},
+          "example": {"id": "current_input", "path": "examples/public-current-input.json"},
+          "discriminator": {"field": "profile", "value": "delivery_current_task"}
         }
       ]
     },
@@ -231,6 +260,24 @@
       ]
     },
     "outputs": [
+      {
+        "exit_id": "current_context_ready",
+        "schema": {"schema_id": "guru-ensure-task-checkout-current-context-ready-1.0", "path": "schemas/public-current-context-ready-output.schema.json"},
+        "example": {"id": "current_output", "path": "examples/public-current-context-ready-output.json"},
+        "consumer_use_ids": ["current_projection"]
+      },
+      {
+        "exit_id": "no_current_task",
+        "schema": {"schema_id": "guru-ensure-task-checkout-no-current-task-1.0", "path": "schemas/public-no-current-task-output.schema.json"},
+        "example": {"id": "absent_output", "path": "examples/public-no-current-task-output.json"},
+        "consumer_use_ids": ["absent_projection"]
+      },
+      {
+        "exit_id": "context_unavailable",
+        "schema": {"schema_id": "guru-ensure-task-checkout-context-unavailable-1.0", "path": "schemas/public-context-unavailable-output.schema.json"},
+        "example": {"id": "unavailable_output", "path": "examples/public-context-unavailable-output.json"},
+        "consumer_use_ids": ["unavailable_projection"]
+      },
       {
         "exit_id": "checkout_resolved",
         "schema": {
@@ -290,6 +337,24 @@
     ],
     "consumer_inputs": [
       {
+        "id": "current_input",
+        "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-current-task-context-input-1.0", "path": "consumers/workflow/production/current-context.schema.json"}
+      },
+      {
+        "id": "absent_input",
+        "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-current-task-absent-input-1.0", "path": "consumers/workflow/production/no-current-task.schema.json"}
+      },
+      {
+        "id": "unavailable_input",
+        "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-current-task-unavailable-input-1.0", "path": "consumers/workflow/production/context-unavailable.schema.json"}
+      },
+      {
         "id": "resolved_input",
         "consumer": {
           "kind": "workflow",
@@ -343,6 +408,9 @@
       }
     ],
     "projections": [
+      {"id": "current_projection", "exit_id": "current_context_ready", "consumer_input_id": "current_input", "operation": "direct"},
+      {"id": "absent_projection", "exit_id": "no_current_task", "consumer_input_id": "absent_input", "operation": "direct"},
+      {"id": "unavailable_projection", "exit_id": "context_unavailable", "consumer_input_id": "unavailable_input", "operation": "direct"},
       {
         "id": "resolved_projection",
         "exit_id": "checkout_resolved",

@@ -447,6 +447,15 @@
       "ordinal": 1
     },
     {
+      "id": "package-runtime-python_subprocess_second_hop-e0900087307f",
+      "owner": "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "e0900087307f8745d0f2d0d68ccc7bde609e57304f9ff1818855ebba8fdcd037",
+      "ordinal": 1
+    },
+    {
       "id": "package-runtime-python_argv_second_hop-6cda203bedf9",
       "owner": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/execute.py",
       "kind": "python_argv_second_hop",
