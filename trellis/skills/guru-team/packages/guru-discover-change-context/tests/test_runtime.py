@@ -1,5 +1,5 @@
 from __future__ import annotations
-import copy, io, json, os, shutil, subprocess, sys, tempfile, unittest
+import copy, hashlib, io, json, os, shutil, subprocess, sys, tempfile, unittest
 from unittest.mock import patch
 from pathlib import Path
 from jsonschema import Draft202012Validator
@@ -18,7 +18,8 @@ from runtime.command import main
 from runtime.io import CommandError, project_intermediate_receipt
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
-from common import active_task,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
+import common as discovery_common
+from common import active_task,bind_owner_to_public,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
 from check import run as check_run
 from invoke import run as invoke_run
 
@@ -225,6 +226,61 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertEqual(call(public_wrapper,refreshed)["exit_id"],"context_ready")
    self.assertEqual(snapshot(),initial)
    self.assertEqual(subprocess.run(["git","status","--porcelain=v1","--ignored"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout,"")
+
+ def test_git_object_record_diagnoses_authoring_before_evidence_and_recovers(self):
+  def digest(value):
+   return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+  with tempfile.TemporaryDirectory() as name:
+   repo=Path(name)/"repo";repo.mkdir()
+   subprocess.run(["git","init","-q","-b","main",str(repo)],check=True);subprocess.run(["git","config","user.name","Git Object Discovery Test"],cwd=repo,check=True);subprocess.run(["git","config","user.email","git-object@example.invalid"],cwd=repo,check=True)
+   for relative,content in (("docs/requirements.md","Current requirement.\n"),("trellis/runtime.py","CURRENT = True\n"),("trellis/test_runtime.py","def test_current(): assert True\n")):
+    path=repo/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(content)
+   archive_index={"problem":"Archived unrelated context.","outcome":"Archived history is unrelated.","changed_behavior":["Retained unrelated behavior."],"affected_surfaces":[],"contract_changes":[],"search_terms":{"issue_refs":["#999"],"pr_refs":[],"branches":[],"paths":["docs/archive.md"],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"phrases":["unrelated archive"]},"retrieval_text":"unrelated archive evidence"}
+   summary=repo/".trellis/tasks/archive/2026-08/context/finish-summary.json";summary.parent.mkdir(parents=True);summary.write_text(json.dumps({"index":archive_index}))
+   guru=repo/".trellis/guru-team";installed_package=guru/"skills/packages"/PACKAGE.name;ignore=shutil.ignore_patterns("__pycache__",".pytest_cache","*.pyc","*.pyo")
+   shutil.copytree(PACKAGE,installed_package,ignore=ignore);shutil.copytree(SKILLS/"consumers",guru/"skills/consumers",ignore=ignore);shutil.copytree(SKILLS/"schemas",guru/"skills/schemas",ignore=ignore);shutil.copytree(RUNTIME,guru/"runtime",ignore=ignore)
+   (guru/"schemas").mkdir();shutil.copy2(FINISH_SCHEMA,guru/"schemas/finish-summary.schema.json")
+   resolver=guru/"runtime/resolve-python.sh";resolver.write_text(f'#!/usr/bin/env bash\nshift 2\nexec {json.dumps(sys.executable)} "$@"\n');resolver.chmod(0o755)
+   subprocess.run(["git","add","."],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","git object discovery fixture"],cwd=repo,check=True);subprocess.run(["git","remote","add","origin","https://github.com/example/guru-extension.git"],cwd=repo,check=True)
+   head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();summary_relative=summary.relative_to(repo).as_posix()
+   base={"kind":"git_object","source":"explicit","selected_ref":"refs/heads/main","commit":head};base["identity_sha256"]=digest(base)
+   transition={"schema_version":"2.0","transition_id":"base_current:git-object-recovery","stage":"base_current","mode":"workflow","repo_locator":str(repo.resolve()),"base":base}
+   change_input={"issue_refs":[],"pr_refs":[],"branches":[],"paths":["docs/requirements.md","trellis/runtime.py","trellis/test_runtime.py"],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":["context"],"queries":[]}
+   public_input={"profile":"pre_task","source_exit":"baseline_ready","mode":"workflow","change_input":change_input,"continuation_id":"git-object-recovery","clarify_profile":"standard_intake"}
+   body_sha=hashlib.sha256(b"Correct the current Discovery authoring input.\n").hexdigest()
+   owner=json.loads((PACKAGE/"examples/change-context-owner-result-4.0.json").read_text())
+   for key in ("mode","change_input","base_observation","canonical_query","history_preview","result_identity"):owner.pop(key)
+   owner["repository"]={"repo":"example/guru-extension","source_kind":"git_object","selected_ref":"refs/heads/main","commit":head}
+   owner["live_change"]={"kind":"draft","identity":f"draft:{body_sha}","state":"draft","updated_at":"2026-01-01T00:00:00Z","body_sha256":body_sha,"facts_sha256":body_sha,"issue_binding":None}
+   duplicate={"repo":"example/guru-extension","number":99,"identity":"#99","url":"https://github.com/example/guru-extension/issues/99","state":"open","updated_at":"2026-01-01T00:00:00Z"};duplicate["facts_sha256"]=digest(duplicate);duplicate.update({"reason":"Potential overlap.","observation":"The candidate remains open for the semantic decision."})
+   owner["duplicate_search"]={"query":"repo:example/guru-extension is:issue is:open context","checked_at":"2026-01-01T00:00:00Z","scope":"open_issues","candidates":[duplicate]}
+   for section,relative in (("docs","docs/requirements.md"),("code_contracts","trellis/runtime.py"),("tests","trellis/test_runtime.py")):
+    blob=subprocess.run(["git","rev-parse",f"HEAD:{relative}"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();owner["current_state"][section]=[{"path":relative,"blob_or_content_sha256":blob,"purpose":"Review the fixed source.","observation":"The selected Git-object evidence is current.","query_clues":["context"]}]
+   owner["history_review"]={"selected_candidates":[],"excluded_candidates":[],"deep_reads":[]}
+   def snapshot():
+    return {path.relative_to(repo).as_posix():path.read_bytes() for path in repo.rglob("*") if path.is_file() and ".git" not in path.relative_to(repo).parts}
+   initial=snapshot()
+   def call(wrapper,envelope,code):
+    before=snapshot();result=subprocess.run([str(wrapper),"--root",str(repo),"--invocation","-"],cwd=repo,input=json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env={key:value for key,value in os.environ.items() if key!="PYTHONDONTWRITEBYTECODE"})
+    self.assertEqual(result.returncode,code,(result.stdout,result.stderr));self.assertEqual(snapshot(),before);self.assertEqual(list(repo.rglob("__pycache__")),[]);return json.loads(result.stdout)
+   recorder=installed_package/"scripts/record-context-discovery.sh";checker=installed_package/"scripts/check-context-discovery.sh";invoker=installed_package/"scripts/invoke.sh"
+   source_error_owner=copy.deepcopy(owner);source_error_owner["history_review"]["deep_reads"]=[{"candidate_id":"a"*64,"source_kind":"task_artifact","locator":summary_relative,"purpose":"Read the selected history.","conclusion":"The history remains relevant."}]
+   with patch.object(discovery_common,"preview") as preview_reader,patch.object(discovery_common,"source_blob") as source_reader:
+    with self.assertRaises(CommandError) as guarded:
+     bind_owner_to_public(PACKAGE,repo,public_input,transition,source_error_owner)
+    self.assertEqual((guarded.exception.code,guarded.exception.field_path),("schema_mismatch","owner_result.history_review.deep_reads.0.source_kind"))
+    preview_reader.assert_not_called();source_reader.assert_not_called()
+   source_envelope={"schema_version":"1.0","public_input":public_input,"transition":transition,"owner_context":{},"owner_result":source_error_owner}
+   source_error=call(recorder,source_envelope,2)
+   self.assertEqual(source_error["code"],"schema_mismatch");self.assertEqual(source_error["field_path"],"owner_result.history_review.deep_reads.0.source_kind");self.assertNotIn("internal_error",source_error["code"]);self.assertIn("change-context-owner-result-4.0.schema.json",source_error["remediation"])
+   missing_observation=copy.deepcopy(owner);missing_observation["duplicate_search"]["candidates"][0].pop("observation")
+   observation_error=call(recorder,{"schema_version":"1.0","public_input":public_input,"transition":transition,"owner_context":{},"owner_result":missing_observation},2)
+   self.assertEqual((observation_error["code"],observation_error["field_path"]),("schema_mismatch","owner_result.duplicate_search.candidates.0.observation"))
+   envelope={"schema_version":"1.0","public_input":public_input,"transition":transition,"owner_context":{},"owner_result":owner}
+   recorded=project_intermediate_receipt(call(recorder,envelope,0),SKILLS/"schemas");envelope["owner_result"]=recorded
+   checked=project_intermediate_receipt(call(checker,envelope,0),SKILLS/"schemas");self.assertEqual(checked["typed_exit"],"context_ready")
+   output=call(invoker,envelope,0);self.assertEqual(output["exit_id"],"context_ready");self.assertEqual(output["transition"]["schema_version"],"2.0");self.assertEqual(output["transition"]["base"]["kind"],"git_object")
+   self.assertEqual(snapshot(),initial)
 
  def test_recovery_checkpoint_is_package_owned_and_short_lived(self):
   with tempfile.TemporaryDirectory() as name:

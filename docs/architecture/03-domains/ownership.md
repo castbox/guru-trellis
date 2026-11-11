@@ -199,6 +199,8 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 本机 branch/worktree/ignored runtime 责任限定对应 common-dir/generation；共享 remote ref 以 repository/full ref/expected head 核验。旧 seal、binding 退出或 Cleanup pending 不撤销共享 Finish，也不阻塞另一 Task 或不同合法新资源。同一资源未完责任仍冲突；B 不取得 A 清理权。Cleanup 保留未知 ownership、新代资源及已推进 remote ref，不删除或回退新提交。原合法子 Agent 并行职责保持；不引入双主、锁、scheduler、全局恢复台账或第二 authority。
 
+`ARCH-DOM-061`（#795 reviewed source）：Discovery 继续独占 context evidence/coverage 与 owner-result authoring 诊断。Git-object record 先校验当前 owner-result 结构，再由同一 owner 读取 fixed Git evidence 和生成派生 identity；共享 schema validator 提供字段诊断，共享 dispatcher 只保留真实未知异常的维护路由。普通同范围结构错误保留原失败，可由原 Discovery owner 用完整正确输入重跑原 record/check/invoke；Clarify、Wording、Readiness、Architecture、Check 与安装 owner 的职责不变。同步来源 owner-result 3.0 与当前 Git-object 4.0 各保留明确版本和 consumer，不形成第二来源模型。
+
 
 ## Phase 2 authoring 与结果消费职责
 

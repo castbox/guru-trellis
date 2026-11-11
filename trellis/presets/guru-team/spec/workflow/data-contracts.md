@@ -155,11 +155,12 @@ Unknown fields, missing or wrong stages, owner/input/target mismatch, stale
 identity, or multiple operations fail closed.
 
 For the active Discovery pre-task profile, caller-owned input is
-`guru-stage0-discover-change-context-input-pre-task-2.0`. It contains only the
+`guru-stage0-discover-change-context-input-pre-task-4.0`. It contains only the
 profile, source exit, mode, closed change clues, and caller continuation; repo
 and base authority remain exclusively in the independent `base_current` stage.
-The published 1.0 pre-task input remains an immutable legacy asset and is not
-selected by the current Interface.
+The 3.0 pre-task input remains the synchronized-source compatibility asset.
+The published 1.0 pre-task input remains an immutable legacy asset. Neither
+older input is selected for the current Git-object profile.
 
 The historical `prepare-task.base_freshness` and
 `prepare-task --reviewed-base-provenance '<JSON>'` reader belong only to
@@ -179,17 +180,29 @@ parser and validating older configs.
 
 ## Change Context Discovery Result
 
-Schema `guru-change-context-owner-result-3.0` is the active closed Draft 2020-12
-stdout-only owner-result union whose `typed_exit` is exactly `context_ready`,
-`refresh_base`, or `blocked`. It contains Discovery-owned live
+Schemas `guru-change-context-owner-result-4.0` and
+`guru-change-context-owner-result-3.0` are the current closed Draft 2020-12
+stdout-only owner-result variants whose `typed_exit` is exactly
+`context_ready`, `refresh_base`, or `blocked`. Owner-result 4.0 is current for
+the Git-object source. Owner-result 3.0 remains the synchronized-source
+compatibility contract. Both contain Discovery-owned live
 `base_observation` and current semantic evidence needed by the same owner loop,
-but it is neither a
-public handoff nor a tracked task artifact. Normal workflow and standalone
-execution transport the result through stdin/stdout and create no task,
+but neither is a public handoff or a tracked task artifact. Normal workflow and
+standalone execution transport each result through stdin/stdout and create no task,
 workspace, or ignored runtime file.
 The published owner-result 2.0 schema/example remain immutable legacy assets;
-the active Interface, recorder, checker, examples, and evals select 3.0 only.
-They do not accept, synthesize, or digest a Sync private result.
+the active Interface, recorder, checker, examples, and evals select 4.0 for a
+Git-object source and 3.0 for the synchronized source. They do not accept,
+synthesize, or digest a Sync private result.
+The current minimal public handoff is `context_ready` 5.0. The 4.0 output and
+examples remain immutable #718 compatibility assets.
+For a Git-object source, record validates the owner-result 4.0 authoring shape
+with fixed schema-valid `canonical_query`, `history_preview`, and
+`result_identity` placeholders before any reviewed-evidence, history, candidate,
+or real identity read. After that schema-only validation passes, record reads
+the declared evidence, derives the real query/history/identity values, and
+validates the complete result again. The placeholders never enter a successful
+result and do not relax a required field.
 The normalized `change_input` object contains the same ten clue-array kinds as
 the canonical query source and requires at least one non-empty array in both the
 published schema and runtime precondition gate. Neither `issue_binding` nor a

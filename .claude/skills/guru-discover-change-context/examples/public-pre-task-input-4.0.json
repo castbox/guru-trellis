@@ -1,6 +1,6 @@
 {
   "profile": "pre_task",
-  "source_exit": "synced",
+  "source_exit": "baseline_ready",
   "mode": "workflow",
   "change_input": {
     "issue_refs": [
@@ -20,7 +20,7 @@
       "observe_base_current"
     ],
     "terms": [
-      "public handoff"
+      "fixed git object"
     ],
     "queries": []
   },

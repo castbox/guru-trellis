@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,6 +13,7 @@ if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
 import verify_installed_phase0_transcript as transcript
+from test_apply_guru_team_trellis_preset import install_canonical_workflow
 
 
 SOURCE = Path(__file__).resolve().parents[5]
@@ -51,14 +51,7 @@ class DiscoveryStdinInstallationTests(unittest.TestCase):
             work = Path(name)
             installed = work / "installed"
             (installed / ".trellis").mkdir(parents=True)
-            shutil.copy2(
-                SOURCE / "trellis/workflows/guru-team/workflow.md",
-                installed / ".trellis/workflow.md",
-            )
-            shutil.copytree(
-                SOURCE / ".trellis/scripts", installed / ".trellis/scripts",
-                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
-            )
+            install_canonical_workflow(installed)
             for stage in ("initial", "reapply"):
                 with self.subTest(stage=stage):
                     applied = run_preset_install(installed)
