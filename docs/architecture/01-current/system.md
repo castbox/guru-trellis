@@ -365,3 +365,11 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 原 passed full_review 可定位范围/plan/outcome；初次 implementation_required 没有 passed 覆盖，finding refs 和已建立的理解不补造权威。合法公开结果/调用对象、Git/当前正文与原始命令结果不足时补真实工作；不跨读私有状态、不重建退休 checkpoint、不增公共覆盖字段或账本。Publication/Merge 核自身 payload、Issue、候选及 live 事实；真实 authority/scope/依赖变化回最早 owner。
 
 ADR-034 与 [MIGRATION-637](../../../trellis/presets/guru-team/MIGRATION-637.md)拥有精确替代及完整 matching 在途切换；fresh_final_review wire 保留但不再强制换人。ADR-028 固定 B、ADR-030 最终 Check 前晋升、ADR-033 Draft 非最终结果和真实 Check predecessor 保留。这里承接已审目标与源码职责；安装、实际 Agent、分阶段耗时、GitHub 和未验证边界只由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)记录，不以本文或知识晋升证明全部已采用、Task 完成或 Release。
+
+## ARCH-CUR-077：Discovery authoring 结构诊断与恢复边界
+
+`ARCH-CUR-077`（reviewed #795 source）：Git-object `guru-discover-change-context` 的公开 record 路径先校验 AI-authored owner-result 4.0 结构，再读取 reviewed Git evidence、生成 canonical query/history preview/result identity。结构失败使用现有 `schema_mismatch`、`field_path` 和 `remediation`；不新增 `source_kind` 别名、默认值、错误框架或成功门禁。合法输入继续执行既有 evidence、candidate、freshness 和 identity 校验，共享 dispatcher 的 `internal_error/runtime` 只为真实未知异常保留。
+
+当前 Git-object authoring 组合为 pre_task 4.0、context_request 2.0、owner-result 4.0 和 context_ready 5.0；同步来源 owner-result 3.0 保留为明确兼容资产。普通同范围 authoring 错误保留首次失败，原 owner 重读同一来源、上游 public output 和仍适用的语义审查后，可用完整正确输入重跑原 record/check/invoke；该普通纠正不要求重复无副作用确认。真实内部故障仍交包维护 owner。
+
+本条不增加 public DTO、wrapper、缓存、授权状态或第二 owner。实际 source/installed/Agent 结果由本 Task 的 Check 与完整 Review 分别判断，不由本文或知识晋升推定。

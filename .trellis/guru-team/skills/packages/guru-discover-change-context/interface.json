@@ -78,6 +78,10 @@
   "artifacts": [
     {
       "id": "change_context_owner_result_example",
+      "path": "examples/change-context-owner-result-4.0.json"
+    },
+    {
+      "id": "legacy_change_context_owner_result_example_3_0",
       "path": "examples/change-context-owner-result-3.0.json"
     },
     {
@@ -86,6 +90,10 @@
     },
     {
       "id": "public_input_pre_task_example",
+      "path": "examples/public-pre-task-input-4.0.json"
+    },
+    {
+      "id": "legacy_public_input_pre_task_example_3_0",
       "path": "examples/public-pre-task-input-3.0.json"
     },
     {
@@ -93,7 +101,11 @@
       "path": "examples/public-invocation-error.json"
     },
     {
-      "id": "public_output_context_ready_example_3_0",
+      "id": "public_output_context_ready_example_5_0",
+      "path": "examples/public-context-ready-output-5.0.json"
+    },
+    {
+      "id": "legacy_718_public_context_ready_example_4_0",
       "path": "examples/public-context-ready-output-4.0.json"
     },
     {
@@ -112,6 +124,10 @@
   "schemas": [
     {
       "id": "change_context_owner_result_schema",
+      "path": "schemas/change-context-owner-result-4.0.schema.json"
+    },
+    {
+      "id": "legacy_change_context_owner_result_schema_3_0",
       "path": "schemas/change-context-owner-result-3.0.schema.json"
     },
     {
@@ -135,7 +151,7 @@
       "path": "schemas/public-invocation-error.schema.json"
     },
     {
-      "id": "public_output_context_ready_3_0",
+      "id": "public_output_context_ready_5_0",
       "path": "schemas/public-context-ready-output-5.0.schema.json"
     },
     {
@@ -286,8 +302,8 @@
             "path": "schemas/public-pre-task-input-4.0.schema.json"
           },
           "example": {
-            "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-3.0.json"
+            "id": "pre_task_input_4_0",
+            "path": "examples/public-pre-task-input-4.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -351,8 +367,8 @@
           "path": "schemas/public-context-ready-output-5.0.schema.json"
         },
         "example": {
-          "id": "context_ready_output",
-          "path": "examples/public-context-ready-output-4.0.json"
+          "id": "context_ready_output_5_0",
+          "path": "examples/public-context-ready-output-5.0.json"
         },
         "consumer_use_ids": [
           "project_context_ready"

@@ -1061,7 +1061,7 @@ equality without mutation, then returns the post-sync digest. The public wrapper
 projects the checked source, selected base, remote, ordered candidates,
 decision/local/remote HEADs, and post-sync digest into `base_current`.
 `guru-stage0-sync-base-output-synced-2.0` and
-`guru-stage0-transition-base-current-1.0` remain the sole active public success
+`guru-stage0-transition-base-current-2.0` remain the sole active public success
 shape. The private result, `facts_sha256`, and result-identity digests stop at
 the Sync owner boundary; public `post_sync_resolution_sha256` remains part of
 `base_current`.
@@ -1081,12 +1081,13 @@ sequence, AI candidate selection/deep-read, AI Review Gate, conditional human
 confirmation recorded as not required, same-snapshot recorder/validator, and
 the exits `context_ready`, `refresh_base`, and `blocked`.
 
-The active pre-task input is
-`guru-stage0-discover-change-context-input-pre-task-2.0`; it carries only
+The current pre-task input is
+`guru-stage0-discover-change-context-input-pre-task-4.0`; it carries only
 Discovery caller-owned fields and is supplied independently from the current
 `base_current` transition. Runtime validates both closed domains, then reads the
 transition's authority checkout before any Issue, Docs, code, test, or history
-source. A current clean authority produces Discovery-owned `base_observation`.
+source. The 3.0 pre-task input remains the synchronized-source compatibility
+profile. A current clean authority produces Discovery-owned `base_observation`.
 A normal HEAD advance returns `refresh_base`; dirty, wrong, missing, ambiguous,
 repo-mismatched, or structurally invalid authority returns `blocked`. Neither
 path imports, accepts, or reconstructs `guru-base-sync-result-1.0` or its
@@ -1133,7 +1134,9 @@ Workflow/stop consumers must have exactly one matching
 `guru-workflow-target` / `guru-stop-target` marker; missing, duplicate,
 kind-mismatched, or dangling targets fail closed.
 
-The package publishes active stdout-only owner-result schema
+The package publishes current stdout-only owner-result schema
+`guru-change-context-owner-result-4.0` for Git-object sources and the
+synchronized-source compatibility schema
 `guru-change-context-owner-result-3.0`, scoring algorithm id
 `guru-context-history-score-1.0`, and dispatcher-only wrappers for
 `preview-change-context-history`, `record-context-discovery`, and
@@ -1145,8 +1148,18 @@ but do not select candidates, judge sufficiency, decide duplicate reuse, or
 synthesize semantic pass.
 The prior pre-task input 1.0 and owner-result 2.0 schema/example bytes remain
 immutable legacy inventory outside the active Interface. Current runtime,
-examples, evals, and installation select input 2.0 plus owner-result 3.0 as one
-activation unit.
+examples, evals, and installation select pre-task input 4.0, context-request
+input 2.0, Git-object owner-result 4.0, and context-ready output 5.0 for the
+current path. Pre-task input 3.0 plus owner-result 3.0 remain the
+synchronized-source compatibility activation.
+
+For Git-object record, the 4.0 owner-result schema validates an AI-authored
+structure view with fixed schema-valid query, history-preview, and result
+identity placeholders before reviewed evidence, history, a candidate, or real
+identity is read. A schema failure returns the existing `schema_mismatch`;
+after the structure passes, the runtime derives and validates the real values.
+Missing `history_review.deep_reads[*].source` cannot fall through to
+`internal_error` or an evidence-path failure.
 
 Recorder/checker accept one package-declared `--invocation -` envelope carrying
 public input, the independent Sync transition, and current AI-authored owner
@@ -2299,7 +2312,8 @@ private recovery state 与 focused tests。#434 candidate 已选择 current regi
 The Clarify package MIGRATION-250.md owns the explicit current replacement
 contract. Aggregate input 3.0 selects six profiles; standard/reviewed inputs
 are independent. Discovery context_request has four discriminated return
-identities and context_ready 4.0. Interface 1.8 adds only a structured skill_input
+identities. Current Git-object context_ready is 5.0; context_ready 4.0 remains
+the #718 compatibility asset. Interface 1.8 adds only a structured skill_input
 profile_selector reading producer handoff_profile; it selects an independently
 owned input schema, without route judgment or an expression language. Current
 context/clarity/wording/readiness transitions use successor 2.0 identities.
