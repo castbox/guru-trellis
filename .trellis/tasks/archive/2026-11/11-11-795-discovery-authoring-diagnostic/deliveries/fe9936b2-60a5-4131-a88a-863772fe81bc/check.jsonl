@@ -1,0 +1,6 @@
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/prd.md", "reason": "Check the complete Delivery requirements and acceptance"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md", "reason": "Check design, source disposition and validation boundaries"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/implement.md", "reason": "Check ordered execution, Policy and Docs SSOT"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/architecture-contribution.md", "reason": "Check Architecture impact and proposed units"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "Check changed prose against required writing rules"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Check validation sufficiency and unsupported claims"}
