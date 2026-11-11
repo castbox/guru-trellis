@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-11T09:55:30Z",
+  "installed_at": "2026-11-11T11:11:47Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
-    "commit": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+    "ref": "0ccb071bcd1bf5d2528c7e1791cc2bf269e88af8",
+    "commit": "0ccb071bcd1bf5d2528c7e1791cc2bf269e88af8",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1449,7 +1449,7 @@
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "4b8c91be6cc5c3bcf9c48e1123d98163ab5c59e74196ce5275ab54b8f3ff6a3a",
-        "tree_sha256": "9adc8abf784a1b281aedde0c41b7b6125cff3c9722d833a643900dc24703e199"
+        "tree_sha256": "1514757b88496868f5f67ee7182a0d7a639d3ab65fe49a30ae7bd2df29b9c235"
       },
       {
         "id": "guru-maintain-legacy-task",
@@ -11315,7 +11315,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
-        "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "sha256": "8d01a896346cad763fcd1e030c9e5d33c15f9e616ca0b6051ca2d2f62599ea12",
         "executable": false,
         "action": "installed"
       },
@@ -40477,7 +40477,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
-        "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "sha256": "8d01a896346cad763fcd1e030c9e5d33c15f9e616ca0b6051ca2d2f62599ea12",
         "executable": false,
         "action": "installed"
       },
@@ -41583,7 +41583,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
-        "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "sha256": "8d01a896346cad763fcd1e030c9e5d33c15f9e616ca0b6051ca2d2f62599ea12",
         "executable": false,
         "action": "installed"
       },
@@ -42689,7 +42689,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
-        "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "sha256": "8d01a896346cad763fcd1e030c9e5d33c15f9e616ca0b6051ca2d2f62599ea12",
         "executable": false,
         "action": "installed"
       },

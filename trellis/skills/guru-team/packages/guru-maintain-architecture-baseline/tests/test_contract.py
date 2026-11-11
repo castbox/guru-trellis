@@ -1483,6 +1483,19 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertNotIn("contribution_locator", output)
         self.assertFalse((self.repository / public["task_locator"] / "design.md").exists())
 
+    def test_planning_current_reports_missing_authority_identity(self):
+        public = self.load("public-input-candidate-assessment-3.0.json")
+        for field in ("baseline_identity", "constitution_identity"):
+            with self.subTest(field=field):
+                selected = self.architecture_selection(public)
+                selected.pop(field)
+                result = self.invoke(public, selected)
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                error = json.loads(result.stdout)
+                self.assertEqual(error["code"], "schema_mismatch")
+                self.assertEqual(error["field_path"], f"owner_result.{field}")
+                self.assertIn("required field is missing", error["remediation"])
+
     def test_final_current_requires_actual_wording_current_design_and_contribution(self):
         public = self.load("public-input-final-plan-3.0.json")
         path = self.repository / public["design_locator"]
