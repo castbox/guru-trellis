@@ -74,7 +74,7 @@
       "id": "impact-sync",
       "prompt": "The task-owned contribution and complete proposed definitions are reviewed against the applicable authority, while shared current is unchanged; return candidate_ready.",
       "expected_exit": "candidate_ready",
-      "expected_output": "The complete isolated proposal returns its locator and applicable authority to the existing current router for candidate Check.",
+      "expected_output": "The complete isolated proposal returns its locator and applicable authority to the existing current router for original-owner precommit integration.",
       "input_profile_id": "task_impact_sync",
       "files": [
         "evals/files/impact-sync-input.json",

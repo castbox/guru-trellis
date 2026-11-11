@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-publish-task-delivery",
   "name": "guru-publish-task-delivery",
-  "description": "Publish early Draft feedback or final Ready through the original recoverable transaction.",
+  "description": "Publish current readiness through the original recoverable transaction.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -158,7 +158,7 @@
     },
     {
       "id": "delivery_remote_draft_recovery_input",
-      "path": "examples/public-delivery-remote-draft-recovery-input-1.0.json"
+      "path": "examples/public-delivery-remote-draft-recovery-input-2.0.json"
     },
     {
       "id": "delivery_remote_ready_recovery_input",
@@ -372,7 +372,7 @@
     },
     {
       "id": "delivery_remote_draft_recovery_input",
-      "path": "schemas/public-delivery-remote-draft-recovery-input-1.0.schema.json"
+      "path": "schemas/public-delivery-remote-draft-recovery-input-2.0.schema.json"
     },
     {
       "id": "delivery_remote_ready_recovery_input",
@@ -566,8 +566,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-3.0",
-        "path": "schemas/public-input-delivery-3.0.schema.json"
+        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-4.0",
+        "path": "schemas/public-input-delivery-4.0.schema.json"
       },
       "profiles": [
         {
@@ -676,21 +676,6 @@
           }
         },
         {
-          "id": "delivery_draft_publish",
-          "schema": {
-            "schema_id": "guru-publish-task-delivery-input-delivery-draft-publish-1.0",
-            "path": "schemas/public-delivery-draft-publish-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_draft_publish_input",
-            "path": "examples/public-delivery-draft-publish-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_draft_publish"
-          }
-        },
-        {
           "id": "delivery_return_to_draft",
           "schema": {
             "schema_id": "guru-publish-task-delivery-input-delivery-return-to-draft-1.0",
@@ -708,12 +693,12 @@
         {
           "id": "delivery_remote_draft_recovery",
           "schema": {
-            "schema_id": "guru-publish-task-delivery-input-delivery-remote-draft-recovery-1.0",
-            "path": "schemas/public-delivery-remote-draft-recovery-input-1.0.schema.json"
+            "schema_id": "guru-publish-task-delivery-input-delivery-remote-draft-recovery-2.0",
+            "path": "schemas/public-delivery-remote-draft-recovery-input-2.0.schema.json"
           },
           "example": {
             "id": "delivery_remote_draft_recovery_input",
-            "path": "examples/public-delivery-remote-draft-recovery-input-1.0.json"
+            "path": "examples/public-delivery-remote-draft-recovery-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import re
 import unittest
 from pathlib import Path
@@ -70,33 +71,47 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
     def test_packages_are_active_integrated_with_production_markers(self) -> None:
         registry = read_json(SKILLS / "registry.json")
         entries = {item["id"]: item for item in registry["skills"]}
-        workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(
-            encoding="utf-8"
-        )
+        workflow = "\n".join((REPO / path).read_text(encoding="utf-8") for path in (
+            "trellis/workflows/guru-team/workflow.md", "trellis/workflows/guru-team/references/routing.md"))
         for skill_id in PACKAGE_IDS:
             self.assertEqual(entries[skill_id]["state"], "active")
             self.assertEqual(entries[skill_id].get("workflow_integration_state", "integrated"), "integrated")
-            self.assertIn(f'"skill":"{skill_id}"', workflow)
+            self.assertRegex(workflow, r'"skill"\s*:\s*"'+re.escape(skill_id)+r'"')
+
+    def current_readiness(self):
+        spec=importlib.util.spec_from_file_location("delivery_family_provider",self.package("guru-publish-task-delivery")/"tests/test_early_draft.py")
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        fixture=module.EarlyDraftPublication();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        flow=fixture.f
+        flow.projection.begin_check(flow.key,flow.projection.candidate(["app.txt"],head_ref=flow.head,base_ref=fixture.base))
+        reviewed=flow.single_review()
+        ready=flow.readiness(reviewed)
+        return fixture,ready
+
+    def project_actual(self,producer_id,projection_id,payload):
+        interface=self.interface(producer_id)
+        projection=next(row for row in interface["public_contracts"]["projections"] if row["id"]==projection_id)
+        consumer=next(row for row in interface["public_contracts"]["consumer_inputs"] if row["id"]==projection["consumer_input_id"])
+        seed={row["target"]:payload[row["source"]] for row in projection["mappings"]}
+        contract=consumer["contract"]
+        authoring=read_json(self.package(producer_id)/contract["authoring_example"]["path"])
+        return {**seed,**authoring},contract
 
     def test_review_ready_projects_to_publish_review_ready(self) -> None:
-        payload, contract = self.project_seed(
-            "guru-review-task-delivery", "project_ready"
-        )
-        self.assertEqual(contract["profile_id"], "delivery_review_ready")
-        self.assert_schema_shape(
-            payload,
-            self.profile_schema("guru-publish-task-delivery", "delivery_review_ready"),
-        )
+        fixture,ready=self.current_readiness()
+        payload,contract=self.project_actual("guru-review-task-delivery","project_ready",ready)
+        self.assert_schema_shape(payload,self.profile_schema("guru-publish-task-delivery",contract["profile_id"]))
+        self.assertEqual(ready["readiness_result_id"],payload["readiness_result_id"])
+        self.assertIsNotNone(fixture.f.projection.resolve(fixture.f.key)["results"]["full_review"])
 
     def test_publish_ready_projects_to_merge_ready(self) -> None:
-        payload, contract = self.project_seed(
-            "guru-publish-task-delivery", "project_ready_for_merge"
-        )
-        self.assertEqual(contract["profile_id"], "delivery_ready_for_merge")
-        self.assert_schema_shape(
-            payload,
-            self.profile_schema("guru-merge-task-delivery", "delivery_ready_for_merge"),
-        )
+        fixture,ready=self.current_readiness()
+        public,_contract=self.project_actual("guru-review-task-delivery","project_ready",ready)
+        with fixture.provider_reads():published=fixture.invoke(public)
+        payload,contract=self.project_actual("guru-publish-task-delivery","project_ready_for_merge",published)
+        self.assert_schema_shape(payload,self.profile_schema("guru-merge-task-delivery",contract["profile_id"]))
+        self.assertEqual(published["pr_number"],payload["pr_number"])
+        self.assertIsNotNone(fixture.f.projection.resolve(fixture.f.key)["publication_result"])
 
     def test_publish_and_merge_stale_routes_author_fresh_review_input(self) -> None:
         for producer, projection in (

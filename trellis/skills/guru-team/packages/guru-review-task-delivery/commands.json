@@ -148,7 +148,7 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-input-delivery-1.0.schema.json",
+        "schemas/public-input-delivery-2.0.schema.json",
         "schemas/semantic-result.schema.json",
         "schemas/public-invocation-error.schema.json"
       ],

@@ -1,6 +1,6 @@
 {
   "profile": "promotion",
-  "source_exit": "sync_required",
+  "source_exit": "engineering_ready",
   "mode": "workflow",
   "continuation_id": "rdt-promotion",
   "exit_id": "sync_required",
@@ -14,6 +14,6 @@
     "version": "1.0",
     "status": "current"
   },
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "stage": "final_integration"
 }

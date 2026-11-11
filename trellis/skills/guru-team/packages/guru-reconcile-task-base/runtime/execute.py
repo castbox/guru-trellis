@@ -148,11 +148,11 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
 def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.input,"input")
-    validate_json(request,package_root/"schemas/delivery-public-resolved-candidate-input.schema.json","input")
+    validate_json(request,package_root/"schemas/delivery-public-resolved-candidate-input-2.0.schema.json","input")
     identity=task_identity(repo,request["task_ref"],delivery_key=request["delivery_key"])
     if identity["branch"] != request["branch"]:
         raise CommandError("stale_identity","branch","Use the exact current task branch.",3)
-    phase2=resolve_commit(repo,request["phase2_commit_anchor"],"phase2_commit_anchor")
+    phase2=resolve_commit(repo,request["committed_candidate_anchor"],"committed_candidate_anchor")
     old=resolve_commit(repo,request["old_base_head"],"old_base_head")
     new=resolve_commit(repo,request["new_base_head"],"new_base_head")
     selected=resolve_commit(repo,request["selected_base_ref"],"selected_base_ref")
@@ -170,12 +170,12 @@ def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
         require_resolved_worktree(repo,metadata)
         tree=git(repo,"write-tree")
         if tree != request["stage0_tree"] or index_tree_digest(repo) != request["index_tree_sha256"]:
-            raise CommandError("stale_identity","stage0_tree","Use the exact Phase 2 reviewed stage-0 tree and index digest.",3)
+            raise CommandError("stale_identity","stage0_tree","Use the exact reviewed integration stage-0 tree and index digest.",3)
         reconciled=commit_tree(repo,request["parent_order"],request["stage0_tree"],request["commit_message"],request["index_tree_sha256"])
         require_resolved_worktree(repo,metadata,terminal=True)
         status="committed"
-    result={"schema_version":"1.0","status":status,"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"phase2_commit_anchor":phase2,"old_base_head":old,"new_base_head":new,"merge_head":new,"stage0_tree":request["stage0_tree"],"index_tree_sha256":request["index_tree_sha256"],"parent_order":request["parent_order"],"commit_message":request["commit_message"],"reconciled_task_head":reconciled}
-    validate_json(result,package_root/"schemas/delivery-resolved-reconciliation-result.schema.json","result"); return result
+    result={"schema_version":"2.0","status":status,"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"committed_candidate_anchor":phase2,"old_base_head":old,"new_base_head":new,"merge_head":new,"stage0_tree":request["stage0_tree"],"index_tree_sha256":request["index_tree_sha256"],"parent_order":request["parent_order"],"commit_message":request["commit_message"],"reconciled_task_head":reconciled}
+    validate_json(result,package_root/"schemas/delivery-resolved-reconciliation-result-2.0.schema.json","result"); return result
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if command["id"]=="execute-base-candidate": return candidate(package_root,argv)

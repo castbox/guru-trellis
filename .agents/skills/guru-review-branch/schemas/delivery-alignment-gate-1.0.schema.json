@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-branch-private-delivery-alignment-gate-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "generated_at",
+    "task_dir",
+    "mode",
+    "profile",
+    "review_intent",
+    "typed_exit",
+    "review_commit",
+    "reviewed_content_algorithm",
+    "reviewed_content_sha256",
+    "base_ref",
+    "base_head",
+    "integration_pair",
+    "delivery_review",
+    "candidate_classifications",
+    "semantic_review",
+    "verification_evidence",
+    "facts_sha256",
+    "delivery_key",
+    "check_result_id",
+    "promotion_alignment"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "alignment-1.0"
+    },
+    "skill_id": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/skill_id"
+    },
+    "generated_at": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/generated_at"
+    },
+    "task_dir": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/task_dir"
+    },
+    "mode": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/mode"
+    },
+    "profile": {
+      "const": "promotion_reference_alignment"
+    },
+    "review_intent": {
+      "const": "promotion_reference_alignment"
+    },
+    "typed_exit": {
+      "enum": [
+        "passed",
+        "blocked"
+      ]
+    },
+    "review_commit": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/review_commit"
+    },
+    "reviewed_content_algorithm": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/reviewed_content_algorithm"
+    },
+    "reviewed_content_sha256": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/reviewed_content_sha256"
+    },
+    "base_ref": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/base_ref"
+    },
+    "base_head": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/base_head"
+    },
+    "integration_pair": {
+      "type": "null"
+    },
+    "delivery_review": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/delivery_review/oneOf/1"
+    },
+    "candidate_classifications": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/candidate_classifications"
+    },
+    "semantic_review": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/semantic_review"
+    },
+    "verification_evidence": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/verification_evidence"
+    },
+    "facts_sha256": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/facts_sha256"
+    },
+    "delivery_key": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/delivery_key"
+    },
+    "check_result_id": {
+      "$ref": "delivery-review-gate-1.0.schema.json#/properties/check_result_id"
+    },
+    "promotion_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prior_review",
+        "prior_reviewed_base_head",
+        "delta_sha256"
+      ],
+      "properties": {
+        "prior_review": {
+          "$ref": "public-output-delivery-passed-1.0.schema.json"
+        },
+        "prior_reviewed_base_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "delta_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "passed"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "qualified_findings": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "status": {
+                        "const": "open"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "scope_proposals": {
+                "maxItems": 0
+              },
+              "ai_review_gate": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "implementation_required"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "qualified_findings": {
+                "contains": {
+                  "properties": {
+                    "status": {
+                      "const": "open"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              },
+              "ai_review_gate": {
+                "properties": {
+                  "status": {
+                    "const": "implementation_required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "scope_confirmation_required"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "qualified_findings": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "status": {
+                        "const": "open"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "scope_proposals": {
+                "minItems": 1
+              },
+              "ai_review_gate": {
+                "properties": {
+                  "status": {
+                    "const": "scope_confirmation_required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "blocked"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "qualified_findings": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "status": {
+                        "const": "open"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "scope_proposals": {
+                "maxItems": 0
+              },
+              "ai_review_gate": {
+                "properties": {
+                  "status": {
+                    "const": "blocked"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

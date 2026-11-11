@@ -4,7 +4,7 @@
 
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/test/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
-知识单元：`RDT-TST-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；设计：[RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md)。保留 `TST-006 / SCN-006` 三层SSOT、`TST-018/023/024` 的Architecture/并行/晋升关系；当前适用性由ADR-028/034拥有，最终整合时序由ADR-KNOWLEDGE-FINAL-INTEGRATION拥有。
+知识单元：`RDT-TST-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；设计：[RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md)。保留 `TST-006 / SCN-006` 三层SSOT、`TST-018/023/024` 的Architecture/并行/晋升关系；当前适用性由ADR-028/034拥有，当前整合与审查时序由ADR-POSTCOMMIT-INDEPENDENT-REVIEW拥有。
 
 ## T331-01..06 与稳定关系
 
@@ -37,7 +37,7 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 | --- | --- | --- |
 | T638-01 / R638-01/05 → D638-01 | 两Task同B改不同能力，原promotion依次真实读写 | 双方完整正文保留；稳定authority；无总入口必写/版本递增；未命中单元和引用不变 |
 | T638-02 / R638-03/04 → D638-03 | 同单元前一Task已晋升，后一Task最终合成 | 原条件/否定/例外、双方改动、关系/导航与受影响未改消费者均被覆盖，真实写入读回 |
-| T638-03 / R638-02/04/06 → D638-02/03 | 原begin_check→候选Check→final integration→重新begin_check→最终Check→commit/Review | 公共phase implementing/checking/implementing/checking/reviewing；候选无final gate；实际写入后旧content_ref不能放行，新candidate覆盖全部差额；no-change无空文件/提交 |
+| T638-03 / R638-02/04/06 → D638-02/03 | 工程自检→原final integration/readback→TaskCommit→完整committed candidate/begin_check→一次独立Review | 整合/提交留implementing，begin_check进入checking，同次实际判断顺序记录check/full_review进入reviewing；未审pending不能readiness；完整candidate含全部差额，no-change无空文件/提交 |
 | T638-04 / R638-05/07 → D638-04 | matching切换，未晋升/已晋升/已有Review在途，普通mismatch/partial/output-loss | 当前拒旧shape，不转换pass；同key/B恢复不重复写，旧Git引用原义保持；无第二current/长期parser |
 | T638-05/06/07 / R638-06/07 → D638-05 | 命中production wrappers、一个clean matching安装/reapply/平台投影及真实native Agents，#636/#637组合 | fixture、source/dogfood/installed、Agent/GitHub分层；真实owner读取完整候选、组合与consumer，不预填pass；无Git整合可晋升 |
 
@@ -57,13 +57,13 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 
 本项每组各两次before/new，具体输入、观察与样本起点在Delivery design第8节固定；该次数是#648验证安排，不成为其他Task的普遍门槛。host期待表、另一侧答案或轨迹不进入被测上下文。AI逐次审核具体约束、因果影响、预期判断与原owner路由；仅exit、结构、trace顺序或绿色命令不能独立证明检错。普通环境/调用失败保持execution gap，不能记为语义通过或方法漏检。
 
-完整candidate Check、原owners最终整合/读回、实际after重绑、最终Check和独立committed Review继续沿T638。工程检查覆盖命中package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode与零未处置sidecar；clean最多一个代表，不扩完整Release/多平台升级矩阵。业务实际采用与生产效果未被fixture证明。
+当前完整知识链按T638在提交前整合/readback，TaskCommit后完整candidate进入一次独立Review；#648原专项轨迹保留其当时对象。工程检查覆盖命中package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode与零未处置sidecar；clean最多一个代表，不扩完整Release/多平台升级矩阵。业务实际采用与生产效果未被fixture证明。
 
 唯一实际结果在[#648 contribution test.md](../../requirements-design-test-contributions/648-constraint-premise-review/test.md)。本单元只拥有策略、输入、owner、观察和结果定位，不复制运行结论为第二authority。#649的阶段成果/Completion组合验收与#651的reviewer载体不在本项。
 
 ## T649：当前定义、有限修正与实际晋升
 
-**T649-07 / R649-07 → D649-06**：九个完整 proposed targets 保留原条件、身份及必要关系。限制解除后当前定义、指南及派生说明收敛；历史观察和截止点保留。#637 仅修可证过期项，原失败及未证不升级通过。候选 Check 后原 owner 真实写入读回，再以实际 after 重绑、最终 Check 和完整 committed Review。
+**T649-07 / R649-07 → D649-06**：九个完整 proposed targets 保留原条件、身份及必要关系。限制解除后当前定义、指南及派生说明收敛；历史观察和截止点保留。#637 仅修可证过期项，原失败及未证不升级通过。原 owner 在提交前真实写入读回，TaskCommit后完整实际 after 进入一次独立 Review；#649历史阶段结果不重写。
 
 **T649-08 / R649-01..07 → D649-01..06**：原 package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode/sidecar、一个代表 clean 及正式 Task 交付分别验证。before/new 使用相同事实、运输、模型、权限和起点，AI 逐次审真实原因、维度和 route；保留 execution_error/no-grade、有效漏检及修复，不以 exit 或绿色命令代替语义。
 
@@ -91,7 +91,7 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 | T-MECH-06 / R-MECH-01/02/03 → D-MECH-01/02 | Author、Architecture 与独立审核读取实际改后方法；审独立账号共享写、持锁慢调用、整批等待和提前受理但最终结果仍排队的路径 | 先推导直接完成路径，主动尝试简单替代，拒绝没有必要依据的额外协调和可避免成本；Protection 资格不替代 Architecture 取舍。案例推理不冒充实际 Agent 行为对照、性能改善或业务根因证明。 |
 | T-MECH-07 / R-MECH-01/04/05 → D-MECH-01/02/03 | 同一方法审必要短事务、局部互斥/容量、原方案已最小，以及存量缺证与已证缺陷；核实际 canonical diff 和原消费者 | 不按名称禁用，不强迫虚构替代；缺证不擅删、不批准扩用，已证缺陷承接有界整改。方法正文唯一、原接口/路由保持；source 合同与格式检查不证明安装采用。 |
 
-本轮实际修改、定向命令及未验证项只由 [正常完成路径 Test contribution](../../requirements-design-test-contributions/normal-completion-design/test.md) 记录。shared current 仍由原 RDT final_integration 在候选检查后写入并读回；源码、正式质量链、分发、安装采用和业务效果分别判断。没有声明本轮原生对照或生产收益，后续只有具体证据缺口才增加定向实验。
+本轮实际修改、定向命令及未验证项只由 [正常完成路径 Test contribution](../../requirements-design-test-contributions/normal-completion-design/test.md) 记录。shared current 仍由原 RDT final_integration 在提交前写入并读回；源码、正式质量链、分发、安装采用和业务效果分别判断。没有声明本轮原生对照或生产收益，后续只有具体证据缺口才增加定向实验。
 
 ## T693：合同方法与证据边界
 
@@ -99,25 +99,25 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 | --- | --- | --- |
 | T693-01 / R693-03 → D693-02 | 固定事故源码、当时安装规则、原公开规划/阶段结果与 E30；当前调查 owner 只读核对 | 具体生产者/消费者与参数时序有来源，缺陷引入和入口扩大分开；历史理由不可恢复时保持未知，不推导从未检查或重跑全部测试。 |
 | T693-02 / R693-01/02 → D693-01 | 原 Check/独立 Branch Review 阅读完整当前差额、真实方法 consumers、fixture/正式路径与旧事实采纳方法 | 在本次正常质量链亲自判断共享方法及五个原职责的实际承接、有效局部证据与证明缺口；脚本/路径一致不能证明语义效果或未来不再漏检。 |
-| T693-03 / R693-04 → D693-03 | source/installed、完整 preset apply/drift、声明平台/sidecar、语法与上下文检查；公共交付后的原正式升级 | 各自实际安装和分发一致；候选 Check 后实际晋升读回、after 重绑及最终质量链。目标正式采用另有真实结果，不以公共合并或 dogfood 替代。 |
+| T693-03 / R693-04 → D693-03 | source/installed、完整 preset apply/drift、声明平台/sidecar、语法与上下文检查；公共交付后的原正式升级 | 各自实际安装和分发一致；提交前实际整合读回、TaskCommit后完整candidate及独立质量链。目标正式采用另有真实结果，不以公共合并或 dogfood 替代。 |
 
 本批实际结果和观察截止点唯一见 [#693 Test](../../requirements-design-test-contributions/693-contract-evidence-adoption/test.md)。#693 按其 live accepted contract 采用定向验证及原质量链，没有新增业务测试、专项 replay/A-B/native eval、固定次数、额外安装或完整多平台矩阵要求。原 T331/T648/T-MECH 的历史专项安排及原结果保持原义，不自动成为本批义务。未完成的后端正式采用和业务效果分别保留，后者不在本项业务实施范围。
 
 ## T710：正常 authoring、首次执行与消费兼容
 
-R710/BEH710、D710/CON710 的来源为 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。下表只定义本批策略与观察，不引用旧 Task 的专项次数作为新义务。精确命令和输入合同读原 Check package 与 matching 安装。
+R710/BEH710、D710/CON710 的来源为 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。下表只定义本批策略与观察，不引用旧 Task 的专项次数作为新义务。当前精确命令和输入合同读原 Review package 与 matching 安装；原 #710 专项轨迹仍按当时 Check provider 理解。
 
 | Test / scenario | Requirement → design | 原入口、输入与必须观察 | 证明边界 |
 | --- | --- | --- | --- |
 | T710-01 / SC710-CONTRACT | R710-01/05 → D710-01/05 | 实际 Skill、Recorder Authoring、最小语义示例和完整结果示例；引用可达、示例能进入原 record、正常输入无手填客观身份，AI 亲读可执行性 | 合同/结构检查不单独证明 Agent 首次行为 |
-| T710-02 / SC710-COMMAND | R710-02/05 → D710-02/05 | 五 profiles 的合法起点、正式语义输入与真实 record/check/invoke；同一完整结果和要求回执正确承接，实际成功/finding/规划/blocked/resolved 出口保留 | host 无私有结果摘要；真实命令仍不是 native |
+| T710-02 / SC710-COMMAND | R710-02/05 → D710-02/05 | 当前支持 profiles 的合法已提交起点、正式语义输入与真实 record/check/invoke；同一完整结果和要求回执正确承接，实际成功/finding/规划/blocked/resolved 出口保留 | host 无私有结果摘要；真实命令仍不是 native |
 | T710-03 / SC710-RECOVERY | R710-03/04 → D710-03/04 | 原已录完整结果消费/恢复、正常业务 bytes 改变、结果 metadata 更新 | 业务变化拒旧结果，metadata 连续，不自动 record 旧语义；不删合法完整消费 |
 | T710-04 / SC710-DIAGNOSTIC | R710-04 → D710-04 | 普通定位不匹配、遗漏 reviewed path、真实内容或历史变化；原 wrapper/error | 保原 code、确定字段与原恢复 owner，不用诊断证明根治，不引入故意伪造案例 |
 | T710-05 / SC710-INPUT-EXIT | R710-03/05 → D710-03/05 | 本批真实调用/模板/消费者清单、record 输入退出和原完整结果消费单元、受影响 adapter tests | matching retirement 明确，完整 schema/消费/恢复保持；mock 只证明运输 |
-| T710-06 / SC710-CANDIDATE-FINAL | R710-02/06 → D710-02/06 | 正常 installed native 同 fixture，真实 mandatory owners→合法候选 Check→原最终整合/no-change→actual after 重绑→匹配最终 Check | 第一输入/命令分别真实获得 candidate_checked 与 passed；预期在模型外，无本阶段答案或装配纠偏；能力缺失未验证 |
+| T710-06 / SC710-CANDIDATE-FINAL | R710-02/06 → D710-02/06 | 正常 installed native 同 fixture，真实 Planning/原最终整合或no-change→TaskCommit→完整committed candidate→同次独立Architecture/九维/full_review | 首次语义输入/命令真实形成当前通过或finding出口；两个公共槽仅投影一次已实际完成的判断；预期在模型外，无本阶段答案或装配纠偏；能力缺失未验证 |
 | T710-07 / SC710-FINDING | R710-05/06 → D710-05/06 | 现有真实 finding native、实际原因及原合法 rework | 当前 finding 对应 implementation_required/planning_stale 并回原 owner，不只比较出口，不隐去失败 |
 | T710-08 / SC710-INSTALL | R710-07 → D710-07 | 同 canonical 的原工具升级、source/dogfood/installed/声明平台、定向 reapply/drift/mode/sidecar，最多一个必要代表 clean | 受管正文/argv 一致、用户内容保留，无未处置 sidecar；不证明完整发布矩阵或业务采用 |
-| T710-09 / SC710-FINAL-COVERAGE | R710-01..07 → D710-01..07 | 本 Task 完整 isolated proposed 与实现，原独立 Architecture/候选 Check→两 maintenance owners 晋升/readback→after 重绑→最终 Check→完整 committed Review | eval 不是本 Task 正式门禁；晚到正式结果读原公共结果和 Git/PR |
+| T710-09 / SC710-FINAL-COVERAGE | R710-01..07 → D710-01..07 | 本 Task 完整 isolated proposed 与实现，原两 maintenance owners 整合/readback→TaskCommit→actual committed after绑定→一次独立Architecture及完整 Review | eval 不是本 Task 正式门禁；晚到正式结果读原公共结果和 Git/PR |
 
 每个 native 阶段保留 profile、候选、前置公开事实、首次 authored 输入、实际命令/结果承接及出口，原始轨迹在已有 repo 外 run-root。装配错误保留为该案例失败；修订后新 run 的来源和边界明确，不把重试改名首次。host 不提供本阶段 owner result、私有摘要、内部 authoring 选择或预期出口，不改写 Agent 原字节，也不给报错后纠偏提示。真实 finding 是合法语义出口；setup、execution gap 与 semantic 判断分别表达。
 
@@ -127,12 +127,12 @@ R710/BEH710、D710/CON710 的来源为 [#710 traceability](../../requirements-de
 
 | Test / scenario | Requirement → design | 正常入口、输入与必须观察 |
 | --- | --- | --- |
-| T711-01 / SC711-INDEPENDENT | R711-01/02/05 → D711-01/02/03 | 等价旧新基线，两个未含对方贡献的正常独立 Task 分别新增审计 CSV 与通知 locale 预览，原 maintenance/匹配 Check/晋升后固定候选；保旧首次冲突，新 A→B/B→A 均无共享导航/全局版本/历史冲突，完整文件集无下层共享登记，双方条件与关系保留。 |
+| T711-01 / SC711-INDEPENDENT | R711-01/02/05 → D711-01/02/03 | 等价旧新基线，两个未含对方贡献的正常独立 Task 分别新增审计 CSV 与通知 locale 预览，原 maintenance/提交前整合后固定committed候选；保旧首次冲突，新 A→B/B→A 均无共享导航/全局版本/历史冲突，完整文件集无下层共享登记，双方条件与关系保留。 |
 | T711-02 / SC711-READ-WRITE | R711-02/03/04/06 → D711-01/02 | 实际 installed Agent 从稳定入口发现两主题，核 current/accepted target/未晋升/历史，读完整条件/来源和 RDT/Architecture 关系；既有审计修改 UTC 字段仍保租户和无 secret，写原完整单元，不建 Issue current 或登记总索引。 |
 | T711-03 / SC711-OVERLAP | R711-05 → D711-03 | 同审计导出分别加最多100行超限拒绝、UTC及空结果列头；原 owner 在真实 target 整合，保租户校验/无secret与双方三条件，审组合及消费者，不以文本合并冒充一致。 |
 | T711-04 / SC711-MIGRATION | R711-03/07 → D711-04 | 先缺测试关系、后补齐经原链切换，保未迁移账单与旧 Git；旧阶段 Task final integration 写真实迁移目标，不双写旧索引；audit-csv 改名 audit-export 保 ID，替换/删除维护存活关系与旧意义。 |
 | T711-05 / SC711-INSTALL | R711-08 → D711-05 | 一个代表 clean 取得 matching old/new snapshots，原 tools owner 同步 dogfood/实际安装，定向 source/installed/平台/reapply/drift/mode/sidecar。安装、实际 Agent 与业务采用分别陈述，不扩大矩阵。 |
-| T711-06 / SC711-FINAL | R711-01..08 → D711-01..05 | 本 Task 完整 isolated proposed 及 implementation 经独立 Architecture/候选 Check→原 owners final integration/readback→actual after 重绑→最终 Architecture/Check→commit/独立完整 Review；样本不是本 Task 正式 pass。 |
+| T711-06 / SC711-FINAL | R711-01..08 → D711-01..05 | 本 Task 完整 isolated proposed 及 implementation 经原 owners final integration/readback→TaskCommit→actual committed after绑定→同次独立Architecture及完整 Review；样本不是本 Task 正式 pass。 |
 
 固定事实、必答条件及入口由本 Delivery design 第8节在实施前给出。旧新保持相同实际模型、工具权限和等价任务起点，不向受测 Agent 注入另一侧答案、轨迹或 host 期待。保首次失败、execution gap 与修订重跑，不预填通过。确定性脚本只收集路径/Git/命令事实，AI 原 owner 判断完整性、状态与组合语义。
 

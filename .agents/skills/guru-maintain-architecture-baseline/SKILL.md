@@ -79,7 +79,7 @@ Execute one profile in this order:
    the contract's Engineering execution facts rules to supporting commands;
    judge applicability, blocking effect and before/after meaning;
 4. make the applicable judgments as the contract-selected AI owner;
-5. author one complete result matching the selected Planning 3.0, nonplanning 5.0, or matching Delivery schema;
+5. author one complete result matching the selected Planning 3.0, nonplanning 6.0, or matching Delivery schema;
 6. submit `public_input` plus that `owner_result` once through the formal
    `scripts/invoke.sh --invocation -` boundary; and
 7. consume exactly one declared typed exit.
@@ -108,10 +108,13 @@ It returns either a reviewed `no_architecture_impact` result or exactly one of
 
 Implementation discovery invalidates the prior result when scope, risk,
 authority, persistence, SDK, external, owner, or architecture boundaries
-expand. Phase 2 and Branch Review are independent semantic judgments: Phase 2
-reviews the candidate before/after state; Branch Review recomputes it from the
-complete committed diff. Publication and Acceptance/Finish may consume only a
-fresh no-change result or a reviewed and promoted contribution.
+expand. Planning retains its independent candidate and final assessments.
+After implementation, the new independent committed reviewer performs the
+Architecture before/after judgment once at `branch_review`, before reading
+Task narratives and completing the merged quality review. No independent
+Phase 2 Architecture assessment or candidate Check precedes integration.
+Publication and Acceptance/Finish consume only applicable no-change or
+reviewed-promoted authority through their existing eligibility entries.
 
 The project authority owns all architecture and constitution prose. This
 package consumes only authority status, locators, verifiable identities, the
@@ -119,21 +122,22 @@ five stable principle identities/short names, and task-local change/evidence
 contracts. It does not turn principles into a scorecard and does not encode
 language, framework, or business-specific checks.
 
-The independent Phase 2 Architecture reviewer assesses the complete candidate
-and proposed Architecture writes while shared current remains unchanged. The
-original Check owner then checks that full candidate through its candidate-only
-profile. Only its actual `candidate_checked` exit, after legal rework to
-implementation, enters final integration. In that boundary the original
-Architecture owner reads the actual affected targets, reconciles intervening
-changes and writes the reviewed complete units. It checks actual-write
-applicability and returns the real promoted candidate. The implementation owner
-rebuilds the public candidate with every promotion, relationship and navigation
-change and calls `begin_check` again. Final Architecture/Check, Task Commit and
-independent committed full-diff Review cover that actual content.
+At `delivery_promotion(stage=final_integration)`, the original maintenance
+owner consumes approved Planning, the complete implementation, genuine
+engineering results and full proposed targets. It rereads actual targets,
+reconciles intervening changes, writes the complete definitions and reads
+back every write. `baseline_current` with
+`promotion_state=integrated_pending_review` records that integration only.
+The current router retains before authority and the actual after candidate for
+implementation and committed Review, and routes the integrated content to
+TaskCommit. The commit includes every body, relationship and navigation write.
+The same independent committed reviewer later judges the actual fixed B..H
+before/after and may return `reviewed_promoted`. Integration alone cannot
+establish independent quality pass or readiness.
 
 The AI owns applicability, sufficiency, conflict, regression, contribution,
 ADR, promotion, and route judgment. The deterministic runtime validates only
-purpose-bound Planning 3.0 semantics and current nonplanning 5.0 / Delivery 3.0 contracts, exact identity/freshness binding,
+purpose-bound Planning 3.0 semantics and current nonplanning 6.0 / Delivery 4.0 contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
 
@@ -160,8 +164,8 @@ regular repository file at the constitution locator, and carries its exact
 `source_profile`. Only the matching `task_impact_sync` or `delivery_task_impact_sync` profile
 may resume its corresponding stage. Bootstrap and repair current results rerun that affected
 `task_impact_sync` stage, except the final-integration maintenance continuation
-defined below; promotion current results return the actual promoted candidate for implementation
-to refresh the public candidate and re-enter final Architecture/Check; Task Commit and independent committed full-diff Review follow.
+defined below; promotion current results return the actual integrated candidate for TaskCommit,
+then fixed-candidate independent committed Review.
 
 Public exits are `baseline_current`, `sync_required`, `baseline_incomplete`,
 `architecture_conflict`, `contract_incomplete`, `fitness_regression`, and
@@ -205,13 +209,13 @@ No new Architecture owner or lifecycle stage is introduced.
 
 Old task-impact planning 2.0 input fails closed; interrupted old planning fresh
 re-enters Author. Bootstrap and repair retain their fixed contracts. Nonplanning task impact and
-promotion select 5.0 / Delivery 3.0 under MIGRATION-638. Historical schemas are validation assets only, never a planning
+promotion select 6.0 / Delivery 4.0 under MIGRATION-638. Historical schemas are validation assets only, never a planning
 fallback. MIGRATION-292 defines the matching workflow/preset update boundary.
 
 ## Delivery Architecture projection
 
 Nonplanning development stages select delivery_task_impact_sync (schema_version
-delivery-3.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
+delivery-4.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
 in addition to this owner's original stage authorities. Read the selected
 Delivery's three planning documents and the Task's overall scope separately.
 The installed public API validates key/relationship and planning_root; the
@@ -244,14 +248,14 @@ Delivery equivalent. Bootstrap accepts `planning|phase2`; phase2 serves this
 final-integration maintenance return. Select its existing 2.0 / delivery-1.0 schema and
 `guru-maintain-architecture-baseline:2.0` contract identity; preserve the actual
 project authority identities and same key/root. After maintenance, return to
-the original 5.0 / delivery-3.0 final-integration promotion. Reread its authority,
+the original 6.0 / delivery-4.0 final-integration promotion. Reread its authority,
 targets and complete candidate and author the current result. A maintenance
 current result is not a promotion result. Do not pass final_integration to the
 old maintenance schema or relabel its output as reviewed_promoted. Missing
 call-local continuation requires fresh original-owner entry, not a guessed
 route or a new persistent handoff.
 
-## Final-integration promotion 5.0 / Delivery 3.0
+## Final-integration promotion 6.0 / Delivery 4.0
 
 Read the matching section in references/contract.md. Current promotion is
 final_integration/promotion_required only. Other stale authority uses fresh impact sync;
@@ -271,7 +275,7 @@ identity. A different after identity requires an actual changed baseline target
 with before/after content, completed readback and current applicability. The
 validator checks those facts without interpreting identity prose in Markdown.
 
-The original Architecture owner writes and recovers reviewed targets with
+The original Architecture owner writes and recovers complete proposed targets with
 ordinary file tools. The wrapper is a recorder/validator and writes no target
 or persistent intent. Read back the same call-local intent after partial write
 or output loss. Continue only uniquely recoverable, conflict-free pending

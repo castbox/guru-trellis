@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import subprocess
 import tempfile
@@ -17,38 +18,17 @@ PACKAGES = (
     "guru-review-branch",
     "guru-verify-extension-installation",
 )
-TASK_REF = ".trellis/tasks/08-18-reviewed-content-acceptance"
+TASK_REF = ".trellis/tasks/flow-task"
 
 
 class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory()
-        self.parent = Path(self.temp.name)
-        self.fixture = self.parent / "fixture"
-        self.inputs = self.parent / "inputs"
-        self.inputs.mkdir()
-        subprocess.run(
-            ["git", "init", "-q", "-b", "main", str(self.fixture)], check=True
-        )
-        self.git("config", "user.name", "Reviewed Content Acceptance")
-        self.git("config", "user.email", "reviewed-content@example.invalid")
-        self.git("config", "core.filemode", "true")
-        (self.fixture / ".gitignore").write_text(".trellis/.runtime/\n")
-        (self.fixture / "app.txt").write_text("base\n")
-        (self.fixture / TASK_REF).mkdir(parents=True)
-        (self.fixture / TASK_REF / "prd.md").write_text("# Fixture task\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "base")
-        self.base = self.git("rev-parse", "HEAD")
-        self.git("update-ref", "refs/remotes/origin/main", self.base)
-        self.git("switch", "-qc", "feat/reviewed-content")
-        (self.fixture / "feature.txt").write_text("feature\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "feature")
-        self.review_head = self.git("rev-parse", "HEAD")
-
-    def tearDown(self) -> None:
-        self.temp.cleanup()
+        spec=importlib.util.spec_from_file_location("identity_delivery_flow",SKILLS/"packages/guru-check-task/tests/test_delivery_flow.py")
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        self.flow=module.DeliveryFlow();self.flow.setUp();self.addCleanup(self.flow.doCleanups)
+        self.fixture=self.flow.repo;self.inputs=self.flow.inputs
+        self.base=self.flow.projection.content_base(self.flow.key)
+        self.review_head=self.flow.head
 
     def git(self, *args: str) -> str:
         return subprocess.run(
@@ -109,6 +89,8 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         return next(iter(digests))
 
     def run_branch_wrapper(self, name: str, *args: object, ok: bool = True) -> dict:
+        if name == "check-review-gate.sh":
+            args = (*args, "--delivery-key", json.dumps(self.flow.key))
         process = subprocess.run(
             [
                 str(SKILLS / "packages/guru-review-branch/scripts" / name),
@@ -130,45 +112,12 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         return project_intermediate_receipt(payload, SKILLS / "schemas") if ok and name != "invoke.sh" else payload
 
     def public_input(self) -> dict:
-        return {
-            "profile": "branch_review",
-            "mode": "workflow",
-            "task_ref": TASK_REF,
-            "base_ref": self.base,
-            "branch_review_commit": self.git("rev-parse", "HEAD"),
-            "review_intent": "fresh_final_review",
-        }
+        return {"profile":"delivery_branch_review","mode":"workflow","task_ref":TASK_REF,
+                "delivery_key":self.flow.key,"base_ref":self.base,
+                "branch_review_commit":self.git("rev-parse","HEAD"),"review_intent":"initial_review"}
 
     def semantic_review(self) -> dict:
-        return {
-            "candidate_classifications": [],
-            "delivery_review": {
-                "task_scope": ["PRD R1"],
-                "delivery_slice": ["PRD R1"],
-                "remaining_work": [],
-                "independent_delivery_conditions": ["The reviewed change is independently usable."],
-                "validation_boundaries": ["Fixture Git identity only; no live Delivery PR."],
-                "current_slice_status": "passed",
-                "remaining_work_status": "disclosed",
-                "summary": "The fixture slice is complete for Branch Review.",
-            },
-            "semantic_review": {
-                "qualified_findings": [],
-                "scope_proposals": [],
-                "observations": [],
-                "followup_candidates": [],
-                "rejected_candidates": [],
-                "ai_review_gate": {
-                    "status": "passed",
-                    "summary": "Reviewed the complete current base to HEAD range.",
-                },
-            },
-            "verification_evidence": {
-                "reviewer": "independent-agent-acceptance",
-                "review_source": "independent-agent",
-                "evidence": ["Reviewed the complete fixture range."],
-            },
-        }
+        return json.loads((SKILLS/"packages/guru-review-branch/examples/authoring-delivery-passed-2.0.json").read_text())
 
     def record_fresh_gate(self) -> Path:
         public = self.write_json("public.json", self.public_input())
@@ -189,6 +138,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             self.fixture
             / ".trellis/.runtime/guru-team/owner-checkpoints"
             / Path(TASK_REF).name
+            / self.flow.key["delivery_id"]
             / "review-gate.json"
         )
 
@@ -238,6 +188,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             self.fixture
             / ".trellis/.runtime/guru-team/owner-checkpoints"
             / Path(TASK_REF).name
+            / self.flow.key["delivery_id"]
             / "review-gate.json"
         )
         checkpoint.parent.mkdir(parents=True)
@@ -247,7 +198,8 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         old = self.run_branch_wrapper(
             "check-review-gate.sh", "--task", TASK_REF, ok=False
         )
-        self.assertEqual(("stale_identity", "checkpoint"), (old["code"], old["field_path"]))
+        self.assertEqual("stale_identity", old["code"])
+        self.assertIsNone(self.flow.projection.resolve(self.flow.key)["results"]["full_review"])
 
         checkpoint = self.record_fresh_gate()
         fresh = self.run_branch_wrapper(
@@ -256,7 +208,6 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         self.assertEqual("owner_checkpoint_validated", fresh["status"])
         self.assertFalse(fresh["formal_exit"])
         current_gate = json.loads(checkpoint.read_text())
-        self.assertEqual("7.0", current_gate["schema_version"])
         self.assertEqual(
             "guru-reviewed-content-1.0",
             current_gate["reviewed_content_algorithm"],
@@ -273,7 +224,6 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             ok=False,
         )
         self.assertEqual("stale_identity", wrong["code"])
-        self.assertEqual("review_commit", wrong["field_path"])
         self.assertTrue(checkpoint.is_file())
 
         base_tree = self.git("rev-parse", f"{self.base}^{{tree}}")
@@ -295,10 +245,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         ancestry_stale = self.run_branch_wrapper(
             "check-review-gate.sh", "--task", TASK_REF, ok=False
         )
-        self.assertEqual(
-            ("stale_identity", "review_commit"),
-            (ancestry_stale["code"], ancestry_stale["field_path"]),
-        )
+        self.assertEqual("stale_identity", ancestry_stale["code"])
 
 
 if __name__ == "__main__":

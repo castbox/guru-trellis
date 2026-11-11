@@ -257,13 +257,12 @@ class PublicInvocationTest(unittest.TestCase):
                         "commit_kind": "final", "check_result_id": "check:historical"})
         self.candidate_path.write_text(json.dumps(candidate))
         receipt_path.write_text(json.dumps(receipt))
-        recovered = invoke.run(PACKAGE, {}, ["--root", str(self.repo),
-                               "--candidate-artifact", str(self.candidate_path)])
-        self.assertEqual(commit, recovered["branch_review_commit"])
-        self.assertEqual(key, recovered["delivery_key"])
-        self.assertEqual(count, self.git("rev-list", "--count", "HEAD"))
-        self.assertFalse(self.candidate_path.exists())
-        self.assertEqual(receipt, json.loads(receipt_path.read_text()))
+        with self.assertRaises(CommandError) as rejected:
+            invoke.run(PACKAGE, {}, ["--root", str(self.repo), "--candidate-artifact", str(self.candidate_path)])
+        self.assertEqual("schema_mismatch",rejected.exception.code)
+        self.assertEqual(commit,self.git("rev-parse","HEAD"))
+        self.assertEqual(count,self.git("rev-list","--count","HEAD"))
+        self.assertEqual(receipt,json.loads(receipt_path.read_text()))
 
     def test_recovery_rejects_changed_head_without_reexecuting(self) -> None:
         self.invoke_public()

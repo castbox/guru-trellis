@@ -82,7 +82,7 @@ def target_states(repo: Path, targets: list[dict]) -> dict[str, str]:
     for target in targets:
         locator = target["locator"]
         if locator in states or reviewed_content_metadata_path(locator):
-            _error("promotion_targets", "Declare each reviewed Architecture target once, outside runtime metadata.")
+            _error("promotion_targets", "Declare each Architecture integration target once, outside runtime metadata.")
         path = _path(repo, locator)
         current = path.read_text(encoding="utf-8") if path.exists() else None
         if current == target["content"]:
@@ -137,18 +137,13 @@ def check_current_candidate(repo: Path, public: dict) -> None:
 def check_promotion(repo: Path, public: dict, owner: dict) -> None:
     check_before_authority(repo, public)
     targets = owner.get("promotion_targets", [])
-    review = owner.get("review", {})
-    if (review.get("status") != "reviewed" or review.get("independent") is not True
-            or review.get("candidate") != public["candidate"]
-            or review.get("before_authority") != public["before_authority"]):
-        _error("owner_result.review", "Use the actual independent candidate and proposed-content assessment.")
     if not targets:
         _error("owner_result.promotion_targets", "Recover the original reviewed target contents before continuing.")
     states = target_states(repo, targets)
     if any(state != "completed" for state in states.values()):
         _error("owner_result.promotion_targets", "Read back this operation's completed, pending and conflicting files; complete only unconflicted pending writes through the original owner.")
     if _before_candidate(repo, targets) != public["candidate"]:
-        _error("candidate", "The actual delta exceeds the reviewed candidate or proposed target contents; return to the affected Architecture assessment.")
+        _error("candidate", "The actual delta exceeds the complete candidate or proposed target contents; reread the original integration inputs.")
     baseline = public["baseline"]
     if (public["expected_current_identity"] != baseline["identity"]
             or public["current_identity"] != baseline["identity"]):

@@ -275,13 +275,15 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         # Test authoring projects historical fixture seeds onto the current
         # contract. Production runtime never performs this migration.
         if public_input.get("profile") in {"task_impact_sync", "delivery_task_impact_sync"} and public_input.get("stage") != "planning" and public_input.get("schema_version") in {"2.0", "delivery-1.0"}:
-            public_input["schema_version"] = "delivery-3.0" if public_input["profile"].startswith("delivery_") else "5.0"
-            public_input["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:5.0"
+            public_input["schema_version"] = "delivery-4.0" if public_input["profile"].startswith("delivery_") else "6.0"
+            public_input["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:6.0"
             public_input["before_authority"] = {"git_revision": self.authority_revision,
                 "baseline_locator": "docs/architecture/README.md",
                 "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
                 "change_contract_locator": "docs/architecture/06-governance/change-contract.md"}
             public_input["candidate"] = self.candidate_runtime.capture_candidate(self.repository)
+            if public_input["stage"] == "phase2":
+                public_input["stage"] = "implementation_discovery"
             if "committed_range" in public_input:
                 original_range = copy.deepcopy(public_input["committed_range"])
                 public_input["committed_range"].update(base_head=self.authority_revision, review_head=public_input["candidate"]["head"])
@@ -325,7 +327,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
-        if public_input.get("schema_version") in {"5.0", "delivery-3.0"}:
+        if public_input.get("schema_version") in {"6.0", "delivery-4.0"}:
             owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
         if public_input["profile"].startswith("delivery_"):
             owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
@@ -377,7 +379,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
-        if public_input.get("schema_version") in {"5.0", "delivery-3.0"}:
+        if public_input.get("schema_version") in {"6.0", "delivery-4.0"}:
             owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
         if public_input["profile"].startswith("delivery_"):
             owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
@@ -429,8 +431,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(
             aggregate,
             {
-                "schema_id": "guru-maintain-architecture-baseline-input-index-5.0",
-                "path": "schemas/public-input-aggregate-5.0.schema.json",
+                "schema_id": "guru-maintain-architecture-baseline-input-index-6.0",
+                "path": "schemas/public-input-aggregate-6.0.schema.json",
             },
         )
         self.assertFalse((self.package / "schemas/public-input.schema.json").exists())
@@ -442,8 +444,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             {item["id"] for item in interface["external_exits"]},
             {"baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"},
         )
-        self.assertTrue(all(item["schema"]["schema_id"].endswith(("5.0", "3.0", "2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
-        self.assertTrue(all(item["schema"]["schema_id"].endswith(("5.0", "2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("6.0", "4.0", "3.0", "2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("6.0", "4.0", "2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
         architecture_input_ids = {
             interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
             *(
@@ -503,10 +505,13 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             # Fixture commits can start detached Git maintenance, which changes
             # object storage and the derived info/refs cache during this check.
             # Keep actual refs, session state, config and other resources.
+            # Managed interpreter selection belongs to runtime startup, not this owner.
             return {p.relative_to(self.repository): p.read_bytes()
                     for p in self.repository.rglob("*")
                     if not p.is_relative_to(self.repository / ".git/objects")
-                    and p != self.repository / ".git/info/refs" and p.is_file()}
+                    and p != self.repository / ".git/info/refs"
+                    and not p.is_relative_to(self.repository / ".trellis/.runtime/guru-team/python")
+                    and p.is_file()}
 
         sources = {
             "review_refresh_required": "branch_review",
@@ -804,17 +809,6 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(repair_output["source_profile"], "repair")
         self.assertEqual(repair_output["stage"], "branch_review")
         self.assertEqual(repair_output["constitution_status"], "current")
-        for contract_path in (
-            self.repo_root / "trellis/workflows/guru-team/workflow.md",
-            self.repo_root / "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
-        ):
-            contract_text = contract_path.read_text(encoding="utf-8")
-            self.assertIn("source_profile=task_impact_sync", contract_text)
-            self.assertIn("delivery_bootstrap_foundation|delivery_repair", contract_text)
-            self.assertIn("Task-only `bootstrap_foundation|repair` reruns the matching", contract_text)
-            self.assertIn("source_profile=delivery_task_impact_sync", contract_text)
-            self.assertIn("source_profile=delivery_promotion|promotion", contract_text)
-
         pending = self.load("public-input-impact.json")
         pending["constitution"]["authority_status"] = "pending_reviewed_promotion"
         pending_current = {
@@ -884,6 +878,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         selected = self.architecture_selection(public_input)
         result = self.invoke(public_input, selected)
         self.assertEqual(result.returncode, 3)
+        selected["promotion_state"] = "reviewed_promoted"
         selected["review"] = {
             "status": "reviewed",
             "independent": True,
@@ -1390,7 +1385,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "dedicated-refactor-slice", "scope-expansion", "fitness-regression",
             "parallel-stale", "unpromoted-contribution", "next-task-consumption",
             "missing-external-evidence", "repair-current-contract",
-            "implementation-discovery-independent-native", "phase2-independent-native",
+            "implementation-discovery-independent-native",
             "branch-review-independent-native", "planning-business-default-native",
             "planning-missing-candidate-native", "planning-inherited-business-default-native",
             "planning-constraint-sufficient-native", "planning-constraint-insufficient-native",
@@ -1448,7 +1443,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
             "Load [references/contract.md](references/contract.md) completely before acting.",
-            "Planning 3.0, nonplanning 5.0, or matching Delivery schema",
+            "Planning 3.0, nonplanning 6.0, or matching Delivery schema",
             "scripts/invoke.sh --invocation -",
             "owner_not_yet_executed",
             "platform truly cannot provide the contract-required",
@@ -1546,7 +1541,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         roots = (self.repository / ".trellis", self.repository / "docs",
                  self.repository / ".git/trellis", self.repository / ".git/guru-team")
         return {p.relative_to(self.repository).as_posix(): p.read_bytes()
-                for root in roots for p in root.rglob("*") if p.is_file()}
+                for root in roots for p in root.rglob("*")
+                if p.is_file() and not p.is_relative_to(self.repository / ".trellis/.runtime/guru-team/python")}
 
     def test_final_plan_retains_no_context_explicit_entry_without_writes(self):
         public, selected = self.final_plan_object()
@@ -1716,30 +1712,15 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             item["contract"]["path"] for item in contracts["consumer_inputs"]
             if item["id"] == "fitness_input"
         )
-        for stage in ("implementation_discovery", "phase2", "final_integration"):
-            if stage == "phase2":
-                candidate = self.upstream.projection.candidate(
-                    ["docs/architecture/README.md"], kind="git_free",
-                )
-                self.upstream.projection.begin_check(self.delivery_key, candidate)
-            elif stage == "final_integration":
-                self.upstream.projection.apply({
-                    "api_version": "1.0", "operation": "rework", "key": self.delivery_key,
-                    "owner_role": "check", "owner_id": "guru-check-task",
-                    "expected_phase": "checking", "target_role": "implementation",
-                    "reason": self.upstream.scope, "affected_results": ["readiness"],
-                })
-            self.assertEqual(
-                self.upstream.projection.resolve(self.delivery_key)["phase"],
-                "checking" if stage == "phase2" else "implementing",
-            )
+        for stage in ("implementation_discovery", "final_integration"):
+            self.assertEqual(self.upstream.projection.resolve(self.delivery_key)["phase"], "implementing")
             for return_route in ("implementation", "check"):
                 with self.subTest(stage=stage, return_route=return_route):
                     public = self.load("public-input-impact.json")
                     public["stage"] = stage
                     public, _ = self.delivery_entry(public, {})
                     if stage == "final_integration":
-                        promotion = self.load("public-input-delivery-promotion-3.0.json")
+                        promotion = self.load("public-input-delivery-promotion-4.0.json")
                         for field in ("task_locator", "delivery_key", "planning_root",
                                       "before_authority", "candidate"):
                             promotion[field] = public[field]

@@ -6,7 +6,7 @@ from .adapter import DeliveryProjection
 from .gates import rework
 
 
-def revise(root, package, public, semantic, *, owner_role, expected_phase):
+def revise(root, package, public, semantic, *, owner_role, expected_phase, output_version="1.0"):
     validate_json(public, package / "schemas/public-delivery-scope-revision-input-1.0.schema.json", "input")
     validate_json(semantic, package / "schemas/delivery-scope-revision-review-1.0.schema.json", "semantic_result")
     if semantic["public_input"] != public:
@@ -29,7 +29,7 @@ def revise(root, package, public, semantic, *, owner_role, expected_phase):
                    scope_ref=scope)
         output = {name: public[name] for name in ("mode", "task_ref", "delivery_key", "source_selection", "revision_refs")}
         output["exit_id"] = "delivery_scope_revised"
-        validate_json(output, package / "schemas/public-delivery-scope-revised-output-1.0.schema.json", "stdout")
+        validate_json(output, package / ("schemas/public-delivery-scope-revised-output-" + output_version + ".schema.json"), "stdout")
         return output
     except LifecycleContractError as exc:
         raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc

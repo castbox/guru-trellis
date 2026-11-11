@@ -14,13 +14,13 @@ from runtime.schema import validate_json
 PROFILES = {"bootstrap_foundation", "task_impact_sync", "promotion", "repair"}
 PROFILE_SCHEMAS = {
     "bootstrap_foundation": "public-input-bootstrap.schema.json",
-    "task_impact_sync": "public-input-impact-2.0.schema.json",
-    "promotion": "public-input-promotion-2.0.schema.json",
+    "task_impact_sync": "public-input-impact-3.0.schema.json",
+    "promotion": "public-input-promotion-3.0.schema.json",
     "repair": "public-input-repair.schema.json",
 }
 EXITS = {
-    "candidate_ready": "public-candidate-ready-output-2.0.schema.json",
-    "ssot_current": "public-ssot-current-output.schema.json",
+    "candidate_ready": "public-candidate-ready-output-3.0.schema.json",
+    "ssot_current": "public-ssot-current-output-3.0.schema.json",
     "sync_required": "public-sync-required-output.schema.json",
     "revision_required": "public-revision-required-output.schema.json",
     "baseline_incomplete": "public-baseline-incomplete-output.schema.json",
@@ -74,9 +74,9 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
         raise CommandError("stale_identity", "owner_result.continuation_id", "Rerun the profile from current authority facts.", 3)
     exit_id = recorded["typed_exit"]
     if exit_id == "candidate_ready" and public["profile"] != "task_impact_sync":
-        raise CommandError("semantic_result_invalid", "owner_result.typed_exit", "Only phase2 impact returns candidate_ready; final integration returns actual current or its original repair route.", 3)
+        raise CommandError("semantic_result_invalid", "owner_result.typed_exit", "Only implementation impact returns candidate_ready; final integration returns actual current or its original repair route.", 3)
     if public["profile"] == "task_impact_sync" and exit_id == "sync_required" and recorded.get("sync_kind") == "promotion":
-        raise CommandError("semantic_result_invalid", "owner_result.typed_exit", "Complete phase2 proposals return candidate_ready; actual promotion waits for final integration.", 3)
+        raise CommandError("semantic_result_invalid", "owner_result.typed_exit", "Complete implementation proposals return candidate_ready; actual integration uses the original maintenance owner.", 3)
     if exit_id == "ssot_current":
         version_field = SSOT_CURRENT_VERSION_FIELDS[public["profile"]]
         if recorded.get("active_version") != public[version_field]:

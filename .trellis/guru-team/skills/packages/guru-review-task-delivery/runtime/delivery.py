@@ -15,7 +15,7 @@ from runtime.task_lifecycle.errors import LifecycleContractError
 
 def invoke(package, repo, public, semantic):
     refresh = public["profile"] == "delivery_readiness_refresh"
-    validate_json(public, package / ("schemas/public-delivery-readiness-refresh-input-1.0.schema.json" if refresh else "schemas/public-delivery-delivery-review-input-1.0.schema.json"), "input")
+    validate_json(public, package / ("schemas/public-delivery-readiness-refresh-input-1.0.schema.json" if refresh else "schemas/public-delivery-delivery-review-input-2.0.schema.json"), "input")
     try:
         resolve_active_task_checkout(repo, public["task_ref"])
     except LifecycleContractError as exc:

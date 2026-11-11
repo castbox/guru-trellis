@@ -45,31 +45,25 @@ Planning 在实质 solution 写入前先取得真实 candidate 的独立 Archite
 
 远端 ref、无关共享 CURRENT、archive 或工具版本前进，不强迫换源、同步、重写贡献或整链重审。实际冲突、必需检查具体集成失败、原 Merge 确认的既有服务端更新要求、明确依赖纳入或用户主动同步，才进入原 Reconcile；一次固定目标，按真实差额恢复原阶段，不追赶新目标或制造空提交。立即适用规则、scope、依赖和方案的实质变化仍回原 owner。
 
-## 早期提交、Draft 反馈与并行候选验证
+## 本地待审提交与 early Draft 迁移
 
-`R636-01..07 / BEH636-01..07` 由 #636 增加。TaskCommit 在已激活且处于实施阶段的当前 Delivery 中，以有界 AI 内容审查、最小自检、敏感内容检查、精确 staging 和目标核验形成早期真实提交。该提交仍执行原 hook/事务和同提交输出恢复，但不把完整 task Check、最终 Branch Review、全部编译或重型集成/race 作为统一前置。最小命中命令由当前 Planning 按风险选定。早期提交输出不证明任何最终 gate。
+`R636-01..07 / BEH636-01..07` 的精确本地提交、真实 hook、同提交恢复、真实远端事实和 Refs-only/Closure 边界保留。#794 通过 [MIGRATION-794](../../../trellis/presets/guru-team/MIGRATION-794.md) 窄替代审核前新 push/PR资格及旧 early profiles 的直接 Publication consumer，不静默改变旧 profile。当前 TaskCommit pre-review profiles 在已激活的 implementing Delivery 核批准 Planning、真实工程自检、必要文档整合及精确提交内容，形成本地待审 H；提交不表示实现已独立通过。clean reentry 不 stage、不造空或重复 commit，输出只交固定候选审核。
 
-原 Publication 在同 Task/Delivery 的唯一同仓 Open PR 上创建或更新 Draft；正文准确区分已执行、失败、SKIP、未执行和待完成项目。冲突解决或问题修正形成新候选后，经原提交/发布 owner 更新同 PR，不在本地等待最终审核才能先发布反馈，不造空提交或新 Delivery。所有 Draft 和最终 Delivery 正文均 Refs-only；即使 full/default target，Issue 关闭仍由整体 Closure 独占。
+当前链在独立完整 Review 通过前不 push、不创建 PR。旧 Draft 已发生 commit、push、PR、绑定、metadata 或状态变化，由原固定完整 provider 准确恢复同操作结果，读回同 PR/HEAD/payload，不重复副作用、不把 Draft 当最终 Publication 或 pass。尚未发生的远端动作停止在原 migration owner，接回当前独立审核和 readiness 后，按同 PR 与原事务资格补剩余步骤；不能因为旧 pending存在先发布再补审。
 
-同 PR 已 Ready 而需要发布未最终审核的修订时，由原 Publication 先读回真实状态/HEAD，合法 rework 失效受影响的 Check/full_review/readiness，并确保远端退回 Draft 后才推送新候选。身份、planning、固定 B、PR 与已发生历史事实保留。新候选取得全部适用最终证据后，才可沿原最终 Publication 再转 Ready；旧 HEAD 的 readiness 不放行新 HEAD 或 Merge。
+固定 B/H 的内容审核与风险验证分别判断分支 H 和目标 T/组合 M。无关 target 前进不打断内容判断；文本冲突、缺 PR merge ref 或 CI未触发保留具体组合缺口及恢复条件，不由 Guru 接管业务 CI。作者工程自检和旧早期分析只作为适用事实，不能供新的正式 full_review pass。所有业务 PR仍 Refs-only，整体 source Issue关闭归原 Closure；Merge、Completion与终态不被本次合并。
 
-Draft 后在同一固定 B/H 并行启动独立完整内容分析和风险匹配验证。目标分支前进不中断该内容审核。分支 HEAD H 的验证与目标 T/组合候选 M 的验证分别标识；文本冲突、没有 PR merge ref 或 pull_request CI 未触发不阻止固定分支内容审核和受支持 HEAD 命中检查。组合检查保留具体缺口及恢复条件，Draft 的存在不证明远端 CI 已执行。业务 CI 入口缺失由业务 owner处理，Guru 不因此接管业务 CI。
+## 提交前整合与一次独立完整审核
 
-原 Branch Review 的早期分析结果只供当前实现/Check 判断和修正，不写 public full_review，不自动复用为正式 pass。正式 full_review 保留真实 Check predecessor；Check、完整独立 committed Review、readiness、Ready/Merge 各自判断实际候选。早期反馈不推迟、取消或降低完整最终质量义务。
+`R531-04 / BEH531-CANDIDATE`、`R530-01..05`、`R600-01..06 / BEH600-01..06`、`R638-01..07` 的完整范围、真实知识写入和最终质量责任继续；重复 candidate/final Check时机由本节替代。Planning批准后，implementation完成全部代码、完整隔离 proposed、选定测试/静态/diff检查及真实结果。原 Architecture/RDT owners 在提交前 final_integration 固定实际 target branch/commit，读适用 before、完整proposal、真实current及必要关系/consumer，保留所有有效条件，实际写入/readback并判断适用性。无独立candidate Check或提交前独立implementation Architecture pass前置。no_change无空贡献、ADR或提交；普通晋升不要求全局版本或共享逐项登记。
 
-原 producer 恢复已成功但输出丢失的 commit、Draft 创建、push、metadata 和 Draft/Ready 转换，先读回同操作实际状态/HEAD/payload，再接续剩余动作。不能创建重复 PR、空提交或以历史 Ready 冒充新通过。公共 I/O、阶段和受控 producer/consumer 必须显式成套迁移，canonical/workflow/platform/dogfood 同步；Draft 不是新公共 phase 或最终 PublicationFact，也不产生第二状态 authority。
+整合只表示文档已写入并待独立审核；Architecture明确 integrated_pending_review，不能称reviewed_promoted。TaskCommit的 semantic Gate针对形成精确待审本地候选，纳入全部实现/正文/关系/导航after，保原hook和事务。implementation随后以原固定B、实际committed H和全部paths调用公开constructor/begin_check；不手填content_ref、不以dirty候选或旧H冒充冻结提交。
 
-## 最终检查、提交和独立审核
+新的独立 reviewer 未参与当前实现，审查期间冻结B/H不改候选。它先完整读固定B的constitution/baseline/change contract，再读H、完整diff和实际受影响未改consumers，形成implementation Architecture before/after判断后才读必要Task叙述解释归属。它在同次完整Review承接requirements、design、implementation、tests、docs_ssot、cross_layer、compatibility、deployment_and_operations、verification_completeness九维、完整固定区间、减法/可维护性/兼容与全部Branch Review职责。Planning独立candidate/final Architecture保留，不成为当前通过。命令绿色、九个true、旧pass或作者自检不替代当前充分性。
 
-`R531-04 / BEH531-CANDIDATE`、`R530-01..05`、`R600-01..06 / BEH600-01..06` 与 `R638-01..07` 保持原独立职责和最终质量要求。实施先完成所选 Docs 策略的完整隔离贡献和 proposed 正文。implementation以固定B、实际HEAD及全部提交/dirty paths调用原candidate/begin_check进入checking；独立Architecture phase2和原Check delivery_candidate_check先读晋升前authority、完整候选及受影响未改consumers，判断完整候选。
+真实通过后，同一原Review owner先记录check（predecessor=Planning），再记录full_review（predecessor=该check）；两槽都是一次实际判断的真实投影，不是两个独立审查步骤。只有两结果都完成才输出passed并交原Delivery Review。Architecture只有实际整合完成且该committed before/after独立判断通过才reviewed_promoted；pending不能readiness/Publication/Finish。实施缺陷回原implementation修复和后继提交，真实Planning修订回最早原Author/Architecture/Approval，实际scope变化回原Clarify；保合法Planning、固定B和仍适用覆盖，不因finding自动扩scope。
 
-候选通过时原Check以既有rework(target_role=implementation, affected_results=[readiness])回implementing，再输出candidate_checked，不写最终public Check。唯一consumer调用原Architecture/RDT final_integration：一次固定真实命中目标、保留双方有效条件并补审真实差额/组合/未改消费者，原owner写完整组合并读回。no-change跳过写入，不制造空贡献或ADR。普通晋升不要求全局版本递增或总入口必写；稳定identity和精确Git内容分别管理。
-
-implementation以同B、实际HEAD及全部晋升/关系/导航paths重建candidate/begin_check，回checking；最终Architecture/Check覆盖新content_ref与全部实际差额。只有最终Check record_gate进入reviewing，随后精确TaskCommit、fresh独立committed Architecture/完整BranchReview。写前candidate、candidate_checked、candidate_ready或reviewed_candidate不能进入TaskCommit、full_review或Ready。无知识写入也执行合法候选回程，无空提交。
-
-Check审当前完整scope、需求/设计/测试/兼容/Docs/Architecture及实际consumer。真实候选问题按正常场景/机制/因果准入；不扩恶意篡改情形。完整审查没有候选则用真正空集；全rejected不自动passed。工程结果只证明实际层次。候选失败不晋升，实质前提/义务变化回最早受影响owner，实际写入不以“只是文档”豁免。
-
-dirty候选由原Commit精确stage/commit；clean已提交候选在fresh最终Check和当前适用性下直接首次完整Review，不造空/重复commit。BranchReview读固定B..H全diff，包括全部晋升及非最后commit；Phase2不能代替独立committed判断。finding修复后当前结果覆盖真实最终候选；窄reference alignment只承接其声明的引用/状态，不替代完整或实质正文审查。晋升前authority保持比较起点，不用新CURRENT自证或循环补Review SHA。
+没有候选使用真正空集，全rejected不自动通过。每个适用职责都判断范围和充分性，工程结果只证明其实际层次。窄reference alignment只承接原窄条件，不替代完整或实质正文审核。新CURRENT不能以自身证明符合原约束，完整before authority保持比较起点。输出丢失核同key/B/H/候选与真实结果，只补尚缺步骤或恢复同结果；必要语义覆盖丢失须真实补审，不补造full_review，不循环写Review SHA。
 
 ## 候选适用性与完整覆盖
 
@@ -79,13 +73,13 @@ dirty候选由原Commit精确stage/commit；clean已提交候选在fresh最终Ch
 
 独立性按未参与当前实现的实际职责判断。首次仍由合规独立 reviewer 建立完整理解；后继可由同一合规 reviewer 接续，也可先形成 Architecture 判断再完成 Branch Review。阶段、HEAD 或 reviewer 身份变化本身不要求重建同质评估。各阶段仍亲自判断并通过原正式入口产生当前结果；作者自检、Planning、早期反馈、闭合声明或原工程命令不能替代这些判断。
 
-finding/整合修正后，原合规 reviewer 核闭合、修订差额及受影响覆盖，再作当前最终完整结论；取消无条件更换 reviewer 和重复完整相同审核的要求。`fresh_final_review` 保留 wire 值，matching 迁移后表示闭合之后的当前最终完整覆盖，而非强制新身份。finding ancestry、当前 candidate/Check predecessor 和原 recorder/validator 仍真实执行；closure 不等于 pass。
+finding/整合修正后，原合规 reviewer 核闭合、修订差额及受影响覆盖，再作当前最终完整结论；取消无条件更换 reviewer 和重复完整相同审核的要求。`fresh_final_review` 保留 wire 值，matching 迁移后表示闭合之后的当前最终完整覆盖，而非强制新身份。finding ancestry、当前 candidate/check/full_review predecessor 和原 recorder/validator 仍真实执行；closure 不等于 pass。
 
 合法来源为现有 public Task/Delivery 结果、实际原公开结果/调用对象、精确 Git 和当前正文，以及仍可核验的原命令结果。passed full_review 可定位原范围/plan/outcome；首次 implementation_required 没有 passed full_review，finding refs 只定位缺陷，已建立的理解不能补造覆盖。缺少合法依据时补真实审核；不跨 owner 读私有状态、不重建退休 checkpoint、不增加 review/test 账本、全链 digest 或授权记录。
 
 Delivery Review、Publication 和 Merge 分别核当前 payload、Issue 语义、候选及 live 事实，消费仍适用的内容判断，不重做无实质变化的业务设计审核。真实 scope、前提或依赖变化回最早受影响 owner；同 Delivery 恢复不制造新身份或空提交。唯一共享执行定义由 canonical workflow-contract 的 Candidate Applicability And Coverage 小节拥有，七个原 owner 显式读取，平台只加载/路由。matching 完整安装和在途退出按 MIGRATION-637；旧完整安装固定或沿原维护 owner 成套切换，source 编辑不热迁移开发 Task。
 
-本行为保留 R531/R567/R578/R600/R636 的有效条件、首次独立完整、最终 Check 与各当前正式结果。只替代无因新 reviewer/完整相同重审和相邻阶段抵消复用的片段。实际 #636 接口组合由后交付项验证；#638的当前组合按T638实际验证，历史#637结果不证明该组合通过。Completion/Closure/Release 各保留独立责任。
+本行为保留 R531/R567/R578/R600/R636 的有效条件、首次独立完整、同次真实 check/full_review 与各当前正式结果。只替代无因新 reviewer/完整相同重审和相邻阶段抵消复用的片段。实际 #636 接口组合由后交付项验证；#638的当前组合按T638实际验证，历史#637结果不证明该组合通过。Completion/Closure/Release 各保留独立责任。
 
 ## 交付事实与整体完成
 
@@ -124,7 +118,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 **R649-02 / BEH649-CONVERGE**：后继工作满足解除条件时，实施 owner 更新实际行为和适用断言，原 RDT／Architecture owner 在各自边界维护完整当前定义、指南及派生说明。当前正文不再继续指示已解除的限制；旧阶段观察保留来源和截止点，不改写成当时已完成。某能力未交付、未启用或证据缺失，不能泛化为同范围其它能力均不可用。
 
-**R649-03 / BEH649-CHECK**：原 Check 从有效合同确定正确预期，检查实际行为、当前说明、断言及受影响未改 consumer 是否一致。测试仍保护旧限制时，即使命令通过也须指出缺陷。Delivery Review 分别判断本切片适用成果维度；维度及整体缺口的完整定义见 [Completion](completion-closure.md#r649阶段成果维度与缺口分类)。任何局部结果均不替代整体 accepted scope。
+**R649-03 / BEH649-CHECK**：原提交后独立完整 Review 从有效合同确定正确预期，检查实际行为、当前说明、断言及受影响未改 consumer 是否一致。测试仍保护旧限制时，即使命令通过也须指出缺陷。Delivery Review 分别判断本切片适用成果维度；维度及整体缺口的完整定义见 [Completion](completion-closure.md#r649阶段成果维度与缺口分类)。任何局部结果均不替代整体 accepted scope。
 
 ## 正常流程合同连续性
 
@@ -134,7 +128,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 **R663-03 / BEH663-BEFORE**：固定 B 早于本 Delivery 首次建立 Architecture authority 时，原 owner 明确表达 B 中既有路径的真实缺失并核实。完整 B..H、当前 authority与全部新增文件仍独立审核；不能移动 B、以 H 冒充 before、跳过门禁或作通用 freshness 豁免。B 已有文件的原路径保持。
 
-**R663-04 / BEH663-MAINTENANCE**：final_integration promotion 请求 Bootstrap 后，caller 保留同一 Task/DeliveryKey、planning_root 和调用期 continuation，按声明的 phase2 maintenance 输入进入原 owner，再 fresh 回同一次 promotion。whole-task/Delivery 及既有 repair 回程均闭合；维护成功不等于 reviewed_promoted、最终 Check 或业务阶段推进。
+**R663-04 / BEH663-MAINTENANCE**：final_integration promotion 请求 Bootstrap 后，caller 保留同一 Task/DeliveryKey、planning_root 和调用期 continuation，按声明的 phase2 maintenance 输入进入原 owner，再 fresh 回同一次 promotion。whole-task/Delivery 及既有 repair 回程均闭合；维护成功不等于 integrated_pending_review、reviewed_promoted 或业务阶段推进。
 
 **R663-05 / BEH663-DISTRIBUTION**：当前公开输入例子同时匹配 profile/aggregate schemas，出口通过声明 projection 与唯一 consumer 输入组合；动态 stage、首次 before 缺失和正常返工/恢复/stop保持语义。canonical、完整 installed、dogfood 与声明平台按 matching preset 成套采用，明确迁移、mode、sidecar和未验证层次。精确接口仍由原 packages 单写。
 
@@ -167,9 +161,9 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 **R713-03 / BEH713-RECOVERY**：原错误owner给出可机器判定的具体字段/约束、所属合同与原恢复入口。输入错误、真实stale和内部故障保持各自语义，未知根因只说明已确认范围。先捕获原exit/stdout/stderr，再按原合同消费receipt.result、checker receipt和唯一typed exit；运输成功不代表阶段通过。真实内容变化重新进入最早受影响owner，不重算旧摘要续命。
 
-Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交接具体 revision_actions；current_scope 不因记录了范围归属而成为新需求选择。真实需求范围变化仍交原 Clarify。每种 planning_stale 输出必须经声明薄投影满足其真实 consumer 输入，不能只由 producer schema 自证。
+当前合并 Review 的范围内规划修复保留 current_scope 判断，并向原 Author 交接具体 revision_actions；current_scope 不因记录了范围归属而成为新需求选择。真实需求范围变化仍交原 Clarify。固定旧 provider 的每种 planning_stale 输出必须经原声明薄投影满足其真实 consumer 输入，不能只由 producer schema 自证。
 
-同一次已执行规划回退后，原 Check 能依据原结果、同一 Task/Delivery 和当前实际状态恢复交接，或在真实当前判断后合法纠正。不得要求本次回退依法清除的 Planning pass，不重复回退，不创建替代身份或补造通过结果，不改旧 artifact/digest，不覆盖当前候选或业务改动。真实身份、内容或范围变化返回受影响原 owner。修复前已回退旧结果只使用实际既有原因果来源转换；来源缺失时报告具体缺口并返回原 owner，不能用当前值拼造原事实。恢复不代表 Planning/Check 通过或可发布；不新增通用事务、跨阶段账本、授权记录或全链 digest。
+对于固定旧 provider 中已执行的同一次规划回退，原 Check 仍能依据原结果、同一 Task/Delivery 和当前实际状态恢复交接，或在真实当前判断后合法纠正。不得要求本次回退依法清除的 Planning pass，不重复回退，不创建替代身份或补造通过结果，不改旧 artifact/digest，不覆盖当前候选或业务改动。真实身份、内容或范围变化返回受影响原 owner。修复前已回退旧结果只使用实际既有原因果来源转换；来源缺失时报告具体缺口并返回原 owner，不能用当前值拼造原事实。恢复不代表 Planning/Check 通过或可发布；不新增通用事务、跨阶段账本、授权记录或全链 digest。
 
 **R713-04 / BEH713-EVIDENCE**：本项按当前适用性采用已有 source、组件、原公开命令、consumer、matching 安装、synthetic 与局部 native 结果，保留各自实际证明范围。普通字段/authoring/result/receipt 错误、真实 stale 和同结果恢复保留原首次失败、公开纠正、key/B 及仍适用证据。真实 Agent 的当前语义前提仍由原 owner 执行，host 不代填判断或私有身份；结构或命令结果不证明模型行为。#713 取消新增首次正确 preTask→Finish 完整 native 链、独立 N3 public-only 恢复链及旧 fixture 接续验收，取消不记为通过，也不形成必需补证支线。
 
@@ -177,7 +171,7 @@ Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交
 
 本节承接 #713 的 S1–S5、AC1–AC4、缩减后的 AC6–AC8 与 AC9；AC5 取消。取消的是本项新增验收，生产职责、公开支持域、已知正确性修复和原生命周期条件保持。N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不足/resume execution_error/Drift fitness_regression，以及旧 clean 后续损坏保留原观察边界；R3 仅 runtime 准备通过，未启动 native。不清理、续跑或改写这些结果，不将旧 clean 损坏归因 installer 或称其当前可用。
 
-本节不改变 #710 正常 11 字段 Phase2 authoring/完整 6.0 结果消费，不新增状态 authority、wrapper Skill 或长期账本。设计 D713、测试 T713 在同名三层完整单元拥有落点。当前完整候选 Check、原知识 final integration/readback、实际 after 重绑和最终 Check、TaskCommit、完整 committed Review、Delivery Review/readiness、发布/交付及 Completion/Closure/Finish 均保持；实际合并前保留 fresh merge gate。
+本节保留 #710 正常语义 authoring 与完整结果消费职责，当前由合并 Review 的 matching 合同承接；旧11字段/完整6.0结果只按其固定provider合法消费和恢复，不转换新pass。设计D713、测试T713保各自历史含义。当前原知识final_integration/readback→TaskCommit→完整committed candidate→一次独立Review→Delivery Review/readiness→Publication/Delivery及Completion/Closure/Finish继续；合并前保fresh merge gate，无新状态authority、wrapper或账本。
 
 
 ## R779：委托后的结果承接
@@ -186,7 +180,7 @@ Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交
 
 介入只针对需原 owner 决定的真实阻塞、范围/机制变化、冲突写入、用户停止或执行者无法继续。诊断先核本次进程、日志和产物的对应关系及具体缺口；未知终态保持未知。必要查询、证据读取和 adb 保留。接管先查已有工作并沿可用原句柄继续，不默认重启，也不要求逐命令上报 PID、句柄或 hash。
 
-执行者在当前对话提供最小完成内容、实际终态、结果位置及未完成项。冲突写入在自然边界暂停并确认当前终态且暂不启动下一轮后进行，完成后通知恢复；无冲突并行、无写入需求继续原委托。已交叠按实际影响披露失效证据并补必要验证，不一律重跑。主协调者仍核要求与结果、交新缺陷给原 owner；适用执行事实可采用，只有具体缺口或不一致才补查/重跑。新增要求作为明确差额，正式 Check/独立 Review 保持原职责。
+执行者在当前对话提供最小完成内容、实际终态、结果位置及未完成项。冲突写入在自然边界暂停并确认当前终态且暂不启动下一轮后进行，完成后通知恢复；无冲突并行、无写入需求继续原委托。已交叠按实际影响披露失效证据并补必要验证，不一律重跑。主协调者仍核要求与结果、交新缺陷给原 owner；适用执行事实可采用，只有具体缺口或不一致才补查/重跑。新增要求作为明确差额，提交后合并完整 Review 保留原九维及独立区间职责。
 
 精确协作方法由 [canonical Phase 2 合同](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#phase-2--implementation-and-check) 单写，职责见 D779-01，验证见 T779-01/02。来源为 [#779](https://github.com/castbox/guru-trellis/issues/779)；本项只修方法及实际受管同步，不承接 #734 的预算、规模或设备/重放验收，不新增公共数据、运行状态、持久 handoff、授权记录或逐轮审批，也不承诺实际节省效果。来源、前驱与窄增加边界见 [#779 追踪](../../requirements-design-test-contributions/779-delegation-results-intervention/traceability.md)。
 
@@ -206,3 +200,17 @@ Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交
 **R792-05 / BEH792-ADOPTION**：查询说明真实前置、最小输入、直接输出消费和普通错误恢复。改变的公共命令及受影响canonical/dogfood/声明平台沿原owner成套迁移，保留受支持在途工作。正常新runtime直接采用受管reference；verifier原旧before只读观察不赋当前执行资格。source、installed、实际AI和外部效果分别证明，不以文件缩短、关键词或固定降幅验收；完整多平台安装/升级/Release矩阵不属于本项。
 
 职责D792-01..04、场景T792-01..06位于同名三层单元。本节不改变#793 qualifier触发，不合并身份查询或#794 Check/Review，不承接#734。当前观察由[#792 Test](../../requirements-design-test-contributions/792-step-context/test.md)定位。
+
+## R794：合并审核、真实消费者与迁移
+
+来源为 [Issue #794](https://github.com/castbox/guru-trellis/issues/794) 全文，固定前驱Git `4d565c97b5abf634d76ede2d18eed0a57f13bb76` 的本单元。
+
+- **R794-01 / BEH794-INTEGRATE**：工程自检及原知识完整整合/readback在TaskCommit前完成；无独立candidate/final Check循环，整合事实不宣称独立通过。
+- **R794-02 / BEH794-INDEPENDENT**：新独立 reviewer在固定committed B..H完成一次Architecture before/after、原九维与全部Branch Review；冻结候选，修复回原writer后继提交。
+- **R794-03 / BEH794-RESULTS**：原Review同时拥有check/full_review，真实通过后顺序记录两个必要公共结果；缺槽/旧pass/历史PR不能代替当前充分性。
+- **R794-04 / BEH794-COVERAGE**：原reviewer仍独立时可接续；原覆盖/工程事实按适用性采用，所有真实差额、base组合/冲突和受影响未改consumer覆盖；无法界定或覆盖丢失时补足完整审核，caller不缩B。
+- **R794-05 / BEH794-PUBLISH**：通过前无新push/PR；后仍由原Delivery Review/readiness和Publication判断载荷、实际交付、剩余责任及未验证范围，终态不合并。
+- **R794-06 / BEH794-RECOVERY**：匹配新公共版本/消费者和原provider边界显式切换；旧Check/已提交/旧Draft实际阶段及已发生动作准确恢复，不重复副作用、不改名旧pass；pending远端动作回当前审核/readiness。
+- **R794-07 / BEH794-ADOPTION**：canonical、packages/runtime/schema、spec、workflow/routing及实际受影响平台沿原owner成套采用，保Task/session/用户内容和sidecar；定向验证分清组件、实际Agent、安装及外部效果，不扩完整Release矩阵。
+
+R531/R530/R600/R636/R637/R638/R710/R711/R713 的未替代条件、source身份、固定B、原single-writer、完整结果消费/恢复和历史观察保持。当前精确输入/出口/命令与薄投影由原canonical packages独占，迁移由MIGRATION-794定位；设计D794、测试T794在对应完整单元承接。

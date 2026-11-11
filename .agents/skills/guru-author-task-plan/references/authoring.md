@@ -179,11 +179,13 @@ candidate_assessment before the first substantive design/implement write.
 Consume only the actual candidate_assessment from this same candidate/key.
 Use current constitution, baseline, required concerns and project checks, and
 its impact/change path/decision refs, to author a genuine contribution and
-necessary ADR candidate. Shared promotion remains with its original Architecture
-owner at final_integration after independent Architecture and candidate Check
-of the full implementation and isolated proposed delta. Actual writes then
-return through implementation candidate/begin_check and final Check/commit/
-independent committed Review. Candidate checks cannot report current success.
+necessary ADR candidate. Shared integration remains with its original Architecture owner at
+final_integration after approved Planning, complete implementation and genuine
+engineering results. It returns integrated_pending_review, then TaskCommit
+and implementation's committed-candidate/begin_check precede the one independent
+committed Review. No candidate Check or independent precommit implementation
+Architecture assessment is required. Only actual committed before/after review
+may establish reviewed_promoted.
 Planning cannot promote shared authority. Preserve a rereadable pre-promotion
 authority and write the baseline's facts, decisions, sources and verification
 limits without requiring a later documentation commit for final Review or HEAD.
@@ -206,7 +208,7 @@ alone does not change the implementation or acceptance boundary.
 Delivery Review and Completion inspect policy, never write it. Select one
 Docs SSOT strategy (ssot_first, delta_first, bootstrap_or_repair_docs,
 no_docs_update_needed) and name the original RDT writer/direct consumer.
-Reconcile a delta before final Phase 2. Preserve truthful causal and completion
+Integrate and read back a delta through the original maintenance owner before TaskCommit. Preserve truthful causal and completion
 semantics; package checks are not incident or remote-success proof.
 
 For a real temporary limit, apply planning-body.md §4 in the existing Policy,
@@ -319,8 +321,9 @@ follow the reported field and original recovery owner. The output is a fact,
 not a semantic gate or formal Skill exit. Keep it call-local, or use one
 temporary regular UTF-8 JSON file until its direct consumer completes.
 
-After the original implementation owner reviews the complete current scope
-and validation readiness, assemble the existing public `begin_check` operation:
+After original knowledge integration/readback and exact local TaskCommit,
+the implementation owner checks the complete committed scope and genuine
+engineering results, then assemble the existing public `begin_check` operation:
 
 ```json
 {
@@ -352,8 +355,8 @@ by hand.
 Run `python3 .trellis/scripts/delivery.py begin-check --task <TaskRef>
 --input <operation.json>`. This command accepts complete inline JSON or a
 regular UTF-8 JSON file; it does **not** accept `-` as stdin. Its operation
-receipt is not Check success. Only a successful original Check invocation
-emits a formal Check exit.
+receipt is not semantic success. The independent merged Review owner judges
+the fixed committed candidate and records the real check/full_review results.
 
 For legal rework, read the shared Public Delivery rework input section at the
 repository-relative locator

@@ -281,7 +281,7 @@ def digest(value: Any) -> str:
 
 
 def validate_public(package: Path, value: dict[str, Any]) -> None:
-    validate_json(value, package / "schemas/delivery-public-input.schema.json", "public_input")
+    validate_json(value, package / "schemas/delivery-public-input-3.0.schema.json", "public_input")
 
 
 def objective_identity(repo: Path, public: dict[str, Any], *, expected_head: str | None = None) -> tuple[str, str, str]:

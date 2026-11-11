@@ -105,15 +105,16 @@ facts, missing/stale evidence or unpromoted contribution follow that owner's
 existing routes. Delivery does not judge impact/path/ADR or perform promotion.
 
 Only no_change or actual reviewed_promoted permits final readiness.
-Candidate_checked, candidate_ready and reviewed_candidate cannot be projected
-into final Check/full_review/readiness. Matching Arch5.0/Delivery3.0 and RDT2.0
-promotion occurs at final_integration, then actual candidate rebinding and final
-quality cover all writes. Architecture promotion finishes before final Check and the complete
-committed Review. This owner does not add baseline prose after Review. An
-already accepted contribution is not promoted again for readiness. For a
-supported promotion-reference alignment, consume the original Branch Review
-owner's new actual `passed` result over the final candidate and current Check;
-its input profile does not weaken this owner's full_review applicability gate.
+Architecture6.0/Delivery4.0 integration before commit returns
+integrated_pending_review; that state alone cannot produce readiness.
+The single committed Review performs the actual independent Architecture and
+complete implementation judgment, then records real check/full_review results.
+Consume its passed2.0 through Delivery Review input2.0 and the original
+publication-stage Architecture owner. Do not repeat independent Architecture
+or add baseline prose after the frozen Review. A supported reference alignment
+still requires the original Review owner's current actual passed result and
+full_review applicability. No independent pre-commit Check is required.
+
 New facts or changed obligations retain their affected-owner routes.
 
 ## Actual Candidate Set

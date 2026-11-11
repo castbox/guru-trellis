@@ -25,7 +25,7 @@ Identity：`guru-trellis-architecture`；状态：`active`。适用范围是 Gur
 
 ## 维护与关联 authority
 
-原 Architecture owner 在本方 Task 隔离贡献中准备完整拟写；独立 Architecture 和完整候选 Check 之后，才由原 maintenance owner 在 final integration 重读真实目标、整合、写入并读回。之后 implementation 重绑全部实际 after，最终 Architecture/Check 与完整 committed Review 覆盖真实内容。文件落在职责目录不产生 semantic pass。
+原 Architecture owner 在本方 Task 隔离贡献中准备完整拟写。Planning 批准、实施和真实工程验证完成后，由原 maintenance owner 在提交前 final_integration 重读真实目标、整合、写入并读回；整合只表示 integrated_pending_review。TaskCommit 纳入全部真实 after，随后固定 committed candidate 的同一次独立 Review 先判断 Architecture before/after，再承担九维与完整区间职责；实际通过后才是 reviewed_promoted。Planning 独立 candidate/final 判断保持，文件位置或整合事实不产生独立 semantic pass。当前时机与窄替代范围见 [ADR-POSTCOMMIT-INDEPENDENT-REVIEW](adr/postcommit-independent-review.md)。
 
 独立主题只维护自身正文或自身目录内的局部导航，以及真实受影响的引用和关系。不向本入口、下级共享 README、system/ownership 汇总、ADR index、共享 manifest 或生成需提交索引逐项登记；不追加无关全局版本或合并历史。同一能力或真实共同关系仍由原 owner 语义整合，不复制关系规避重叠。只有本入口自身的身份、scope/status、位置、发现合同或必要跨体系关系实际改变时，才维护本入口。
 

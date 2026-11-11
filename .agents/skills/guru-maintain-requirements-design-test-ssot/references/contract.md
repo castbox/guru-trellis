@@ -110,10 +110,10 @@ public input. This sample is neither an executed promotion nor a current gate.
 ```json
 {
   "public_input": {
-    "schema_version": "2.0",
+    "schema_version": "3.0",
     "profile": "promotion",
     "stage": "final_integration",
-    "source_exit": "candidate_checked",
+    "source_exit": "engineering_ready",
     "mode": "workflow",
     "continuation_id": "rdt-promotion-example",
     "authority_locator": "docs",
@@ -131,7 +131,7 @@ public input. This sample is neither an executed promotion nor a current gate.
     "profile": "promotion",
     "mode": "workflow",
     "continuation_id": "rdt-promotion-example",
-    "input_sha256": "26bda821344d42c16c8e86fe6e32f8764e0b63741b23dc75fde54760307e29d4",
+    "input_sha256": "67fe0ecb02fdbde5d1d79f0414f6a0d84e263c61364dea13be719a7b3d0d5109",
     "architecture_baseline": {
       "locator": "docs/architecture/README.md",
       "version": "1.0",
@@ -140,7 +140,7 @@ public input. This sample is neither an executed promotion nor a current gate.
     "ai_review_gate": {
       "status": "passed",
       "reviewed_scope": "Teaching sample: the original owner has reviewed the proposed and current complete definitions.",
-      "evidence_summary": "Teaching sample: candidate Check preceded actual writes, and the owner read back the integrated units and relationships.",
+      "evidence_summary": "Teaching sample: genuine engineering verification preceded actual writes; the original owner read back the complete units and relationships, pending independent committed review.",
       "findings": [],
       "conclusion": "Illustrative completed promotion; replace this entire review with the current owner's actual judgment."
     },
@@ -164,8 +164,8 @@ Read [current-knowledge.md](current-knowledge.md) completely before every
 profile. That shared contract owns unit completeness, status, stable identity,
 necessary relationships, reading, structural revision and migration. This
 package remains the only RDT semantic owner. Its current impact and promotion
-inputs are 2.0 with explicit phase2 and final_integration stages. Bootstrap and
-repair keep their original contracts. The old 1.0 impact/promotion schemas are
+inputs are 3.0 with explicit phase2 and final_integration stages. Bootstrap and
+repair keep their original contracts. The old 1.0/2.0 impact/promotion schemas are
 history-only; current runtime rejects their shape rather than dual-parsing.
 
 This owner selects the RDT/Architecture versions applicable to the current
@@ -190,7 +190,7 @@ retains its own live expected-current and subtraction/traceability checks.
   changed proposals return `candidate_ready` with only contribution_locator,
   authority_locator and authority_version; the latter remains the applicable
   source identity. No-change returns actual `ssot_current`.
-- `promotion` at final_integration: after candidate Check, reread the actual
+- `promotion` at final_integration: after approved Planning, complete implementation and genuine engineering results, reread the actual
   target, reconcile intervening changes, and
   integrate the reviewed contribution into complete current R/D/T units.
   Check surviving conditions, subtraction, stable identities and relationships
@@ -211,13 +211,21 @@ updates with implementation. Review result cutoffs and original formal-result
 references before returning the current route. Neither a historical failure
 nor a later terminal result is rewritten into a different observation.
 
-Only actual completed promotion returns `ssot_current` as an updated authority;
+Only actual completed integration returns `ssot_current` as an updated authority;
 `candidate_ready` is not a promotion result. The owner writes and reads back
 actual files before invoking the validator. There is no automatic document
 writer or semantic inference from stage, version, directory or schema success.
 
 All profiles retain their existing gate, freshness, confirmation, invocation
 and typed-exit contracts. Planning and implementation consume selected bodies;
-final Check and independent Review judge their current candidate and
+the merged independent committed Review judges the full candidate and
 reconciliation. Those stages do not inherit semantic pass from navigation,
 promotion or an earlier stage.
+
+Current 3.0 integration consumes `source_exit=engineering_ready` as a call-local
+observation after actual engineering work; it is not another formal Skill exit.
+`candidate_ready` routes to the original promotion owner, and `ssot_current`
+routes integrated definitions to TaskCommit. Neither result claims independent
+quality pass. The original writer still prepares complete proposed targets,
+rereads expected-current, preserves all applicable R/D/T relationships, resolves
+ordinary partial writes and reads back actual contents before projection.

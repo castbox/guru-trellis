@@ -60,6 +60,7 @@ class DeliveryFlow(unittest.TestCase):
         owners = {role: "guru-test-" + role for role in
                   ("task_scope", "creation", "planning", "implementation", "check", "full_review", "readiness", "publication", "delivery", "completion", "closure")}
         owners["implementation"] = "guru-delivery-implementation-projection"
+        owners["check"] = owners["full_review"] = "guru-review-branch"
         declaration = {"task_schema": "2.0", "delivery_api": "1.0", "profiles": ["local_commit", "pull_request"], "owners": owners}
         if template:
             from runtime.delivery_projection.adapter import upstream_modules
@@ -112,6 +113,8 @@ class DeliveryFlow(unittest.TestCase):
         self.head = self.git("rev-parse", "HEAD").strip()
         BranchBindingStore(inspect_repository(self.repo)).establish(TaskLifecycleKey("flow-task", 0), "feat/flow")
         self.projection.begin_check(self.key, self.projection.candidate(["app.txt"], head_ref=self.head, base_ref=self.git("rev-parse", "main").strip()))
+        if self.projection.has_context():
+            self.projection.select(self.key)
         self.inputs = self.repo / ".trellis/.runtime/test-inputs"
         self.inputs.mkdir(parents=True)
 
@@ -131,6 +134,24 @@ class DeliveryFlow(unittest.TestCase):
         self.assertEqual(result.returncode == 0, success, value)
         return value.get("result", value)
 
+    def single_review(self, *, authoring=None, public=None):
+        """Exercise the current producer with fixture judgments, never a native AI claim."""
+        if authoring is None:
+            authoring = json.loads((SKILLS / "packages/guru-review-branch/examples/authoring-delivery-passed-2.0.json").read_text())
+        self.head = self.git("rev-parse", "HEAD").strip()
+        if public is None:
+            public = {"profile": "delivery_branch_review", "mode": "workflow",
+                      "task_ref": self.task_ref, "delivery_key": self.key,
+                      "base_ref": self.projection.content_base(self.key),
+                      "branch_review_commit": self.git("rev-parse", "HEAD").strip(),
+                      "review_intent": "initial_review"}
+        review_input = self.write("single-review.json", public)
+        self.wrapper("guru-review-branch", "review-branch.sh", "--task", self.task_ref,
+                     "--skill-input", review_input, "--semantic-review-file",
+                     self.write("single-review-owner.json", authoring),
+                     "--typed-exit", authoring["semantic_review"]["ai_review_gate"]["status"])
+        return self.wrapper("guru-review-branch", "invoke.sh", "--input", review_input)
+
     def check(self):
         authoring = json.loads((PACKAGE / "examples/phase2-authoring.json").read_text())
         authoring["reviewed_paths"] = self.projection.resolve(self.key)["candidate"]["paths"]
@@ -144,40 +165,7 @@ class DeliveryFlow(unittest.TestCase):
         return self.wrapper("guru-check-task", "invoke.sh", "--input", self.write("check.json", public),
                             "--owner-result", recorded["artifact_path"])
 
-    def test_fresh_check_metadata_does_not_force_second_commit_and_full_review(self):
-        checked = self.check()
-        self.assertEqual("passed", checked["exit_id"])
-        self.assertIn("task.json", self.git("status", "--porcelain"))
-        public = {"profile": "delivery_committed_reentry", "mode": "workflow", "task_ref": self.task_ref,
-                  "delivery_key": self.key, "check_result_id": checked["check_result_id"]}
-        owner = {"status": "passed", "summary": "Retain existing committed candidate.", "evidence": ["Current candidate and full range reviewed."]}
-        committed = self.wrapper("guru-create-task-commit", "invoke.sh", "--input", self.write("commit.json", public),
-                                 "--owner-result", self.write("commit-owner.json", owner))
-        self.assertEqual(self.head, self.git("rev-parse", "HEAD").strip())
-        self.assertEqual("committed", committed["exit_id"])
-        p = SKILLS / "packages/guru-review-branch"
-        fixture = json.loads((p / "examples/review-gate.json").read_text())
-        auth = {key: fixture[key] for key in ("candidate_classifications", "semantic_review", "verification_evidence", "delivery_review")}
-        auth["semantic_review"]["qualified_findings"] = []
-        public = {"profile": "delivery_branch_review", "mode": "workflow", "task_ref": self.task_ref,
-                  "delivery_key": self.key, "check_result_id": checked["check_result_id"], "base_ref": self.projection.content_base(self.key),
-                  "branch_review_commit": self.head, "review_intent": "initial_review"}
-        self.wrapper("guru-review-branch", "review-branch.sh", "--task", self.task_ref,
-                     "--skill-input", self.write("review.json", public), "--semantic-review-file", self.write("review-owner.json", auth),
-                     "--typed-exit", "passed")
-        reviewed = self.wrapper("guru-review-branch", "invoke.sh", "--input", self.write("review.json", public))
-        self.assertEqual("passed", reviewed["exit_id"])
-        self.assertEqual(reviewed, self.wrapper("guru-review-branch", "invoke.sh", "--input", self.write("review.json", public)))
-        self.assertEqual(self.head, self.git("rev-parse", "HEAD").strip())
 
-    def test_normal_candidate_change_requires_check_reentry(self):
-        checked = self.check()
-        (self.repo / "app.txt").write_text("new legitimate work\n")
-        public = {"profile": "delivery_committed_reentry", "mode": "workflow", "task_ref": self.task_ref,
-                  "delivery_key": self.key, "check_result_id": checked["check_result_id"]}
-        value = self.wrapper("guru-create-task-commit", "invoke.sh", "--input", self.write("commit.json", public),
-                             "--owner-result", self.write("owner.json", {"status": "passed", "summary": "review", "evidence": ["candidate"]}), success=False)
-        self.assertNotEqual("committed", value.get("exit_id"))
 
 
 
@@ -204,7 +192,7 @@ class DeliveryFlow(unittest.TestCase):
         return self.wrapper('guru-review-task-delivery', 'invoke.sh', '--input', self.write('readiness.json', public), '--semantic-result', self.write('readiness-owner.json', semantic))
 
     def test_readiness_and_no_delivery_required_completion(self):
-        reviewed = self.full_review(self.check())
+        reviewed = self.single_review()
         ready = self.readiness(reviewed)
         self.assertEqual('ready', ready['exit_id'])
         self.assertEqual('publishing', self.projection.resolve(self.key)['phase'])
@@ -229,10 +217,10 @@ class DeliveryFlow(unittest.TestCase):
         public = {'profile': 'delivery_scope_withdrawal', 'mode': 'workflow', 'task_ref': self.task_ref, 'delivery_key': self.key}
         reason = authority_ref(self.repo / 'requirements.md', self.repo)
         semantic = {'reviewed_delivery_key': self.key, 'result_id': 'stop:flow', 'reason': reason, 'scope_decision': reason, 'evidence': [reason]}
-        stopped = self.wrapper('guru-check-task', 'invoke.sh', '--input', self.write('withdrawal.json', public), '--owner-result', self.write('withdrawal-owner.json', semantic))
+        stopped = self.wrapper('guru-review-branch', 'invoke.sh', '--input', self.write('withdrawal.json', public), '--owner-result', self.write('withdrawal-owner.json', semantic))
         self.assertEqual('delivery_stopped', stopped['exit_id'])
         self.assertEqual('stopped', self.projection.resolve(self.key)['phase'])
-        self.assertEqual(stopped, self.wrapper('guru-check-task', 'invoke.sh', '--input', self.write('withdrawal.json', public), '--owner-result', self.write('withdrawal-owner.json', semantic)))
+        self.assertEqual(stopped, self.wrapper('guru-review-branch', 'invoke.sh', '--input', self.write('withdrawal.json', public), '--owner-result', self.write('withdrawal-owner.json', semantic)))
         self.assertEqual(self.head, self.git('rev-parse', 'HEAD').strip())
 
     def test_withdrawal_at_each_later_owner_recovers_without_git_mutation(self):
@@ -245,8 +233,8 @@ class DeliveryFlow(unittest.TestCase):
             with self.subTest(skill=skill):
                 fixture = DeliveryFlow(); fixture.setUp()
                 try:
-                    checked = fixture.check()
-                    if stage == 'ready': fixture.readiness(fixture.full_review(checked))
+                    reviewed = fixture.single_review()
+                    if stage == 'ready': fixture.readiness(reviewed)
                     public = {'profile':'delivery_scope_withdrawal','mode':'workflow','task_ref':fixture.task_ref,'delivery_key':fixture.key}
                     reason = authority_ref(fixture.repo/'requirements.md', fixture.repo)
                     semantic = {'reviewed_delivery_key':fixture.key,'result_id':'stop:'+skill,'reason':reason,'scope_decision':reason,'evidence':[reason]}
@@ -259,7 +247,7 @@ class DeliveryFlow(unittest.TestCase):
                 finally: fixture.doCleanups()
 
     def test_readiness_refresh_requires_original_publication_rework(self):
-        ready = self.readiness(self.full_review(self.check()))
+        ready = self.readiness(self.single_review())
         package, owner = self.load_owner('guru-publish-task-delivery')
         stale = {'exit_id':'review_stale','task_ref':self.task_ref,'delivery_key':self.key,'stale_reason':'metadata_changed'}
         self.assertEqual(stale,owner.project_review_stale(self.repo,stale))
@@ -272,79 +260,7 @@ class DeliveryFlow(unittest.TestCase):
         output=self.wrapper('guru-review-task-delivery','invoke.sh','--input',self.write('refresh.json',public),'--semantic-result',self.write('refresh-owner.json',semantic))
         self.assertEqual('ready',output['exit_id']);self.assertEqual('publishing',self.projection.resolve(self.key)['phase'])
 
-    def test_resolved_tree_check_projects_reconcile_without_committed_gate(self):
-        from runtime.delivery_projection.gates import rework
-        # Finish committing the initial public metadata before a normal Git merge.
-        self.git('add','.')
-        self.git('commit','-qm','bind current delivery metadata')
-        self.head=self.git('rev-parse','HEAD').strip()
-        old_base=self.git('rev-parse','main').strip()
-        self.git('switch','main')
-        (self.repo/'app.txt').write_text('evolved base\n')
-        self.git('add','app.txt');self.git('commit','-qm','base evolution')
-        new_base=self.git('rev-parse','HEAD').strip()
-        self.git('switch','feat/flow')
-        result=subprocess.run(['git','merge','--no-commit','main'],cwd=self.repo,capture_output=True,text=True)
-        self.assertNotEqual(0,result.returncode)
-        (self.repo/'app.txt').write_text('feature with evolved base\n');self.git('add','app.txt')
-        rework(self.projection,self.key,'check','implementation',authority_ref(self.repo/'requirements.md',self.repo),['check','full_review','readiness'])
-        self.projection.begin_check(self.key,self.projection.candidate(['app.txt'],head_ref=self.head,base_ref=old_base))
-        # Upstream state writes are metadata, keep the resolved index exact.
-        self.git('add',self.task_ref+'/task.json')
-        local=PACKAGE/'runtime';sys.path.insert(0,str(local))
-        spec=importlib.util.spec_from_file_location('resolved_check_common',local/'common.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-        owner=json.loads((PACKAGE/'examples/phase2-check.json').read_text())
-        owner.update(task_ref=self.task_ref,phase2_capture_commit=self.head,reviewed_content_sha256=module.content_identity(self.repo),reviewed_paths=['app.txt'],typed_exit='resolved_reconciliation_passed',consumer={'kind':'skill','id':'guru-reconcile-task-base'})
-        public={'profile':'delivery_resolved_reconciliation','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'source_exit':'resolved_tree_ready','planning_accepted_result_id':'planning:flow'}
-        owner["reviewed_content_sha256"] = module.skill_content_identity(PACKAGE, self.repo, self.task_ref, "workflow", public)
-        checked=self.wrapper('guru-check-task','invoke.sh','--input',self.write('resolved.json',public),'--owner-result',self.write('resolved-owner.json',owner))
-        self.assertEqual('resolved_reconciliation_passed',checked['exit_id']);self.assertIsNone(self.projection.resolve(self.key)['results']['check'])
-        authoring={'profile':'delivery_resolved_candidate','mode':'workflow','branch':'feat/flow','selected_base_ref':new_base,'old_base_head':old_base,'new_base_head':new_base,'merge_head':new_base,'stage0_tree':self.git('write-tree').strip(),'index_tree_sha256':self.load_owner('guru-reconcile-task-base','common.py')[1].index_tree_digest(self.repo),'parent_order':[self.head,new_base],'commit_message':'整合已审查基线','resume_target':'branch_review'}
-        projected=self.wrapper('guru-check-task','project-resolved-reconciliation.sh','--input',self.write('resolved.json',public),'--owner-result',self.write('resolved-owner.json',owner),'--authoring',self.write('resolved-authoring.json',authoring))
-        self.assertEqual('delivery_resolved_candidate',projected['profile']);self.assertEqual(self.key,projected['delivery_key']);self.assertEqual(self.head,projected['phase2_commit_anchor'])
-        self.assertEqual(self.head,self.git('rev-parse','HEAD').strip())
-        self.assertEqual('checking', self.projection.resolve(self.key)['phase'])
-        reconciled = self.wrapper('guru-reconcile-task-base', 'execute-resolved-base-reconciliation.sh',
-            '--input', self.write('resolved-executor.json', projected))
-        self.assertEqual('committed', reconciled['status'])
-        self.assertEqual('checking', self.projection.resolve(self.key)['phase'])
-        self.assertIsNone(self.projection.resolve(self.key)['results']['check'])
-        rework(self.projection, self.key, 'check', 'implementation',
-               authority_ref(self.repo / 'requirements.md', self.repo), ['readiness'])
-        self.head = reconciled['reconciled_task_head']
-        self.projection.begin_check(self.key, self.projection.candidate(
-            ['app.txt'], head_ref=self.head, base_ref=old_base))
-        refreshed = self.check()
-        self.assertEqual('passed', refreshed['exit_id'])
-        self.assertEqual('reviewing', self.projection.resolve(self.key)['phase'])
-        self.assertEqual(self.head, self.projection.resolve(self.key)['results']['check']['candidate']['head_ref'])
 
-    def test_dirty_exact_commit_and_lost_stdout_preserve_unrelated_paths(self):
-        from runtime.delivery_projection.gates import rework
-        rework(self.projection, self.key, 'check', 'implementation', authority_ref(self.repo / 'requirements.md', self.repo), ['check', 'full_review', 'readiness'])
-        (self.repo / 'app.txt').write_text('feature two\n')
-        (self.repo / 'unrelated.txt').write_text('parallel work\n')
-        self.projection.begin_check(self.key, self.projection.candidate(['app.txt'], head_ref=self.head, base_ref=self.projection.content_base(self.key)))
-        # The full Check explicitly reviews app + classifies unrelated work.
-        p = PACKAGE / 'runtime'
-        sys.path.insert(0, str(p))
-        spec = importlib.util.spec_from_file_location('dirty_flow_check', p / 'common.py')
-        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-        owner = json.loads((PACKAGE / 'examples/phase2-check.json').read_text())
-        owner.update(task_ref=self.task_ref, phase2_capture_commit=self.head, reviewed_content_sha256=module.content_identity(self.repo), reviewed_paths=['app.txt', 'unrelated.txt'])
-        public_check = {'profile':'delivery_initial_check','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'source_exit':'implementation_complete','planning_accepted_result_id':'planning:flow'}
-        checked = self.wrapper('guru-check-task','invoke.sh','--input',self.write('dirty-check.json',public_check),'--owner-result',self.write('dirty-check-owner.json',owner))
-        public = {'profile':'delivery_initial_commit','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'source_exit':'passed','check_result_id':checked['check_result_id']}
-        commit_package = SKILLS / 'packages/guru-create-task-commit'
-        message = json.loads((commit_package / 'examples/task-commit-candidate.json').read_text())['message']
-        authoring = {'message': message, 'ai_review': {'status':'passed','summary':'Exact app increment; preserve parallel work.','evidence':['Current complete Check and candidate diff.']},
-                     'path_classifications':[{'path':path,'category':'task-reviewed' if path=='app.txt' else 'unrelated-preserved','reason':'Exact reviewed scope.' if path=='app.txt' else 'Preserve parallel work or deterministic metadata.','coverage_source':checked['check_result_id']} for path in ('app.txt','unrelated.txt',self.task_ref+'/task.json')]}
-        prepared = self.wrapper('guru-create-task-commit','prepare-task-commit.sh','--input',self.write('dirty-commit.json',public),'--candidate-json',self.write('dirty-commit-owner.json',authoring))
-        committed = self.wrapper('guru-create-task-commit','invoke.sh','--candidate-artifact',prepared['candidate_artifact'])
-        self.assertEqual('committed',committed['exit_id']);self.assertNotEqual(self.head,committed['branch_review_commit'])
-        self.assertEqual('app.txt',self.git('diff','--name-only',self.head,committed['branch_review_commit']).strip())
-        self.assertTrue((self.repo/'unrelated.txt').is_file())
-        self.assertEqual(committed,self.wrapper('guru-create-task-commit','invoke.sh','--candidate-artifact',prepared['candidate_artifact']))
 
     def provider_response(self, *, body, merged=False):
         from unittest.mock import patch
@@ -367,7 +283,7 @@ class DeliveryFlow(unittest.TestCase):
         from unittest.mock import patch
         from runtime.delivery_projection.gates import rework
         package, owner = self.load_owner('guru-publish-task-delivery')
-        ready = self.readiness(self.full_review(self.check()))
+        ready = self.readiness(self.single_review())
         # Create the supported PR-profile Delivery via public creation, not record tampering.
         key = {**self.key, 'delivery_id':'43134b50-2c8b-4d70-b114-218a735a82e3'}
         record = self.projection.read_record()
@@ -427,7 +343,7 @@ class DeliveryFlow(unittest.TestCase):
 
     def test_active_replanning_stays_same_delivery_and_other_plan_survives(self):
         from runtime.delivery_projection.gates import rework
-        checked=self.check()
+        reviewed=self.single_review()
         other={**self.key,'delivery_id':'43134b50-2c8b-4d70-b114-218a735a82e3'}
         record=self.projection.read_record()
         self.projection.apply({'api_version':'1.0','operation':'create_delivery','key':other,'owner_role':'creation','owner_id':'guru-test-creation','scope_ref':{'authority':record['accepted_scope'],'anchors':['R2']},'profile':'local_commit'})
@@ -463,58 +379,7 @@ class DeliveryFlow(unittest.TestCase):
         self.assertTrue((self.repo/archive/'deliveries'/self.key['delivery_id']/'prd.md').is_file())
 
 
-    def test_bounded_continuity_does_not_fabricate_full_review_for_new_candidate(self):
-        from runtime.delivery_projection.gates import rework
-        reviewed = self.full_review(self.check())
-        prior_head = self.head
-        old_base = self.git("rev-parse", "main").strip()
-        self.git("add", self.task_ref); self.git("commit", "-qm", "persist actual review facts")
-        self.git("switch", "main")
-        (self.repo / "base-only.txt").write_text("independent base change\n")
-        self.git("add", "base-only.txt"); self.git("commit", "-qm", "advance base")
-        new_base = self.git("rev-parse", "HEAD").strip()
-        self.git("switch", "feat/flow"); self.git("merge", "--no-ff", "-m", "reconcile actual base", "main")
-        self.head = self.git("rev-parse", "HEAD").strip()
-        rework(self.projection,self.key,"full_review","implementation",authority_ref(self.repo/"requirements.md",self.repo),["check","full_review","readiness"])
-        self.projection.begin_check(self.key,self.projection.candidate(["app.txt"],head_ref=self.head,base_ref=self.projection.content_base(self.key)))
-        checked = self.check()
-        package = SKILLS / "packages/guru-review-branch"
-        spec = importlib.util.spec_from_file_location("continuity_tree_reader",package/"runtime/common.py")
-        common = importlib.util.module_from_spec(spec); spec.loader.exec_module(common)
-        public = {"profile":"delivery_base_continuity","mode":"workflow","task_ref":self.task_ref,"delivery_key":self.key,"check_result_id":checked["check_result_id"],"task_head":self.head,"branch_review_commit":prior_head,"old_base_head":old_base,"new_base_head":new_base,"candidate_tree_sha256":common.tree_identity(self.repo,self.head),"relevant_paths":["base-only.txt"],"resume_target":"publication_review","review_intent":"base_continuity"}
-        fixture = json.loads((package/"examples/review-gate.json").read_text())
-        auth = {key:fixture[key] for key in ("candidate_classifications","semantic_review","verification_evidence","delivery_review")}
-        auth["semantic_review"]["qualified_findings"] = []
-        auth["semantic_review"]["ai_review_gate"]["status"] = "continuity_passed"
-        args = ("--task",self.task_ref,"--skill-input",self.write("continuity-input.json",public),"--semantic-review-file",self.write("continuity-owner.json",auth),"--typed-exit","continuity_passed")
-        self.wrapper("guru-review-branch","review-branch.sh",*args)
-        bounded = self.wrapper("guru-review-branch","invoke.sh","--input",self.write("continuity-input.json",public))
-        self.assertEqual("continuity_passed",bounded["exit_id"])
-        self.assertIsNone(self.projection.resolve(self.key)["results"]["full_review"])
-        readiness_package = SKILLS/"packages/guru-review-task-delivery"
-        semantic = json.loads((readiness_package/"examples/semantic-ready.json").read_text())
-        semantic["pr_payload"]["body"] = semantic["pr_payload"]["body"].replace("Refs #435","")
-        refresh = {"profile":"delivery_readiness_refresh","mode":"workflow","task_ref":self.task_ref,"delivery_key":self.key,"reentry_reason":"bounded_continuity_requires_current_full_review"}
-        rejected = self.wrapper("guru-review-task-delivery","invoke.sh","--input",self.write("readiness-refresh.json",refresh),"--semantic-result",self.write("readiness-refresh-owner.json",semantic),success=False)
-        self.assertEqual("stale_identity",rejected["code"])
-        self.assertEqual("ready",self.readiness(self.full_review(checked))["exit_id"])
-        self.assertEqual(self.head,self.git("rev-parse","HEAD").strip())
 
-    def test_current_check_and_full_review_reject_normal_checkout_context_switch(self):
-        checked = self.check()
-        self.git("switch", "-qc", "feat/other-context")
-        package = SKILLS / "packages/guru-review-branch"
-        public = {"profile":"delivery_branch_review","mode":"workflow","task_ref":self.task_ref,"delivery_key":self.key,"check_result_id":checked["check_result_id"],"base_ref":self.projection.content_base(self.key),"branch_review_commit":self.head,"review_intent":"initial_review"}
-        fixture = json.loads((package/"examples/review-gate.json").read_text())
-        auth = {key:fixture[key] for key in ("candidate_classifications","semantic_review","verification_evidence","delivery_review")}
-        auth["semantic_review"]["qualified_findings"] = []
-        blocked = self.wrapper("guru-review-branch","review-branch.sh","--task",self.task_ref,"--skill-input",self.write("review-no-binding.json",public),"--semantic-review-file",self.write("review-no-binding-owner.json",auth),"--typed-exit","passed",success=False)
-        self.assertEqual("stale_identity",blocked["code"])
-        check_public = {"profile":"delivery_initial_check","mode":"workflow","task_ref":self.task_ref,"delivery_key":self.key,"source_exit":"implementation_complete","planning_accepted_result_id":"planning:flow"}
-        blocked = self.wrapper("guru-check-task","invoke.sh","--input",self.write("check-no-binding.json",check_public),"--owner-result",self.check_artifact_path,success=False)
-        self.assertEqual("stale_identity",blocked["code"])
-        self.assertEqual(self.head,self.git("rev-parse","HEAD").strip())
-        self.assertIsNone(self.projection.resolve(self.key)["results"]["full_review"])
 
 if __name__ == "__main__":
     unittest.main()

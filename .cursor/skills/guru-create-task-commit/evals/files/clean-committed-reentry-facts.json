@@ -1,5 +1,5 @@
 {
-  "scenario": "The original exact dirty commit succeeded; a fresh Check binds its clean HEAD before committed reentry. No second commit is created.",
+  "scenario": "The exact dirty commit succeeded; clean committed reentry validates accepted Planning and the actual fixed B..H without a prior Check or another commit.",
   "owner_staging": {
     "recipe": "commit-clean-reentry"
   },

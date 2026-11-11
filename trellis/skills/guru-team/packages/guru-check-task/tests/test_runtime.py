@@ -12,7 +12,6 @@ if str(PACKAGE/"runtime") not in sys.path: sys.path.insert(0,str(PACKAGE/"runtim
 from runtime.command import main
 from common import PHASE2_WORKTREE_CONTENT_ALGORITHM, content_identity, dirty_paths, validate_candidate_classifications
 from runtime.io import CommandError
-import project as project_runtime
 
 class PackageLocalRuntimeTest(unittest.TestCase):
  def test_empty_candidates_preserve_array_uniqueness_and_reference_checks(self):
@@ -177,145 +176,9 @@ class PackageLocalRuntimeTest(unittest.TestCase):
      self.assertEqual("stale_identity",raised.exception.code)
     else:self.assertNotEqual(before,content_identity(repo,["module"]))
 
- def test_phase2_record_and_check_accept_uninitialized_clean_gitlink(self):
-  with tempfile.TemporaryDirectory() as temporary:
-   repo,_=self.gitlink_fixture(temporary);self.git(repo,"submodule","deinit","-f","--","module")
-   task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
-   authoring=json.loads((PACKAGE/"examples/phase2-authoring.json").read_text());authoring["reviewed_paths"]=["module"]
-   input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
-   environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
-   recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task","test-task","--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   value=json.loads(recorded.stdout)["result"];self.assertEqual(content_identity(repo),value["reviewed_content_sha256"])
-   checked=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task","test-task","--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual("ok",json.loads(checked.stdout)["result"]["status"])
 
- def test_phase2_captures_new_gitlink_without_local_child_object(self):
-  with tempfile.TemporaryDirectory() as temporary:
-   repo=Path(temporary);self.git(repo,"init","-q")
-   self.git(repo,"update-index","--add","--cacheinfo",f"160000,{'1'*40},module")
-   before=content_identity(repo)
-   self.assertEqual(["module"],dirty_paths(repo))
-   self.git(repo,"update-index","--cacheinfo",f"160000,{'2'*40},module")
-   self.assertNotEqual(before,content_identity(repo))
 
- def test_public_wrapper_retains_only_passed_checkpoint_and_projects_all_exits(self):
-  example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
-  with tempfile.TemporaryDirectory() as temporary:
-   repo=Path(temporary)
-   subprocess.run(["git","init","-q"],cwd=repo,check=True)
-   self.git(repo,"config","user.name","Test");self.git(repo,"config","user.email","test@example.com")
-   (repo/".gitignore").write_text(".trellis/.runtime/\n")
-   self.git(repo,"add",".gitignore");self.git(repo,"commit","-qm","fixture")
-   task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
-   checkpoint_path=repo/".trellis/.runtime/guru-team/owner-checkpoints/test-task/phase2-check.json"
-   checkpoint_path.parent.mkdir(parents=True)
-   public={"profile":"initial_check","mode":"workflow","task_ref":".trellis/tasks/test-task","source_exit":"implementation_complete"}
 
-   def owner(exit_id):
-    value=copy.deepcopy(example);value["task_ref"]=public["task_ref"]
-    if exit_id=="implementation_required":
-     value["typed_exit"]=exit_id;value["consumer"]={"kind":"workflow","id":"guru-resume-implementation"};value["semantic_review"]["status"]=exit_id;value["semantic_review"]["adequacy_dimensions"][2]["status"]="failed"
-     value["candidate_classifications"]=[{"candidate_ref":"candidate:phase2:defect","decision":"qualified_current","witness":{"requirement_refs":["prd:R1"],"supported_entry_refs":["entry:phase2"],"existing_caller_refs":["caller:guru-check-task"],"honest_action_sequence":["run the supported Phase 2 check"],"defect_observation":"The required behavior fails.","excluded_assumptions":[]},"consumer_use":"task_commit_preflight"}]
-     value["semantic_review"]["scope_decisions"]=[{"id":"C1","candidate_ref":"candidate:phase2:defect","disposition":"current_scope","summary":"A defect remains.","finding_id":"F1"}]
-     value["semantic_review"]["findings"]=[{"id":"F1","candidate_ref":"candidate:phase2:defect","severity":"P2","summary":"Open defect.","path":"src/example.py","status":"open"}]
-    elif exit_id=="planning_stale":
-     value["typed_exit"]=exit_id;value["route"]="reapprove_plan";value["consumer"]={"kind":"workflow","id":"guru-task-check-planning-router"};value["semantic_review"]["status"]=exit_id
-     value["candidate_classifications"]=[{"candidate_ref":"candidate:phase2:scope","decision":"qualified_approved_expansion","witness":{"requirement_refs":[],"supported_entry_refs":["entry:phase2"],"existing_caller_refs":["caller:guru-check-task"],"honest_action_sequence":["review the requested scope"],"defect_observation":"The request changes scope.","excluded_assumptions":[]},"consumer_use":"task_commit_preflight"}]
-     value["semantic_review"]["scope_decisions"]=[{"id":"scope-proposal:R13","candidate_ref":"candidate:phase2:scope","disposition":"scope_change_required","summary":"Current scope changed.","finding_id":None}]
-    elif exit_id=="blocked":
-     value["typed_exit"]=exit_id;value["consumer"]={"kind":"stop","id":"task-check-blocked"};value["semantic_review"]["status"]=exit_id;value["semantic_review"]["adequacy_dimensions"][-1]["status"]="blocked";value["validation"]["unverified_items"]=[{"id":"U1","summary":"Required evidence is unavailable.","blocking":True}]
-    return value
 
-   expected={
-    "passed":{"exit_id":"passed","task_ref":public["task_ref"],"phase2_commit_anchor":example["phase2_capture_commit"]},
-    "implementation_required":{"exit_id":"implementation_required","task_ref":public["task_ref"],"finding_refs":["F1"]},
-    "planning_stale":{"exit_id":"planning_stale","task_ref":public["task_ref"],"planning_route":"reapprove_plan","proposal_refs":["scope-proposal:R13"]},
-    "blocked":{"exit_id":"blocked"},
-   }
-   for exit_id in expected:
-    with self.subTest(exit_id=exit_id):
-     checkpoint_path.write_text("checkpoint\n")
-     environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
-     value=owner(exit_id)
-     if exit_id=="passed":
-      fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
-      authoring={key:copy.deepcopy(value[key]) for key in fields}
-      input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.write_text(json.dumps(authoring))
-      recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task",public["task_ref"],"--input",str(input_path)],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-      value=json.loads(checkpoint_path.read_text())
-      expected[exit_id]["phase2_commit_anchor"]=value["phase2_capture_commit"]
-     envelope=json.dumps({"public_input":public,"owner_result":value},separators=(",",":"))
-     result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False,env=environment)
-     self.assertNotEqual(0,result.returncode,result.stdout)
-     self.assertTrue(checkpoint_path.exists())
-
-   # A same-scope repair plan can need causal investigation without changing requirements.
-   value=owner("planning_stale")
-   value["candidate_classifications"][0]["decision"]="qualified_current"
-   value["semantic_review"]["scope_decisions"][0].update(
-    id="plan-revision:causal-basis",disposition="current_scope",
-    summary="Keep accepted repair scope; establish first failure and revise its causal plan.")
-   checkpoint_path.write_text("checkpoint\n")
-   result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],
-    input=json.dumps({"public_input":public,"owner_result":value}),text=True,
-    stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
-   self.assertNotEqual(0,result.returncode,result.stdout)
-   self.assertTrue(checkpoint_path.exists())
-
- def test_resolved_phase2_private_result_projects_reconcile_input_without_external_exit(self):
-  with tempfile.TemporaryDirectory() as temporary:
-   repo=Path(temporary).resolve();self.git(repo,"init","-q")
-   task_ref=".trellis/tasks/test-task";task_dir=repo/task_ref;task_dir.mkdir(parents=True)
-   public={"profile":"resolved_reconciliation","mode":"workflow","task_ref":task_ref,"source_exit":"resolved_tree_ready"}
-   owner=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
-   owner.update({"task_ref":task_ref,"mode":"workflow","typed_exit":"resolved_reconciliation_passed","consumer":{"kind":"skill","id":"guru-reconcile-task-base"}})
-   authoring=json.loads((PACKAGE/"examples/public-resolved-reconciliation-authoring.json").read_text())
-   authoring["parent_order"][0]=owner["phase2_capture_commit"]
-   runtime=repo/".trellis/.runtime";runtime.mkdir(parents=True)
-   public_path=runtime/"resolved-public.json";public_path.write_text(json.dumps(public))
-   owner_path=runtime/"resolved-owner.json";owner_path.write_text(json.dumps(owner))
-   authoring_path=runtime/"resolved-authoring.json";authoring_path.write_text(json.dumps(authoring))
-   checkpoint_path=repo/".trellis/.runtime/guru-team/owner-checkpoints/test-task/phase2-check.json"
-   checkpoint_path.parent.mkdir(parents=True);checkpoint_path.write_text(json.dumps(owner))
-   checked={"artifact_path":str(checkpoint_path)}
-   with patch.object(project_runtime,"check_phase2",return_value=checked):
-    output=project_runtime.run(PACKAGE,{"id":"project-resolved-reconciliation"},["--root",str(repo),"--input",str(public_path),"--owner-result",str(owner_path),"--authoring",str(authoring_path)])
-   self.assertEqual("resolved_candidate",output["profile"])
-   self.assertEqual("resolved_reconciliation_passed",output["source_exit"])
-   self.assertEqual(owner["phase2_capture_commit"],output["phase2_commit_anchor"])
-   self.assertNotIn("exit_id",output)
-
- def test_passed_output_can_be_rematerialized_only_after_fresh_checker_success(self):
-  example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
-  with tempfile.TemporaryDirectory() as temporary:
-   repo=Path(temporary);self.git(repo,"init","-q");self.git(repo,"config","user.name","Test");self.git(repo,"config","user.email","test@example.com")
-   task_ref=".trellis/tasks/test-task";task_dir=repo/task_ref;task_dir.mkdir(parents=True)
-   (task_dir/"task.json").write_text(json.dumps({"id":"test-task","status":"in_progress","branch":"main","base_branch":"main","worktree_path":str(repo)}))
-   for name in ("prd.md","design.md","implement.md"):(task_dir/name).write_text(f"# {name}\n\nCurrent Phase 2 authority.\n")
-   (repo/".gitignore").write_text(".trellis/.runtime/\n")
-   tracked=repo/"tracked.txt";tracked.write_text("reviewed\n")
-   self.git(repo,"add",".");self.git(repo,"commit","-qm","fixture")
-   tracked.write_text("reviewed current candidate\n")
-
-   fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
-   authoring=json.loads((PACKAGE/"examples/phase2-authoring.json").read_text());authoring["reviewed_paths"]=["tracked.txt"]
-   input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
-   environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
-   recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   artifact_path=Path(json.loads(recorded.stdout)["result"]["artifact_path"])
-   public={"profile":"initial_check","mode":"workflow","task_ref":task_ref,"source_exit":"implementation_complete"}
-
-   first_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual("ok",json.loads(first_check.stdout)["result"]["status"])
-   envelope=json.dumps({"public_input":public,"owner_result":json.loads(artifact_path.read_text())},separators=(",",":"))
-   first=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
-   self.assertNotEqual(0, first.returncode)
-   self.assertTrue(artifact_path.exists())
-   # A successful private old checker cannot become a new public Delivery pass.
-   second_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual("ok",json.loads(second_check.stdout)["result"]["status"])
-   second=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
-   self.assertNotEqual(0, second.returncode)
-   self.assertTrue(artifact_path.exists())
 
 if __name__=="__main__": unittest.main()

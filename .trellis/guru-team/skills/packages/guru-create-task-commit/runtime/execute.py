@@ -245,13 +245,13 @@ def _write_happy_path_receipt(
         ).hexdigest(),
     }
     if "delivery_key" in candidate:
-        receipt.update(delivery_key=candidate["delivery_key"], commit_kind=candidate["commit_kind"], schema_version="delivery-2.0")
+        receipt.update(delivery_key=candidate["delivery_key"], commit_kind=candidate["commit_kind"], schema_version="delivery-3.0")
         if candidate["commit_kind"] == "final":
             receipt["check_result_id"] = candidate["check_result_id"]
-        receipt["$schema"] = "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-2.0.json"
+        receipt["$schema"] = "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-3.0.json"
     validate_json(
         receipt,
-        package_root / ("schemas/delivery-commit-result-2.0.schema.json" if "delivery_key" in candidate else "schemas/happy-path-result.schema.json"),
+        package_root / ("schemas/delivery-commit-result-3.0.schema.json" if "delivery_key" in candidate else "schemas/happy-path-result.schema.json"),
         "happy_path_result",
     )
     _path, _relative, task_key, sequence = canonical_candidate_locator(
@@ -272,7 +272,7 @@ def recover_published_happy_path_commit(
 ) -> None:
     validate_json(
         candidate,
-        package_root / (("schemas/delivery-commit-candidate-3.0.schema.json" if candidate.get("schema_version") == "delivery-3.0" else "schemas/delivery-commit-candidate-2.0.schema.json") if "delivery_key" in candidate else "schemas/task-commit-candidate.schema.json"),
+        package_root / ("schemas/delivery-commit-candidate-4.0.schema.json" if "delivery_key" in candidate else "schemas/task-commit-candidate.schema.json"),
         "candidate",
     )
     expected = {
@@ -339,13 +339,11 @@ def recover_published_happy_path_commit(
         repo, candidate_locator
     )
     candidate_path.unlink(missing_ok=True)
-    phase2 = (
-        repo
-        / ".trellis/.runtime/guru-team/owner-checkpoints"
-        / Path(candidate["task"]["path"]).name
-        / "phase2-check.json"
-    )
-    phase2.unlink(missing_ok=True)
+    if "delivery_key" not in candidate:
+        # Retained private legacy diagnostic cleanup does not touch a current
+        # Delivery owner's retired Check checkpoint.
+        phase2 = repo / ".trellis/.runtime/guru-team/owner-checkpoints" / Path(candidate["task"]["path"]).name / "phase2-check.json"
+        phase2.unlink(missing_ok=True)
 
 
 def _registered_worktrees(repo: Path) -> set[Path]:
@@ -589,13 +587,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         )
 
     candidate_path.unlink(missing_ok=True)
-    phase2 = (
-        repo
-        / ".trellis/.runtime/guru-team/owner-checkpoints"
-        / Path(candidate["task"]["path"]).name
-        / "phase2-check.json"
-    )
-    phase2.unlink(missing_ok=True)
+    if "delivery_key" not in candidate:
+        # Retained private legacy diagnostic cleanup does not touch a current
+        # Delivery owner's retired Check checkpoint.
+        phase2 = repo / ".trellis/.runtime/guru-team/owner-checkpoints" / Path(candidate["task"]["path"]).name / "phase2-check.json"
+        phase2.unlink(missing_ok=True)
     return {
         "status": "committed",
         "exit": "committed",

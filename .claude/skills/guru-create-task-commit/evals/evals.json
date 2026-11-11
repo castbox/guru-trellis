@@ -6,10 +6,10 @@
   "evals": [
     {
       "id": "committed-initial",
-      "prompt": "Complete the delivery_initial_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived committed route.",
-      "expected_exit": "committed",
-      "expected_output": "The public DTO is the declared committed route.",
-      "input_profile_id": "delivery_initial_commit",
+      "prompt": "Complete the delivery_pre_review_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the exact pre-review committed route.",
+      "expected_exit": "pre_review_committed",
+      "expected_output": "The declared pre_review_committed DTO enters the fixed candidate router.",
+      "input_profile_id": "delivery_pre_review_commit",
       "assertions": {
         "deterministic": [
           {
@@ -17,7 +17,7 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "committed"
+            "expected": "pre_review_committed"
           },
           {
             "id": "public-only",
@@ -43,10 +43,10 @@
     },
     {
       "id": "revision-required",
-      "prompt": "Complete the delivery_revision_reentry semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived revision-required route.",
+      "prompt": "Complete the delivery_pre_review_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived revision-required route.",
       "expected_exit": "revision-required",
       "expected_output": "The public DTO is the declared revision-required route.",
-      "input_profile_id": "delivery_revision_reentry",
+      "input_profile_id": "delivery_pre_review_commit",
       "assertions": {
         "deterministic": [
           {
@@ -65,10 +65,10 @@
     },
     {
       "id": "committed-finding-fix",
-      "prompt": "Complete the delivery_finding_fix_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived committed route.",
-      "expected_exit": "committed",
-      "expected_output": "The public DTO is the declared committed route.",
-      "input_profile_id": "delivery_finding_fix_commit",
+      "prompt": "Complete the delivery_pre_review_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the exact pre-review committed route.",
+      "expected_exit": "pre_review_committed",
+      "expected_output": "The declared pre_review_committed DTO enters the fixed candidate router.",
+      "input_profile_id": "delivery_pre_review_commit",
       "assertions": {
         "deterministic": [
           {
@@ -76,7 +76,7 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "committed"
+            "expected": "pre_review_committed"
           }
         ]
       },
@@ -87,10 +87,10 @@
     },
     {
       "id": "blocked-recovery",
-      "prompt": "Complete the delivery_recovery_resume semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived blocked route.",
+      "prompt": "Complete the delivery_pre_review_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived blocked route.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO is the declared blocked route.",
-      "input_profile_id": "delivery_recovery_resume",
+      "input_profile_id": "delivery_pre_review_commit",
       "assertions": {
         "deterministic": [
           {
@@ -110,9 +110,9 @@
     {
       "id": "clean-committed-reentry",
       "prompt": "Review the already committed clean Delivery candidate and preserve its HEAD through the public committed-reentry wrapper.",
-      "expected_exit": "committed",
-      "expected_output": "The public DTO is the declared committed route.",
-      "input_profile_id": "delivery_committed_reentry",
+      "expected_exit": "pre_review_committed",
+      "expected_output": "The declared pre_review_committed DTO enters the fixed candidate router.",
+      "input_profile_id": "delivery_pre_review_committed_reentry",
       "assertions": {
         "deterministic": [
           {
@@ -120,7 +120,7 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "committed"
+            "expected": "pre_review_committed"
           },
           {
             "id": "public-only",

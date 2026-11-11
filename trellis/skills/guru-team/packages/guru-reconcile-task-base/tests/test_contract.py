@@ -32,13 +32,13 @@ class ContractTest(unittest.TestCase):
             self.assertEqual([],validate(PACKAGE/output['schema']['path'],json.loads((PACKAGE/output['example']['path']).read_text())))
         self.assertEqual([],validate(PACKAGE/'schemas/delivery-reconciliation-request.schema.json',json.loads((PACKAGE/'examples/reconciliation-request.json').read_text())))
         self.assertEqual([],validate(PACKAGE/'schemas/delivery-reconciliation-result.schema.json',json.loads((PACKAGE/'examples/reconciliation-result.json').read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/delivery-resolved-reconciliation-result.schema.json',json.loads((PACKAGE/'examples/resolved-reconciliation-result.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-resolved-reconciliation-result-2.0.schema.json',json.loads((PACKAGE/'examples/resolved-reconciliation-result.json').read_text())))
         self.assertEqual([],validate(PACKAGE/'schemas/delivery-base-reconciliation.schema.json',json.loads((PACKAGE/'examples/base-reconciliation.json').read_text())))
         self.assertEqual('guru-reconcile-task-base-output-review-continuity-required-2.0-delivery-1.0',next(item for item in interface['public_contracts']['outputs'] if item['exit_id']=='review_continuity_required')['schema']['schema_id'])
         self.assertEqual('guru-reconcile-task-base-private-result-2.0-delivery-1.0',interface['public_contracts']['private_artifacts'][0]['schema']['schema_id'])
         resolved=next(item for item in interface['public_contracts']['input']['profiles'] if item['id']=='delivery_resolved_candidate')
         self.assertEqual([],validate(PACKAGE/resolved['schema']['path'],json.loads((PACKAGE/resolved['example']['path']).read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/delivery-resolved-full-review-authoring.schema.json',json.loads((PACKAGE/'examples/public-full-review-authoring.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-resolved-full-review-authoring-2.0.schema.json',json.loads((PACKAGE/'examples/public-full-review-authoring.json').read_text())))
         self.assertEqual(
             ['reconciled','review_continuity_required','implementation_required','planning_stale','scope_confirmation_required','blocked'],
             [item['id'] for item in interface['external_exits']],
@@ -102,9 +102,9 @@ class ContractTest(unittest.TestCase):
         self.assertIn('Current-dialogue confirmation',contract)
         self.assertIn('never pushes or records user authorization',contract)
         self.assertIn('never consumes the ordinary Task Commit path',contract)
-        self.assertIn('bounded base continuity is not used',contract)
+        self.assertIn('complete fixed B',contract)
         self.assertIn('live merge base',contract)
-        self.assertIn('fresh Phase 2',contract)
+        self.assertIn('committed_candidate_anchor',contract)
     def test_help_is_side_effect_free(self):
         for command in json.loads((PACKAGE/'commands.json').read_text())['commands']:
             with self.subTest(command=command['id']): self.assertEqual(0,main(PACKAGE,[command['id'],'--help']))

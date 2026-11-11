@@ -15,6 +15,7 @@ from common import (
     parse,
     rel,
     root,
+    review_input_schema,
     store_checkpoint,
     task,
     tree_identity,
@@ -41,6 +42,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             "implementation_required",
             "scope_confirmation_required",
             "blocked",
+            "planning_stale",
         ),
     )
     args = parse(parser, argv)
@@ -50,26 +52,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     public = load(repo, package_root, args.skill_input, "skill_input")
     auth = load(repo, package_root, args.semantic_review_file, "semantic_review_file")
     head = git(repo, "rev-parse", "HEAD")
-    import json
-    metadata_path = task_dir / "task.json"
-    metadata = json.loads(metadata_path.read_text()) if metadata_path.is_file() else {}
     original_profile = public.get("profile")
-    alignment = original_profile == "delivery_promotion_reference_alignment"
-    if metadata.get("schema_version") == "2.0" and not str(original_profile).startswith("delivery_"):
-        raise CommandError("schema_mismatch", "input.profile", "Use a Delivery review input; old Task review profiles are diagnostic-only.")
+    schema = review_input_schema(public)
     profile = original_profile.removeprefix("delivery_")
-    schema = {
-        "branch_review": "public-branch-review-input.schema.json",
-        "base_continuity": "public-base-continuity-input-2.0.schema.json",
-        "archived_review": "public-archived-review-input.schema.json",
-        "promotion_reference_alignment": "public-delivery-promotion-reference-alignment-input-1.0.schema.json",
-    }.get(profile)
-    if schema is None:
-        raise CommandError(
-            "schema_mismatch", "input.profile", "Use one declared Branch Review profile."
-        )
-    if original_profile.startswith("delivery_"):
-        schema = "public-" + original_profile.replace("_", "-") + "-input-1.0.schema.json"
+    alignment = original_profile == "delivery_promotion_reference_alignment"
     validate_json(public, package_root / "schemas" / schema, "skill_input")
     task_ref = rel(repo, task_dir)
     if public["task_ref"] != task_ref:
@@ -110,9 +96,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         except LifecycleContractError as exc:
             raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
         projection = DeliveryProjection(repo, task_ref)
-        check_base = projection.resolve(public["delivery_key"])["candidate"]["base_ref"] if profile == "base_continuity" else base_head
-        projection.require_current_check(
-            public["delivery_key"], public["check_result_id"], head_ref=head, base_ref=check_base)
+        from delivery_review import candidate
+        candidate(projection, public)
     if profile == "base_continuity":
         checks = (
             (public["task_head"] == head, "task_head", "Review current reconciled HEAD."),
@@ -162,7 +147,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError(
             "schema_mismatch", "typed_exit", "Pass requires no open findings or scope proposals."
         )
-    if (profile == "base_continuity") != (args.typed_exit == "continuity_passed"):
+    if ((profile == "base_continuity" and args.typed_exit == "passed")
+            or (profile != "base_continuity" and args.typed_exit == "continuity_passed")):
         raise CommandError(
             "schema_mismatch",
             "typed_exit",
@@ -213,7 +199,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         }
     )
     value = {
-        "schema_version": "alignment-1.0" if alignment else "archived-1.0" if archived_facts else "7.0",
+        "schema_version": "alignment-2.0" if alignment else "archived-1.0" if archived_facts else "8.0",
         "skill_id": "guru-review-branch",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "task_dir": task_ref,
@@ -243,7 +229,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if original_profile.startswith("delivery_"):
         value["delivery_key"] = public["delivery_key"]
         if profile != "archived_review":
-            value["check_result_id"] = public["check_result_id"]
+            from delivery_review import rollback_binding, review_binding
+            value["review_binding"] = review_binding(projection, public["delivery_key"])
+            if profile in {"branch_review", "promotion_reference_alignment"}:
+                value["adequacy_review"] = copy.deepcopy(auth.get("adequacy_review"))
+                value["gate_judgments"] = copy.deepcopy(auth.get("gate_judgments"))
+                value["planning_revision"] = copy.deepcopy(auth.get("planning_revision"))
+                value["rollback_binding"] = rollback_binding(projection, public) if args.typed_exit == "planning_stale" else None
     if alignment:
         value["promotion_alignment"] = alignment_facts
     value["facts_sha256"] = digest(

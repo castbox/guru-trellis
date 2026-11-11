@@ -1,9 +1,9 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
   "id": "guru-check-task",
   "name": "guru-check-task",
-  "description": "Check complete Delivery candidates and final content through the original semantic owner.",
+  "description": "Recover an already completed original Check planning rollback or maintain selected historical legacy controls; current development review belongs to guru-review-branch.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -12,10 +12,9 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "task_checkout",
-        "approved_planning",
-        "live_implementation",
-        "validation_scope",
-        "docs_ssot",
+        "original_source",
+        "rollback_identity",
+        "semantic_result",
         "invocation_freshness"
       ]
     },
@@ -24,10 +23,9 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "task_checkout",
-        "approved_planning",
-        "live_implementation",
-        "validation_scope",
-        "docs_ssot",
+        "original_source",
+        "rollback_identity",
+        "semantic_result",
         "invocation_freshness"
       ]
     }
@@ -35,45 +33,39 @@
   "entry_preconditions": [
     {
       "id": "runtime_dependency",
-      "evidence": "installed extension manifest, dispatcher, active package inventory, schema, and declared recorder/checker commands",
-      "binding": "complete compatible Guru Team preset runtime",
-      "freshness": "run-skill-command validates the managed runtime before each command"
+      "evidence": "Complete matching external provider and compatible target public Task/Delivery API.",
+      "binding": "The original recovery or selected legacy owner.",
+      "freshness": "Validate before every invocation."
     },
     {
       "id": "task_checkout",
-      "evidence": "active TaskId, task.json, current branch binding, and resolved checkout",
-      "binding": "one active task in its resolved repository checkout",
-      "freshness": "task identity and checkout resolution are refreshed before record and check"
+      "evidence": "Exact Task/Delivery key and live registered target checkout; legacy uses its exact selected target.",
+      "binding": "Same original Task/generation/Delivery or explicit legacy locator.",
+      "freshness": "Reread actual target facts before recovery or mutation."
     },
     {
-      "id": "approved_planning",
-      "evidence": "the active task status plus the three live planning documents Scope revision instead consumes original Clarify current accepted scope and this current-stage semantic slice judgment; stale downstream gates are not prerequisites. Planning-stale recovery instead validates the retained original rollback binding or original public Delivery query; it never requires the cleared current Planning result.",
-      "binding": "the planning contract already consumed by Phase 1 activation and implementation",
-      "freshness": "the owner rereads the live plans and classifies semantic deltas without opening producer-private evidence"
+      "id": "original_source",
+      "evidence": "Complete original Check result/input and retained rollback binding or actual original public query; legacy uses its exact source preimage.",
+      "binding": "Original result, scope, plan, candidate and source relationship.",
+      "freshness": "Never reconstruct cleared Planning or substitute current facts for old source."
     },
     {
-      "id": "live_implementation",
-      "evidence": "live base diff, staged, unstaged, untracked and new files, code, tests, docs, and generated outputs",
-      "binding": "the complete current implementation candidate",
-      "freshness": "the AI rereads live Git and files before the semantic result and the checker recomputes one owner-private composite worktree token"
+      "id": "rollback_identity",
+      "evidence": "Current scope/plans/candidate/content and cleared result slots, or selected legacy fixed-preimage maintenance facts.",
+      "binding": "Same already executed rollback or bounded original legacy operation.",
+      "freshness": "Actual content/authority changes return to their original owner."
     },
     {
-      "id": "validation_scope",
-      "evidence": "applicable repository lint, type, test, schema, generated, drift, installation, and external checks",
-      "binding": "the validation needed for the current task scope",
-      "freshness": "command summaries and unverified items describe the current complete round"
-    },
-    {
-      "id": "docs_ssot",
-      "evidence": "current durable paths, strategy, and semantic reconciliation conclusion",
-      "binding": "the task's durable documentation responsibility",
-      "freshness": "the AI rereads current docs and planning before recording"
+      "id": "semantic_result",
+      "evidence": "Current original-owner judgment of route, correction or legacy disposition.",
+      "binding": "Only planning_stale, blocked or legacy_controls_retired; no development pass.",
+      "freshness": "Judge before dry-run recorder or legacy executor."
     },
     {
       "id": "invocation_freshness",
-      "evidence": "mode, task, checked content identity, one local composite worktree token, reviewed paths, compact semantic result, typed exit, reason, and consumer",
-      "binding": "one complete current Phase 2 owner round",
-      "freshness": "the checker rejects missing, stale, partial, multiple, unknown, or consumer-mismatched results"
+      "evidence": "Exact public input, original source and actual output.",
+      "binding": "One supported original recovery/maintenance operation.",
+      "freshness": "Reject stale, missing or mismatched evidence and recover only its actual result."
     }
   ],
   "runtime_dependency": {
@@ -103,18 +95,6 @@
     {
       "id": "phase2_rejected_candidates_example",
       "path": "examples/phase2-rejected-candidates.json"
-    },
-    {
-      "id": "public_input_initial_check_example",
-      "path": "examples/public-initial-check-input.json"
-    },
-    {
-      "id": "public_input_finding_fix_rerun_example",
-      "path": "examples/public-finding-fix-rerun-input.json"
-    },
-    {
-      "id": "public_input_planning_reentry_example",
-      "path": "examples/public-planning-reentry-input.json"
     },
     {
       "id": "public_input_resolved_reconciliation_example",
@@ -151,10 +131,6 @@
     {
       "id": "delivery_stopped_output",
       "path": "examples/public-delivery-stopped-output-1.0.json"
-    },
-    {
-      "id": "delivery_resolved_passed_output",
-      "path": "examples/public-output-delivery-resolved-reconciliation-passed-1.0.json"
     },
     {
       "id": "public_delivery_scope_revision_input_1_0",
@@ -353,6 +329,10 @@
     {
       "id": "delivery_planning_stale_recovery_input",
       "path": "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json"
+    },
+    {
+      "id": "public_input_recovery",
+      "path": "schemas/public-input-recovery-1.0.schema.json"
     }
   ],
   "validators": [
@@ -360,25 +340,13 @@
       "id": "phase2_check_recorder",
       "command": "scripts/record-phase2-check.sh",
       "runtime_command": "record-phase2-check",
-      "objective_scope": "write the completed compact semantic result after current task, planning, candidate hygiene, and reviewed-path checks; planning_stale derives the original rollback binding, and recovery correction uses dry-run only"
-    },
-    {
-      "id": "phase2_check_checker",
-      "command": "scripts/check-phase2-check.sh",
-      "runtime_command": "check-phase2-check",
-      "objective_scope": "validate current schema 6.0 closure, task and planning linkage, capture-commit ancestry, reviewed-content identity, dirty-path coverage, semantic union, typed exit, and unique consumer"
+      "objective_scope": "Dry-run only: bind an already judged semantic correction to the exact original rollback without writing a checkpoint."
     },
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-check-task",
       "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit; the recovery profile validates original rollback facts without ordinary Check or another lifecycle write"
-    },
-    {
-      "id": "resolved_reconciliation_projection",
-      "command": "scripts/project-resolved-reconciliation.sh",
-      "runtime_command": "project-resolved-reconciliation",
-      "objective_scope": "validate one checked private resolved-tree Phase 2 result and emit the target-owned Reconcile input without a workflow exit"
     },
     {
       "id": "legacy_maintenance",
@@ -388,22 +356,6 @@
     }
   ],
   "external_exits": [
-    {
-      "id": "passed",
-      "evidence": "all nine dimensions passed with no open finding or blocking unverified item",
-      "consumer": {
-        "kind": "skill",
-        "id": "guru-create-task-commit"
-      }
-    },
-    {
-      "id": "implementation_required",
-      "evidence": "one or more supported current-scope findings remain open",
-      "consumer": {
-        "kind": "workflow",
-        "id": "guru-resume-implementation"
-      }
-    },
     {
       "id": "planning_stale",
       "evidence": "a current scope or authority decision requires planning re-entry",
@@ -421,43 +373,11 @@
       }
     },
     {
-      "id": "delivery_stopped",
-      "evidence": "Current stage owner reviewed withdrawal, recorded public stop and released selection.",
-      "consumer": {
-        "kind": "skill",
-        "id": "guru-review-task-completion"
-      }
-    },
-    {
-      "id": "resolved_reconciliation_passed",
-      "evidence": "Current resolved tree and complete semantic Check, before its exact reconciliation commit.",
-      "consumer": {
-        "kind": "workflow",
-        "id": "guru-delivery-resolved-reconciliation-router"
-      }
-    },
-    {
-      "id": "delivery_scope_revised",
-      "evidence": "Current stage owner reviewed actual accepted scope; public same-Delivery rework succeeded or its exact output was recovered.",
-      "consumer": {
-        "kind": "workflow",
-        "id": "guru-delivery-scope-revised-router"
-      }
-    },
-    {
       "id": "legacy_controls_retired",
       "evidence": "This original gate owner verified preserved raw source and retired only its fixed selected legacy gate.",
       "consumer": {
         "kind": "workflow",
         "id": "legacy-maintenance-check-task-legacy-controls-retired"
-      }
-    },
-    {
-      "id": "candidate_checked",
-      "evidence": "Complete current candidate and proposed targets checked; legal Check rework returned to implementation without a final gate.",
-      "consumer": {
-        "kind": "workflow",
-        "id": "guru-knowledge-final-integration-router"
       }
     }
   ],
@@ -467,10 +387,10 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py",
+    "tests/test_rollback_recovery.py",
     "tests/test_legacy_maintenance.py",
-    "tests/test_candidate_check.py",
-    "tests/test_runtime.py"
+    "tests/test_runtime.py",
+    "tests/test_contract.py"
   ],
   "platform_destinations": [
     "shared",
@@ -501,115 +421,10 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-check-task-input-legacy-index-1.0",
-        "path": "schemas/public-input-legacy-index-1.0.schema.json"
+        "schema_id": "guru-check-task-input-recovery-1.0",
+        "path": "schemas/public-input-recovery-1.0.schema.json"
       },
       "profiles": [
-        {
-          "id": "delivery_candidate_check",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-candidate-check-1.0",
-            "path": "schemas/public-delivery-candidate-check-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_candidate_check_input",
-            "path": "examples/public-delivery-candidate-check-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_candidate_check"
-          }
-        },
-        {
-          "id": "delivery_initial_check",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-initial-check-1.0",
-            "path": "schemas/public-delivery-initial-check-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_initial_check_input",
-            "path": "examples/public-delivery-initial-check-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_initial_check"
-          }
-        },
-        {
-          "id": "delivery_finding_fix_rerun",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-finding-fix-rerun-1.0",
-            "path": "schemas/public-delivery-finding-fix-rerun-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_finding_fix_rerun_input",
-            "path": "examples/public-delivery-finding-fix-rerun-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_finding_fix_rerun"
-          }
-        },
-        {
-          "id": "delivery_planning_reentry",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-planning-reentry-1.0",
-            "path": "schemas/public-delivery-planning-reentry-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_planning_reentry_input",
-            "path": "examples/public-delivery-planning-reentry-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_planning_reentry"
-          }
-        },
-        {
-          "id": "delivery_resolved_reconciliation",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-resolved-reconciliation-1.0",
-            "path": "schemas/public-delivery-resolved-reconciliation-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_resolved_reconciliation_input",
-            "path": "examples/public-delivery-resolved-reconciliation-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_resolved_reconciliation"
-          }
-        },
-        {
-          "id": "delivery_scope_withdrawal",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-scope-withdrawal-1.0",
-            "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_scope_withdrawal_input",
-            "path": "examples/public-delivery-scope-withdrawal-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_scope_withdrawal"
-          }
-        },
-        {
-          "id": "delivery_scope_revision",
-          "schema": {
-            "schema_id": "guru-check-task-input-delivery-scope-revision-1.0",
-            "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "public_delivery_scope_revision_input_1_0",
-            "path": "examples/public-delivery-scope-revision-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_scope_revision"
-          }
-        },
         {
           "id": "legacy_control_inspection",
           "schema": {
@@ -662,7 +477,7 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "delivery_initial_check"
+        "profile_id": "delivery_planning_stale_recovery"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
@@ -675,40 +490,12 @@
       },
       "example_argv": [
         "--input",
-        "examples/public-initial-check-input.json",
+        "examples/public-delivery-planning-stale-recovery-input-1.0.json",
         "--owner-result",
-        "examples/phase2-check.json"
+        "/path/to/original-recovery-owner.json"
       ]
     },
     "outputs": [
-      {
-        "exit_id": "passed",
-        "schema": {
-          "schema_id": "guru-check-task-output-delivery-passed-1.0",
-          "path": "schemas/public-output-delivery-passed-1.0.schema.json"
-        },
-        "example": {
-          "id": "passed_delivery_output",
-          "path": "examples/public-output-delivery-passed-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_passed"
-        ]
-      },
-      {
-        "exit_id": "implementation_required",
-        "schema": {
-          "schema_id": "guru-check-task-output-delivery-implementation-required-1.0",
-          "path": "schemas/public-output-delivery-implementation-required-1.0.schema.json"
-        },
-        "example": {
-          "id": "implementation_required_delivery_output",
-          "path": "examples/public-output-delivery-implementation-required-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_implementation_required"
-        ]
-      },
       {
         "exit_id": "planning_stale",
         "schema": {
@@ -738,48 +525,6 @@
         ]
       },
       {
-        "exit_id": "delivery_stopped",
-        "schema": {
-          "schema_id": "guru-check-task-output-delivery-stopped-1.0",
-          "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
-        },
-        "example": {
-          "id": "delivery_stopped_output",
-          "path": "examples/public-delivery-stopped-output-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_delivery_stopped"
-        ]
-      },
-      {
-        "exit_id": "resolved_reconciliation_passed",
-        "schema": {
-          "schema_id": "guru-check-task-output-delivery-resolved-reconciliation-passed-1.0",
-          "path": "schemas/public-output-delivery-resolved-reconciliation-passed-1.0.schema.json"
-        },
-        "example": {
-          "id": "delivery_resolved_passed_output",
-          "path": "examples/public-output-delivery-resolved-reconciliation-passed-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_resolved_reconciliation_passed"
-        ]
-      },
-      {
-        "exit_id": "delivery_scope_revised",
-        "schema": {
-          "schema_id": "guru-check-task-output-delivery-scope-revised-1.0",
-          "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
-        },
-        "example": {
-          "id": "public_delivery_scope_revised_output_1_0",
-          "path": "examples/public-delivery-scope-revised-output-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_delivery_scope_revised"
-        ]
-      },
-      {
         "exit_id": "legacy_controls_retired",
         "schema": {
           "schema_id": "guru-check-task-output-legacy_controls_retired-1.0",
@@ -792,64 +537,9 @@
         "consumer_use_ids": [
           "project_legacy_controls_retired"
         ]
-      },
-      {
-        "exit_id": "candidate_checked",
-        "schema": {
-          "schema_id": "guru-check-task-output-delivery-candidate-checked-1.0",
-          "path": "schemas/public-output-delivery-candidate-checked-1.0.schema.json"
-        },
-        "example": {
-          "id": "candidate_checked_output",
-          "path": "examples/public-output-delivery-candidate-checked-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_candidate_checked"
-        ]
       }
     ],
     "consumer_inputs": [
-      {
-        "id": "initial_commit_seed_input",
-        "consumer": {
-          "kind": "skill",
-          "id": "guru-create-task-commit"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-create-task-commit/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "delivery_initial_commit",
-          "seed_fields": [
-            "source_exit",
-            "task_ref",
-            "delivery_key",
-            "check_result_id"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode"
-          ],
-          "authoring_example": {
-            "id": "passed_delivery_authoring",
-            "path": "examples/authoring-delivery-passed-1.0.json"
-          }
-        }
-      },
-      {
-        "id": "implementation_required_workflow_input",
-        "consumer": {
-          "kind": "workflow",
-          "id": "guru-resume-implementation"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-check-task-implementation_required-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/check-task-implementation-required.schema.json"
-        }
-      },
       {
         "id": "planning_stale_workflow_input",
         "consumer": {
@@ -872,58 +562,6 @@
         "payload_kind": "zero_payload"
       },
       {
-        "id": "delivery_stopped_seed",
-        "consumer": {
-          "kind": "skill",
-          "id": "guru-review-task-completion"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-task-completion/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "delivery_completion",
-          "seed_fields": [
-            "task_ref",
-            "task_key"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode"
-          ],
-          "authoring_example": {
-            "id": "delivery_stopped_delivery_authoring",
-            "path": "examples/authoring-delivery-delivery-stopped-1.0.json"
-          }
-        }
-      },
-      {
-        "id": "resolved_reconciliation_passed_router_input",
-        "consumer": {
-          "kind": "workflow",
-          "id": "guru-delivery-resolved-reconciliation-router"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-check-task-resolved_reconciliation_passed-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/check-task-resolved-reconciliation-passed.schema.json"
-        }
-      },
-      {
-        "id": "scope_revised_input",
-        "consumer": {
-          "kind": "workflow",
-          "id": "guru-delivery-scope-revised-router"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-check-task-scope-revised-1.0",
-          "path": "consumers/workflow/delivery-1.0/check-task-scope-revised.schema.json"
-        }
-      },
-      {
         "id": "legacy_controls_retired_input",
         "consumer": {
           "kind": "workflow",
@@ -935,52 +573,9 @@
           "schema_id": "legacy-maintenance-check-task-legacy-controls-retired-input-1.0",
           "path": "consumers/workflow/production/legacy-maintenance-check-task-legacy-controls-retired.schema.json"
         }
-      },
-      {
-        "id": "candidate_checked_input",
-        "consumer": {
-          "kind": "workflow",
-          "id": "guru-knowledge-final-integration-router"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-check-task-candidate-checked-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/check-task-candidate-checked.schema.json"
-        }
       }
     ],
     "projections": [
-      {
-        "id": "project_passed",
-        "exit_id": "passed",
-        "consumer_input_id": "initial_commit_seed_input",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "delivery_key",
-            "target": "delivery_key"
-          },
-          {
-            "source": "check_result_id",
-            "target": "check_result_id"
-          }
-        ]
-      },
-      {
-        "id": "project_implementation_required",
-        "exit_id": "implementation_required",
-        "consumer_input_id": "implementation_required_workflow_input",
-        "operation": "direct"
-      },
       {
         "id": "project_planning_stale",
         "exit_id": "planning_stale",
@@ -995,56 +590,12 @@
         "mappings": []
       },
       {
-        "id": "project_delivery_stopped",
-        "exit_id": "delivery_stopped",
-        "consumer_input_id": "delivery_stopped_seed",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "task_key",
-            "target": "task_key"
-          }
-        ]
-      },
-      {
-        "id": "project_resolved_reconciliation_passed",
-        "exit_id": "resolved_reconciliation_passed",
-        "consumer_input_id": "resolved_reconciliation_passed_router_input",
-        "operation": "direct"
-      },
-      {
-        "id": "project_delivery_scope_revised",
-        "exit_id": "delivery_scope_revised",
-        "consumer_input_id": "scope_revised_input",
-        "operation": "direct"
-      },
-      {
         "id": "project_legacy_controls_retired",
         "exit_id": "legacy_controls_retired",
         "consumer_input_id": "legacy_controls_retired_input",
         "operation": "direct"
-      },
-      {
-        "id": "project_candidate_checked",
-        "exit_id": "candidate_checked",
-        "consumer_input_id": "candidate_checked_input",
-        "operation": "direct"
       }
     ],
-    "private_artifacts": [
-      {
-        "id": "phase2_check",
-        "kind": "gate_evidence",
-        "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-6.0.json",
-          "path": "schemas/phase2-check.schema.json"
-        },
-        "persistence": "ignored_runtime"
-      }
-    ]
+    "private_artifacts": []
   }
 }

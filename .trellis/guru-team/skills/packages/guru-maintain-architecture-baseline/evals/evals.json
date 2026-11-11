@@ -363,53 +363,6 @@
       }
     },
     {
-      "id": "phase2-independent-native",
-      "prompt": "Review the actual phase2 candidate and unchanged production consumers under current project Architecture authority. Return the formal wrapper result you author as a fresh independent Architecture reviewer.",
-      "expected_exit": "baseline_current",
-      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
-      "native_execution_mode": "semantic_authoring",
-      "native_execution_adapter": "codex",
-      "model_id": "gpt-5.6-sol",
-      "input_profile_id": "delivery_task_impact_sync",
-      "files": [
-        "evals/files/phase2-independent-native-input.json",
-        "evals/files/planning-semantic-authoring-facts.json"
-      ],
-      "assertions": {
-        "deterministic": [
-          {
-            "id": "expected-route",
-            "kind": "json_path",
-            "pointer": "/exit_id",
-            "operation": "equals",
-            "expected": "baseline_current"
-          },
-          {
-            "id": "public-invocation-only",
-            "kind": "trace",
-            "invariant": "public_invocation_only"
-          },
-          {
-            "id": "evals-not-loaded",
-            "kind": "trace",
-            "invariant": "evals_not_loaded_by_skill"
-          },
-          {
-            "id": "private-runtime-not-read",
-            "kind": "trace",
-            "invariant": "private_runtime_not_read_by_agent"
-          }
-        ],
-        "semantic": [
-          {
-            "id": "independent-causal-review",
-            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
-            "evidence_selector": "transcript"
-          }
-        ]
-      }
-    },
-    {
       "id": "branch-review-independent-native",
       "prompt": "Review the actual branch_review candidate and unchanged production consumers under current project Architecture authority. Return the formal wrapper result you author as a fresh independent Architecture reviewer.",
       "expected_exit": "baseline_current",

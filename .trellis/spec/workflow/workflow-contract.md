@@ -364,26 +364,22 @@ does not imply task re-entry, Planning approval or Release qualification.
 
 ### Architecture stage consumption
 
-Every standard task mandatory invokes
-`guru-maintain-architecture-baseline:task_impact_sync` with one fresh stage at
-Planning, qualified `implementation_discovery` boundary expansion, Phase 2,
-committed full-diff Branch Review, Delivery Review, and Completion/Finish. The one
-global mandatory marker identifies the stable Skill; a prior stage result never
-substitutes for the next invocation.
+Every standard Delivery invokes the original Architecture owner at Planning,
+qualified implementation-discovery expansion, necessary precommit integration,
+the single committed Review, Delivery Review and Completion/Finish. Planning
+retains its two purpose-bound assessments. Precommit integration records actual
+writes/readback as integrated_pending_review. The committed independent reviewer
+reads fixed before authority and complete after content, then performs the actual
+Architecture assessment in the same full review. No candidate/final Check or
+separate Phase 2 Architecture assessment remains in the normal graph. A prior
+Planning or integration result cannot replace the committed judgment.
 
-Planning cannot approve without current baseline, design-constitution, and
-project change-contract evidence. Expansion of scope, risk, owner, state
-authority, persistence, SDK lifecycle, external integration, or another
-architecture boundary invalidates the Planning result before the expanded edit
-or test. Candidate Phase 2 assesses complete implementation and isolated
-proposed Architecture/RDT targets. Original Check delivery_candidate_check
-returns candidate_checked only to guru-knowledge-final-integration-router.
-Original maintenance owners promote there; implementation then rebuilds the
-actual candidate/begin_check before matching final Architecture and Check.
-Branch Review forms its own current conclusion over the complete committed
-range, including promoted files and pre-promotion authority. Apply Candidate
-Applicability And Coverage to original coverage and actual delta; a Phase 2
-result cannot replace the Branch Review-stage result.
+Planning cannot approve without current baseline, constitution and project
+change-contract evidence. A real scope/risk/authority/persistence/SDK/external/
+owner/boundary expansion re-enters the original implementation-discovery owner
+before the expanded edit or test. Unchanged mechanisms do not repeat qualification
+merely because a stage changes. Explicit old in-flight operations retain their
+fixed complete provider and MIGRATION-794 route.
 
 Every fresh `baseline_current` binds `constitution_status=current`, an existing
 regular project-owned constitution locator, and its exact source profile. Only
@@ -394,9 +390,9 @@ reruns `delivery_task_impact_sync(stage=<affected-stage>)` with that same key an
 root. Task-only `bootstrap_foundation|repair` reruns the matching
 `task_impact_sync` call. `source_profile=delivery_promotion|promotion` returns to
 the original Architecture owner for actual-write applicability and its matching
-final Phase 2 result. A consistent write does not dispatch the same independent
-assessment again. The resulting complete candidate enters final Check, Task
-Commit and independent committed Review. Missing or stale Architecture evidence,
+precommit integration result. A consistent write remains pending review.
+TaskCommit binds the complete candidate; the single independent committed Review
+then judges its actual before/after Architecture and all Check/full_review duties. Missing or stale Architecture evidence,
 `architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
 reach Delivery Review. Stale baseline, constitution, contribution,
 expected-current, or stage identity returns `sync_required` to the Architecture
@@ -405,7 +401,7 @@ Architecture change or a current `no_change` proof. This is routing-only
 integration; Delivery, Completion, Closure and Finish retain their package-owned
 judgments.
 
-The matching nonplanning 4.0 / Delivery 2.0 Architecture current result carries
+The matching nonplanning 6.0 / Delivery 4.0 Architecture current result carries
 `before_authority` and `candidate` to this existing current router. The router
 preserves them for the original stage owner to read the actual comparison origin
 and final candidate; it does not interpret private project checks or decide
@@ -566,7 +562,7 @@ or old plan confirmation accepts materially changed planning.
 Validate the task worktree boundary, read the approved planning artifacts and
 relevant specs, implement the current scope, and use the configured Trellis
 implement/check agents. Their terminal results and live repository facts are
-ephemeral evidence for the mandatory `guru-check-task` semantic owner. Do not
+ephemeral engineering evidence for the committed `guru-review-branch` owner. Do not
 create an implementation handoff artifact.
 
 After delegation, the executor autonomously completes command waits, routine
@@ -606,8 +602,8 @@ actual impact, disclose invalidated evidence and perform the necessary
 validation. Do not require every check to run again.
 
 The main coordinator still checks results against the current requirements,
-identifies new defects and returns them to the original owner. Formal Check
-and independent Review retain their responsibilities. Adopt verifiable
+identifies new defects and returns them to the original owner. The single independent committed Review retains all Check and Branch Review
+responsibilities. Adopt verifiable
 execution facts after judging their applicability; investigate or rerun only
 for a concrete gap or inconsistency. Treat new requirements as an explicit
 delta through the original owner, rather than changing implicit completion
@@ -622,18 +618,17 @@ route for that observation. The main coordinator rereads those facts and runs
 `trellis-*` agent definitions remain upstream-owned and are not patched by the
 Guru preset.
 
-The original implementation owner invokes candidate/begin_check before Check.
-`delivery_candidate_check` returns `candidate_checked` only to the final
-integration router after Check's existing rework returns to implementing.
-Original Architecture/RDT promotion at final_integration and implementation's
-new candidate/begin_check precede final Check. No-change follows the same legal
-return without empty contributions or commits. Only final `passed` reaches
-`guru-create-task-commit`; candidate_checked is not a public Check gate. The early Draft path explicitly invokes the same
-TaskCommit and Publication owners through their independent profiles and five
-workflow-owned Draft routers. Finding and
-planning-stale exits return to their declared consumers automatically. The
-workflow does not reproduce Phase 2 adequacy dimensions, severity rules,
-recorder/checker commands, or private evidence shape.
+After implementation and engineering self-check, the original Architecture/RDT
+owners integrate necessary complete targets and perform actual readback. This is
+pending independent review. TaskCommit forms the exact local committed candidate
+without a prior Check. The original implementation constructor restores fixed B,
+binds complete B..H and invokes begin_check. One new independent reviewer performs
+Architecture plus all Check/Branch Review responsibilities and records actual check
+then full_review. Independent candidate/final Check, candidate_checked and new early
+Draft publication paths are retired. Explicit rollback/legacy and already-executed
+old operations follow MIGRATION-794 through their original owners. Finding and
+planning-stale exits automatically return to their declared consumers. The workflow
+does not reproduce step-local dimensions, severity, commands or private state shape.
 
 ### Phase 3 — Delivery cycles and task completion
 
@@ -712,22 +707,20 @@ relaxing those checks; existing active continuation uses its current identity,
 legal binding, unique checkout and actual owner without reconstructing created. Issue creation output loss belongs to the
 separate `guru-create-issue` owner and returns through fresh Intake.
 
-For Phase 2, a current retained `passed` checkpoint may be checked again and
-projected through the existing checker-to-`invoke-guru-check-task` path. This is
-rematerialization through the existing public invocation, not a new public
-recovery profile, exit, schema, or semantic judgment. If that checkpoint is
-missing or stale, the original Phase 2 Architecture and Check owners perform
-their current invocations under Candidate Applicability And Coverage.
-Task Commit output loss uses the existing `guru-create-task-commit` same-
-candidate `recovery_resume` contract and may not create a second candidate,
-empty commit, amend, or duplicate commit. Lost Branch Review or Delivery Review
-DTOs require fresh Architecture at the matching stage and a fresh semantic
-owner run. Delivery Review's original owner determines whether its still-held
-checked Branch Review anchor remains applicable; normal checkpoint retirement
-alone does not invalidate that DTO. Loss of Delivery Review output does not
-mechanically rerun unaffected upstream owners. New committed content still
-requires a current exact-range Branch Review under Candidate Applicability
-And Coverage; it does not unconditionally repeat original covered work.
+Current recovery remains producer-owned. TaskCommit recovers the same actual
+commit using parent, exact content and transaction facts; it does not stage or
+create another commit for lost stdout. Review recovers only matching current
+candidate/scope/plan/Planning and actual public role results. Missing or stale
+semantic coverage requires actual review. A half-written two-role operation is not
+a pass. Original #775 rollback recovery preserves cause/revision handoff without
+repeating rework. Historical Phase 2 checkpoints are not current normal inputs.
+
+Delivery Review's owner judges applicability of its still-held checked Branch
+Review anchor. Normal private checkpoint retirement alone does not invalidate that
+DTO. Lost readiness output does not mechanically rerun unaffected owners. New
+committed content requires exact current coverage under Candidate Applicability
+And Coverage. Already covered engineering work is adopted after applicability
+judgment. Pinned-old operations follow MIGRATION-794 without converting old pass.
 Delivery Publish/Merge recovery belongs to the original owner and
 current PR/HEAD transaction. A current checked Delivery result enters
 Completion; evidence-only changes use Completion's evidence-refresh entry,

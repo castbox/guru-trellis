@@ -15,6 +15,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from adapters.eval import architecture_authoring as authoring
 from adapters.eval.eval_constants import ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+from adapters.eval.fixture_io import run_git, stage_clean_installed_owner_repo
 
 PACKAGE = Path(__file__).resolve().parents[2] / 'packages/guru-maintain-architecture-baseline'
 
@@ -41,16 +42,18 @@ class ArchitectureAuthoringTests(unittest.TestCase):
                     authoring.validate_followup_reads([events[1], events[0], events[2]], model)
 
     def fixture(self, root, case='planning-semantic-authoring', stage='planning'):
-        repo = root / 'repository'
-        repo.mkdir()
-        subprocess.run(['git', 'init', '-q', '-b', 'main', str(repo)], check=True)
-        for name, value in (('user.name', 'Eval'), ('user.email', 'eval@example.invalid')):
-            subprocess.run(['git', '-C', str(repo), 'config', name, value], check=True)
-        (repo / '.trellis').mkdir()
-        shutil.copy2(PACKAGE.parents[3] / 'workflows/guru-team/workflow.md', repo / '.trellis/workflow.md')
+        source = PACKAGE.parents[4]
+        repo, _ = stage_clean_installed_owner_repo(root,
+            source / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
+        repo = repo.resolve()
+        run_git(repo, 'add', '.')
+        run_git(repo, 'commit', '-qm', 'stage installed Architecture fixture tools')
         work = root / 'work'
         (work / 'evals/files').mkdir(parents=True)
-        public = json.loads((PACKAGE / 'evals/files/impact-current-input.json').read_text())
+        input_file = ('impact-current-input.json' if stage == 'planning' else
+            'branch-review-independent-native-input.json' if stage == 'branch_review' else
+            'implementation-discovery-independent-native-input.json')
+        public = json.loads((PACKAGE / 'evals/files' / input_file).read_text())
         public['stage'] = stage
         (work / 'evals/files/input.json').write_text(json.dumps(public))
         authoring.stage_architecture_facts({'workdir': str(work), 'files': ['evals/files/input.json'], 'case_id': case}, repo)
@@ -89,14 +92,54 @@ class ArchitectureAuthoringTests(unittest.TestCase):
         from runtime.reviewed_content import reviewed_content_identity
         from runtime.schema import validate_json
         with tempfile.TemporaryDirectory() as temp:
-            repo = self.fixture(Path(temp), stage='phase2')
+            repo = self.fixture(Path(temp), stage='implementation_discovery')
             facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
             public = json.loads((repo / facts['public_input_locator']).read_text())
-            validate_json(public, PACKAGE / 'schemas/public-input-delivery-task-impact-sync-3.0.schema.json', 'input')
+            validate_json(public, PACKAGE / 'schemas/public-input-delivery-task-impact-sync-4.0.schema.json', 'input')
+            self.assertEqual('guru-maintain-architecture-baseline:6.0', public['project_contract']['guru_contract_identity'])
+            self.assertIn('schemas/semantic-result-delivery-4.0.schema.json', authoring.contract_paths(public))
             self.assertEqual(public['candidate']['content_identity'], 'sha256:' + reviewed_content_identity(repo)['sha256'])
             self.assertEqual(public['before_authority']['git_revision'], public['candidate']['head'])
             (repo / 'query_summary.py').write_text('A changed unchanged-consumer dependency\n')
             self.assertNotEqual(public['candidate']['content_identity'], 'sha256:' + reviewed_content_identity(repo)['sha256'])
+
+    def test_current_closeout_and_planning_keep_their_exact_contract_versions(self):
+        from runtime.schema import validate_json
+        with tempfile.TemporaryDirectory() as temp:
+            repo = self.fixture(Path(temp), stage='planning')
+            facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
+            planning = json.loads((repo / facts['public_input_locator']).read_text())
+            validate_json(planning, PACKAGE / 'schemas/public-input-delivery-task-impact-sync-1.0.schema.json', 'planning')
+            self.assertEqual('delivery-1.0', planning['schema_version'])
+            self.assertIn('schemas/semantic-result-delivery-1.0.schema.json', authoring.contract_paths(planning))
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            repo = root / 'repository'
+            repo.mkdir()
+            run_git(repo, 'init', '-q', '-b', 'main')
+            run_git(repo, 'config', 'user.name', 'Eval')
+            run_git(repo, 'config', 'user.email', 'eval@example.invalid')
+            work = root / 'work'; work.mkdir()
+            current = json.loads((PACKAGE / 'evals/files/branch-review-independent-native-input.json').read_text())
+            current.update(schema_version='6.0', profile='task_impact_sync', stage='acceptance_finish')
+            for field in ('delivery_key', 'planning_root', 'committed_range'):
+                current.pop(field, None)
+            input_path = work / 'input.json'; input_path.write_text(json.dumps(current))
+            request = {'workdir':str(work), 'files':['input.json'], 'case_id':'current-closeout-transport'}
+            authoring.stage_architecture_facts(request, repo)
+            facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
+            staged = json.loads((repo / facts['public_input_locator']).read_text())
+            validate_json(staged, PACKAGE / 'schemas/public-input-impact-nonplanning-6.0.schema.json', 'closeout')
+            self.assertEqual('6.0', staged['schema_version'])
+            self.assertEqual('guru-maintain-architecture-baseline:6.0', staged['project_contract']['guru_contract_identity'])
+            self.assertIn('schemas/semantic-result-6.0.schema.json', authoring.contract_paths(staged))
+            # A historical input is not reinterpreted as the current operation.
+            current['schema_version'] = '5.0'
+            input_path.write_text(json.dumps(current))
+            head = run_git(repo, 'rev-parse', 'HEAD')
+            with self.assertRaisesRegex(ValueError, 'historical inputs are not upgraded'):
+                authoring.stage_architecture_facts(request, repo)
+            self.assertEqual(head, run_git(repo, 'rev-parse', 'HEAD'))
 
     def test_business_candidate_source_tests_and_proposed_contribution_are_consistent(self):
         for case in ('planning-business-default-native', 'planning-inherited-business-default-native'):
@@ -212,12 +255,12 @@ class ArchitectureAuthoringTests(unittest.TestCase):
 
     def test_exact_method_contracts_can_overlap_without_hiding_candidate_evidence(self):
         repo = Path('/repository')
-        public = json.loads((PACKAGE / 'examples/public-input-delivery-task-impact-sync-1.0.json').read_text())
+        public = json.loads((PACKAGE / 'evals/files/branch-review-independent-native-input.json').read_text())
         package = repo / '.trellis/guru-team/skills/packages' / PACKAGE.name
         contracts = [package / path.relative_to(PACKAGE)
             for path in authoring.public_contract_reads(PACKAGE, public)]
         overlaps = [package / path for path in ('SKILL.md', 'interface.json',
-            'references/contract.md', 'schemas/public-input-delivery-task-impact-sync-3.0.schema.json')]
+            'references/contract.md', 'schemas/public-input-delivery-task-impact-sync-4.0.schema.json')]
         self.assertTrue(set(overlaps).issubset(contracts))
         authorities = ['constitution.md', 'baseline.md', 'change-contract.md']
         # The changed object may itself be a method contract. Its full diff

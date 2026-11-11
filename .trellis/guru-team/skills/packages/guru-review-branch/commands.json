@@ -35,7 +35,7 @@
           "flag": "--semantic-review-file",
           "required": true,
           "kind": "string",
-          "description": "AI-authored semantic JSON, separate from public input and the generated gate. Use a regular UTF-8 JSON file or '-' for stdin, with at most one recorder argument reading stdin. See references/contract.md#recorder-authoring-and-carriers and examples/authoring-delivery-passed-1.0.json.",
+          "description": "AI-authored semantic JSON, separate from public input and the generated gate. Use a regular UTF-8 JSON file or '-' for stdin, with at most one recorder argument reading stdin. See references/contract.md#recorder-authoring-and-carriers and examples/authoring-delivery-passed-2.0.json.",
           "repeatable": false,
           "conflicts": []
         },
@@ -49,7 +49,8 @@
             "implementation_required",
             "scope_confirmation_required",
             "blocked",
-            "archived_review_passed"
+            "archived_review_passed",
+            "planning_stale"
           ],
           "description": "AI-selected typed exit.",
           "repeatable": false,
@@ -69,12 +70,12 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-delivery-branch-review-input-1.0.schema.json",
-        "schemas/public-delivery-base-continuity-input-1.0.schema.json",
+        "schemas/public-delivery-branch-review-input-2.0.schema.json",
+        "schemas/public-delivery-base-continuity-input-2.0.schema.json",
         "schemas/public-delivery-archived-review-input-1.0.schema.json",
-        "schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
-        "schemas/delivery-review-gate-1.0.schema.json",
-        "schemas/delivery-alignment-gate-1.0.schema.json",
+        "schemas/public-delivery-promotion-reference-alignment-input-2.0.schema.json",
+        "schemas/delivery-review-gate-2.0.schema.json",
+        "schemas/delivery-alignment-gate-2.0.schema.json",
         "schemas/delivery-archived-review-gate-1.0.schema.json"
       ],
       "validator_id": "review_gate_recorder",

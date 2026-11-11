@@ -5,7 +5,6 @@ by its existing owner fixture; this adapter cannot establish native AI review.
 """
 from __future__ import annotations
 
-import argparse
 import copy
 import hashlib
 import json
@@ -172,32 +171,48 @@ def activate(runtime, fixture, task, key, *, preserve_existing_constitution=Fals
     return output['planning_accepted_result_id']
 
 
-def check(runtime, fixture, task, projection, key, planning_id, exit_id, *, formal, base_head=None):
-    from adapters.eval.production_fixtures import production_phase2_input
-    paths = ['src/production-eval.txt']
-    candidate = projection.candidate(paths, kind='git', head_ref=run_git(fixture, 'rev-parse', 'HEAD'),
-                                     base_ref=projection.content_base(key, development_base=base_head, observed_target=run_git(fixture, 'rev-parse', 'origin/main')))
-    if projection.resolve(key)['phase'] == 'reviewing':
-        projection.apply({'api_version': '1.0', 'operation': 'rework', 'key': key,
-                          'owner_role': 'full_review', 'owner_id': projection.declaration()['owners']['full_review'],
-                          'expected_phase': 'reviewing', 'target_role': 'implementation',
-                          'reason': authority_ref(task / 'prd.md', fixture),
-                          'affected_results': ['check', 'full_review', 'readiness']})
-    projection.begin_check(key, candidate)
-    package = fixture / '.trellis/guru-team/skills/packages/guru-check-task'
-    path = production_phase2_input(runtime, fixture, task, package, exit_id, candidate_base=candidate['base_ref'])
-    recorded = wrapper(fixture, 'guru-check-task', 'record-phase2-check.sh', ['--task', task.relative_to(fixture).as_posix(), '--input', str(path)])
-    checked = wrapper(fixture, 'guru-check-task', 'check-phase2-check.sh', ['--task', task.relative_to(fixture).as_posix()])
-    public = {'profile': 'delivery_initial_check', 'mode': 'workflow', 'task_ref': task.relative_to(fixture).as_posix(),
-              'source_exit': 'implementation_complete', 'delivery_key': key, 'planning_accepted_result_id': planning_id}
-    if formal:
-        output = wrapper(fixture, 'guru-check-task', 'invoke.sh',
-                         ['--input', str(write(fixture / '.trellis/.runtime/guru-team/evals/check.json', public)),
-                          '--owner-result', checked['artifact_path']], formal=True)
-        if output['exit_id'] != 'passed':
-            raise ValueError('Actual prerequisite Check did not pass: ' + str(output))
-        checked.update(output)
-    return recorded, checked, public
+def commit_authoring(runtime, fixture, status):
+    return {
+        'path_classifications': [{'path': path, 'category': 'task-reviewed',
+            'reason': 'The isolated fixture owns this current approved implementation path.',
+            'coverage_source': 'Accepted Planning and fixture engineering self-checks.'}
+            for path in runtime.git_status_paths(fixture)],
+        'message': {'type': 'feat', 'scope': 'workflow', 'summary': '验证提交后审核入口',
+            'background': '通过真实公开入口验证待审候选。', 'changes': '提交确切候选和必要文档。',
+            'boundaries': '只作用隔离fixture，无远端发布。', 'validations': '执行公开producer与consumer。'},
+        'ai_review': {'status': status, 'summary': 'Fixture exact local commit judgment; independent review is pending.',
+            'evidence': ['Current approved plan, exact dirty paths and fixture engineering results.']}}
+
+
+def record_committed_review(fixture, task, public, recipe):
+    """Fixture-owned semantic input through the actual current Review recorder."""
+    from adapters.eval.production_fixtures import (production_review_candidate,
+        production_review_classification, production_review_semantic_candidate)
+    package = fixture / '.trellis/guru-team/skills/packages/guru-review-branch'
+    authoring = json.loads((package / 'examples/authoring-delivery-passed-2.0.json').read_text())
+    exit_id = recipe.removeprefix('review-').replace('continuity-passed', 'continuity_passed')
+    resolved = exit_id == 'finding-fix-passed'
+    if exit_id in {'finding-fix-passed', 'fresh-final-passed'}:
+        exit_id = 'passed'
+    head = run_git(fixture, 'rev-parse', 'HEAD')
+    candidates = production_review_candidate(exit_id, head, resolved=resolved,
+        introduced_head=run_git(fixture, 'rev-parse', 'HEAD^') if resolved else None)
+    authoring['candidate_classifications'] = [production_review_classification(row) for row in candidates]
+    semantic = [production_review_semantic_candidate(row) for row in candidates]
+    for field, disposition in [('qualified_findings', 'qualified_finding'), ('scope_proposals', 'scope_proposal'),
+            ('observations', 'observation'), ('followup_candidates', 'followup_candidate'), ('rejected_candidates', 'rejected_candidate')]:
+        authoring['semantic_review'][field] = [row for row in semantic if row['disposition'] == disposition]
+    authoring['semantic_review']['ai_review_gate'] = {'status': exit_id,
+        'summary': 'Fixture supplied the current complete committed Review judgment; no native AI result is claimed.'}
+    authoring['verification_evidence'] = {'evidence': ['Fixture-owned current fixed range, engineering applicability and consumer coverage.']}
+    authoring['delivery_review']['current_slice_status'] = 'passed' if exit_id in {'passed', 'continuity_passed'} else 'blocked'
+    if exit_id == 'planning_stale':
+        authoring['planning_revision'] = {'planning_route': 'reapprove_plan', 'proposal_refs': [],
+            'revision_actions': ['Repair the current Delivery plan within its accepted scope.']}
+    return wrapper(fixture, package.name, 'review-branch.sh', ['--task', task.relative_to(fixture).as_posix(),
+        '--skill-input', str(write(fixture / OWNER_INPUT, public)),
+        '--semantic-review-file', str(write(fixture / '.trellis/.runtime/guru-team/evals/review-owner-input.json', authoring)),
+        '--typed-exit', exit_id])
 
 
 def stage_delivery_production(request, fixture, target, request_package, recipe, public_input_path):
@@ -214,7 +229,7 @@ def stage_delivery_production(request, fixture, target, request_package, recipe,
     runtime.diff_base_ref = lambda root, branch: 'origin/' + branch
     runtime.changed_files = lambda root, revision: run_git(root, 'diff', '--name-only', revision).splitlines()
     def status_paths(root):
-        value = subprocess.run(['git', 'status', '--porcelain', '-z'], cwd=root,
+        value = subprocess.run(['git', 'status', '--porcelain', '-z', '--untracked-files=all'], cwd=root,
                                capture_output=True, check=True).stdout.decode()
         return [item[3:] for item in value.split('\0') if len(item) >= 4
                 and not item[3:].startswith('.trellis/.runtime/')]
@@ -242,72 +257,60 @@ def stage_delivery_production(request, fixture, target, request_package, recipe,
         else:
             planning_id = activate(runtime, fixture, task, key)
             (fixture / 'src/production-eval.txt').write_text(recipe + '\n')
-            if skill == 'guru-check-task' and recipe == 'check-delivery-stopped':
-                candidate = projection.candidate(['src/production-eval.txt'], kind='git',
-                                                 head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=base)
-                projection.begin_check(key, candidate)
-                reason = authority_ref(task / 'prd.md', fixture)
-                semantic = {'reviewed_delivery_key': key, 'result_id': 'stop:production-check',
-                            'reason': reason, 'scope_decision': reason, 'evidence': [reason]}
-                write(fixture / OWNER_INPUT, public)
-                owner_path = write(fixture / '.trellis/.runtime/guru-team/evals/check-stop-owner.json', semantic)
-                bind_owner_result_argument(request, fixture, owner_path)
-                return package, target, {'TRELLIS_CONTEXT_ID': context_id}
-            if skill == 'guru-check-task' and recipe == 'check-resolved-reconciliation-passed':
-                # A legal evolved-base merge produces the actual resolved index.
-                run_git(fixture, 'add', '.')
-                run_git(fixture, 'commit', '-qm', 'stage feature candidate')
-                run_git(fixture, 'switch', 'main')
-                (fixture / 'src').mkdir(exist_ok=True)
-                (fixture / 'src/base-evolution.txt').write_text('evolved base\n')
-                run_git(fixture, 'add', '.')
-                run_git(fixture, 'commit', '-qm', 'evolve base')
-                new_base = run_git(fixture, 'rev-parse', 'HEAD')
-                run_git(fixture, 'update-ref', 'refs/remotes/origin/main', new_base)
-                run_git(fixture, 'switch', 'eval/current')
-                run_git(fixture, 'merge', '--no-commit', '--no-ff', 'main')
-            exit_id = recipe.removeprefix('check-').replace('-', '_') if skill == 'guru-check-task' else 'passed'
-            recorded, checked, check_public = check(runtime, fixture, task, projection, key, planning_id, exit_id, formal=skill != 'guru-check-task')
             if skill == 'guru-check-task':
-                public['planning_accepted_result_id'] = planning_id
-                write(fixture / OWNER_INPUT, public)
-                bind_owner_result_argument(request, fixture, Path(checked['artifact_path']))
-            else:
-                from adapters.eval.production_fixtures import production_prepare_task_commit, production_task_commit_authoring, production_record_review
-                public.pop('phase2_commit_anchor', None)
-                public['check_result_id'] = checked['check_result_id']
-                if skill == 'guru-create-task-commit' and recipe == 'commit-clean-reentry':
-                    initial = {'profile': 'delivery_initial_commit', 'mode': public['mode'], 'task_ref': public['task_ref'],
-                               'source_exit': 'passed', 'delivery_key': key, 'check_result_id': checked['check_result_id']}
-                    owner_path, _, _ = production_prepare_task_commit(runtime, fixture, initial,
-                                                                    production_task_commit_authoring(runtime, fixture, checked, 'passed'))
-                    wrapper(fixture, 'guru-create-task-commit', 'invoke.sh', ['--candidate-artifact', str(owner_path)], formal=True)
-                    _, fresh, _ = check(runtime, fixture, task, projection, key, planning_id, 'passed', formal=True)
-                    public['check_result_id'] = fresh['check_result_id']
+                raise ValueError('Current independent development Check eval profiles are retired. Use the complete pinned provider for historical operation recovery.')
+            from adapters.eval.production_fixtures import production_prepare_task_commit
+            public.pop('check_result_id', None)
+            public.pop('phase2_commit_anchor', None)
+            fixed_base = projection.content_base(key, development_base=base)
+            initial = {'profile': 'delivery_pre_review_commit', 'mode': public['mode'],
+                       'task_ref': public['task_ref'], 'delivery_key': key, 'base_ref': fixed_base}
+            if skill == 'guru-create-task-commit':
+                public['base_ref'] = fixed_base
+                status = {'commit-revision-required': 'revision-required', 'commit-blocked-recovery': 'blocked'}.get(recipe, 'passed')
+                prepared_path, _candidate, _prepared = production_prepare_task_commit(runtime, fixture,
+                    initial if recipe == 'commit-clean-reentry' else public, commit_authoring(runtime, fixture, status))
+                if recipe == 'commit-clean-reentry':
+                    wrapper(fixture, skill, 'invoke.sh', ['--candidate-artifact', str(prepared_path)], formal=True)
                     write(fixture / OWNER_INPUT, public)
-                    owner_path = write(fixture / '.trellis/.runtime/guru-team/evals/clean-commit-owner.json',
-                                       {'status': 'passed', 'summary': 'Current candidate is already committed and clean; preserve its HEAD.',
-                                        'evidence': ['actual fresh Check', 'actual clean candidate HEAD']})
-                    bind_owner_result_argument(request, fixture, owner_path)
-                elif skill == 'guru-create-task-commit':
-                    status = {'commit-revision-required': 'revision-required', 'commit-blocked-recovery': 'blocked'}.get(recipe, 'passed')
-                    owner_path, _, _ = production_prepare_task_commit(runtime, fixture, public,
-                                                                     production_task_commit_authoring(runtime, fixture, checked, status))
-                    write(fixture / OWNER_INPUT, public)
-                    bind_task_commit_candidate_argument(request, fixture, owner_path)
+                    semantic = {'status': 'passed', 'summary': 'Fixture current exact clean candidate; preserve HEAD.',
+                                'evidence': ['Current Planning and the actual nonempty complete fixed B..HEAD.']}
+                    bind_owner_result_argument(request, fixture, write(fixture / '.trellis/.runtime/guru-team/evals/clean-commit-owner.json', semantic))
                 else:
-                    initial = {'profile': 'delivery_initial_commit', 'mode': public['mode'], 'task_ref': public['task_ref'],
-                               'source_exit': 'passed', 'delivery_key': key, 'check_result_id': checked['check_result_id']}
-                    owner_path, _, prepared = production_prepare_task_commit(runtime, fixture, initial,
-                                                                            production_task_commit_authoring(runtime, fixture, checked, 'passed'))
-                    wrapper(fixture, 'guru-create-task-commit', 'invoke.sh', ['--candidate-artifact', str(owner_path)], formal=True)
-                    # TaskCommit preserves actual commit; fresh Check binds it before Review.
-                    continuity_base = run_git(fixture, 'rev-parse', 'HEAD^') if public['profile'] == 'delivery_base_continuity' else None
-                    _, checked, _ = check(runtime, fixture, task, projection, key, planning_id, 'passed', formal=True,
-                                          base_head=continuity_base)
-                    public['check_result_id'] = checked['check_result_id']
-                    production_record_review(runtime, fixture, task, public, recipe, candidate_base=projection.resolve(key)['candidate']['base_ref'])
                     write(fixture / OWNER_INPUT, public)
+                    bind_task_commit_candidate_argument(request, fixture, prepared_path)
+            else:
+                prepared_path, _candidate, _prepared = production_prepare_task_commit(runtime, fixture, initial,
+                    commit_authoring(runtime, fixture, 'passed'))
+                committed = wrapper(fixture, 'guru-create-task-commit', 'invoke.sh', ['--candidate-artifact', str(prepared_path)], formal=True)
+                head = committed['branch_review_commit']
+                projection.begin_check(key, projection.candidate(['src/production-eval.txt'], kind='git', head_ref=head, base_ref=fixed_base))
+                full_input = {'profile': 'delivery_branch_review', 'mode': public['mode'], 'task_ref': public['task_ref'],
+                    'delivery_key': key, 'base_ref': fixed_base, 'branch_review_commit': head,
+                    'review_intent': 'fresh_final_review' if recipe in {'review-finding-fix-passed', 'review-fresh-final-passed'} else 'initial_review'}
+                if public['profile'] == 'delivery_base_continuity':
+                    record_committed_review(fixture, task, full_input, 'review-passed')
+                    previous = wrapper(fixture, 'guru-review-branch', 'invoke.sh', ['--input', str(write(fixture / OWNER_INPUT, full_input))], formal=True)
+                    run_git(fixture, 'add', '.')
+                    run_git(fixture, 'commit', '-qm', 'retain original public review facts')
+                    run_git(fixture, 'switch', 'main')
+                    (fixture / 'src').mkdir(exist_ok=True)
+                    (fixture / 'src/base-evolution.txt').write_text('unrelated reviewed base evolution\n')
+                    run_git(fixture, 'add', '.'); run_git(fixture, 'commit', '-qm', 'evolve base')
+                    new_base = run_git(fixture, 'rev-parse', 'HEAD')
+                    run_git(fixture, 'switch', 'eval/current')
+                    run_git(fixture, 'merge', '--no-ff', '-m', 'integrate evolved base', 'main')
+                    head = run_git(fixture, 'rev-parse', 'HEAD')
+                    from runtime.delivery_projection.gates import rework
+                    rework(projection, key, 'full_review', 'implementation', authority_ref(task / 'prd.md', fixture), ['check', 'full_review', 'readiness'])
+                    projection.begin_check(key, projection.candidate(['src/production-eval.txt'], head_ref=head, base_ref=fixed_base))
+                    public.update(task_head=head, branch_review_commit=previous['branch_review_commit'],
+                        old_base_head=fixed_base, new_base_head=new_base, candidate_tree_sha256=runtime.tree_identity(fixture, head),
+                        relevant_paths=['src/base-evolution.txt'], review_intent='base_continuity')
+                else:
+                    public = full_input
+                record_committed_review(fixture, task, public, recipe)
+                write(fixture / OWNER_INPUT, public)
         return package, target, {'TRELLIS_CONTEXT_ID': context_id}
     finally:
         if prior is None:

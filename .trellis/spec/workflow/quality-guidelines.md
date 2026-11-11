@@ -746,15 +746,13 @@ equivalent formatting/link/derived-text changes from requirement, authority,
 scope, design, acceptance, behavior, or verification changes without replaying
 unaffected owners. Recorder/checker tests must prove they preserve an existing
 AI result and never generate findings, sufficiency, unusual-scenario meaning,
-authorization, semantic pass, or route judgment. Planning and Phase 2 tests must
-also prove that same-path content drift invalidates the current owner checkpoint
-through exactly one owner-private composite token, while that token never enters
-public DTOs or becomes authorization, semantic approval, or whole-chain
-authority. The Planning wrapper deletes its checkpoint only after checker and
-output-schema success. The Phase 2 wrapper retains only a valid `passed`
-checkpoint for Task Commit and deletes every other valid exit checkpoint; Task
-Commit tests must prove candidate construction and execution reread it, failures
-retain it, and successful publication or recovery deletes it.
+authorization, semantic pass, or route judgment. Planning and committed Review tests must prove current content/planning drift
+invalidates the original owner's private same-operation evidence. The local token
+never enters public DTOs or becomes authorization, semantic approval or whole-chain
+authority. Planning retires its checkpoint after checked output. Review validates
+actual nine-dimension and both role judgments, then records ordered real public
+results and retires its private evidence according to its original route. TaskCommit
+uses engineering/knowledge evidence without reopening a retired Phase 2 checkpoint.
 
 Apply [Candidate Applicability And Coverage](workflow-contract.md#candidate-applicability-and-coverage)
 when verifying engineering fact adoption and later-candidate review. The
@@ -789,23 +787,16 @@ recoverable. New facts or changed obligations cannot use that narrow path. Actua
 owner behavior and module effects are evidence; fixed-text assertions or
 host-staged semantic passes alone are not.
 
-For final-integration Architecture promotion, targeted coverage follows the
-current `guru-maintain-architecture-baseline` contract. Observe the real
-independent assessment of the complete candidate and proposed targets, then the
-original Check owner's candidate-only Check. Only actual `candidate_checked`
-after legal return to implementation enters final integration. Observe the
-original Architecture owner's reviewed write and actual-write applicability,
-then candidate reconstruction including all written content, relationships and
-navigation. Final Architecture/Check, Task Commit, committed independent
-Architecture judgment and complete Branch Review cover that actual candidate.
-Prove normal exact-write progress, changed content returning to affected
-assessment, expected-current mismatch, recoverable partial/output-loss handling,
-no-change, finding-fix impact and the applicable in-flight migration states.
-Apply Candidate Applicability And Coverage to still-applicable facts and exact
-reviewed writes; a stage change alone does not repeat same-content assessment.
-Structure and DTO tests prove their declared layer only; they cannot establish
-actual AI choices or runtime adoption. This coverage definition does not require
-an unrelated documentation change to replay the full lifecycle or platform matrix.
+For precommit knowledge integration, follow the original Architecture/RDT owners.
+Observe complete proposed targets, actual writes/readback and integrated_pending_review,
+then the exact committed candidate. The single independent reviewer performs actual
+before/after Architecture and complete Check/full_review duties. Only this successful
+committed assessment establishes reviewed_promoted. Cover normal expected-current
+mismatch, recoverable partial/output loss, no-change, finding-fix impact and applicable
+migration states. Candidate construction includes all written content, relationships
+and navigation. Applicable engineering facts are adopted; a stage change does not
+repeat an unchanged experiment. Schema/DTO tests establish their layer and cannot
+prove actual Agent choices. No unrelated full lifecycle or platform matrix is added.
 
 Workflow/static and semantic eval coverage must additionally prove the checked
 approved exit remains semantic adequacy only and the consumer presents all
@@ -975,134 +966,72 @@ required evidence; isolated wrapper success cannot substitute for these gates.
 
 ## Review Focus
 
-Phase 2 package regressions must cover source and installed package validation,
-workflow/standalone precondition parity, missing/stale planning and
-repository evidence, scope-before-severity, the four scope dispositions, all
-nine adequacy dimensions, blocking/non-blocking unverified items, four
-exit/consumer invariants, planning discriminator closure, finding-fix full
-rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
-post-commit freshness, the current schema 6.0 checkpoint, and the single compact
-artifact owner. Routine implementation/check identity remains live semantic
-context and must not become persisted assignment or liveness evidence.
-Distribution validation must compare canonical, installed shared, and exact
-manifest-selected platform package bytes and validate current-only ownership
-schema 4.0 with exactly 22 platform descriptors, 43 derived managed claims,
-and 22 descriptor-bound canonical overlay entries.
-Non-current ownership or installed manifests, unknown claims, and unexpected
-overlay paths must fail current-contract validation. Validation must run dogfood
-apply/drift and sidecar checks and exercise clean
-marketplace init, preview/switch, preset apply, installed invocation,
-the selected exact CLI version followed by `trellis update --dry-run` and
-`trellis update --skip-all`, and
-workflow/preset reapply. The update and preset preserve paths do not use
-`--force`; the workflow switch uses explicit `--force` only after byte-equal
-managed-before and expected-preview validation proves replacement is safe.
+Validation follows accepted scope and [Validation Scope Ownership](#validation-scope-ownership).
+An ordinary workflow change exercises affected source/runtime, real producer and
+consumer chains, matching installed projections, reapply/drift and sidecars.
+It does not inherit the complete multi-platform Upgrade/Release matrix.
 
-Phase 2 regression coverage must also prove that empty provenance/docs/
-reviewed-path/command evidence, empty adequacy references, missing current or
-scope-change trigger references, unknown/incomplete evidence-source closure,
-and every incorrect recorder-derived semantic digest fail closed. A real
-Gitlink fixture must prove uninitialized-clean and initialized-clean identity,
-stable superproject index-OID binding, unchanged non-Gitlink `1.0` identity,
-and fail-closed dirty, submodule-HEAD drift, index/commit pointer drift,
-deletion, replacement, root mismatch, and ambiguous index states. The same
-coverage must prove that Phase 2 acceptance of an unrelated uninitialized
-Gitlink does not grant Task Commit staging authority. A real Git
-metadata-descendant fixture must prove the current owner-private ignored-runtime
-Phase 2 checkpoint remains valid before Task Commit without adding assignment,
-status, liveness, review-round, or implementation-handoff metadata. Successful
-Task Commit and successful same-plan recovery fixtures must prove that the
-checkpoint is then removed.
-Candidate-hygiene coverage must separately prove that exact same-path official
-Trellis template bytes under valid schema-v2 provenance may retain upstream
-whitespace/EOF formatting in tracked migration deltas and untracked install
-candidates, while a byte-exact worktree must not exempt a mismatched index or
-committed `HEAD`; hash mismatch, unknown path, or invalid/missing provenance
-must not suppress applicable findings, and path escape, invalid UTF-8, or
-invalid JSON must still block.
+The single independent committed review covers all nine Check dimensions and
+all original Branch Review duties. The reviewer first reads fixed-B Architecture
+authority, then the complete B..H implementation and affected unchanged consumers,
+and finally Task explanations and contribution attribution. Main-session or
+implementer self-review cannot establish independence. The same compliant reviewer
+may continue after a fix by adopting actual prior coverage and reviewing all
+changed and affected semantics; unbounded effects require complete review.
 
-Delivery regressions must reject stale/mismatched Branch Review identity,
-unapproved or ambiguous Delivery policy, stale slice/remaining-work evidence,
-non-`Refs` or Issue-closing PR payloads, and any attempt to read the Branch
-Review private checkpoint. Source and installed wrapper cases prove fresh
-semantic review, objective freshness, Publish same-plan resume/reprepare,
-exact-head Merge recovery and `delivered` projection to Completion. Neither
-deterministic runtime nor a passing merge chooses whole-task Completion.
+Check requirements, design, implementation, tests, docs_ssot, cross_layer,
+compatibility, deployment_and_operations and verification_completeness. Review:
 
-Before Branch Review Gate, obtain an independent Agent review of the full branch
-diff from the task's intake base branch, then record the result with
-`review-branch.sh --review-source independent-agent`. Main-session self-review
-cannot pass the gate. Include:
+- Current accepted scope and applicable Planning; ordinary scenario qualification
+  precedes severity. Existing exclusions do not become findings or required tests.
+- Actual engineering evidence and its layer, inputs, dependencies, environment,
+  toolchain, parameters and expected observation. Adopt applicable results and
+  fill concrete gaps. Counts and green commands do not prove semantic sufficiency.
+- Necessary complete RDT and Architecture targets already integrated/read back
+  before commit. Integration is pending review; the committed independent
+  before/after assessment alone can establish reviewed_promoted. A frozen H is
+  not edited during review. A defect returns to the original writer and successor.
+- Canonical workflow, routing, marketplace, installer, schemas/config/scripts,
+  overlays and their matching installed/platform projections. Verify each active
+  output has its unique real consumer and retired Check/early-publication edges
+  are absent from the current graph. Use live Interface contracts rather than
+  fixed package/claim counts as the source of truth.
+- TaskCommit's exact pre-review candidate, task/Delivery/Planning/HEAD binding,
+  exhaustive path classifications, canonical message/shared parser, isolated
+  index, real hooks, parent/path/tree/raw-message postconditions and unrelated
+  preservation. Copy provenance does not grant source deletion/staging authority.
+  Gitlinks bind only the parent stage-0 mode160000/OID, including deletion; no
+  child root, HEAD, dirty, initialization or object availability is required.
+  Active Git operations and ambiguous parent entries block without mutation.
+- Candidate hygiene: valid same-path upstream template provenance may preserve
+  upstream whitespace/EOF bytes, separately for HEAD/index/worktree. Local edits,
+  mismatches and unknown paths retain ordinary checks. Path, UTF-8 and JSON
+  validation remain effective.
+- The actual committed Review producer without preseeded Check, ordered real
+  check/full_review writes and predecessor relation, half-write/output-loss
+  recovery and rollback. Missing nine-dimension or either-role semantic evidence
+  must not produce pass. Old pass is never relabeled or copied into a blank slot.
+- Scope/implementation/Planning-stale routes and original #775 recovery, retaining
+  actual cause/revision facts without repeated rollback. Public DTOs do not expose
+  private checkpoints. Routine assignments, liveness and raw reports are transient.
+- Delivery Review's actual readiness and exact Chinese PR payload. Publish consumes
+  current full_review/readiness; unreviewed, half-reviewed, changed HEAD or merely
+  integrated_pending_review candidates cannot release remote actions. Delivery
+  uses Refs only and discloses remaining Task work and unverified boundaries.
+- Original same-operation Commit/Publication/Merge recovery, including fixed old
+  complete provider recovery. Completed actions are not repeated. Pending old
+  Draft remote actions require current review/readiness before continuation.
+- Actual deployment/configuration/schema/CI/CD/container/K8s/DB/Makefile effects
+  and their applicable verification. External or production claims require
+  corresponding evidence; local fixtures establish only their exercised layer.
 
-- marketplace index and docs
-- workflow and dogfood copy
-- Phase 1 `Docs SSOT Plan` contract: docs state, evidence paths, strategy,
-  affected durable docs or checked no-update paths, task artifact deltas, and
-  merge/repair/follow-up checkpoint when required
-- Phase 2 consumption of that plan: the implementation terminal result and live
-  repository facts are ephemeral inputs to the `guru-check-task` semantic Gate;
-  its ignored-runtime schema 6.0 checkpoint stores only the final Docs SSOT
-  conclusion, adequacy dimensions, findings, verification evidence, and route,
-  without an implementation handoff or raw worker transcript
-- Phase 3 verification of that plan: final review checks the current planning
-  documents, checker-passed minimal DTO, durable docs, task artifacts,
-  code/test/schema/config/script/preset/overlay changes, and confirms Docs SSOT
-  reconciliation already happened; it must record any current-scope
-  inconsistency as a finding and must not perform the first docs merge
-- companion scripts
-- schemas and config templates
-- preset installer and overlays
-- task work commit contract: mandatory `guru-create-task-commit` invocation,
-  fresh task/issue/Phase 2/HEAD/snapshot binding, exhaustive single-category
-  path review, pre-confirmation canonicalization/shared-parser validation,
-  exact isolated-index staging, real hooks, raw message bytes, parent/path/tree
-  postconditions, unrelated preservation, and a fresh private sequence on
-  finding-fix re-entry. Real regressions prove active Git operation/sequencer
-  state blocks without mutation; ordinary files, executable mode, symlink,
-  delete, rename, copy, gitlink, multiple-path, candidate-self, and live-index
-  mismatch cases fail before standard ref publication. A clean copy source is
-  not staged, an independently dirty/staged source is classified separately,
-  and a changed gitlink cannot replace the reviewed OID. The positive path
-  proves `git update-ref <ref> <new> <old>` publishes the validated commit,
-  `git reset --mixed --quiet HEAD` refreshes the live index, Git provides final
-  tree/message/path facts, and the ignored candidate plus consumed Phase 2
-  checkpoint are removed. Tests must not
-  add custom locks, atomic replacement, rollback, concurrency stress, or
-  linearization assertions outside the #161 normal-path scope
-- commit message contract: `guru-create-task-commit` reviews and validates the
-  work commit it creates; Branch Review, Delivery Review/Publish/Merge prove
-  ancestry/diff/reviewed-content identity without treating subject/body/`Refs`
-  as cross-Skill freshness authority or creating message-only metadata commits;
-  Delivery and Finish PR bodies contain no Issue-closing keyword, and
-  publish/merge avoids GitHub's default merge subject
-- Trellis task artifacts
-- generated or installed-copy expectations
-- Phase 0 scope and authority evidence, or the current semantic task-free
-  selection when the branch intentionally skipped issue/task creation; user
-  authorization and its process remain conversation-only and are never
-  persisted as evidence
-- owner-private checkpoint location: `review-gate.json` and similar current
-  gate checkpoints must be written under ignored
-  `.trellis/.runtime/guru-team/owner-checkpoints/**`, with identity derived from
-  the current `task.json`, ignored runtime mapping, and live `git worktree list`
-  facts. Non-current tracked gate files and alternate task-identity inputs are
-  invalid and are never read. When a manual editing tool has no
-  explicit working directory, use a worktree-local absolute path
-- Branch Review retains only its compact owner-private ignored-runtime
-  checkpoint and returns the minimal typed exit consumed by Delivery Review. Raw
-  reports, per-round review files, assignment/liveness logs, and final Markdown
-  rollups are routine conversation context and must not be created as task
-  artifacts.
-- Delivery PR body readiness must include reviewer-readable Docs SSOT / 文档同步 result
-  text: plan strategy, durable docs updated or no-update reason, merged task
-  deltas, task-history-only content, remaining work and follow-up/current PR
-  limitation; Issue-backed Delivery uses `Refs` only.
-- deployment asset impact
-
-For `Docs SSOT Plan` changes, check that the contract is expressed in
-Markdown workflow / docs / specs / overlays and remains repo-neutral. Do not
-move semantic docs sufficiency, stale-docs, or strategy selection judgment into
-Python or shell.
+Keep real commit message checks in TaskCommit; downstream freshness uses actual
+ancestry/range/content and original role results. Do not create message-only
+metadata commits. Private gate state belongs under ignored owner-checkpoints,
+not tracked Task artifacts. No authorization or authorization process is persisted.
+Markdown owns sufficiency, finding, pass and route; scripts only execute, record
+already-made judgments and validate objective facts. No custom locks, race stress,
+crash protocol or attack model is added outside accepted normal-path scope.
 
 ## Anti-Patterns
 
@@ -1811,17 +1740,14 @@ Full multi-platform Release compatibility remains with its dedicated owner.
 
 Archive-resume validation exercises a matching public pair, preserved raw archive/source, original owner attribution and exact retirement/restore, returned active identity, real active ambiguity, same-operation retry/output loss/rollback and later-work protection. One representative old-installation topology must execute target-native continuation and the next actual Guru semantic owner. Report formal source-lock adoption, real business adoption and full Release matrix separately; none follows from local_candidate or fixture results.
 
-## Early Draft validation (#636)
+## Draft Migration Validation (#636 / #794)
 
-Exercise original public wrappers for no-Check exact commit, clean reentry,
-receipt output-loss recovery and call-local early complete-range Review.
-Exercise production Publication functions with stateful provider ports for
-Draft creation/update, Ready-before-push conversion, same-PR Draft/Ready
-round trips and each explicit lost-output recovery point. Prove that Draft
-writes no final PublicationFact, old readiness cannot release changed HEAD,
-formal Review still requires Check, fixed B/H survives target advancement,
-and no merge ref is needed for the supported HEAD checks. Original-owner
-transaction conversion preserves completed facts and pending Ready intent
-without remote mutation or invented gates. Provider fixtures, real GitHub
-results, matching installation and business CI are separate evidence layers.
-Keep ordinary-task validation scope; do not run the full Release matrix.
+Exercise the current pre-review Commit producer, exact clean reentry and same
+commit output-loss recovery, then the actual single Review/readiness chain.
+Current runtime rejects retired early publish/content-review inputs. Test fixed
+old complete provider recovery for already-executed Commit/Draft actions separately;
+current remote recovery reports completed facts and returns pending actions to
+current review/readiness without remote mutation. Preserve same Task/key/commit/PR.
+No old Check or Draft result becomes current pass. Fixture ports, real GitHub,
+matching installation and full Release evidence are distinct layers. Retain the
+ordinary Issue's bounded validation scope.

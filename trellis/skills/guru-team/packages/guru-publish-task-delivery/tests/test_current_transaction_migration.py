@@ -28,7 +28,7 @@ class CurrentTransactionMigrationTests(unittest.TestCase):
         self.flow.setUp()
         self.addCleanup(self.flow.doCleanups)
         self.repo = self.flow.repo
-        ready = self.flow.readiness(self.flow.full_review(self.flow.check()))
+        ready = self.flow.readiness(self.flow.single_review())
         self.source = {
             "profile": "delivery_review_ready", "mode": "workflow",
             "task_ref": self.flow.task_ref, "delivery_key": self.flow.key,

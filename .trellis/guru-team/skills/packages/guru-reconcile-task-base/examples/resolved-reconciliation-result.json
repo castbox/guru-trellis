@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "status": "committed",
   "task_ref": ".trellis/tasks/current",
   "branch": "codex/current",
-  "phase2_commit_anchor": "1111111111111111111111111111111111111111",
+  "committed_candidate_anchor": "1111111111111111111111111111111111111111",
   "old_base_head": "0000000000000000000000000000000000000000",
   "new_base_head": "2222222222222222222222222222222222222222",
   "merge_head": "2222222222222222222222222222222222222222",

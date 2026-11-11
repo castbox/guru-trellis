@@ -11,11 +11,28 @@ from common import (
     rel,
     retire_checkpoint,
     root,
+    review_input_schema,
     task,
     validate_public_binding,
 )
 from runtime.io import CommandError
 from runtime.schema import validate_json
+
+
+def _scope_phase(repo, public):
+    from runtime.delivery_projection.adapter import DeliveryProjection
+    projection = DeliveryProjection(repo, public["task_ref"])
+    owners = projection.declaration()["owners"]
+    if owners["check"] != "guru-review-branch" or owners["full_review"] != "guru-review-branch":
+        raise CommandError("stale_identity", "owners", "Install the matching post-commit Review workflow and package together.", 3)
+    phase = projection.resolve(public["delivery_key"])["phase"]
+    return "checking" if phase == "checking" else "reviewing"
+
+
+def _scope_role(repo, public):
+    # Both declared roles belong to this same semantic owner. The phase only
+    # selects its legal API role, not a semantic owner or a scope decision.
+    return "check" if _scope_phase(repo, public) == "checking" else "full_review"
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
@@ -47,8 +64,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     else:
         public = load(repo, package_root, args.input, "input")
     if public.get("profile") == "delivery_draft_content_review":
-        from draft import invoke as draft_review
-        return draft_review(package_root, repo, public, load(repo, package_root, args.owner_result, "owner_result"))
+        raise CommandError("schema_mismatch", "profile", "Early Draft content analysis is retired; use the matching current committed Review.")
     if public.get("profile") == "delivery_promotion_reference_alignment":
         from alignment import facts
         facts(package_root, repo, public)
@@ -57,21 +73,20 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         return invoke_retirement(package_root, public, repo)
     if public.get("profile") == "delivery_scope_revision":
         from runtime.delivery_projection.scope_revision import revise
-        return revise(repo, package_root, public, load(repo, package_root, args.owner_result, "owner_result"), owner_role="full_review", expected_phase="reviewing")
+        return revise(repo, package_root, public, load(repo, package_root, args.owner_result, "owner_result"), owner_role=_scope_role(repo, public), expected_phase=_scope_phase(repo, public), output_version="2.0")
     if public.get("profile") == "delivery_scope_withdrawal":
         from runtime.delivery_projection.withdrawal import stop
         semantic = load(repo,package_root,args.owner_result,"owner_result")
-        return stop(repo,package_root,public,semantic,owner_role="full_review",expected_phase="reviewing")
+        return stop(repo,package_root,public,semantic,owner_role=_scope_role(repo, public),expected_phase=_scope_phase(repo, public), output_version="2.0")
+    if public.get("profile") == "delivery_planning_stale_recovery":
+        validate_json(public, package_root / "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json", "input")
+    else:
+        validate_json(public, package_root / "schemas" / review_input_schema(public), "input")
     task_dir = task(repo, args.task or public.get("task_ref"))
     if public.get("task_ref") != rel(repo, task_dir):
         raise CommandError(
             "stale_identity", "task", "Invoke the exact task-owned checkpoint.", 3
         )
-    import json
-    metadata_path = task_dir / "task.json"
-    metadata = json.loads(metadata_path.read_text()) if metadata_path.is_file() else {}
-    if metadata.get("schema_version") == "2.0" and not str(public.get("profile", "")).startswith("delivery_"):
-        raise CommandError("schema_mismatch", "profile", "Use a Delivery review input; old Task review profiles are diagnostic-only.")
     if str(public.get("profile", "")).startswith("delivery_"):
         from common import checkpoint, load_checkpoint, validate_gate, git, dirty_paths
         from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
@@ -100,24 +115,20 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             resolve_active_task_checkout(repo, public["task_ref"])
         except LifecycleContractError as exc:
             raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
-        check = delivery["results"]["check"]
-        if check is None or check["result_id"] != public["check_result_id"] or projection.gate_applicability(public["delivery_key"])["check"]["kind"] != "applicable":
-            raise CommandError("stale_identity", "check_result_id", "Consume fresh Check for this Delivery candidate.", 3)
+        from delivery_review import candidate, recover_pass
+        recovering_rollback = public.get("profile") == "delivery_planning_stale_recovery"
+        if recovering_rollback:
+            validate_json(public, package_root / "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json", "input")
+            public = public["original_review_input"]
+        if delivery["phase"] != "implementing":
+            candidate(projection, public, recovery=recovering_rollback)
         if not checkpoint(repo, task_dir, public["delivery_key"]).exists():
-            stored = delivery["results"]["full_review"]
-            if (public["profile"] not in {"delivery_branch_review", "delivery_promotion_reference_alignment"} or stored is None
-                    or projection.gate_applicability(public["delivery_key"])["full_review"]["kind"] != "applicable"
-                    or stored["predecessor_result_id"] != public["check_result_id"]
-                    or stored["owner_id"] != projection.declaration()["owners"]["full_review"]
-                    or stored["candidate"]["head_ref"] != public["branch_review_commit"]
-                    or git(repo, "rev-parse", "HEAD") != public["branch_review_commit"]
-                    or git(repo, "rev-parse", public["base_ref"]) != git(repo, "rev-parse", stored["candidate"]["base_ref"])
-                    or dirty_paths(repo, public["task_ref"])):
-                raise CommandError("stale_identity", "review_result", "Run the independent current Review owner.", 3)
-            projection._call(projection.api.delivery_store.verify_candidate, repo, stored["candidate"])
+            if public["profile"] not in {"delivery_branch_review", "delivery_promotion_reference_alignment"}:
+                raise CommandError("stale_identity", "review_result", "Recover the original owner checkpoint.", 3)
+            result_id = recover_pass(projection, public)
             output = {"exit_id": "passed", "task_ref": public["task_ref"], "delivery_key": public["delivery_key"],
-                      "branch_review_commit": public["branch_review_commit"], "full_review_result_id": stored["result_id"]}
-            validate_json(output, package_root / "schemas/public-output-delivery-passed-1.0.schema.json", "stdout")
+                      "branch_review_commit": public["branch_review_commit"], "full_review_result_id": result_id}
+            validate_json(output, package_root / "schemas/public-output-delivery-passed-2.0.schema.json", "stdout")
             return output
         _path, owner = load_checkpoint(repo, task_dir, public["delivery_key"])
         validate_gate(package_root, repo, owner)
@@ -127,13 +138,18 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         if exit_id != "blocked":
             output.update(task_ref=public["task_ref"], delivery_key=public["delivery_key"])
         if exit_id == "passed":
-            result_id = "full-review:" + hashlib.sha256(json.dumps(owner, sort_keys=True).encode()).hexdigest()
-            record_gate(projection, public["delivery_key"], "full_review", result_id, "passed",
-                        [authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo)], [])
+            from delivery_review import passed
+            result_id = passed(projection, public, owner)
             output.update(branch_review_commit=owner["review_commit"], full_review_result_id=result_id)
+        elif exit_id == "planning_stale":
+            from delivery_review import planning_stale
+            output = planning_stale(projection, public, owner)
         elif exit_id == "implementation_required":
             output.update(branch_review_commit=owner["review_commit"], finding_refs=[row["finding_ref"] for row in owner["semantic_review"]["qualified_findings"] if row["status"] == "open"])
-            rework(projection, public["delivery_key"], "full_review", "implementation", authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo), ["readiness"])
+            current = projection.resolve(public["delivery_key"])
+            if current["phase"] != "implementing":
+                role = "check" if current["phase"] == "checking" else "full_review"
+                rework(projection, public["delivery_key"], role, "implementation", authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo), ["check", "full_review", "readiness"])
         elif exit_id == "scope_confirmation_required":
             output["proposal_refs"] = [row["proposal_ref"] for row in owner["semantic_review"]["scope_proposals"]]
         elif exit_id == "continuity_passed":
@@ -142,7 +158,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             pass
         else:
             raise CommandError("schema_mismatch", "typed_exit", "Archived legacy review does not produce a Delivery gate.")
-        validate_json(output, package_root / "schemas" / ("public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json"), "stdout")
+        validate_json(output, package_root / "schemas" / ("public-output-delivery-" + exit_id.replace("_", "-") + ("-2.0.schema.json" if exit_id in {"passed", "implementation_required", "scope_confirmation_required", "planning_stale"} else "-1.0.schema.json")), "stdout")
         if exit_id in RETIRED_EXITS:
             retire_checkpoint(repo, task_dir, public["delivery_key"])
         return output
@@ -158,53 +174,6 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             "reviewed_base_head": owner["base_head"],
         }
         schema = "public-archived-review-passed-output.schema.json"
-    elif exit_id == "passed":
-        output = {
-            "exit_id": exit_id,
-            "task_ref": owner["task_dir"],
-            "branch_review_commit": owner["review_commit"],
-        }
-        schema = "public-passed-output.schema.json"
-    elif exit_id == "continuity_passed":
-        pair = owner["integration_pair"]
-        output = {
-            "exit_id": exit_id,
-            "task_ref": owner["task_dir"],
-            "branch_review_commit": owner["review_commit"],
-            **{
-                key: pair[key]
-                for key in (
-                    "task_head",
-                    "old_base_head",
-                    "new_base_head",
-                    "candidate_tree_sha256",
-                    "resume_target",
-                )
-            },
-        }
-        schema = "public-continuity-passed-output-2.0.schema.json"
-    elif exit_id == "implementation_required":
-        output = {
-            "exit_id": exit_id,
-            "task_ref": owner["task_dir"],
-            "branch_review_commit": owner["review_commit"],
-            "finding_refs": [
-                finding["finding_ref"]
-                for finding in owner["semantic_review"]["qualified_findings"]
-                if finding["status"] == "open"
-            ],
-        }
-        schema = "public-implementation-required-output.schema.json"
-    elif exit_id == "scope_confirmation_required":
-        output = {
-            "exit_id": exit_id,
-            "task_ref": owner["task_dir"],
-            "proposal_refs": [
-                proposal["proposal_ref"]
-                for proposal in owner["semantic_review"]["scope_proposals"]
-            ],
-        }
-        schema = "public-scope-confirmation-required-output.schema.json"
     elif exit_id == "blocked":
         output = {"exit_id": "blocked"}
         schema = "public-blocked-output.schema.json"

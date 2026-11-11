@@ -9,7 +9,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         from project import run as project_resolved_full_review
         return project_resolved_full_review(package_root, command, argv)
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--invocation",required=True)
-    args=parse(parser,argv); repo=repo_root(args.root); envelope=read_json(repo,package_root,args.invocation,"invocation"); validate_json(envelope,package_root/"schemas/delivery-invocation-envelope.schema.json","invocation")
+    args=parse(parser,argv); repo=repo_root(args.root); envelope=read_json(repo,package_root,args.invocation,"invocation"); validate_json(envelope,package_root/"schemas/delivery-invocation-envelope-3.0.schema.json","invocation")
     tree_memo: dict[tuple[Path, str], str] = {}
     public=envelope["public_input"]; result=envelope["owner_result"]; validate_result(package_root,repo,result,public,tree_memo=tree_memo); output=result["typed_output"]
     checkpoint=checkpoint_path(repo,public["task_ref"],delivery_key=public["delivery_key"])

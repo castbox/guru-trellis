@@ -62,33 +62,104 @@ Read the current Delivery integration contract in [references/contract.md](refer
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 
-Use the final profile after `guru-create-task-commit:committed`; early Draft content analysis has its independent entry below.
-Read [references/contract.md](references/contract.md) completely before acting.
+## Single post-commit independent review
 
-Before judging committed validation or its claims, read and apply
-`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`.
+The current `delivery_branch_review` input2.0 carries mode, task_ref,
+delivery_key, base_ref, branch_review_commit and review_intent. It contains no
+prior check_result_id. Delivery aggregate4.0 and legacy index4.0 select this
+contract; old schemas remain pinned validation assets, never runtime fallback.
+Both check and full_review owners must be guru-review-branch in the matching
+complete workflow. Follow MIGRATION-794 before switching an existing installation.
 
-## Early complete content analysis
+Enter after TaskCommit pre_review_committed and the original implementation
+constructor/begin_check. Freeze the complete fixed B..H Candidate. The first
+reviewer must be newly opened and must not have authored or implemented it.
+Before Task narratives or implementer pass claims, read the fixed B Architecture
+Baseline, constitution and change contract in full. Read H, the full diff and
+necessary unchanged consumers next; then read exact selected Delivery plans,
+root accepted scope, current source authority, acceptance and contributions.
+Perform the authority-first committed Architecture assessment first, then this
+complete current review, in the same independent invocation. Planning
+Architecture remains separate. Material later changes refresh affected judgments.
+Original document owners integrate/read back before commit; pending integration
+is not reviewed promotion. Committed review covers actual before/after and all
+integration files. Do not modify frozen H while reviewing it.
 
-`delivery_draft_content_review` independently reads the complete fixed B..H diff,
-current scope, plans, contracts, consumers, tests and applicable Architecture.
-Its input contains task/key/B/branch_review_commit and no Check field. Review
-applicable correctness and both subtraction dimensions. Qualify real findings
-under supported normal paths. Do not read Check private conclusions or infer
-pass from Draft, CI or phase. Target advancement, PR conflict and absent merge
-refs do not change this content range.
+Read Author's references/planning-body.md, applicable Delivery PRD/design/implement
+templates and all necessary source references with their associated conditions.
+Complete nine adequacy responsibilities: requirements, design, implementation,
+tests, docs_ssot, cross_layer, compatibility, deployment_and_operations and
+verification_completeness. Judge behavior, applicability, sufficiency, document
+ownership, exact publication impacts and test effectiveness. Nine filled fields,
+prior Planning approval or green commands do not establish pass.
 
-After independent semantic analysis, invoke scripts/invoke.sh --input with this
-profile and --owner-result containing status, summary, evidence and concrete
-revision_refs only for revision-required. Return exactly draft_content_reviewed
-(task/key/B/H), draft_revision_required (task/key/revision_refs), or blocked.
-The result is call-local feedback; it writes no public full_review, gate or
-review cache. Changed HEAD requires current analysis under the shared candidate
-contract. The implementation/Check coordinator consumes feedback and separately
-judges command facts. Formal delivery_branch_review still independently judges
-the complete actual candidate after real Check. Verifiable early analysis may
-reduce repeated reading; it never supplies a formal final pass.
+Semantic authoring contains candidate_classifications, semantic_review,
+delivery_review, verification_evidence={evidence}, adequacy_review (each dimension
+has status/summary/evidence), gate_judgments (check and full_review each have the
+actual outcome/summary), and planning_revision (null except planning_stale).
+Use examples/authoring-delivery-passed-2.0.json for structure, never as a pass.
+No reviewer transcript, metadata or authorization enters this result.
+The recorder supplies objective identity, scope/plan/Planning/candidate binding and original rollback binding only.
+The ordinary private schema is delivery-review-gate-2.0 (schema_version8.0);
+alignment uses alignment-2.0. Archive retains its separate archived-1.0 contract.
 
+After the actual AI Gate, invoke review-branch, check-review-gate and invoke.
+Recorder/checker return non-formal receipts. Invoke records actual check with
+Planning predecessor, then actual full_review with that check predecessor.
+Both outcomes are authored by the semantic owner; neither is inferred from the
+other. These required slots project one review, not two semantic rounds. Only
+both exact current results permit passed2.0. No standalone development Check
+or second checkpoint is produced. Failed projection retains this one checkpoint;
+same-candidate retry verifies it and records only the missing step. After
+checkpoint retirement, matching actually recorded public results recover lost
+stdout. Missing necessary semantic coverage requires actual review, never empty pass.
+
+Implementation-only findings use implementation_required2.0. Original owners
+repair, integrate/read back, validate and commit a successor; rework clears
+check/full_review/readiness while preserving legitimate Planning and fixed B.
+A retained checkpoint recovers the original handoff without another rework.
+Actual original public results/invocation objects and Git can locate prior
+coverage. Judge applicability, all successor delta, conflicts and combined
+semantics and affected unchanged consumers. Missing coverage or unbounded impact
+requires the corresponding complete review. Never review only added lines or
+repair points. Determine the current full check set before inspecting original
+engineering facts; adopt only applicable inputs/dependencies/tools/environment/
+parameters/definitions/expectations and state sources. Execute new, changed,
+missing or uncertain checks only. HEAD or reviewer changes alone require no rerun.
+
+Planning omissions use planning_stale2.0. Current-scope repair uses
+planning_route=reapprove_plan with concrete revision_actions and no proposal_refs.
+Real scope change uses clarify_requirements and actual proposal_refs. Recorder
+binds original Planning, candidate, scope and plan before rollback. Invoke
+validates authorities, then clears planning/check/full_review/readiness. The
+unique guru-task-check-planning-router reaches earliest affected Author/Clarify,
+Wording/Architecture/Approval. Do not broaden scope or rewrite the frozen candidate.
+After rollback, delivery_planning_stale_recovery takes the original_review_input
+and reads this same retained checkpoint. Verify same key/B/H/candidate/scope/plans
+and cleared slots, then return the same handoff without rework/pass creation.
+Original #775 Check rollback recovery remains Check's explicit standalone entry.
+
+Continuity2.0 binds exact prior review, actual committed integration pair/tree
+and original resume target. It reviews bounded integration, never writes a new
+check or full_review and does not author full-review dimensions or two passing
+judgments. Its existing semantic result carries the bounded conclusion. Alignment2.0 requires real prior passed2.0, fixed base, current
+descendant commit and all actual Git delta. It is limited to verifiable promotion
+references/status, with no changed obligations or new claims. Original coverage
+plus delta and affected consumers must cover all B..H. For alignment use current nine-dimensional coverage
+and two actual conclusions for result projection; no prior Check input
+or repeat independent round is added. Changed obligations return to their owner;
+missing original coverage requires full review. Never reconstruct retired state.
+
+Scope revision and withdrawal keep their independent semantic inputs and actual
+same-Delivery rework/stop duties. Both roles belong to this Skill. During checking
+use its declared check role; during reviewing use its declared full_review role,
+with the exact public phase as precondition. Do not accept arbitrary caller roles.
+Archive remains read-only with its original historical stop consumer.
+
+Current development Check and early Draft analysis are retired. No push or new
+PR precedes current independent review and original readiness. Old operations
+use the matching complete pinned provider or original migration owner; preserve
+real already-executed facts and do not convert old passes or repeat actions.
 
 ## Actual Candidate Set
 
@@ -193,7 +264,7 @@ invocation, invoke `guru-qualify-solution-mechanism` with
 or replaces only that mechanism and returns to task work for fresh
 qualification; it never enters scope confirmation.
 
-Before this review can pass, consume a fresh
+Before this review can pass, execute or consume this same independent reviewer’s fresh
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=branch_review)`
 result. The Architecture owner independently recomputes project checks and
 before/after satisfaction from the complete committed base-to-HEAD diff. This
@@ -226,8 +297,7 @@ and applies Qualification Applicability, refreshing affected judgments before
 continuing the review or dispatching another worker for that candidate. Upstream-owned `trellis-*` agent files stay
 unchanged.
 
-Current-scope qualified findings return `implementation_required`; fixes must
-pass the applicable checks, a fresh task commit, and this Skill again. An
+Current-scope qualified findings return `implementation_required`; fixes require applicable engineering checks, a successor local commit and this Skill again. An
 unconfirmed nonstandard proposal returns `scope_confirmation_required` and
 cannot become a finding. After a fix commit, the finding owner or a real
 unfinished-agent replacement performs closure as an internal transient
@@ -238,9 +308,9 @@ shared candidate contract. The same compliant independent reviewer may continue;
 review closure, the entire fix delta and affected dependencies, supplementing
 missing coverage or performing the complete review when impact is unbounded.
 
-Closure emits no public exit and writes no artifact. Only the actual current
-final judgment with `review_intent=fresh_final_review` may reach the recorder
-and pass. MIGRATION-637 defines this wire value's successor meaning; closure
+Closure emits no public exit and writes no artifact. After resolved findings, only the actual current final judgment with
+`review_intent=fresh_final_review` may reach the recorder and pass. An initial
+review with no resolved findings retains initial_review. MIGRATION-637 defines this wire value's successor meaning; closure
 alone is not passed. After its AI Review Gate
 exists, the recorder writes the compact `review-gate.json` to the exact
 task-owned ignored-runtime checkpoint and returns only a minimal receipt; it
@@ -274,7 +344,7 @@ another checkpoint. Failed check or projection preserves the current regular
 checkpoint. A retired, mismatched, stale, unsafe, or symlink-backed checkpoint
 fails closed.
 
-Required Architecture promotion happens before final Check. The committed
+Required Architecture/RDT integration and readback happen before local commit; their contents remain pending independent review. The committed
 Architecture review and this independent complete-range Branch Review cover
 actual promotion files and before/after responsibilities. A later change
 returns to the earliest affected owner according to its actual obligations.
@@ -286,8 +356,7 @@ Delivery Review consumes the new current full_review; it never substitutes a
 Phase 2 result or relabels the old pass.
 
 The current Delivery aggregate dispatches independent full Review, continuity,
-archived Review and promotion reference alignment profiles. Full Review and continuity bind the exact actual Check,
-current candidate and base. The full Review gate writes only after independent
+archived Review and promotion reference alignment profiles. Full Review and continuity bind the exact committed candidate and fixed base without prior Check input. The full Review gate writes only after independent
 review. Continuity separates prior full-review HEAD from current committed
 integration HEAD/tree and never creates a new full Review result. Checkpoints
 are scoped by public Delivery UUID. Their legacy schemas serve historical

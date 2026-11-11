@@ -28,7 +28,7 @@ class PromotionTest(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("architecture_promotion", self.package / "runtime/promotion.py")
         self.production = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.production)
-        self.public = self.load("public-input-delivery-promotion-3.0.json")
+        self.public = self.load("public-input-delivery-promotion-4.0.json")
         self.public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
                            planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
         self.baseline = self.public["baseline"]["locator"]
@@ -65,10 +65,12 @@ class PromotionTest(unittest.TestCase):
 
     def owner(self, public=None):
         public = public or self.public
-        selected = self.architecture_selection(public, promotion_state="reviewed_promoted",
+        selected = self.architecture_selection(public, promotion_state="integrated_pending_review",
                                               baseline_identity=public["baseline"]["identity"],
                                               contribution_locator=public["sync_target"]["locator"],
                                               contribution_identity=public["sync_target"]["current_identity"])
+        selected.pop("project_check_descriptors", None)
+        selected.pop("project_checks", None)
         return {"schema_version": public["schema_version"],
                 **{key: copy.deepcopy(public[key]) for key in
                    ("profile", "mode", "continuation_id", "stage", "task_locator", "baseline", "constitution",
@@ -82,8 +84,6 @@ class PromotionTest(unittest.TestCase):
                                    "findings": [], "conclusion": "Fixture result"},
                 "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
                 **selected,
-                "review": {"status": "reviewed", "independent": True,
-                           "candidate": public["candidate"], "before_authority": public["before_authority"]},
                 "promotion_targets": self.targets,
                 "post_candidate": self.production.capture_candidate(self.repository),
                 "postwrite_applicability": {"status": "applicable", "reason": "Actual writes match the reviewed intent"}}
@@ -101,6 +101,7 @@ class PromotionTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         output = json.loads(result.stdout)
         self.assertEqual(output["stage"], "final_integration")
+        self.assertEqual(output["promotion_state"], "integrated_pending_review")
         self.assertEqual(output["source_profile"], "delivery_promotion")
         self.assertEqual(output["candidate"], self.production.capture_candidate(self.repository))
         self.assertEqual(output["before_authority"], self.public["before_authority"])
@@ -150,7 +151,7 @@ class PromotionTest(unittest.TestCase):
         self.assertEqual(output["before_authority"], public["before_authority"])
         self.assertEqual(output["candidate"], self.production.capture_candidate(self.repository))
         self.assertEqual((self.repository / self.baseline).read_text(), after)
-        validate_json(output, self.package / "consumers/workflow/current-5.0.schema.json", "consumer")
+        validate_json(output, self.package / "consumers/workflow/current-6.0.schema.json", "consumer")
         self.assertEqual(migration_result().stdout, complete.stdout)
 
     def test_final_integration_repair_projection_returns_to_same_promotion(self):
@@ -165,7 +166,7 @@ class PromotionTest(unittest.TestCase):
         requested = self.invoke(owner)
         self.assertEqual(requested.returncode, 0, requested.stdout)
         output = json.loads(requested.stdout)
-        validate_json(output, self.package / "consumers/workflow/sync-required-5.0.schema.json", "consumer")
+        validate_json(output, self.package / "consumers/workflow/sync-required-6.0.schema.json", "consumer")
 
         # This is the declared caller-side thin projection. The old maintenance
         # contract retains phase2; its current result never becomes promotion.
@@ -213,7 +214,7 @@ class PromotionTest(unittest.TestCase):
         final = json.loads(promoted.stdout)
         self.assertEqual(final["source_profile"], "delivery_promotion")
         self.assertEqual(final["stage"], "final_integration")
-        self.assertEqual(final["promotion_state"], "reviewed_promoted")
+        self.assertEqual(final["promotion_state"], "integrated_pending_review")
         self.assertEqual(final["planning_root"], continuation["planning_root"])
 
     def test_final_bootstrap_whole_task_and_delivery_return_to_same_promotion(self):
@@ -222,7 +223,7 @@ class PromotionTest(unittest.TestCase):
             with self.subTest(delivery=delivery):
                 original = copy.deepcopy(self.public)
                 if not delivery:
-                    original.update(profile="promotion", schema_version="5.0")
+                    original.update(profile="promotion", schema_version="6.0")
                     original.pop("delivery_key"); original.pop("planning_root")
                 owner = self.owner(original)
                 owner.update(typed_exit="baseline_incomplete", authority_locator=self.baseline,
@@ -272,7 +273,7 @@ class PromotionTest(unittest.TestCase):
                 final = json.loads(promoted.stdout)
                 self.assertEqual(final["source_profile"], original["profile"])
                 self.assertEqual(final["stage"], "final_integration")
-                self.assertEqual(final["promotion_state"], "reviewed_promoted")
+                self.assertEqual(final["promotion_state"], "integrated_pending_review")
                 self.assertEqual(final.get("delivery_key"), original.get("delivery_key"))
                 self.assertEqual(final.get("planning_root"), original.get("planning_root"))
                 # Restore proposed target before bytes for the next independent case.
@@ -315,7 +316,7 @@ class PromotionTest(unittest.TestCase):
             (self.repository / locator).write_bytes(content)
         self.git("add", *locators, "implementation.txt", self.unit)
         self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "First current authority")
-        public = self.load("public-input-delivery-task-impact-sync-3.0.json")
+        public = self.load("public-input-delivery-task-impact-sync-4.0.json")
         public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
                       planning_root=self.public["planning_root"], stage="branch_review",
                       candidate=self.production.capture_candidate(self.repository),
@@ -327,13 +328,14 @@ class PromotionTest(unittest.TestCase):
             owner.pop(key, None)
         owner.update({key: copy.deepcopy(public[key]) for key in
                       ("profile", "mode", "continuation_id", "stage", "candidate", "before_authority", "baseline", "freshness_identity")})
+        owner["project_check_descriptors"] = [self.project_check_descriptor()]
         owner["project_checks"] = [self.project_check(public)]
         owner.update(input_sha256=self.digest(public), promotion_state="reviewed_promoted",
                      review={"status": "reviewed", "independent": True, "committed_range": public["committed_range"]})
         result = self.invoke(owner, public)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         output = json.loads(result.stdout)
-        validate_json(output, self.package / "consumers/workflow/current-5.0.schema.json", "current")
+        validate_json(output, self.package / "consumers/workflow/current-6.0.schema.json", "current")
         self.assertEqual(output["before_authority"], public["before_authority"])
         self.assertLessEqual(set(locators), set(self.git("diff", "--name-only", before, "HEAD").splitlines()))
         self.assertEqual(before, public["committed_range"]["base_head"])
@@ -347,6 +349,29 @@ class PromotionTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             self.production.check_before_authority(self.repository, invalid)
         self.assertEqual(raised.exception.code, "stale_identity")
+
+    def test_integration_cannot_claim_independent_review_or_readiness(self):
+        self.write_targets()
+        integrated = json.loads(self.invoke().stdout)
+        self.assertEqual(integrated["promotion_state"], "integrated_pending_review")
+        self.assertNotIn("review", integrated)
+        for stage in ("publication", "acceptance_finish"):
+            public = self.load("public-input-delivery-task-impact-sync-4.0.json")
+            public.update(task_locator=self.public["task_locator"], delivery_key=self.delivery_key,
+                          planning_root=self.public["planning_root"], stage=stage,
+                          candidate=integrated["candidate"], before_authority=integrated["before_authority"])
+            owner = self.owner()
+            for field in ("promotion_targets", "post_candidate", "postwrite_applicability",
+                          "expected_current_identity", "current_identity", "sync_kind", "sync_target"):
+                owner.pop(field, None)
+            owner.update({field: copy.deepcopy(public[field]) for field in
+                          ("profile", "stage", "candidate", "before_authority", "freshness_identity", "continuation_id")})
+            owner.update(input_sha256=self.digest(public),
+                         project_check_descriptors=[self.project_check_descriptor()],
+                         project_checks=[self.project_check(public)])
+            result = self.invoke(owner, public)
+            self.assertEqual(result.returncode, 3, result.stdout)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.promotion_state")
 
     def test_partial_write_readback_then_same_intent_completion_and_output_loss(self):
         self.write_targets(self.targets[:1])
@@ -445,7 +470,7 @@ class PromotionTest(unittest.TestCase):
     def test_task_promotion_same_current_contract_and_legacy_input_rejected(self):
         self.write_targets()
         public = copy.deepcopy(self.public)
-        public.update(profile="promotion", schema_version="5.0")
+        public.update(profile="promotion", schema_version="6.0")
         public.pop("delivery_key")
         public.pop("planning_root")
         result = self.invoke(public=public)
@@ -461,7 +486,7 @@ class PromotionTest(unittest.TestCase):
         for delivery in (True, False):
             public = copy.deepcopy(self.public)
             if not delivery:
-                public.update(profile="promotion", schema_version="5.0")
+                public.update(profile="promotion", schema_version="6.0")
                 public.pop("delivery_key")
                 public.pop("planning_root")
             owner = self.owner(public)
@@ -480,22 +505,21 @@ class PromotionTest(unittest.TestCase):
             self.assertEqual(output["baseline_identity"], owner["baseline_identity"])
             self.assertEqual(output["constitution_identity"], owner["constitution_identity"])
 
-    def test_current_contribution_accepts_precheck_review_without_future_committed_range(self):
+    def test_current_contribution_records_integration_pending_committed_review(self):
         from runtime.schema import validate_json
         from runtime.io import CommandError
         value = contract_tests.ArchitectureBaselineContractTest.contribution(self, self.public)
-        value.update(schema_version="5.0", guru_contract_identity="guru-maintain-architecture-baseline:5.0",
-                     review={"status": "reviewed", "independent": True,
-                             "candidate": self.public["candidate"], "before_authority": self.public["before_authority"]},
-                     promotion={"state": "reviewed_promoted", "promoted_identity": self.public["baseline"]["identity"]})
-        validate_json(value, self.package / "schemas/architecture-contribution-5.0.schema.json", "contribution")
+        value.update(schema_version="6.0", guru_contract_identity="guru-maintain-architecture-baseline:6.0",
+                     review={"status": "pending", "independent": False, "committed_range": None},
+                     promotion={"state": "integrated_pending_review", "promoted_identity": self.public["baseline"]["identity"]})
+        validate_json(value, self.package / "schemas/architecture-contribution-6.0.schema.json", "contribution")
         with self.assertRaises(CommandError):
             validate_json(value, self.package / "schemas/architecture-contribution.schema.json", "legacy_contribution")
 
-    def test_no_change_phase2_binds_actual_candidate_without_promotion_burden(self):
-        public = self.load("public-input-delivery-task-impact-sync-3.0.json")
+    def test_no_change_discovery_binds_actual_candidate_without_promotion_burden(self):
+        public = self.load("public-input-delivery-task-impact-sync-4.0.json")
         public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
-                      planning_root=self.public["planning_root"], stage="phase2",
+                      planning_root=self.public["planning_root"], stage="implementation_discovery",
                       candidate=self.public["candidate"], before_authority=self.public["before_authority"])
         owner = self.owner()
         for key in ("promotion_targets", "post_candidate", "postwrite_applicability", "review", "change_path",
@@ -510,7 +534,7 @@ class PromotionTest(unittest.TestCase):
             current_public, current_owner = copy.deepcopy(public), copy.deepcopy(owner)
             if not delivery:
                 for value in (current_public, current_owner):
-                    value.update(profile="task_impact_sync", schema_version="5.0", stage="acceptance_finish")
+                    value.update(profile="task_impact_sync", schema_version="6.0", stage="acceptance_finish")
                     value.pop("delivery_key")
                     value.pop("planning_root")
                 current_owner["input_sha256"] = self.digest(current_public)

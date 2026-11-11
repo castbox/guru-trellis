@@ -1,4 +1,4 @@
-"""Public carrier admission with real Draft planning, gates and transactions.
+"""Public carrier admission with real committed Review/readiness, gates and transactions.
 
 Only the external GitHub/Git effects use the original stateful fixture ports.
 """
@@ -33,10 +33,16 @@ class SingleRead(io.StringIO):
 
 
 class PublicationCarrierTests(unittest.TestCase):
-    setUp = fixture.EarlyDraftPublication.setUp
+    def setUp(self):
+        fixture.EarlyDraftPublication.setUp(self)
+        self.current_public=fixture.EarlyDraftPublication.final_input(self)
+        fixture.EarlyDraftPublication.provider_reads(self).start()
+
+    def public(self):
+        return dict(self.current_public)
+
     github = fixture.EarlyDraftPublication.github
     mutate = fixture.EarlyDraftPublication.mutate
-    public = fixture.EarlyDraftPublication.public
 
     def entry(self, module, command, argv, stdin=None):
         spec = importlib.util.spec_from_file_location("publication_carrier_" + module, PACKAGE / "runtime" / (module + ".py"))
@@ -51,8 +57,8 @@ class PublicationCarrierTests(unittest.TestCase):
 
     def review(self):
         return {"schema_version": "1.0", "skill_id": PACKAGE.name,
-                "review": {"status": "passed", "summary": "Reviewed this exact early Draft and its remaining evidence."},
-                "route": {"typed_exit": "draft_published"}}
+                "review": {"status": "passed", "summary": "Reviewed this exact Ready action and current readiness."},
+                "route": {"typed_exit": "ready_for_merge"}}
 
     def test_draft_preview_carriers_match_and_preserve_old_file_forms(self):
         public = self.public()
@@ -80,10 +86,10 @@ class PublicationCarrierTests(unittest.TestCase):
             checked = self.entry("check", "check-task-delivery-publication-gate", ["--input", "-", "--gate", gate], encoded)
             published = self.entry("execute", "execute-task-delivery-publication", ["--input", "-", "--gate", gate], encoded)
         self.assertEqual(checked["status"], "passed")
-        self.assertEqual(published["exit_id"], "draft_published")
-        self.assertEqual(self.effects, ["push", "create"])
-        self.assertTrue(self.pr["isDraft"])
-        self.assertIsNone(self.f.projection.resolve(self.f.key)["publication_result"])
+        self.assertEqual(published["exit_id"], "ready_for_merge")
+        self.assertEqual(self.effects, ["push", "create", "ready"])
+        self.assertFalse(self.pr["isDraft"])
+        self.assertIsNotNone(self.f.projection.resolve(self.f.key)["publication_result"])
         locators = [str(call.args[0]) for call in reads.call_args_list]
         self.assertTrue(any(value.endswith("task.json") for value in locators))
         self.assertTrue(any(value.endswith(".gate.json") for value in locators))
@@ -101,9 +107,9 @@ class PublicationCarrierTests(unittest.TestCase):
         review_path = self.f.write("carrier-review.json", self.review())
         published = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", "-", "--review-input", review_path, "--confirmed-preview-sha256", context["confirmation_identity"]], encoded)
         recovered = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", encoded, "--review-input", "-"], json.dumps(self.review()))
-        self.assertEqual(published["exit_id"], "draft_published")
+        self.assertEqual(published["exit_id"], "ready_for_merge")
         self.assertEqual(published, recovered)
-        self.assertEqual(self.effects, ["push", "create"])
+        self.assertEqual(self.effects, ["push", "create", "ready"])
 
     def test_invalid_public_carriers_keep_parameter_diagnostics(self):
         from runtime.io import CommandError

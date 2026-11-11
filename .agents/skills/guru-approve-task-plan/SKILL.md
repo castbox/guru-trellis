@@ -210,7 +210,8 @@ clarify_scope. Do not silently reinterpret normative design as advisory or
 upgrade advice into a constraint. PRD/implement must not duplicate the matrix.
 Explicitly verify the unique Delivery Policy and Docs SSOT Plan in implement,
 including remaining work/stages and whole-task Completion conditions where
-applicable, original RDT writer and final-Phase2 reconciliation order.
+applicable, original RDT writer and precommit integration/readback followed by independent
+committed Review.
 
 Only adjacent current final_plan Architecture output is eligible for approval;
 candidate_assessment cannot establish final currentness. Final task design and

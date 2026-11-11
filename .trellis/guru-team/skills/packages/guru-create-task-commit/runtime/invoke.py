@@ -13,18 +13,20 @@ def _project(package_root:Path,e:dict,result:dict)->dict:
   out={"exit_id":"committed","task_ref":task_ref,"base_ref":base_ref,"branch_review_commit":commit};schema="public-committed-output.schema.json"
   if "delivery_key" in e:
    out.update(delivery_key=e["delivery_key"])
-   if e.get("commit_kind")=="draft":
-    out.update(exit_id="draft_committed",commit_sha=out.pop("branch_review_commit"));schema="public-output-delivery-draft-committed-1.0.schema.json"
-   else:out["check_result_id"]=e["check_result_id"];schema="public-output-delivery-committed-1.0.schema.json"
+   out.pop("base_ref");out["exit_id"]="pre_review_committed";schema="public-output-delivery-pre-review-committed-1.0.schema.json"
  elif exit_id=="revision-required":
   out={"exit_id":exit_id,"task_ref":result["task_ref"]};schema="public-revision-required-output.schema.json"
   if "delivery_key" in e:out["delivery_key"]=e["delivery_key"];schema="public-output-delivery-revision-required-1.0.schema.json"
  else:out={"exit_id":"blocked"};schema="public-blocked-output.schema.json"
  validate_json(out,package_root/"schemas"/schema,"stdout");return out
+def _validate_receipt(package_root:Path,receipt:dict)->None:
+ if "delivery_key" in receipt and receipt.get("schema_version") != "delivery-3.0":
+  raise CommandError("schema_mismatch","happy_path_result.schema_version","Recover this completed old operation with the complete pinned provider in MIGRATION-794; do not convert it into pre_review_committed.")
+ validate_json(receipt,package_root/("schemas/delivery-commit-result-3.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
 def _recover_receipt(package_root:Path,repo:Path,candidate_locator:str)->dict:
  candidate_path,_relative,task_key,sequence=canonical_candidate_locator(repo,candidate_locator);target=commit_result_path(repo,task_key,sequence)
  if not target.is_file() or target.is_symlink():raise CommandError("unsafe_path","candidate_artifact","Use a current prepared candidate or its package-owned recovery receipt.")
- receipt=load(repo,package_root,target,"happy_path_result");validate_json(receipt,package_root/("schemas/delivery-commit-result-2.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
+ receipt=load(repo,package_root,target,"happy_path_result");_validate_receipt(package_root,receipt)
  if receipt["candidate_artifact"]!=candidate_locator:raise CommandError("stale_identity","candidate_artifact","Retry the exact prepared candidate locator.",3)
  if git(repo,"symbolic-ref","HEAD").stdout.strip()!=receipt["branch_ref"] or git(repo,"rev-parse","HEAD").stdout.strip()!=receipt["commit_sha"]:raise CommandError("stale_identity","happy_path_result","The recovered branch identity changed; rerun the owning workflow from live facts.",3)
  parents=git(repo,"show","-s","--format=%P",receipt["commit_sha"]).stdout.strip().split();tree=git(repo,"show","-s","--format=%T",receipt["commit_sha"]).stdout.strip();message_sha=hashlib.sha256(_raw_commit_message(repo,receipt["commit_sha"]).encode()).hexdigest()
@@ -41,7 +43,7 @@ def _run_happy_path(package_root:Path,root_value:str|None,candidate_artifact:str
  candidate=load(repo,package_root,path,"candidate_artifact");_unused,_relative,task_key,sequence=canonical_candidate_locator(repo,locator);receipt_path=commit_result_path(repo,task_key,sequence)
  if receipt_path.is_file() and not receipt_path.is_symlink():
   try:
-   receipt=load(repo,package_root,receipt_path,"happy_path_result");validate_json(receipt,package_root/("schemas/delivery-commit-result-2.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
+   receipt=load(repo,package_root,receipt_path,"happy_path_result");_validate_receipt(package_root,receipt)
   except CommandError:
    if git(repo,"rev-parse","HEAD").stdout.strip()!=candidate["git"]["pre_commit_head"]:raise
   else:
@@ -61,5 +63,5 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   current=load(repo,package_root,path if path.is_file() else commit_result_path(repo,task_key,sequence),"candidate_or_receipt")
   if "delivery_key" not in current:raise CommandError("schema_mismatch","candidate_artifact","Use a current Delivery candidate; old Task candidates remain diagnostic-only.")
   return _run_happy_path(package_root,a.root,a.candidate_artifact)
- if a.invocation:raise CommandError("schema_mismatch","invocation","Legacy raw-result projection is retired; consume the current Delivery Check and candidate.")
+ if a.invocation:raise CommandError("schema_mismatch","invocation","Legacy raw-result projection is retired; consume the current pre-review Delivery candidate.")
  raise CommandError("invalid_arguments","arguments","Provide --candidate-artifact for a reviewed dirty Delivery increment or --input and --owner-result for clean committed reentry.")

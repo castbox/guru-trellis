@@ -1,173 +1,55 @@
-Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
-for shared candidate coverage, engineering facts and recovery. This package
-retains its own current judgment, formal result and action boundary.
+# TaskCommit pre-review contract 3.0
 
-## Public Delivery integration 1.0
+## Entry and semantic responsibility
 
-This current Skill consumes the target installation's reviewed Delivery API
-1.0 and Task schema 2.0 through a thin projection. `task_ref` is a locator;
-`delivery_key` is the opaque public identity. Read the current `interface.json`
-profile schema and its exact exit consumer before invoking. Do not derive an
-identity from branch, worktree, legacy cycle, PR, or Task status. D1 and later
-Deliveries use the same entry and lifecycle. The public phase never proves a
-semantic pass. Historical facts never prove a currently applicable gate.
+Use `delivery_pre_review_commit` for a necessary dirty increment and
+`delivery_pre_review_committed_reentry` for an already committed candidate.
+Both require the exact registered Task/Delivery, applicable accepted Planning,
+implementing phase and the Delivery's fixed complete base B. Read the selected
+Delivery planning bodies and Task accepted scope. Complete implementation,
+Planning-selected engineering validation and necessary original-owner knowledge
+integration/readback before this step. Integration remains pending independent
+review. This owner judges whether the exact content can form a review candidate;
+it does not declare independent implementation quality passed.
 
-Read the Delivery's public `planning_root` for its three planning documents and
-context JSONL; Task-root PRD remains overall scope. Rework keeps the Delivery
-identity and returns through the real current stage owner's public operation to
-the earliest affected role. Invalidate only the affected results. Unchanged,
-still-applicable execution facts need not be rerun. A successful recorder is
-objective evidence only; the AI must actually perform this Skill's full review.
-Missing public API or an unmigrated old record stops with precise migration
-remediation. Do not install a private alternative, select a source fallback,
-convert a legacy checkpoint into pass, or switch an old installation before
-upstream migration/default-cutover qualification.
+The public input aggregate is 3.0. It contains no check_result_id. Dirty candidate
+4.0 and result receipt 3.0 use commit_kind=pre_review. Legacy final/draft profiles,
+Check-dependent commit and early Publication edges are retired. Follow
+MIGRATION-794 with the complete provider at the pinned predecessor for old
+operation recovery; never relabel an old pass or import old private runtime.
 
-### Committed content and mutation are distinct
+## Output and clean reentry
 
-Final profiles consume only a real final Check passed/check_result_id after
-original-owner final integration and implementation candidate rebinding.
-Check candidate_checked and RDT candidate_ready cannot seed a final commit,
-committed reentry or Review. No-change skips knowledge writes, not final Check.
-Early Draft remains independently bounded under its own profiles.
+`pre_review_committed` contains only task_ref, delivery_key and
+branch_review_commit. Its sole consumer is guru-pre-review-commit-router. That
+router binds the real implementation Candidate and begin_check before the
+fixed complete independent Review. No Commit result enters Publication.
 
+Clean reentry consumes regular JSON file locators through `scripts/invoke.sh
+--input <input.json> --owner-result <review.json>`. One object may use stdin `-`.
+It verifies actual nonempty B..HEAD, stable committed Task identity/source,
+all five Delivery planning files and absence of active Git operations or dirty
+business content. It never stages, runs hooks or creates a commit. The bounded
+Plan2 committed-source bridge remains owner-private: all current files must
+match actual original committed blobs/modes, with the explicitly selected
+markdown_relative_links_v1 relocation only when the original owner reviewed it.
+No empty commit restores output. A genuine new increment uses exact prepare.
 
-Final commit profiles bind `delivery_key` and `check_result_id`; early profiles independently bind `delivery_key` and fixed `base_ref`.
+## Dirty transaction and recovery
 
-### Clean re-entry carriers
-
-For `delivery_committed_reentry` and `delivery_draft_committed_reentry`, author
-the selected profile's public input and the actual review defined by
-`schemas/delivery-commit-review-1.0.schema.json`. Write each object to a regular
-UTF-8 JSON file in this owner's ignored runtime directory, then invoke:
-
-```bash
-scripts/invoke.sh --root . --input <public-input.json> --owner-result <semantic-review.json>
-```
-
-Replace the two file locators with those actual files. `--input` and
-`--owner-result` carry locators, not inline JSON text. The original loader also
-accepts `-` for one argument to read that object's JSON from stdin; keep the
-other argument as a regular JSON file. The profile schema defines the object
-fields; it does not change this command's carrier. Retire the call-local files
-after consuming the actual result. Review, Check applicability and clean
-candidate validation below remain required for this invocation.
-
-`delivery_committed_reentry` reviews the actual registered checkout, exact HEAD,
-non-metadata clean candidate and nonempty full fixed base-to-HEAD diff. Latest
-target ancestry is not a qualification condition.
-The public Task record must name a nonempty selected `base_branch`; missing base
-returns `stale_identity/base_branch` to its original base/binding owner. This
-clean path never inherits the dirty preparation path's default `main`.
-Current public Check identity, applicability and candidate verification remain
-required after base reconciliation. Its consumer obtains fresh applicable
-Delivery Architecture and the first full independent Branch Review;
-Check and bounded continuity cannot replace that first Review. If clean stdout
-is lost, the same owner rereads the unchanged public Check/candidate and returns
-the same committed DTO. It keeps the public Check fact and creates no additional
-clean receipt or legacy Task checkpoint.
-The stable Task identity/source/generation and all five current Delivery
-planning files must match committed bytes. Actual Plan2 path relocations may
-use this owner's minimal committed source bridge below. A passed clean candidate
-returns `committed` without stage, commit, hook or tracked gate writes.
-
-Dirty `delivery_initial_commit`, `delivery_revision_reentry`, and
-`delivery_finding_fix_commit` retain exact path classifications, structured
-Chinese message, AI review, current conversational commit confirmation,
-executor and same-commit receipt recovery. Preserve unrelated paths and index
-state. The owner-private Delivery candidate/receipt is versioned independently;
-legacy Task candidates cannot become new Delivery pass. `committed` hands
-`task_ref`, `delivery_key`, `check_result_id`, `base_ref`, and
-`branch_review_commit` to the committed-candidate router. If the commit changed
-HEAD, that router invokes the real current stage owner for rework and a fresh
-Check before first full independent Review; a clean retained HEAD can proceed
-directly. A committed fact cannot replace that Review.
-
-### Bounded Plan2 committed source migration
-
-The original TaskCommit semantic owner reads the actual reviewed Plan2 artifact
-write set and original Git blobs, and judges the same Task/generation/scope and
-five-file association. Only then call owner-private
-`scripts/migrate-delivery-source.sh --input <delivery_source_migration> --owner-result <actual-review>`.
-Its independent input schema binds the actual Plan2 locator/workspace, key,
-source commit and five source paths, with optional `planning_projection=markdown_relative_links_v1`. Absence preserves strict original bytes/modes and existing associations are not automatically upgraded. It validates exact relocated bytes/modes,
-source ancestry and the upstream parsed Task/Delivery relation. The ignored
-source association retains only key, original commit, five source paths and the explicitly selected projection mode;
-no gate, content copy, review history, digest bundle or authorization is stored.
-Upgrade consumes its intermediate `source_binding` locator only for backup and
-same-plan recovery/rollback; it does not judge or fabricate the source mapping.
-
-Clean reentry uses direct HEAD paths when present. Only genuinely absent HEAD
-paths can consume that association; every current file must equal the original
-blob/mode (or the explicitly reviewed destination-only projection) and the current Check/candidate, stable identity and full diff remain
-required. Actual content changes use the dirty path. A successful necessary
-dirty commit retires the association. Missing input returns to this original
-owner, never invents a new commit or a private public-state authority.
-
-## Early Draft commit
-
-`delivery_draft_commit` requires the exact registered Task/Delivery, accepted
-current Planning and implementing phase. It binds fixed base B without a
-check_result_id. Review the complete dirty snapshot and actual proposed content
-against scope. Run Planning-selected minimum self-checks. Check sensitive
-content, precise target, stage paths, message and unrelated preservation before
-prepare and the current-dialogue commit boundary. Complete Check, heavy tests
-and final Branch Review remain pending duties.
-
-Use the same prepare and exact invoke transaction, real hooks and same-commit
-receipt recovery. The private candidate uses delivery-3.0; the result receipt retains delivery-2.0.
-Draft contains no Check or phase2 anchor; final retains both real bindings.
-`draft_committed` carries task_ref/key/B/commit_sha only to the workflow draft
-router and original Publication. It cannot enter formal Branch Review.
-
-For an already committed nonempty B..HEAD candidate, including a legal resolved
-integration commit, `delivery_draft_committed_reentry` performs the same bounded
-semantic review and proves committed Task identity and all five Planning files.
-It returns the early DTO without stage, commit, hook, begin_check or gate.
-Active merge/sequencer state is still rejected. New dirty content uses prepare;
-no empty commit restores output. Final profiles keep Check and `committed`
-semantics. Matching migration is defined by MIGRATION-636.
-
-
-## Preserved semantic and transaction duties
-
-The duties below apply to the current Delivery input and output contracts.
-Historical data is read only by its named history or migration owner.
-
-# `guru-create-task-commit` Contract
-
-## Entry And Candidate
-
-Workflow and standalone mode read current Task identity, accepted Delivery plans,
-the selected profile candidate and complete Git state. Final inputs bind the
-actual public Check through `check_result_id`; early inputs have no Check field.
-The original transaction validates the selected contract again before mutation. It does not read
-Check or Planning private checkpoints. Dirty paths are facts, not authority.
-
-Build the next three-digit candidate under the ignored owner-private path
-`.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`.
-The candidate is a temporary semantic plan and executor input. It contains
-only task/Git preimage, the complete dirty snapshot, AI path classifications,
-derived exact paths, canonical message, and final AI semantic result. It has no
-authorization, cross-Skill digest, freshness journal, or terminal result. It is never a
-task artifact, never enters `path_classifications` or `exact_stage_paths`, and
-is never staged or committed.
-
-The current Delivery candidate uses the closed `delivery-3.0` union. Older Task candidates are not converted and
-no removed facts are synthesized. An unexecuted delivery-2.0 candidate is
-rejected and requires complete reprepare. When a commit receipt already exists,
-the original invoke verifies the real commit and recovers that same operation
-before another prepare. Recovery may validate the original candidate schema;
-normal execution has no old/new dual reader. Result receipt semantics/version
-remain unchanged. For an unexecuted candidate the owner performs
-a complete reprepare from the selected profile evidence, live task/HEAD/snapshot,
-scope classifications, and message review.
+The two calls remain prepare-task-commit.sh and invoke.sh --candidate-artifact.
+Before mutation, review exact content, engineering evidence, knowledge after,
+path classifications and message, then present the precise action. The current
+dialogue supplies any required Git confirmation. Never persist authorization.
+The current candidate contains the complete dirty preimage and exact paths.
+Old unexecuted candidates require complete reprepare. A current receipt recovers
+the same actual parent/HEAD/tree/message and cleanup without another commit.
 
 Classify every dirty path exactly once:
 
-- `task-reviewed`: current task scope covered by the selected early bounded review or final Check;
+- `task-reviewed`: current task scope covered by the current scope and engineering self-check;
 - `unrelated-preserved`: outside scope and preserved byte-for-byte;
-- `unreviewed-blocking`: possibly in scope but not covered by Phase 2;
+- `unreviewed-blocking`: possibly in scope but not covered by the current approved plan;
 - `ambiguous-blocking`: the AI cannot classify reliably.
 
 Only `task-reviewed` paths and a rename source inherited from its reviewed
@@ -243,7 +125,7 @@ pre-publication conditions still hold, the exact executor writes one minimal
 ignored `task_commit_happy_path_result` receipt before `git update-ref`. The
 receipt binds the exact candidate locator, task/base/ref identity, parent,
 commit tree and raw message digest. It is not a committed result by itself: the
-public invocation projects `committed` only when the live symbolic ref points to the bound
+public invocation projects `pre_review_committed` only when the live symbolic ref points to the bound
 commit and all receipt identities verify. If ref mutation did not occur, the
 candidate remains authoritative for a normal retry and the executor may
 replace the prewritten receipt. If interruption occurs after ref mutation, the
@@ -260,7 +142,7 @@ Pinned-old private executor diagnostics do not establish a current Delivery gate
 `check-task-commit-plan.sh` and `create-task-commit.sh` remain stable
 package-private testing, diagnostic, and bounded recovery entries.
 
-`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-3.0` candidates
+`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-4.0` candidates
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats
 objective validation immediately before execution. `scripts/create-task-commit.sh` repeats
 that validation, rejects active merge/cherry-pick/revert/rebase/sequencer/`git
@@ -282,8 +164,7 @@ committed path set, every blob/mode and complete tree. Any hook rejection,
 message rewrite, extra tracked or untracked path, rename, deletion, stage,
 unstage, exact-path mutation or mode drift fails closed. A transaction commit
 created before such a failure is reported as `created_commit_sha`; the live
-branch remains at the reviewed parent and the private candidate plus Phase 2
-checkpoint remain available for bounded recovery.
+branch remains at the reviewed parent and the private candidate remain available for bounded recovery.
 
 The same pre-publication gate compares the live worktree's semantic dirty
 snapshot as well as its branch and semantic index preimage, so a normally
@@ -313,10 +194,12 @@ published commit before deleting both. The executor does not append `committed`,
 
 ## Exit
 
-Return exactly one declared exit: `draft_committed`, `committed`, `revision-required`, or
-`blocked`. The committed DTO is projected to Branch Review, which verifies the
-current commit directly from live Git. A finding fix returns through
-implementation and current Phase 2 coverage before a fresh private candidate.
+Return exactly one declared exit: `pre_review_committed`, `revision-required`
+or `blocked`. The successful minimal DTO enters the fixed-candidate router,
+which constructs and binds the actual candidate before independent Review.
+Finding fixes return through implementation, necessary integration and current
+engineering checks before a fresh exact pre-review commit. They do not pass an
+independent pre-commit Check.
 Apply the shared candidate contract to determine the fix delta, affected
 checks and still-applicable facts; a commit does not require unrelated review
 or command repetition. Same-tree commits refresh only necessary binding,
@@ -330,11 +213,12 @@ Clean validation recomputes projected bytes from original Git blobs and current 
 
 ## Fixed content baseline
 
-Final dirty commit and clean re-entry consume the current Check candidate’s
-exact base OID. Early profiles consume the caller-selected pinned development
-base, retaining an existing Delivery candidate base when present. The Task base_branch remains the PR target name; origin/base
-is not reread to select content or require ancestry. A clean candidate needs
-its complete nonempty fixed base..HEAD diff and all original identity, plan,
-content, staging/hook and recovery facts. Necessary commits evolve actual HEAD
-through the original candidate/Check owners; clean retained content makes no
-extra commit. Remote-ref advancement alone never changes this transaction.
+Dirty commit and clean reentry retain the caller-selected fixed development
+base B and the existing Delivery candidate base when present. Task base_branch
+remains the PR target name. A remote base advance never selects a new content
+base or adds ancestry requirements. Both paths preserve the complete nonempty
+fixed B..HEAD range and actual identity, Planning, exact paths, hooks and
+recovery facts. Necessary commits evolve HEAD through the original
+implementation/TaskCommit owners; clean retained content creates no extra
+commit. The committed-candidate router constructs the actual Candidate before
+single independent Review. No independent Check supplies commit eligibility.
