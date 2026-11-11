@@ -652,8 +652,9 @@ trees; reapply tests cover unchanged managed removal provenance and edited-copy
 conflict/sidecar preservation. Source and installed validation results must
 report those boundaries separately.
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
-active pre-task input 2.0 and owner-result 3.0 selection with immutable legacy
-input 1.0 / owner-result 2.0 bytes, independent `public_input` plus
+current pre-task input 4.0, Git-object owner-result 4.0, context-ready output
+5.0, and synchronized-source owner-result 3.0 compatibility with immutable
+legacy input 1.0 / owner-result 2.0 bytes, independent `public_input` plus
 `base_current`, Discovery-owned live `base_observation`,
 stale-before-semantic-read ordering, exact/token score permutations, invalid
 isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,
@@ -670,6 +671,21 @@ from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean
 throwaway update/reapply. Any reader of index siblings, workspace/runtime,
 repo-level history cache, or any file outside the current three-overlay set fails.
+The focused Git-object regression enters the real public record wrapper with
+`deep_reads[*].source` replaced by `source_kind`; it must return
+`schema_mismatch` with a field-level path before reviewed evidence, history, or
+candidate reads. A binder guard proves both `preview` and `source_blob` remain
+uncalled. The same fixture must return the duplicate candidate `observation`
+field diagnostic, then pass the corrected complete input through the original
+record/check/invoke sequence and emit actual `context_ready`. A genuine unknown
+exception retains `internal_error/runtime` maintenance routing. Contract tests
+select the current 4.0/5.0 examples and schemas, while still validating 3.0
+synchronized-source assets.
+Run `test_runtime.py`, `test_contract.py`, and
+`test_discovery_stdin_integration.py` through the managed interpreter, then run
+source package validation and `git diff --check`. The installed stdin test uses
+the matching reviewed Delivery fixture; this focused ordinary-Issue set does
+not include the full multi-platform Throwaway or Release matrix.
 The representative installed transcript must call the real Sync public wrapper,
 apply the declared Interface projection, call the real Discovery wrapper with
 its independent input and actual `base_current`, and project actual

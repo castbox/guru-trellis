@@ -8,6 +8,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 
 class ChangeContextPackageContractTests(unittest.TestCase):
     def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
@@ -115,7 +117,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "`scripts/invoke.sh --invocation -`",
             "`base_current` transition",
             "read-only Discovery observer",
-            "Neither the public input nor owner result reconstructs Sync private result",
+            "Neither the public input nor owner result reconstruct Sync private result",
             "`guru-create-issue:created` does not use this draft binding",
             "including the creation-attempt marker",
             "original draft is not carried across Sync as source authority",
@@ -134,6 +136,11 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "Skill `guru-clarify-requirements`",
             "context_ready",
             "refresh_base",
+            "Git-object source uses owner-result 4.0",
+            "synchronized source",
+            "schema-only copy",
+            "original record/check/invoke",
+            "genuine unknown `internal_error`",
         ):
             self.assertIn(phrase, normalized_contract)
         self.assertNotIn("scripts/invoke.sh --input ... --owner-result", normalized_contract)
@@ -175,6 +182,11 @@ class ChangeContextPackageContractTests(unittest.TestCase):
                 self.assertIn("Install or upgrade the complete Guru Team preset", result.stderr)
 
     def test_schema_and_deidentified_example(self) -> None:
+        current_schema = json.loads((self.package / "schemas/change-context-owner-result-4.0.schema.json").read_text(encoding="utf-8"))
+        current_example = json.loads((self.package / "examples/change-context-owner-result-4.0.json").read_text(encoding="utf-8"))
+        self.assertEqual(current_schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-4.0.json")
+        self.assertEqual(current_example["repository"]["source_kind"], "git_object")
+        self.assertEqual(list(Draft202012Validator(current_schema).iter_errors(current_example)), [])
         schema = json.loads((self.package / "schemas/change-context-owner-result-3.0.schema.json").read_text(encoding="utf-8"))
         recovery_schema = json.loads((self.package / "schemas/change-context-recovery.schema.json").read_text(encoding="utf-8"))
         example = json.loads((self.package / "examples/change-context-owner-result-3.0.json").read_text(encoding="utf-8"))
@@ -193,8 +205,6 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         self.assertNotIn(retired_superseded_digest, schema["properties"])
         self.assertNotIn("refresh_history", schema["properties"])
         self.assertEqual(example["skill_id"], "guru-discover-change-context")
-        from jsonschema import Draft202012Validator
-
         Draft202012Validator.check_schema(schema)
         Draft202012Validator.check_schema(recovery_schema)
         validator = Draft202012Validator(schema)
@@ -305,30 +315,108 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         self.assertNotIn(".trellis/.runtime/", serialized)
 
     def test_active_public_input_and_both_reentry_projections_use_authoring_seed(self) -> None:
-        schema = json.loads((self.package / "schemas/public-pre-task-input-3.0.schema.json").read_text())
-        self.assertEqual(schema["$id"], "guru-stage0-discover-change-context-input-pre-task-3.0")
+        schema = json.loads((self.package / "schemas/public-pre-task-input-4.0.schema.json").read_text())
+        self.assertEqual(schema["$id"], "guru-stage0-discover-change-context-input-pre-task-4.0")
         self.assertEqual(
             set(schema["required"]),
             {"profile", "source_exit", "mode", "change_input", "continuation_id", "clarify_profile"},
         )
         self.assertNotIn("repo_locator", schema["properties"])
         self.assertNotIn("base_branch", schema["properties"])
+        legacy = json.loads((self.package / "schemas/public-pre-task-input-3.0.schema.json").read_text())
+        self.assertEqual(legacy["$id"], "guru-stage0-discover-change-context-input-pre-task-3.0")
         for producer in ("guru-sync-base", "guru-clarify-requirements"):
             interface = json.loads((self.package.parent / producer / "interface.json").read_text())
-            consumer = next(
+            consumers = [
                 item for item in interface["public_contracts"]["consumer_inputs"]
                 if item["consumer"] == {"kind": "skill", "id": "guru-discover-change-context"}
+            ]
+            self.assertTrue(consumers)
+            expected_example = (
+                "examples/public-pre-task-input-4.0.json"
+                if producer == "guru-sync-base"
+                else "examples/public-context-request-input.json"
             )
-            self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
-            self.assertEqual(consumer["contract"]["authoring_fields"], ["change_input", "clarify_profile"] if producer == "guru-sync-base" else ["change_input"])
-            projection = next(
-                item for item in interface["public_contracts"]["projections"]
-                if item["consumer_input_id"] == consumer["id"]
-            )
-            self.assertEqual(
-                {item["target"] for item in projection["mappings"]},
-                {"source_exit", "profile", "mode", "continuation_id"} | ({"return_identity"} if producer == "guru-clarify-requirements" else set()),
-            )
+            for consumer in consumers:
+                self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
+                self.assertEqual(consumer["contract"]["authoring_example"]["path"], expected_example)
+                self.assertEqual(consumer["contract"]["authoring_fields"], ["change_input", "clarify_profile"] if producer == "guru-sync-base" else ["change_input"])
+                projection = next(
+                    item for item in interface["public_contracts"]["projections"]
+                    if item["consumer_input_id"] == consumer["id"]
+                )
+                self.assertEqual(
+                    {item["target"] for item in projection["mappings"]},
+                    {"source_exit", "profile", "mode", "continuation_id"} | ({"return_identity"} if producer == "guru-clarify-requirements" else set()),
+                )
+
+    def test_current_interface_navigation_matches_git_object_and_minimal_examples(self) -> None:
+        artifacts = {item["id"]: item["path"] for item in self.interface["artifacts"]}
+        schemas = {item["id"]: item["path"] for item in self.interface["schemas"]}
+        profiles = {item["id"]: item for item in self.interface["public_contracts"]["input"]["profiles"]}
+        outputs = {item["exit_id"]: item for item in self.interface["public_contracts"]["outputs"]}
+
+        self.assertEqual(
+            profiles["pre_task"]["schema"],
+            {
+                "schema_id": "guru-stage0-discover-change-context-input-pre-task-4.0",
+                "path": "schemas/public-pre-task-input-4.0.schema.json",
+            },
+        )
+        self.assertEqual(profiles["pre_task"]["example"]["path"], "examples/public-pre-task-input-4.0.json")
+        self.assertEqual(
+            outputs["context_ready"]["schema"],
+            {
+                "schema_id": "guru-stage0-discover-change-context-output-context-ready-5.0",
+                "path": "schemas/public-context-ready-output-5.0.schema.json",
+            },
+        )
+        self.assertEqual(outputs["context_ready"]["example"]["path"], "examples/public-context-ready-output-5.0.json")
+        self.assertEqual(artifacts["change_context_owner_result_example"], "examples/change-context-owner-result-4.0.json")
+        self.assertEqual(artifacts["public_input_pre_task_example"], "examples/public-pre-task-input-4.0.json")
+        self.assertEqual(artifacts["public_output_context_ready_example_5_0"], "examples/public-context-ready-output-5.0.json")
+        self.assertEqual(schemas["change_context_owner_result_schema"], "schemas/change-context-owner-result-4.0.schema.json")
+        self.assertEqual(schemas["public_output_context_ready_5_0"], "schemas/public-context-ready-output-5.0.schema.json")
+
+        for current_id, legacy_id in (
+            ("change_context_owner_result_example", "legacy_change_context_owner_result_example_3_0"),
+            ("public_input_pre_task_example", "legacy_public_input_pre_task_example_3_0"),
+            ("public_output_context_ready_example_5_0", "legacy_718_public_context_ready_example_4_0"),
+        ):
+            self.assertIn(legacy_id, artifacts)
+            self.assertTrue((self.package / artifacts[legacy_id]).is_file())
+        for legacy_id in (
+            "legacy_change_context_owner_result_schema_3_0",
+            "legacy_718_public_context_ready_output_4_0",
+            "legacy_pre_task_718",
+        ):
+            self.assertTrue((self.package / schemas[legacy_id]).is_file())
+
+        pairs = (
+            (
+                "schemas/change-context-owner-result-4.0.schema.json",
+                "examples/change-context-owner-result-4.0.json",
+            ),
+            (
+                "schemas/public-pre-task-input-4.0.schema.json",
+                "examples/public-pre-task-input-4.0.json",
+            ),
+            (
+                "schemas/public-context-ready-output-5.0.schema.json",
+                "examples/public-context-ready-output-5.0.json",
+            ),
+        )
+        for schema_path, example_path in pairs:
+            with self.subTest(schema=schema_path):
+                schema = json.loads((self.package / schema_path).read_text(encoding="utf-8"))
+                example = json.loads((self.package / example_path).read_text(encoding="utf-8"))
+                self.assertEqual(list(Draft202012Validator(schema).iter_errors(example)), [])
+
+        owner_index = json.loads((self.package / schemas["owner_result_index"]).read_text())
+        self.assertEqual(
+            [item["$ref"] for item in owner_index["oneOf"]],
+            ["change-context-owner-result-3.0.schema.json", "change-context-owner-result-4.0.schema.json"],
+        )
 
 
 if __name__ == "__main__":

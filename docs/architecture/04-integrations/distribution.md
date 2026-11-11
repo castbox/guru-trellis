@@ -258,6 +258,10 @@ source/dogfood 原 tools-only owner 在保留全部 Task/session 下投影工具
 
 实际 source/package、installed/native、Agent、受控 provider、真实 GitHub、资源隔离及未验证边界仅由 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md)记录。独立 common-dir 原生两条再次 Finish、活动 ref、Open Draft/Ready、MERGED、Closure、资源/双 Task 和旧样本是本 Task 的行为范围；不从 unit、SDK inspect、代码投影或知识晋升推定其通过。普通安装最多一个代表 profile，完整 Upgrade/Release 多平台矩阵仍归专门 owner。
 
+`ARCH-INT-064`（#795 reviewed source）：Discovery current profile/schema/example、owner-result 结构诊断顺序与恢复说明沿 canonical `trellis/skills/guru-team/packages/guru-discover-change-context/`、`trellis/presets/guru-team/spec/workflow/` 和原 preset 投影到 shared/dogfood/声明平台。pre_task 4.0、context_request 2.0、Git-object owner-result 4.0 与 context_ready 5.0 作为当前组合；同步来源 owner-result 3.0 保留原合法资产和 consumer。旧示例不删除，但当前 Interface 的 example/schema/id 必须指向相互匹配的版本。
+
+安装 owner 同步受影响的 `.trellis/guru-team/**`、Agent 平台副本和 managed spec；不手改受管副本，不覆盖用户修改或悬空 sidecar。定向 package、distribution、dogfood drift 与 sidecar 结果分别判断；本单元不证明完整多平台 Throwaway、Upgrade/Release 或业务采用。
+
 
 ## Phase 2 recorder 输入退出的匹配分发
 

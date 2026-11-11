@@ -407,7 +407,7 @@
           ],
           "authoring_example": {
             "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-3.0.json"
+            "path": "examples/public-pre-task-input-4.0.json"
           },
           "alternate_authoring": [
             {
@@ -476,7 +476,7 @@
           ],
           "authoring_example": {
             "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-3.0.json"
+            "path": "examples/public-pre-task-input-4.0.json"
           },
           "alternate_authoring": [
             {

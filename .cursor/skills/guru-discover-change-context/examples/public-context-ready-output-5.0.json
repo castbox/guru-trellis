@@ -13,22 +13,17 @@
     "facts_sha256": "2424242424242424242424242424242424242424242424242424242424242424"
   },
   "transition": {
-    "schema_version": "1.0",
+    "schema_version": "2.0",
     "transition_id": "context_current:222222222222222222222222",
     "stage": "context_current",
     "mode": "workflow",
     "repo_locator": ".",
     "base": {
+      "kind": "git_object",
       "source": "explicit",
-      "selected_base": "main",
-      "remote": "origin",
-      "ordered_candidates": [
-        "main"
-      ],
-      "decision_head": "1111111111111111111111111111111111111111",
-      "local_base_head": "1111111111111111111111111111111111111111",
-      "remote_base_head": "1111111111111111111111111111111111111111",
-      "post_sync_resolution_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      "selected_ref": "refs/heads/main",
+      "commit": "1111111111111111111111111111111111111111",
+      "identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
     },
     "target_locator": "https://github.com/example/repo/issues/1",
     "continuation_id": "stage0-handoff-continuation-id",

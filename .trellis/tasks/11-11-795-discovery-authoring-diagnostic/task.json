@@ -1,0 +1,280 @@
+{
+  "schema_version": "2.0",
+  "id": "11-11-795-discovery-authoring-diagnostic",
+  "name": "795-discovery-authoring-diagnostic",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 795,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Discovery 普通字段错误诊断与 authoring 恢复导航",
+  "description": "修复 Issue #795：让 Git-object owner-result 的普通结构错误返回字段级诊断，对齐当前 4.0 导航与合法 3.0 兼容资产，并明确保留失败后原 owner 重跑 record/check/invoke 的恢复边界。",
+  "dev_type": null,
+  "scope": "仅调整 Discovery owner-result 预校验、当前合同/Interface/示例/共享引用和定向测试；同步 canonical、dogfood 与声明平台投影，不扩大 public DTO 或安装矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-11",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/prd.md",
+    "revision": "sha256:0352dc119fc4403116b57243f56e636a6239c885c741190121147890f9347f2a"
+  },
+  "deliveries": [
+    {
+      "id": "fe9936b2-60a5-4131-a88a-863772fe81bc",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/prd.md",
+          "revision": "sha256:0352dc119fc4403116b57243f56e636a6239c885c741190121147890f9347f2a"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md",
+        "revision": "sha256:c1e85600fc5475ea7da2bb32d1e8fb6840b93c20001f43452b26ce90cebd6b18"
+      },
+      "candidate": {
+        "base_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+        "content_ref": "sha256:7dc9b51a400eb33ce332b248ae7bdd14b3f003731c134806b1cc95fa29a10836",
+        "head_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-discover-change-context/SKILL.md",
+          ".agents/skills/guru-discover-change-context/examples/public-context-ready-output-4.0.json",
+          ".agents/skills/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+          ".agents/skills/guru-discover-change-context/examples/public-pre-task-input-3.0.json",
+          ".agents/skills/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+          ".agents/skills/guru-discover-change-context/interface.json",
+          ".agents/skills/guru-discover-change-context/references/contract.md",
+          ".agents/skills/guru-sync-base/interface.json",
+          ".claude/skills/guru-discover-change-context/SKILL.md",
+          ".claude/skills/guru-discover-change-context/examples/public-context-ready-output-4.0.json",
+          ".claude/skills/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+          ".claude/skills/guru-discover-change-context/examples/public-pre-task-input-3.0.json",
+          ".claude/skills/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+          ".claude/skills/guru-discover-change-context/interface.json",
+          ".claude/skills/guru-discover-change-context/references/contract.md",
+          ".claude/skills/guru-sync-base/interface.json",
+          ".cursor/skills/guru-discover-change-context/SKILL.md",
+          ".cursor/skills/guru-discover-change-context/examples/public-context-ready-output-4.0.json",
+          ".cursor/skills/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+          ".cursor/skills/guru-discover-change-context/examples/public-pre-task-input-3.0.json",
+          ".cursor/skills/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+          ".cursor/skills/guru-discover-change-context/interface.json",
+          ".cursor/skills/guru-discover-change-context/references/contract.md",
+          ".cursor/skills/guru-sync-base/interface.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/change-context-owner-result-4.0.json",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/interface.json",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-sync-base/interface.json",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_discovery_stdin_integration.py",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/examples/change-context-owner-result-4.0.json",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/interface.json",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_runtime.py",
+          "trellis/skills/guru-team/packages/guru-sync-base/interface.json"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:f569043f-ea53-4e7e-86d0-ac3ec41bb77f",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/prd.md",
+              "revision": "sha256:0352dc119fc4403116b57243f56e636a6239c885c741190121147890f9347f2a"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md",
+            "revision": "sha256:c1e85600fc5475ea7da2bb32d1e8fb6840b93c20001f43452b26ce90cebd6b18"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/prd.md",
+              "revision": "sha256:d8e7dd105a5db414d0dcba77db618474305dac280c168eac2a29906488352426"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md",
+              "revision": "sha256:c1e85600fc5475ea7da2bb32d1e8fb6840b93c20001f43452b26ce90cebd6b18"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/implement.md",
+              "revision": "sha256:f47d4c2cefa577505b430148c13e1614f4a257369b7eca8d0c9dcda2db4ff400"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:34726150d741475f7fd74026d4a776193de89535bd353d085f41288e0f2e915c",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/prd.md",
+              "revision": "sha256:0352dc119fc4403116b57243f56e636a6239c885c741190121147890f9347f2a"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md",
+            "revision": "sha256:c1e85600fc5475ea7da2bb32d1e8fb6840b93c20001f43452b26ce90cebd6b18"
+          },
+          "candidate": {
+            "base_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+            "content_ref": "sha256:7dc9b51a400eb33ce332b248ae7bdd14b3f003731c134806b1cc95fa29a10836",
+            "head_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-discover-change-context/SKILL.md",
+              ".agents/skills/guru-discover-change-context/examples/public-context-ready-output-4.0.json",
+              ".agents/skills/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+              ".agents/skills/guru-discover-change-context/examples/public-pre-task-input-3.0.json",
+              ".agents/skills/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+              ".agents/skills/guru-discover-change-context/interface.json",
+              ".agents/skills/guru-discover-change-context/references/contract.md",
+              ".agents/skills/guru-sync-base/interface.json",
+              ".claude/skills/guru-discover-change-context/SKILL.md",
+              ".claude/skills/guru-discover-change-context/examples/public-context-ready-output-4.0.json",
+              ".claude/skills/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+              ".claude/skills/guru-discover-change-context/examples/public-pre-task-input-3.0.json",
+              ".claude/skills/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+              ".claude/skills/guru-discover-change-context/interface.json",
+              ".claude/skills/guru-discover-change-context/references/contract.md",
+              ".claude/skills/guru-sync-base/interface.json",
+              ".cursor/skills/guru-discover-change-context/SKILL.md",
+              ".cursor/skills/guru-discover-change-context/examples/public-context-ready-output-4.0.json",
+              ".cursor/skills/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+              ".cursor/skills/guru-discover-change-context/examples/public-pre-task-input-3.0.json",
+              ".cursor/skills/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+              ".cursor/skills/guru-discover-change-context/interface.json",
+              ".cursor/skills/guru-discover-change-context/references/contract.md",
+              ".cursor/skills/guru-sync-base/interface.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/change-context-owner-result-4.0.json",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/interface.json",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-discover-change-context/runtime/common.py",
+              ".trellis/guru-team/skills/packages/guru-sync-base/interface.json",
+              ".trellis/spec/workflow/data-contracts.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/skill-package-contract.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/test_discovery_stdin_integration.py",
+              "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/examples/change-context-owner-result-4.0.json",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/examples/public-context-ready-output-5.0.json",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/examples/public-pre-task-input-4.0.json",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/interface.json",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/runtime/common.py",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_runtime.py",
+              "trellis/skills/guru-team/packages/guru-sync-base/interface.json"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:f569043f-ea53-4e7e-86d0-ac3ec41bb77f",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/prd.md",
+              "revision": "sha256:d8e7dd105a5db414d0dcba77db618474305dac280c168eac2a29906488352426"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md",
+              "revision": "sha256:c1e85600fc5475ea7da2bb32d1e8fb6840b93c20001f43452b26ce90cebd6b18"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/implement.md",
+              "revision": "sha256:f47d4c2cefa577505b430148c13e1614f4a257369b7eca8d0c9dcda2db4ff400"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
