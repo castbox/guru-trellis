@@ -5,6 +5,7 @@ import json
 import importlib.util
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -12,7 +13,6 @@ import unittest
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
-import yaml
 
 
 SKILLS = Path(__file__).resolve().parents[1]
@@ -99,6 +99,8 @@ class ActivationCandidateTests(unittest.TestCase):
             self.assertTrue(callable(getattr(port, name, None)), name)
 
     def test_candidate_projection_binds_exact_fixed_fork_source(self) -> None:
+        import yaml
+
         lock = read_json(ROOT / "trellis/presets/guru-team/source/trellis-source.json")
         self.assertEqual(read_json(ROOT / ".trellis/guru-team/trellis-source.json"), lock)
         contribution = yaml.safe_load(
@@ -320,9 +322,13 @@ class ActivationCandidateTests(unittest.TestCase):
     def test_complete_old_and_new_graphs_pass_but_mixed_graphs_fail(self) -> None:
         old = graph_entries(json.loads(old_blob("trellis/skills/guru-team/registry.json")), True)
         current = graph_entries(read_json(SKILLS / "registry.json"), False)
+        old_runtime: dict = {"__name__": "pinned_434_installed"}
+        exec(compile(old_blob("trellis/skills/guru-team/runtime/installed.py"), "pinned_434_installed.py", "exec"), old_runtime)
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             workflow = root / "workflow.md"
+            extension = root / "extension"
+            shutil.copytree(ROOT / "trellis/workflows/guru-team/references", extension / "references")
             for label, text, entries, expected in (
                 ("pinned-old", old_blob("trellis/workflows/guru-team/workflow.md"), old, True),
                 ("current", (ROOT / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8"), current, True),
@@ -332,7 +338,10 @@ class ActivationCandidateTests(unittest.TestCase):
                 with self.subTest(graph=label):
                     workflow.write_text(text, encoding="utf-8")
                     errors: list[str] = []
-                    facts = workflow_facts(root, workflow, entries, True, errors)
+                    if label == "pinned-old":
+                        facts = old_runtime["workflow_facts"](root, workflow, entries, True, errors)
+                    else:
+                        facts = workflow_facts(root, workflow, entries, True, errors, extension_root=extension)
                     self.assertEqual(not errors, expected, (label, facts, errors[:5]))
                     if expected:
                         self.assertEqual(facts["invoke_markers"], len([
@@ -349,11 +358,16 @@ class ActivationCandidateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             workflow = root / "workflow.md"
+            workflow.write_text(text, encoding="utf-8")
+            extension = root / "extension"
+            shutil.copytree(ROOT / "trellis/workflows/guru-team/references", extension / "references")
+            routing = extension / "references/routing.md"
+            routing_text = routing.read_text(encoding="utf-8")
             for extra in extras:
                 with self.subTest(marker=extra):
-                    workflow.write_text(text + "\n" + extra + "\n", encoding="utf-8")
+                    routing.write_text(routing_text + "\n" + extra + "\n", encoding="utf-8")
                     errors: list[str] = []
-                    workflow_facts(root, workflow, current, True, errors)
+                    workflow_facts(root, workflow, current, True, errors, extension_root=extension)
                     self.assertTrue(any("undeclared" in error for error in errors), errors)
 
     def test_old_public_ids_have_explicit_dispositions_and_real_replacements(self) -> None:

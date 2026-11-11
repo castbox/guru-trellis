@@ -211,6 +211,8 @@ MANAGED_SOURCE_PATHS = (
 )
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
+    Path("references/routing.md"),
+    Path("references/legacy.md"),
     Path("schemas/finish-summary.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),

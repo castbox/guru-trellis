@@ -189,3 +189,20 @@ Check 的范围内规划修复保留 current_scope 判断，并向原 Author 交
 执行者在当前对话提供最小完成内容、实际终态、结果位置及未完成项。冲突写入在自然边界暂停并确认当前终态且暂不启动下一轮后进行，完成后通知恢复；无冲突并行、无写入需求继续原委托。已交叠按实际影响披露失效证据并补必要验证，不一律重跑。主协调者仍核要求与结果、交新缺陷给原 owner；适用执行事实可采用，只有具体缺口或不一致才补查/重跑。新增要求作为明确差额，正式 Check/独立 Review 保持原职责。
 
 精确协作方法由 [canonical Phase 2 合同](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#phase-2--implementation-and-check) 单写，职责见 D779-01，验证见 T779-01/02。来源为 [#779](https://github.com/castbox/guru-trellis/issues/779)；本项只修方法及实际受管同步，不承接 #734 的预算、规模或设备/重放验收，不新增公共数据、运行状态、持久 handoff、授权记录或逐轮审批，也不承诺实际节省效果。来源、前驱与窄增加边界见 [#779 追踪](../../requirements-design-test-contributions/779-delegation-results-intervention/traceability.md)。
+
+
+## R792：当前步骤的流程上下文
+
+来源：[Issue #792](https://github.com/castbox/guru-trellis/issues/792)。本节增加原生命周期的发现与加载能力，保持上文全部阶段、mandatory Skill、typed exit、唯一consumer和原AI语义owner。
+
+**R792-01 / BEH792-AUTHORITY**：全局顺序、显式调用与路由只有一个长期workflow authority；复用既有标记和各Skill consumer合同提供确定性投影，不维护第二图、长期位置缓存或wrapper Skill。
+
+**R792-02 / BEH792-QUERY**：AI持有一个合法原出口后，一次公开查询取得唯一consumer、必要入口与前置合同。unknown、multiple、unmapped和matching漂移停止。脚本不解释条件router或判断前置充分性、scope、pass和route intent；AI按原owner完整合同继续。
+
+**R792-03 / BEH792-LOAD**：正常入口取得当前阶段/步骤所需内容及适用全局约束，不要求无关全量router/stop或历史详情。原native phase/step与唯一continuation的结构接口保持，原producer恢复和接收会话职责保持；查询成功或phase不能产生语义通过。
+
+**R792-04 / BEH792-LEGACY**：正常流程只识别旧状态并转交原维护owner。实际入口加载其家族、转换、控制退役、历史恢复和准确来源；不按版本号截断、不批量转换/退役Task、不改历史归档、不重做#712/#64。
+
+**R792-05 / BEH792-ADOPTION**：查询说明真实前置、最小输入、直接输出消费和普通错误恢复。改变的公共命令及受影响canonical/dogfood/声明平台沿原owner成套迁移，保留受支持在途工作。正常新runtime直接采用受管reference；verifier原旧before只读观察不赋当前执行资格。source、installed、实际AI和外部效果分别证明，不以文件缩短、关键词或固定降幅验收；完整多平台安装/升级/Release矩阵不属于本项。
+
+职责D792-01..04、场景T792-01..06位于同名三层单元。本节不改变#793 qualifier触发，不合并身份查询或#794 Check/Review，不承接#734。当前观察由[#792 Test](../../requirements-design-test-contributions/792-step-context/test.md)定位。

@@ -174,3 +174,17 @@ N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不�
 | T779-02 → R779-01/D779-01 | 原安装/tools owner 同步实际受影响的 canonical/dogfood/声明平台；实际 drift、mode、sidecar 和适用 native/preservation 验证 | 实际受管内容采用且无未解决漂移/sidecar，当前 Task/session/peer 保留；source、installed 与 Agent 行为分别报告。无需为本项新增设备、评测框架、整场事故重放、消息计数或完整多平台/Release 矩阵。 |
 
 实际观察截止与命中验证由 [#779 Test](../../requirements-design-test-contributions/779-delegation-results-intervention/test.md) 维护。本文定义预期，不预填本项通过或节省比例；原候选 Check、真实 final integration/readback、after 重绑、最终 Check 和完整 committed Review 保持。未运行的外部业务采用与实际效果保持未验证。
+
+
+## T792：出口查询与按步骤加载
+
+| 场景→要求/职责 | 入口与条件 | 独立观察及边界 |
+| --- | --- | --- |
+| T792-01→R792-01/02/05、D792-01/02 | 原public wrapper，真实Skill/workflow条件target/stop/instruction-only出口及无exit查询 | 唯一consumer与原Interface/正文一致，输入投影能由真实consumer消费；无exit保持原语义，不返回私有/全图，不把查询当下游pass。 |
+| T792-02→R792-01/02/05、D792-01/02 | 普通unknown、多exit、更新漏映射/重复标记、缺引用/漂移，单一权威及Interface合法演进 | 错误非零明确停止；合法演进自然更新。fixture只模拟普通遗漏，不造攻击或人为篡改防御范围。 |
+| T792-03→R792-03、D792-03 | 原native get_context phase/step/continuation | 当前步骤必要全局约束/原owner/producer恢复可得，正常index不要求无关全表或历史；不以行数或关键词数量证明充分性。 |
+| T792-04→R792-04、D792-03 | 正常legacy识别转交及原维护owner完整references | 原支持家族、转换、控制退役及历史恢复准确来源可达；静态可达不证明实际历史转换。 |
+| T792-05→R792-05、D792-01/04 | source/installed snapshot、matching .new preview、原tools更新及installed/drift/sidecar定向回归 | 明确资产根，同一图，不用旧installed引用替新candidate，当前Task/session和peer保持；不是完整矩阵。 |
+| T792-06→R792-02/03/04/05、D792-02/03/04 | 更新matching安装后AI实际使用原context/出口query并加载consumer；普通接续和维护读取各一条 | 当前必要内容可得并由原owner接续或stop；维护只读不执行未经选择的转换。source/installed/Agent分别记录，不声称所有平台、性能或成本收益。 |
+
+T792-01/02/03是长期回归，T792-04/06是本项语义/实际行为观察。已有适用工程事实可采用，具体缺口才追加实验；必要验收不足保持未验证。实际命令、首次失败、修正、终态及范围唯一见[#792 Test](../../requirements-design-test-contributions/792-step-context/test.md)；本单元不预填候选/最终Check、committed Review、发布或Completion结果。

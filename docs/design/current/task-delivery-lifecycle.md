@@ -168,3 +168,16 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 命令/进程/日志/产物/句柄只提供执行事实，不担任业务或门禁 authority。最小结果留在当前对话，不产生新 DTO、state、台账或持久 handoff。原安装 owner 同步实际受影响的 canonical、dogfood 和声明平台投影；既有 Task/session checkout 使用原 tools-only 维护路径，保留历史及 peer，不手工覆盖受管文件。原 RDT owner 先准备隔离完整拟写，经候选 Check 后在 final_integration 写入并读回，随后重绑真实 after 并走最终质量链。
 
 本选择直接修改原方法，避免新增运行状态、调度器或逐轮审批的维护与等待成本。初始派工已完整仍出现委托后重复跟踪，因此本项承接后续执行事实和干预边界；它不取消必要查询/证据读取或 adb，也不把未知终态变为成功。若新的真实范围/机制/风险超出委托，回原 discovery；实际方法效果与成本需要各自证据，本次源码和同步验证不证明该效果。历史与窄增加边界见 [#779 追踪](../../requirements-design-test-contributions/779-delegation-results-intervention/traceability.md)。
+
+
+## D792：单一路由引用与原查询投影
+
+**D792-01 / CON792-GRAPH** 承接R792-01/02。canonical workflow显式声明唯一extension-relative routing reference；reference拥有完整原graph与router/stop正文，Interface保持各Skill出口/consumer及公共I/O。原runtime shared reader统一解析reference，workflow_facts核图与当前Interfaces。正常source/installed和查询reference-only，缺失或混装停止，无inline fallback。verifier仅在显式before-snapshot保留原inline只读观察，匹配candidate preview使用明确source资产根；verifier owner在受支持before样本退出inline后删除该观察分支/用例。
+
+**D792-02 / CON792-QUERY** 承接R792-02/05。原discover-skill-contract新增单值exit参数；无exit继续原Skill合同发现。exit查询核完整matching图/active Interface，只投影当前出口consumer、原output/input/projection与Skill入口前置/调用合同，或workflow/stop原正文及定位。JSON schema consumer另提供repository-relative的consumer_schema_locator，沿原package优先、shared其次的规则定位，AI无需猜测根目录；原consumer合同保持。instruction-only按原Markdown形状，不制造dispatcher或不存在的consumer schema。脚本不解释profile和条件，AI显式加载实际consumer；portable错误回原输入或matching维护owner。
+
+**D792-03 / CON792-LOAD** 承接R792-03/04。通过重排Markdown让Phase Index只含全局约束和当前入口，唯一continuation位于原index提取区间外并定位真实phase/原producer恢复；详细矩阵按需读原章节。legacy全局独有说明移到受管引用，其余原维护references保持。upstream get_context/extractor/hook/trellis-*不改，mandatory原Skill明确调用不变。
+
+**D792-04 / CON792-DISTRIBUTION** 承接R792-05。原preset管理routing/legacy引用，现有checkout由guru-upgrade-tools整体更新workflow/runtime/packages/受影响投影，保留Task/session及peer。MIGRATION-792拥有matching采用和普通错误恢复；单独源码更新不证明安装或AI已采用，无Task数据迁移。原RDT/Architecture先准备完整proposed，经candidate Check后final_integration写入、读回、重绑并最终Check/committed Review，不以本设计声称当前通过。
+
+采用现有reader/query/native/preset降低额外维护责任；不采用第二JSON路由表、语义脚本router、wrapper、缓存或upstream patch。总成本是一次matching分发、真实reader适配与定向回归；未来真实路由变更只维护原单一authority。条件或consumer责任变化时由原owner重评。测试关系T792，实际观察由[#792 Test](../../requirements-design-test-contributions/792-step-context/test.md)维护。

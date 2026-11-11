@@ -183,8 +183,26 @@ def _active_registry_rows(repo_root: Path) -> list[dict[str, Any]]:
     return _active_registry_rows_from(repo_root / "trellis/skills/guru-team")
 
 
-def _workflow_markers(workflow_path: Path) -> dict[str, list[str]]:
+def _workflow_markers(
+    workflow_path: Path,
+    extension_root: Path,
+    *,
+    before_observation: bool = False,
+) -> dict[str, list[str]]:
     text = workflow_path.read_text(encoding="utf-8")
+    # Only an explicit before snapshot retains the original inline observation.
+    # Current snapshots and previews use the same reference reader as runtime.
+    if not (before_observation and "guru-routing-reference" not in text):
+        reader_path = Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/runtime/installed.py"
+        spec = importlib.util.spec_from_file_location("guru_matrix_routing_reader", reader_path)
+        if spec is None or spec.loader is None:
+            raise MatrixError("matching workflow routing reader is missing")
+        reader = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(reader)
+        try:
+            _, text = reader.read_workflow_routing(workflow_path, extension_root)
+        except (OSError, ValueError) as exc:
+            raise MatrixError(f"cannot read matching workflow routing reference: {exc}") from exc
     marker_pattern = re.compile(
         r"<!--\s+(guru-(?:skill-invoke|skill-exit|workflow-target|stop-target)):\s*"
         r"(\{.*?\})\s*-->",
@@ -308,7 +326,9 @@ def predecessor_capability_projection(repo_root: Path) -> dict[str, Any]:
             "active_ids": sorted(str(row["id"]) for row in rows),
         },
         "workflow": _workflow_markers(
-            repo_root / "trellis/workflows/guru-team/workflow.md"
+            repo_root / "trellis/workflows/guru-team/workflow.md",
+            repo_root / "trellis/workflows/guru-team",
+            before_observation=True,
         ),
         "task_data": {
             "artifact_contracts": _sorted_strings(
@@ -387,7 +407,7 @@ def predecessor_installed_capability_projection(target: Path) -> dict[str, Any]:
     return projection
 
 
-def capability_projection(repo_root: Path) -> dict[str, Any]:
+def capability_projection(repo_root: Path, *, before_observation: bool = False) -> dict[str, Any]:
     """Build a compact complete projection from current canonical authorities."""
 
     canonical = _require_dict(
@@ -525,7 +545,9 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
             "commands": _sorted_strings(commands),
         },
         "workflow": _workflow_markers(
-            repo_root / "trellis/workflows/guru-team/workflow.md"
+            repo_root / "trellis/workflows/guru-team/workflow.md",
+            repo_root / "trellis/workflows/guru-team",
+            before_observation=before_observation,
         ),
         "task_data": {
             "artifact_contracts": _sorted_strings(
@@ -547,7 +569,7 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
     return projection
 
 
-def installed_capability_projection(target: Path) -> dict[str, Any]:
+def installed_capability_projection(target: Path, *, before_observation: bool = False) -> dict[str, Any]:
     """Project the same semantic groups from one installed matrix cell."""
 
     installed = _require_dict(
@@ -683,7 +705,10 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
             ),
             "commands": command_ids,
         },
-        "workflow": _workflow_markers(target / ".trellis/workflow.md"),
+        "workflow": _workflow_markers(
+            target / ".trellis/workflow.md", target / ".trellis/guru-team",
+            before_observation=before_observation,
+        ),
         "task_data": {
             "artifact_contracts": _sorted_strings(
                 _require_string_list(
@@ -1658,7 +1683,7 @@ def _preview_and_switch_workflow(
             or preview != expected_candidate.read_bytes()
         ):
             raise MatrixError("workflow preview does not match the expected marketplace candidate")
-    elif not any(_workflow_markers(sidecar).values()):
+    elif not any(_workflow_markers(sidecar, repo_root / "trellis/workflows/guru-team").values()):
         raise MatrixError("workflow preview has no Guru Team workflow markers")
     if local_sample:
         shutil.copyfile(sidecar, workflow)
@@ -2441,8 +2466,8 @@ def _run_cell(
             target
         )
     else:
-        before_projection = capability_projection(source_root)
-        before_installed_projection = installed_capability_projection(target)
+        before_projection = capability_projection(source_root, before_observation=True)
+        before_installed_projection = installed_capability_projection(target, before_observation=True)
     update_mode = "not_applicable"
     if scenario == "existing":
         before_manifest = _require_dict(

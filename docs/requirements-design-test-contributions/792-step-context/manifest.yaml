@@ -1,0 +1,20 @@
+task_id: 792-step-context
+source: https://github.com/castbox/guru-trellis/issues/792
+status: promoted
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 05a16a5989669ca216d8ba34b9b419776410f04d
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirement.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/task-delivery-lifecycle.md
+  - docs/design/current/task-delivery-lifecycle.md
+  - docs/test/current/task-delivery-lifecycle.md

@@ -48,7 +48,10 @@ class InstalledWorkflowIntegrationStateTests(unittest.TestCase):
             root = Path(directory)
             workflow = root / ".trellis/workflow.md"
             workflow.parent.mkdir(parents=True)
-            workflow.write_text("# Empty production graph\n", encoding="utf-8")
+            workflow.write_text('<!-- guru-routing-reference: {"path":"references/routing.md"} -->\n', encoding="utf-8")
+            routing = root / ".trellis/guru-team/references/routing.md"
+            routing.parent.mkdir(parents=True)
+            routing.write_text("# Empty production graph\n", encoding="utf-8")
             errors: list[str] = []
             facts = workflow_facts(
                 root,
@@ -70,7 +73,10 @@ class InstalledWorkflowIntegrationStateTests(unittest.TestCase):
             root = Path(directory)
             workflow = root / ".trellis/workflow.md"
             workflow.parent.mkdir(parents=True)
-            workflow.write_text("# Empty production graph\n", encoding="utf-8")
+            workflow.write_text('<!-- guru-routing-reference: {"path":"references/routing.md"} -->\n', encoding="utf-8")
+            routing = root / ".trellis/guru-team/references/routing.md"
+            routing.parent.mkdir(parents=True)
+            routing.write_text("# Empty production graph\n", encoding="utf-8")
             errors: list[str] = []
             workflow_facts(
                 root,
