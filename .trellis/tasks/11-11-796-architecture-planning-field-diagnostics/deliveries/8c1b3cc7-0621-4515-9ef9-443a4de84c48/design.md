@@ -58,4 +58,3 @@ baseline_current 的 owner_result 缺 baseline_identity 或 constitution_identit
 必要来源为原 package references/contract.md 的结果 authoring 与纠正合同、runtime/invoke.py 的 _check_owner_result、上述当前 Schema 及 tests/test_contract.py。
 Architecture no-impact 结果不要求贡献或晋升；现有 RDT 语义/owner/成功行为不变，Docs SSOT 计划见 implement 第6节。
 需求与候选无未决项；任何真实范围或机制扩张回原 owner。
-

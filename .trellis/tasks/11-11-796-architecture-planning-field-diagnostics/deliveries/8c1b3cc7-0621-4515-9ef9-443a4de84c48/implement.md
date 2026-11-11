@@ -39,4 +39,3 @@ policy=full。D1 完整覆盖整体 R1—R4 和 AC1/AC2，无剩余实现切片�
 strategy=no_docs_update_needed。当前需求、职责、成功合同、恢复 owner 和架构边界不变；本次修复是既有字段要求在当前 Schema 中漏检。实现直接维护原 Skill 当前 schema/tests，只有实际文案缺漏才更新该 Skill 合同/示例。
 原 RDT owner 在 Phase2 对当前完整定义与实际 diff 重新判断 no-change 是否成立，不预建空贡献、ADR、导航登记或审计账本；如果发现真实规范差额则沿原候选/最终整合晋升，不由实施 Agent 直接改共享 current。
 直接 consumer 是原 Check、Branch Review 及当前 Skill 调用方；历史诊断与失败保持原观察。
-

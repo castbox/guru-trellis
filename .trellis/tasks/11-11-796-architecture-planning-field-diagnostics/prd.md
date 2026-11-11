@@ -44,4 +44,3 @@ Markdown 仍拥有语义流程，Schema/runtime 只校验确定性结构和一�
 ## 8. 实际未决项
 
 需求及范围无未决项。具体 Schema 落点、定向测试与投影更新由本 Task 的原 Author/Architecture/实施 owners 完成。修复尚未实施，当前正文不预填验收通过。
-
