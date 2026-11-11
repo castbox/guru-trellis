@@ -1,5 +1,42 @@
 # Guru Team Workflow
 
+## 当前出口查询与按步骤加载
+
+正常会话先通过原 `get_context.py --mode phase` 或唯一 continuation 定位当前步骤，
+再用 `--mode phase --step <step>` 读取该步骤。取得原 Skill 的一个正式出口后，
+通过既有查询命令取得唯一 consumer、必要入口及其前置合同：
+
+```bash
+bash .trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root . --mode installed --skill guru-author-task-plan --exit plan_ready --json
+```
+
+源仓库验证使用 `trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh`
+和 `--mode source`。输入是实际 producer Skill id 和该次出口；不能用 phase、
+文件存在或自行编造的结果代替。查询前需要完整 matching workflow、references、
+packages、runtime 及受管投影。省略 `--exit` 时，仍执行原 Skill public contract discovery。
+
+查询结果交当前 AI 消费：按返回的 producer output、consumer input 和 projection
+准备原参数。producer 合同的相对 schema 路径以其 `contract_root` 解释；JSON schema
+consumer 直接读取 repo-relative `consumer_schema_locator`，不拼到 producer package。
+原 `consumer_input` 和 producer `contract_root` 保持。随后显式加载返回的 Skill
+入口或执行原 workflow target。条件 router 的
+完整分支仍由 AI 判断，入口前置是否充分仍归原 owner；查询成功不是下游 pass。
+unknown、multiple、unmapped、缺引用或 graph/Interface mismatch 返回非零并停止。
+修正普通输入后重试；matching/分发缺口由原 tools owner 修复；正文/Interface 差错
+由其原 owner 修复。查询不改变 Task、Delivery、selection 或 gate。
+
+完整标记和 router/stop 正文只在一份 [routing reference](references/routing.md) 中。
+当前正常 runtime 只接受明确 reference，不保留旧 inline 图的 fallback。
+原生 phase/step/continuation 提取不改 upstream；正常入口不要求读取全表。
+实际选中 legacy 维护时才加载 [legacy reference](references/legacy.md) 和原维护
+package 的完整合同，保留旧家族、转换、控制退役、历史来源及原支持边界。
+
+已有安装按 [MIGRATION-792](../../presets/guru-team/MIGRATION-792.md) 成套采用，
+由原工具维护 owner 保留 Task/session 与用户内容并处理 sidecar。只更新源码或
+workflow 预览不能证明 installed 或实际 AI 加载已通过；完整多平台升级及 Release
+矩阵仍由专门 Issue 承担。
+
 Codex 的 Guru Skill 通过 `.agents/skills/` 公共投影发现，专属包仍仅在选择 `codex` 时分发。目录收敛不改变 workflow、Skill id 或出口；已有安装沿原维护 owner 保留用户修改并退出旧受管投影。采用和 native 验证边界见 [MIGRATION-724](../../presets/guru-team/MIGRATION-724.md)。
 
 只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，

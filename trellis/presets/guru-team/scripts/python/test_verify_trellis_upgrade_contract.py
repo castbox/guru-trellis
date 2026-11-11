@@ -774,9 +774,12 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             candidate = root / "trellis/workflows/guru-team/workflow.md"
             candidate.parent.mkdir(parents=True)
             candidate.write_text(
-                "# Candidate\n<!-- guru-skill-invoke: {} -->\n",
+                '# Candidate\n<!-- guru-routing-reference: {"path":"references/routing.md"} -->\n',
                 encoding="utf-8",
             )
+            routing = candidate.parent / "references/routing.md"
+            routing.parent.mkdir()
+            routing.write_text('<!-- guru-skill-invoke: {"skill":"guru-sync-base","required":true} -->\n', encoding="utf-8")
             with mock.patch.object(self.matrix, "_run") as runner:
                 self.matrix._preview_and_switch_workflow(
                     target,

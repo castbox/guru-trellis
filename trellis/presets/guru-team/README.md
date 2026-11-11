@@ -1,5 +1,13 @@
 # Guru Team Preset
 
+当前出口查询复用 `discover-skill-contract` 的 `--skill <id> --exit <id>`。
+完整路由正文由 workflow 显式引用，preset 将 `references/routing.md` 和
+`references/legacy.md` 安装到 `.trellis/guru-team/references/`。
+查询返回原 consumer、入口及前置合同；AI 仍须显式加载并执行原 owner。
+已有 checkout 通过 `guru-upgrade-tools` 完整更新匹配的 workflow、runtime、引用及受管投影，
+保留 Task/session，并处理 `.new`/`.bak`。迁移和普通错误恢复见
+[MIGRATION-792](MIGRATION-792.md)。源码分发不证明实际 Agent 已采用，也不代表完整安装/升级矩阵通过。
+
 Codex 的 Guru Skill 使用共享 `.agents/skills/`；新安装/reapply 不再创建受管 `.codex/skills/guru-*/`。专属编排包及 `agents/openai.yaml` 仍由目标 exact platform selection 决定，保留显式调用与原生能力前置。旧安装经原维护 owner 在目标完整后退出旧受管文件，保留用户修改并处理冲突；详见 [MIGRATION-724](MIGRATION-724.md)。
 
 只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，

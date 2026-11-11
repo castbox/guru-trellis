@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-11T08:07:55Z",
+  "installed_at": "2026-11-11T12:06:25Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
-    "commit": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+    "ref": "05a16a5989669ca216d8ba34b9b419776410f04d",
+    "commit": "05a16a5989669ca216d8ba34b9b419776410f04d",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1216,6 +1216,8 @@
       ".cursor/commands/guru-finish-work.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/references/legacy.md",
+      ".trellis/guru-team/references/routing.md",
       ".trellis/guru-team/schemas/finish-summary.schema.json",
       ".trellis/guru-team/scripts/bash/check-agent-recovery.sh",
       ".trellis/guru-team/scripts/bash/check-base-sync.sh",
@@ -21094,7 +21096,7 @@
       {
         "path": ".trellis/guru-team/runtime/discovery.py",
         "source": "trellis/skills/guru-team/runtime/discovery.py",
-        "sha256": "fc86c06ee5daf0576f7078fdeb4845607ebf6310186091118b39a0817a56c179",
+        "sha256": "bebc6af999486aa0c77624a4edd23c3729fea74eda126c0e9c5fbf875e76bc87",
         "executable": false,
         "action": "installed"
       },
@@ -21108,7 +21110,7 @@
       {
         "path": ".trellis/guru-team/runtime/installed.py",
         "source": "trellis/skills/guru-team/runtime/installed.py",
-        "sha256": "d9d18c203d17dfcfdea646ad97f571da82e81d230a714f6ba0ef42278550be5f",
+        "sha256": "7874a45f82a1010c6f6784d6d5ea16b1999cb86d4f6bf62e6e1fc74fa8b7a87d",
         "executable": false,
         "action": "installed"
       },

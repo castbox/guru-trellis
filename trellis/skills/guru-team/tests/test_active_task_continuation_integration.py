@@ -88,11 +88,42 @@ p.apply({'api_version':'1.0','operation':'record_gate','key':key,'owner_role':'p
         spec = importlib.util.spec_from_file_location("installed_continuation", path)
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
         body = module.extract_continuation_contract(WORKFLOW)
-        self.assertEqual(body.count("### Guru caller continuation"), 1)
         self.assertIn("no_current_delivery", body)
-        self.assertIn("guru-activate-delivery", body)
-        self.assertIn("phase does not substitute for the gate", body)
+        self.assertIn("current / implementing", body)
+        self.assertIn("Phase step 2.1", body)
+        self.assertIn("step 1.5", body)
+        self.assertIn("discover-skill-contract --skill <producer> --exit <exit>", body)
+        self.assertIn("Missing/stale owner", body)
+        self.assertIn("never a gate pass", body)
         self.assertNotIn("guru-activate-task", body)
-        self.assertIn("Local dependency gaps block only their true dependent work", body)
+        self.assertNotIn("guru-skill-exit:", body)
+        self.assertNotIn("guru-route-target:", body)
+        self.assertIn("references/legacy.md", body)
+        native = subprocess.run(
+            [sys.executable, str(self.root / ".trellis/scripts/get_context.py"), "--mode", "continuation"],
+            cwd=self.root, env=self.environment, capture_output=True, text=True,
+        )
+        self.assertEqual(native.returncode, 0, native.stderr)
+        self.assertEqual(native.stdout.strip(), body.strip())
+
+    def test_native_phase_and_step_keep_their_current_loading_boundary(self):
+        def context(*arguments):
+            result = subprocess.run(
+                [sys.executable, str(self.root / ".trellis/scripts/get_context.py"), "--mode", "phase", *arguments],
+                cwd=self.root, env=self.environment, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return result.stdout
+
+        index = context()
+        self.assertIn("clear-technical-writing.md", index)
+        self.assertIn("current Delivery", index)
+        self.assertNotIn("guru-skill-exit:", index)
+        self.assertNotIn("#### 2.1", index)
+        implementation = context("--step", "2.1")
+        self.assertIn("check-task-checkout-boundary.sh", implementation)
+        self.assertIn("construct", implementation.lower())
+        self.assertIn("guru-maintain-architecture-baseline", implementation)
+        self.assertNotIn("#### 2.2", implementation)
 if __name__ == "__main__":
     unittest.main()

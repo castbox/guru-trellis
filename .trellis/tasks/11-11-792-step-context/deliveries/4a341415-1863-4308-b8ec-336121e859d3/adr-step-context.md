@@ -1,0 +1,25 @@
+# ADR 候选：按当前出口查询与按步骤加载
+
+状态：proposed，Task #792 的隔离候选。来源为[完整设计](design.md)和[架构贡献](architecture-contribution.md)，尚未晋升为共享authority。
+
+## Context
+
+全局workflow拥有阶段顺序、mandatory invocation、consumer和stop，但正常入口目前读取全量graph及历史细节。既有Interface、标记校验、discovery和native提取可承接按当前步骤读取。改变加载不得转移AI判断或破坏在途恢复。
+
+## Decision
+
+将完整graph标记及router/stop正文放入一个workflow-owned受管reference，workflow显式声明该唯一引用。正常新runtime和查询只读取明确reference，缺失引用停止，不新增旧inline格式reader或fallback。verifier自身仅保留原before-snapshot的inline只读观察输入，不作为当前runtime资格；其owner在受支持before样本退出inline后删除该观察分支及用例。Interface保持Skill出口/consumer的合同owner，图校验继续确保一致。
+
+在原discover-skill-contract增加可选exit参数，从实际matching权威投影唯一consumer、直接I/O和入口前置。脚本不解释conditional router，不判断scope、充分性或pass。原无exit调用不变。normal Phase Index与唯一continuation只定位当前所需合同及原producer恢复，详细路由/legacy按实际入口读取。native upstream API和Skill id/exit/consumer不变。
+
+preset/tools原owner管理reference及affected projections，matching更新包括workflow/runtime/assets；compatibility snapshot/preview明确candidate资产根。旧Task无状态迁移，真实历史维护仍由原owner按原支持合同执行。
+
+## Alternatives与后果
+
+第二JSON路由表会重复authority；脚本按profile决定下游会越过AI语义边界；wrapper Skill与新缓存无直接必要；修改upstream extractor会扩大owner并破坏官方扩展约定。均不采用。
+
+新正文组织需要所有真实reader及受管安装一起更新。混装会停止，由原tools owner补齐matching采用。旧安装维持原完整provider直到原owner整体更新；新runtime不接受旧inline布局。verifier的旧before观察与matching candidate preview分离，后者显式使用候选reference，不猜测或混装。查询提供必要上下文仍不能替代下游语义执行；静态分发也不能证明Agent加载。
+
+## 关联、迁移与验证
+
+本决定补充ADR-035的发现/加载/分发，不替代其唯一continuation、接收会话、scope与producer恢复规则。MIGRATION-792说明完整采用和普通错误恢复，不改历史归档。design V1–V6为本次验证计划，尚无实现/安装/Agent或性能结果。原Architecture在final_integration合法晋升并纳入最终Check后才形成共享当前决定。

@@ -38,6 +38,9 @@ MARKER_PATTERNS = {
     "exit": re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$"),
     "target": re.compile(r"^\s*<!--\s*guru-(workflow|stop)-target:\s*(\{.*\})\s*-->\s*$"),
 }
+ROUTING_REFERENCE_PATTERN = re.compile(
+    r"^\s*<!--\s*guru-routing-reference:\s*(\{.*\})\s*-->\s*$"
+)
 
 
 def safe_relative(value: Any) -> Path | None:
@@ -275,7 +278,31 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
     return result
 
 
-def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]], required: bool, errors: list[str]) -> dict[str, Any]:
+def read_workflow_routing(workflow: Path, extension_root: Path) -> tuple[Path, str]:
+    """Read the workflow's sole managed routing reference, without routing decisions."""
+    try:
+        text = workflow.read_text(encoding="utf-8")
+        references = [
+            match.group(1) for line in text.splitlines()
+            if (match := ROUTING_REFERENCE_PATTERN.fullmatch(line))
+        ]
+        if len(references) != 1:
+            raise ValueError("workflow must declare exactly one routing reference")
+        reference = json.loads(references[0])
+        relative = safe_relative(reference.get("path")) if isinstance(reference, dict) else None
+        if not isinstance(reference, dict) or set(reference) != {"path"} or relative is None:
+            raise ValueError("workflow routing reference must name one extension-relative path")
+        if any(pattern.fullmatch(line) for line in text.splitlines() for pattern in MARKER_PATTERNS.values()):
+            raise ValueError("workflow cannot combine inline graph markers with its routing reference")
+        routing = extension_root / relative
+        if not routing.is_file() or routing.is_symlink():
+            raise ValueError("workflow routing reference is missing or not a regular file")
+        return routing, routing.read_text(encoding="utf-8")
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("workflow routing reference is unreadable or invalid") from exc
+
+
+def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]], required: bool, errors: list[str], *, extension_root: Path | None = None) -> dict[str, Any]:
     invokes: list[dict[str, Any]] = []
     exits: list[dict[str, Any]] = []
     targets: list[tuple[str, str]] = []
@@ -283,7 +310,18 @@ def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]]
         return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
     if not workflow.is_file() or workflow.is_symlink():
         return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
-    for line in workflow.read_text(encoding="utf-8").splitlines():
+    if extension_root is None:
+        extension_root = (
+            workflow.parent if workflow == root / "trellis/workflows/guru-team/workflow.md"
+            else root / ".trellis/guru-team"
+        )
+    try:
+        _, routing_text = read_workflow_routing(workflow, extension_root)
+    except ValueError as exc:
+        if required:
+            errors.append(str(exc))
+        return {"invoke_markers": 0, "exit_markers": 0, "target_markers": 0}
+    for line in routing_text.splitlines():
         for kind, pattern in MARKER_PATTERNS.items():
             match = pattern.fullmatch(line)
             if not match:

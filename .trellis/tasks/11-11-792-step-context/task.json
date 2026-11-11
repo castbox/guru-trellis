@@ -1,0 +1,241 @@
+{
+  "schema_version": "2.0",
+  "id": "792-step-context",
+  "name": "792-step-context",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 792,
+    "disposition": "exact_source"
+  },
+  "title": "#792 按当前步骤提供流程上下文",
+  "description": "按唯一 authority 派生当前出口的 consumer/入口投影，正常入口按需加载路由与 legacy 合同。",
+  "dev_type": null,
+  "scope": "#792 五项行为、边界与最小验收。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-11",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-11-792-step-context/prd.md",
+    "revision": "sha256:72d3b64494e79ac10386cd879e4cf74cd8c05a2a411d0be82414451975e32324"
+  },
+  "deliveries": [
+    {
+      "id": "4a341415-1863-4308-b8ec-336121e859d3",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-11-792-step-context/prd.md",
+          "revision": "sha256:72d3b64494e79ac10386cd879e4cf74cd8c05a2a411d0be82414451975e32324"
+        },
+        "anchors": [
+          "R792-01",
+          "R792-02",
+          "R792-03",
+          "R792-04",
+          "R792-05",
+          "AC792-01",
+          "AC792-02",
+          "AC792-03"
+        ]
+      },
+      "planning_root": "deliveries/4a341415-1863-4308-b8ec-336121e859d3",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/design.md",
+        "revision": "sha256:b6543570596133e8248c1ef6c80af5b58510f7f1bef9698bb04b52b39aa20a5b"
+      },
+      "candidate": {
+        "base_ref": "05a16a5989669ca216d8ba34b9b419776410f04d",
+        "content_ref": "sha256:39dcabb2128fcf79401b5e832083a7c094e0024561809f897d61571d2e935e15",
+        "head_ref": "05a16a5989669ca216d8ba34b9b419776410f04d",
+        "kind": "git",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/references/legacy.md",
+          ".trellis/guru-team/references/routing.md",
+          ".trellis/guru-team/runtime/discovery.py",
+          ".trellis/guru-team/runtime/installed.py",
+          ".trellis/workflow.md",
+          "docs/architecture/03-domains/workflow-context.md",
+          "docs/architecture/adr/step-context-loading.md",
+          "docs/architecture/contributions/792-step-context.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/792-step-context/design.md",
+          "docs/requirements-design-test-contributions/792-step-context/manifest.yaml",
+          "docs/requirements-design-test-contributions/792-step-context/proposed/docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/792-step-context/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/792-step-context/proposed/docs/test/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/792-step-context/requirement.md",
+          "docs/requirements-design-test-contributions/792-step-context/test.md",
+          "docs/requirements-design-test-contributions/792-step-context/traceability.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/presets/guru-team/MIGRATION-792.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_step_context_routing.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+          "trellis/skills/guru-team/runtime/discovery.py",
+          "trellis/skills/guru-team/runtime/installed.py",
+          "trellis/skills/guru-team/runtime/tests/test_discovery_exits.py",
+          "trellis/skills/guru-team/tests/test_434_activation_candidate.py",
+          "trellis/skills/guru-team/tests/test_active_task_continuation_integration.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/references/legacy.md",
+          "trellis/workflows/guru-team/references/routing.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:9058a5a8-40a6-461b-b28d-4180010b5b95",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-792-step-context/prd.md",
+              "revision": "sha256:72d3b64494e79ac10386cd879e4cf74cd8c05a2a411d0be82414451975e32324"
+            },
+            "anchors": [
+              "R792-01",
+              "R792-02",
+              "R792-03",
+              "R792-04",
+              "R792-05",
+              "AC792-01",
+              "AC792-02",
+              "AC792-03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/design.md",
+            "revision": "sha256:b6543570596133e8248c1ef6c80af5b58510f7f1bef9698bb04b52b39aa20a5b"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/prd.md",
+              "revision": "sha256:be075826892bba684ed28e1a03ba1c8d00c6f826569b68a1500874556ebdc923"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/design.md",
+              "revision": "sha256:b6543570596133e8248c1ef6c80af5b58510f7f1bef9698bb04b52b39aa20a5b"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/implement.md",
+              "revision": "sha256:5babe4ed376204a3455573dfbc0eaebd94e15aa3ac6b10ca02933b58e0771164"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:00b45ede8d6c93e0f62af4436253cc925d4b643789f1aca0b7851abe88c60332",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-792-step-context/prd.md",
+              "revision": "sha256:72d3b64494e79ac10386cd879e4cf74cd8c05a2a411d0be82414451975e32324"
+            },
+            "anchors": [
+              "R792-01",
+              "R792-02",
+              "R792-03",
+              "R792-04",
+              "R792-05",
+              "AC792-01",
+              "AC792-02",
+              "AC792-03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/design.md",
+            "revision": "sha256:b6543570596133e8248c1ef6c80af5b58510f7f1bef9698bb04b52b39aa20a5b"
+          },
+          "candidate": {
+            "base_ref": "05a16a5989669ca216d8ba34b9b419776410f04d",
+            "content_ref": "sha256:39dcabb2128fcf79401b5e832083a7c094e0024561809f897d61571d2e935e15",
+            "head_ref": "05a16a5989669ca216d8ba34b9b419776410f04d",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/references/legacy.md",
+              ".trellis/guru-team/references/routing.md",
+              ".trellis/guru-team/runtime/discovery.py",
+              ".trellis/guru-team/runtime/installed.py",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/architecture/adr/step-context-loading.md",
+              "docs/architecture/contributions/792-step-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/792-step-context/design.md",
+              "docs/requirements-design-test-contributions/792-step-context/manifest.yaml",
+              "docs/requirements-design-test-contributions/792-step-context/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/792-step-context/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/792-step-context/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/792-step-context/requirement.md",
+              "docs/requirements-design-test-contributions/792-step-context/test.md",
+              "docs/requirements-design-test-contributions/792-step-context/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/MIGRATION-792.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/test_step_context_routing.py",
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+              "trellis/skills/guru-team/runtime/discovery.py",
+              "trellis/skills/guru-team/runtime/installed.py",
+              "trellis/skills/guru-team/runtime/tests/test_discovery_exits.py",
+              "trellis/skills/guru-team/tests/test_434_activation_candidate.py",
+              "trellis/skills/guru-team/tests/test_active_task_continuation_integration.py",
+              "trellis/skills/guru-team/tests/test_skill_packages.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/references/legacy.md",
+              "trellis/workflows/guru-team/references/routing.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:9058a5a8-40a6-461b-b28d-4180010b5b95",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/prd.md",
+              "revision": "sha256:be075826892bba684ed28e1a03ba1c8d00c6f826569b68a1500874556ebdc923"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/design.md",
+              "revision": "sha256:b6543570596133e8248c1ef6c80af5b58510f7f1bef9698bb04b52b39aa20a5b"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-792-step-context/deliveries/4a341415-1863-4308-b8ec-336121e859d3/implement.md",
+              "revision": "sha256:5babe4ed376204a3455573dfbc0eaebd94e15aa3ac6b10ca02933b58e0771164"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
