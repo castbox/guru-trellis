@@ -439,6 +439,26 @@
         "delivery_key",
         "planning_root"
       ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "typed_exit": {
+                "const": "baseline_current"
+              }
+            },
+            "required": [
+              "typed_exit"
+            ]
+          },
+          "then": {
+            "required": [
+              "baseline_identity",
+              "constitution_identity"
+            ]
+          }
+        }
+      ],
       "properties": {
         "schema_version": {
           "const": "delivery-1.0"

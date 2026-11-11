@@ -1,0 +1,165 @@
+{
+  "schema_version": "2.0",
+  "id": "796-architecture-planning-field-diagnostics",
+  "name": "796-architecture-planning-field-diagnostics",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 796,
+    "disposition": "exact_source"
+  },
+  "title": "#796 修复 Architecture 规划入口字段诊断",
+  "description": "修复普通字段遗漏误报内部故障并保留原入口与最小验收。",
+  "dev_type": null,
+  "scope": "完整交付 castbox/guru-trellis#796 当前正文。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-11",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/prd.md",
+    "revision": "sha256:219f4bbe5fd03d2d9106ba0e9a1cbd3a6720597c1e0882d3393e832d955c75f4"
+  },
+  "deliveries": [
+    {
+      "id": "8c1b3cc7-0621-4515-9ef9-443a4de84c48",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/prd.md",
+          "revision": "sha256:219f4bbe5fd03d2d9106ba0e9a1cbd3a6720597c1e0882d3393e832d955c75f4"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/design.md",
+        "revision": "sha256:81e812c87c14d2c7e478be896c004af38f83920a4306be1039f2009ed9897625"
+      },
+      "candidate": {
+        "base_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+        "content_ref": "sha256:829fd3902694c2dfe6841a2e91af10d9ee897e4d827bb57d43c1078bd8b77cd6",
+        "head_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+          ".claude/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:8c25cd14-7ab2-4d5e-9be9-6c9cda91f9f0",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/prd.md",
+              "revision": "sha256:219f4bbe5fd03d2d9106ba0e9a1cbd3a6720597c1e0882d3393e832d955c75f4"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/design.md",
+            "revision": "sha256:81e812c87c14d2c7e478be896c004af38f83920a4306be1039f2009ed9897625"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/prd.md",
+              "revision": "sha256:13de8abbe193a9bb569529f8249ca9340de2e24e13a403c768ff48fd878293a8"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/design.md",
+              "revision": "sha256:81e812c87c14d2c7e478be896c004af38f83920a4306be1039f2009ed9897625"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/implement.md",
+              "revision": "sha256:e5ddad7e62870848662eed87a078bd9b03f6e00fca7f3a225ed1bd01741586eb"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:5206a3f40e5109672fb715d2fac5e39a0b6e0c0e88077241cc10f353f6ba77db",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/prd.md",
+              "revision": "sha256:219f4bbe5fd03d2d9106ba0e9a1cbd3a6720597c1e0882d3393e832d955c75f4"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/design.md",
+            "revision": "sha256:81e812c87c14d2c7e478be896c004af38f83920a4306be1039f2009ed9897625"
+          },
+          "candidate": {
+            "base_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+            "content_ref": "sha256:829fd3902694c2dfe6841a2e91af10d9ee897e4d827bb57d43c1078bd8b77cd6",
+            "head_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+              ".claude/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:8c25cd14-7ab2-4d5e-9be9-6c9cda91f9f0",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/prd.md",
+              "revision": "sha256:13de8abbe193a9bb569529f8249ca9340de2e24e13a403c768ff48fd878293a8"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/design.md",
+              "revision": "sha256:81e812c87c14d2c7e478be896c004af38f83920a4306be1039f2009ed9897625"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-796-architecture-planning-field-diagnostics/deliveries/8c1b3cc7-0621-4515-9ef9-443a4de84c48/implement.md",
+              "revision": "sha256:e5ddad7e62870848662eed87a078bd9b03f6e00fca7f3a225ed1bd01741586eb"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
