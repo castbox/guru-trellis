@@ -156,10 +156,20 @@ Plan; a successful producer or public source change does not discharge them.
 Form only the current call-local design_locator, or design_facts with source
 constraint_refs when no substantive design exists. Facts describe mechanisms,
 not PRD narrative, approval or acceptance claims. Do not persist a parallel
-candidate/proposal/cache. Invoke original normal-scenario and solution owners
-with author_candidate_set, then applicable root-cause qualification. Feature
-work retains not_incident_applicable; other exits follow their unique owners.
-Before constructing `author_paths` and `author_identity`, load the shared
+candidate/proposal/cache. Before loading a qualifier in full, read its short
+[normal](../../guru-qualify-normal-scenario/references/applicability.md),
+[solution](../../guru-qualify-solution-mechanism/references/applicability.md), and
+[root](../../guru-qualify-root-cause/references/applicability.md) conditions.
+Judge each independently for `author_candidate_set`: adopt a still-applicable
+conclusion, or explicitly load and invoke the original stable Skill when its
+conditions require a current invocation, using only its actual nonempty set.
+An untriggered owner needs no full body, input or invented result; pure ordinary
+features do not enter root merely to obtain not_incident_applicable. Root uses
+this caller's current scenario/authority-placement judgments and actual
+outcomes of upstream owners that triggered. Original non-passing exits and
+unique consumers remain effective, and Author still reviews the whole candidate.
+Only when constructing a required current `author_paths` / `author_identity`
+input, load the shared
 [file-set identity format and recipe](../../guru-qualify-normal-scenario/references/contract.md#file-set-identity).
 The actual requirements_ready output reaches independent Architecture
 candidate_assessment before the first substantive design/implement write.

@@ -37,7 +37,7 @@
     },
     {
       "id": "profile_binding",
-      "evidence": "one of ten closed input profiles with its fixed caller, mode, current target identity, and resume mapping",
+      "evidence": "one declared closed input profile with its fixed caller, mode, current target identity and resume mapping",
       "binding": "the exact semantic Owner that is about to promote a candidate into a stage judgment",
       "freshness": "the caller authors a new closed input for every invocation"
     },
@@ -49,7 +49,7 @@
     },
     {
       "id": "candidate_set",
-      "evidence": "non-empty unique candidate refs with exactly one locator set and one AI-authored decision per candidate",
+      "evidence": "caller applies references/applicability.md before full loading; an entered invocation has non-empty unique applicable candidate refs, one locator set and one AI-authored decision per candidate",
       "binding": "one invocation-local candidate set, with no worker severity or route authority",
       "freshness": "candidate, locator, decision, and AI gate ref sets must match exactly"
     },
@@ -57,7 +57,7 @@
       "id": "invocation_freshness",
       "evidence": "call-local input digest, semantic result digest, current Git identities, typed exit, and unique consumer binding",
       "binding": "one stdin/stdout invocation with no repository result state",
-      "freshness": "any authority, planning, candidate, caller graph, diff, range, HEAD, base pair, test, payload, scope, mechanism, or finding change requires complete re-entry"
+      "freshness": "new invocations bind current facts; loading, adoption, material-change refresh and lost-conclusion recovery follow references/applicability.md; stage/caller or unrelated changes alone do not repeat semantic qualification"
     }
   ],
   "runtime_dependency": {
@@ -222,7 +222,7 @@
   ],
   "reentry": {
     "identity": "profile, fixed caller, mode, current target, candidate refs and locators, current semantic decisions and witnesses, AI gate, typed exit, and unique consumer",
-    "freshness": "all qualification values are invocation-local; any relevant live change or downstream scope, mechanism, or finding revision requires a complete fresh call",
+    "freshness": "call-local validation remains current; adopt still-applicable conclusions or refresh affected judgments under references/applicability.md; a new invocation never replays an old envelope",
     "stale_behavior": "fail_closed"
   },
   "tests": [

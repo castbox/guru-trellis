@@ -279,8 +279,10 @@ never substitutes for a mandatory workflow invocation marker.
 ### Normal-scenario qualification invocation
 
 `guru-qualify-normal-scenario` is the only semantic owner for candidate
-qualification. The global workflow names the stable Skill id, the ten mandatory
-profiles, their exact pre-judgment trigger points, the four exits above, and the
+qualification. Its package owns `references/applicability.md`, which callers
+read before loading the full Skill. The global workflow names the stable Skill
+id, the ten lifecycle profiles and existing `author_candidate_set`, their
+pre-judgment boundaries, the four exits above, and the
 unique consumer of each exit. It does not restate scope-first reasoning,
 security-candidate evidence, severity quarantine, decision criteria, or
 mechanism revision semantics.
@@ -296,9 +298,20 @@ owner. Scope confirmation goes only to
 `normal-scenario-qualification-blocked`. Unknown, empty, multiple, stale, or
 mismatched profile/result routing fails closed.
 
-For Phase 2, `guru-phase2-implementation-coordinator` invokes
-`implementation_discovery` before any planning-external candidate can cause an
-edit or test. Its existing deterministic resume target remains
+At each boundary, the original caller applies each qualifier's own short
+applicability contract. A triggered judgment without a still-applicable
+conclusion explicitly loads and invokes the original stable Skill on its real
+nonempty applicable candidates. An untriggered qualifier requires neither full
+loading nor an invocation or fabricated result. The caller continues its own
+stage judgment. Material authority, mechanism, conditions or evidence changes
+refresh affected judgments; stage or caller change alone does not repeat them.
+Lost necessary conclusions return to their original owners for recovery or
+fresh judgment. A new invocation still binds current deterministic facts and
+does not replay an old envelope.
+
+For Phase 2, `guru-phase2-implementation-coordinator` applies these conditions
+at `implementation_discovery` before any planning-external candidate can cause
+an edit or test. Its existing deterministic resume target remains
 `guru-resume-implementation`. Rejected candidates never enter clarification,
 acceptance, negative tests, implementation, P0-P3 findings, follow-up work, or
 publication blocking.
@@ -309,7 +322,7 @@ publication blocking.
 solution-mechanism qualification. It is independent from
 `guru-qualify-normal-scenario`: the former judges whether a mechanism can carry
 business authority, while the latter judges whether a problem scenario is
-qualified. The global workflow names the same ten closed profiles and consumes
+qualified. The global workflow names the same lifecycle and Author profiles and consumes
 the four exits declared by the solution-mechanism interface.
 
 The ten profiles are `task_free_pre_write`, `task_free_evolution`,
@@ -317,7 +330,9 @@ The ten profiles are `task_free_pre_write`, `task_free_evolution`,
 `planning_scenario_set`, `implementation_discovery`,
 `base_impact_candidate_set`, `phase2_candidate_set`,
 `branch_review_candidate_set`, and `publication_candidate_set`. Each caller
-provides only its profile-specific candidate set and live locators; the Skill
+first reads this original package's `references/applicability.md`; when it
+triggers, the caller provides only its applicable profile-specific nonempty
+candidate set and live locators. The Skill
 reads current requirement, planning, architecture/spec, dependency/caller
 graph, diff, tests, and repository contract before making its semantic judgment.
 
@@ -1021,7 +1036,18 @@ into new Delivery or Completion results. `archived_review_passed` stops at
 
 ## Root-Cause Global Routing
 
-Global workflow explicitly invokes guru-qualify-root-cause after normal/solution outcomes for the ten current candidate profiles. Three root routers return to original owners; root stop consumes a concrete reason. Step-local semantic admission and reuse remain package-owned. #383 retains common completion ownership.
+The original caller first reads each qualifier's own short applicability
+contract. When root triggers for a new or materially changed mechanism and no
+still-applicable conclusion is available, explicitly load and invoke
+`guru-qualify-root-cause` on its real eligible set. Root consumes the caller's
+current scenario and authority-placement judgment, including actual
+normal/solution outcomes when those qualifiers triggered; it does not require
+invented outcomes for correctly untriggered qualifiers. The ten lifecycle
+profiles and existing Author profile keep their original consumers. Three root
+routers return to original owners; root stop consumes a concrete reason.
+Step-local admission, adoption and material-change refresh remain package-owned.
+#383 retains common completion ownership. Apply the complete matching provider
+under `trellis/presets/guru-team/MIGRATION-793.md`.
 
 ## #250 Intake profile routing
 

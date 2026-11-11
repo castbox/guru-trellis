@@ -30,11 +30,16 @@
     "candidate_results": [
       {
         "candidate_ref": "candidate-root-cause",
-        "goal": "ordinary_feature",
-        "classification": "not_incident_applicable",
-        "reason": "The requested display feature introduces no incident or protection mechanism.",
+        "goal": "diagnosis",
+        "classification": "diagnosis_incomplete",
+        "reason": "The example caller proposes bounded observation of a real duplicate callback; cause remains unknown.",
         "evidence": {
-          "applicability_basis": "Current scope is a display feature; no failure-control behavior is introduced."
+          "observed_failure": "The example operation emitted the completion callback twice for the same request.",
+          "bounded_investigation": "Inspect the existing callback trace for this request and compare the producer and consumer events.",
+          "action_impact": "Read existing observations only; do not change request acceptance or suppress callback events.",
+          "evidence_gaps": [
+            "The first duplicate emission and causal chain remain unconfirmed."
+          ]
         }
       }
     ],
@@ -43,7 +48,7 @@
       "reviewed_candidate_refs": [
         "candidate-root-cause"
       ],
-      "summary": "Reviewed current scope and candidate behavior; this is an ordinary feature."
+      "summary": "Reviewed the actual diagnostic mechanism; bounded observation can continue while causal gaps remain."
     },
     "typed_exit": "classified",
     "consumer": {

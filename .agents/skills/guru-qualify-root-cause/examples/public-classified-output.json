@@ -5,7 +5,7 @@
   "candidate_dispositions": [
     {
       "candidate_ref": "candidate-root-cause",
-      "classification": "not_incident_applicable"
+      "classification": "diagnosis_incomplete"
     }
   ]
 }
