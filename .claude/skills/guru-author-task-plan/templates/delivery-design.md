@@ -6,9 +6,11 @@
 
 关联本批需求/场景/AC、Task 整体责任及本批目标。按原 [authoring 固定范围合同](../references/authoring.md#fixed-delivery-range) 写 development baseline B 及其来源，区分内容范围、Planning H0 和 PR 目标。定位阶段适用 Architecture authority/constitution/change contract 与真实候选结论，不预填最终实现结果。
 
+按共享正文合同第4节核对计划目标与起点的实际内容关系；发布顺序及依赖条件归唯一 Delivery Policy。
+
 ## 2. 当前系统、边界与目标差额
 
-写现有能力、真实文件/模块、起点与目标状态、本批改动和不改边界。后续 Delivery 写前序已实现能力及本轮差额；全量 D1 写明没有前序。事实与计划分开。
+写现有能力、真实文件/模块、起点与目标状态、本批改动和不改边界。后续 Delivery 写前序已实现能力及本轮差额；全量 D1 写明没有同 Task 前序。事实与计划分开。
 
 ## 3. 来源设计处置（唯一）
 

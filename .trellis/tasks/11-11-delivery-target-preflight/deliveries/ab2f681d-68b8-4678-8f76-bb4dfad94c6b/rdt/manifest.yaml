@@ -1,0 +1,21 @@
+task_id: delivery-target-preflight
+lifecycle_generation: 0
+delivery_id: ab2f681d-68b8-4678-8f76-bb4dfad94c6b
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e
+architecture:
+  locator: docs/architecture/README.md
+  version: e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e
+  status: active
+documents:
+  requirements: proposed/requirements.md
+  design: proposed/design.md
+  test: proposed/test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/task-delivery-lifecycle.md
+  - docs/design/current/task-delivery-lifecycle.md
+  - docs/test/current/task-delivery-lifecycle.md

@@ -33,6 +33,14 @@ AI 判断 scope、来源、关联、finding、充分性和路线。确定性工�
 
 Planning 在实质 solution 写入前先取得真实 candidate 的独立 Architecture assessment；Author 消费实际结果完成方案。最终文档经过独立 Wording、Architecture final_plan 和 Approval。无真实 candidate 不产生候选通过。Architecture/Wording/Approval 不代写 Author 正文；Brainstorm 仅在原 owner 之下复用方法。Approval 的当前正式结果交原 Activation；文件存在或 public phase 不是批准。
 
+### 交付目标预检
+
+`BEH-DELIVERY-TARGET-PREFLIGHT` 补足 R154、R531 与 BEH567 的规划责任。原 Author 确定计划 PR 目标时，分别核开发起点、固定内容审核范围和当时目标的实际内容关系，识别同 Task 及跨 Task 的必要依赖。D1 没有同 Task 前序不能证明起点没有跨 Task 继承。Git 提交或路径差额只作为调查线索；内容归属、已交付状态及必要阻塞须结合实际内容与公共交付事实判断。
+
+尚未进入目标的必要继承内容，其安排留在原 Delivery PRD 上下文和唯一 Delivery Policy：可继续动作、依赖动作的前提、剩余责任及恢复时读取的实际事实。带明确依赖的独立实施和原能力支持的 Draft 可以继续，不一律等前驱合并。原 Approval 在独立交付维度判断安排是否可执行；批准不表示前提已满足或可以 Ready。原 Delivery Review 保留发布前核对，发布安排以原 Publish/Merge 的真实能力为限。未知或真实变化回原 owner；不自动改变范围、固定 B 或 PR 目标，不因无关目标前进增加同步、Reconcile 或重审。
+
+详细方法仅由 [planning-body 第4节](../../../trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md#4-delivery-与来源设计) 定义。职责见 `CON-DELIVERY-TARGET-PREFLIGHT`，验证见 `SCN-TARGET-01..05`；原三层关系保持。本补充旨在减少晚期返工，其文本存在或方法回放不证明产品缺陷率下降。
+
 原 `guru-activate-delivery` 读取三份当前中文规划、明确切片及相邻 Approval 实际 freshness，完成当前计划展示/接受边界后，唯一使用公共 planning writer 记录真实 Planning 结果。调用方不能从文件重算 token 冒充 Approval。恢复读回同 operation/result，不重复公共写入；真实计划变化回最早受影响 Planning owner。授权仅存在会话，不写入任何 artifact。
 
 ## 固定内容范围、实施与返工

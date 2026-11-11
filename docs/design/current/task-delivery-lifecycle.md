@@ -31,6 +31,14 @@ Source 关系与 Closure 意图分离：issue exact_source/reference_only/follow
 
 Architecture 候选评估先于 Author 实质 solution；最终 Wording-current facts 之后的 final_plan 紧邻 Approval。Wording 和 Approval 只审各自语义，不写 Author 文档。Activation 独占公共 planning role，消费真实 approved DTO 的局部 freshness，调用公共 record_gate 产生新的 planning-accepted result。该 receipt 交 implementation/Check predecessor；Approval freshness 不成为公共 Gate result identity 或跨阶段 authority。
 
+### 交付目标预检职责
+
+`CON-DELIVERY-TARGET-PREFLIGHT` 承接 `BEH-DELIVERY-TARGET-PREFLIGHT`，细化既有 D154、D531 与固定 B/PR target 分工。原 Author 的 [planning-body 第4节](../../../trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md#4-delivery-与来源设计) 独占具体调查和安排方法；Delivery PRD/design/implement 模板短引用该定义。PRD 拥有本批上下文，implement 的唯一 Policy 拥有依赖动作与可继续工作的执行安排。Git 和公共 Delivery/PR 只提供事实，不推断 scope、交付或通过资格。
+
+原 Approval 在既有 Policy 维度消费实际内容关系、适用审核覆盖与原 Publish/Merge 能力，判断发布顺序、前提和剩余责任能否执行。缺安排回原 Author，真实范围或目标选择回原 authority；原 Delivery Review 仍按发布时事实核对。此补充不新增 owner、runtime、DTO/schema、phase、发布能力或前驱台账，不要求任意 stack/retarget 支持，不因普通目标前进触发 Reconcile。
+
+选择在原方法内补足，代价是必要事实读取和文字维护。三个模板仅短引用，避免重复方法；只调查命中的必要依赖。若实际对照显示误阻塞或成本增加而无新增收益，由原 owner 收窄或修订对应表述，保留独立工作和原质量要求。验证关系为 `SCN-TARGET-01..05`；源码、安装、方法行为及正式质量结果分别判断，不预设实验优胜。
+
 `D657-01/02 / CON657-ADMISSION/SELECTION`：初始 Task Creation checked created 只服务原创建区间；既有续接通过原身份/绑定/checkout owner 后，实际阶段 owner 承担写入资格。Delivery created wire 不变，原 workflow consumer 读取公共 current phase 和实际未完成义务后按唯一 continuation 进入原 owner；Planning 只有初始需求义务才进入 initial Author，已有工作恢复适用 Author/Wording/Architecture/Approval，当前 approved 进入 Activation。query 只提供客观可用性，scope/gate 充分性仍由原语义 owner判断；不新增 phase cache、router Skill、DTO 或状态 authority。初始创建精确 validator 不放宽。
 
 ## Scope、内容边界与恢复

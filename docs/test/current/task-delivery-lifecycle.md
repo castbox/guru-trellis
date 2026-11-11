@@ -29,6 +29,20 @@
 | BEH567-01..05 / 该源T567链 | 各阶段固定B/H；无关target前进；实际冲突/依赖同步 | 固定候选正常前进、默认零Reconcile；仅真实触发固定一次target，恢复同Delivery，不追赶、不重放无关门禁。 |
 | T531-07 / R531-07 | 完整匹配安装及显式旧数据迁移 | canonical/installed/native/reapply一致，旧公共/私有迁移分owner；source修改不证明旧业务/production已采用。 |
 
+## 交付目标预检的正常场景
+
+以下场景沿 `BEH-DELIVERY-TARGET-PREFLIGHT` → `CON-DELIVERY-TARGET-PREFLIGHT` 的原 Author/Approval 职责验证。方法由原 planning-body 单写，本节定义观察与证明边界。
+
+| 稳定身份 | 正常输入与原入口 | 必须观察及证据边界 |
+| --- | --- | --- |
+| SCN-TARGET-01 | D1 无同 Task 前序，但起点含尚未进入目标的跨 Task 必要继承；原 Author 首次规划 | 区分起点、固定范围和实际 PR 范围；结合内容与公共事实识别依赖，Policy 写明可继续动作、依赖前提、原责任及恢复事实；前驱 Check/Review 不冒充交付，独立实施不被一律阻塞。 |
+| SCN-TARGET-02 | 同一继承内容已进入目标的对照 | 依据实际内容与交付事实解除该依赖，不因历史叙述、路径数或 SHA 不同误阻塞。 |
+| SCN-TARGET-03 | 有明确发布安排且符合原 Publish/Merge 能力的对照 | 原 Approval 判断安排可执行，保留真实依赖动作的前提，不将规划通过当 Ready；不虚构任意 stack/retarget 能力。 |
+| SCN-TARGET-04 | 目标仅有无关前进的对照 | 固定 B 保持，不新增同步、Reconcile、重审或发布阻塞；信息性关联不新增义务。 |
+| SCN-TARGET-05 | 相同事实下缺安排与完整可执行安排，分别作为独立 Approval-only 输入 | 缺安排被识别，完整安排不误阻塞。四场景若已提供可分辨的独立观察则采用，否则补一个最短 paired 回放；Author 后自评不能替代独立输入观察或正式 Approval。 |
+
+旧/新方法使用等价事实、同模型/工具/预算及冻结输入，记录首次输出、失败、误阻塞和实际成本，不中途提示答案或修改输入制造优胜。控制已能正确处理时，报告该样本没有新增行为收益；候选结果仍须实际观察。五处 canonical、受管投影及三平台分发经原安装 owner 和命中回归分别验证。机械分发与方法回放均不替代完整候选 Check、原 RDT final integration/readback、实际 after 重绑、最终 Check 和独立 committed Review，也不证明生产采用或产品缺陷率下降。本节定义预期，不预填本次验证通过。
+
 ## T657：当前续接、选择与范围修订
 
 | 稳定场景 | 正常入口和观察 | 证据边界 |

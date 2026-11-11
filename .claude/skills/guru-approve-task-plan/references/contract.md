@@ -140,6 +140,20 @@ the slice validation boundary, and the owner that retains the remaining work.
 An empty or ambiguous slice, hidden remaining work, or a condition that depends
 on the remaining work already being complete cannot produce `approved`.
 
+Within this existing Delivery policy judgment, apply
+[planning-body.md §4](../../guru-author-task-plan/references/planning-body.md#4-delivery-与来源设计)
+to the actual development starting point and planned PR target. Distinguish
+earlier Deliveries of this Task from inherited work of another Task. Judge
+whether the actual proposed content, applicable review coverage and publication
+order form an executable arrangement through the existing owners. An explicit
+outstanding prerequisite may remain for a later dependent action when
+independent work can proceed and its owner, condition and facts to reread are
+clear. Approval does not assert that the prerequisite is fulfilled or that the
+slice is Ready. Return a missing or unexecutable arrangement through the existing
+planning revision route. A real scope or target choice retains its original
+authority route. Do not require a predecessor merge before every implementation
+or Draft action, or infer a blocker from ordinary target advancement alone.
+
 Formatting, spelling, link, derived-text, and workflow-metadata deltas are
 classified by the AI against their actual semantic effect. A proven equivalent
 delta refreshes only the directly dependent owner identity. A requirement,

@@ -1,0 +1,218 @@
+{
+  "schema_version": "2.0",
+  "id": "delivery-target-preflight",
+  "name": "delivery-target-preflight",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "在规划中识别实际PR范围与未交付前驱",
+  "description": "在原Author/Approval内提前识别跨Task继承相对PR目标的交付安排，保留独立工作与合法发布路径，减少晚期返工。",
+  "dev_type": null,
+  "scope": "原共享规划正文、必要模板及Approval消费说明；沿原安装机制分发，并验证首次识别与误阻塞。不得新增阶段/审批/DTO/schema/台账，不接手旧Task交付。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-11",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-11-delivery-target-preflight/prd.md",
+    "revision": "sha256:32e127d65966d64807c6bcbec0435ec932b0de475fbd42ba3d7ac19016c02e79"
+  },
+  "deliveries": [
+    {
+      "id": "ab2f681d-68b8-4678-8f76-bb4dfad94c6b",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-11-delivery-target-preflight/prd.md",
+          "revision": "sha256:32e127d65966d64807c6bcbec0435ec932b0de475fbd42ba3d7ac19016c02e79"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6"
+        ]
+      },
+      "planning_root": "deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/design.md",
+        "revision": "sha256:3e00bec5e0e17410cec1b0eb4b8738fa32146e3f72d6d900c144609dfb5946df"
+      },
+      "candidate": {
+        "base_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+        "content_ref": "sha256:0c9bf7e8dc02c24b3d51fdd4a9487784390b65705b27a61765202d0ef8a6c80b",
+        "head_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-approve-task-plan/references/contract.md",
+          ".agents/skills/guru-author-task-plan/references/planning-body.md",
+          ".agents/skills/guru-author-task-plan/templates/delivery-design.md",
+          ".agents/skills/guru-author-task-plan/templates/delivery-implement.md",
+          ".agents/skills/guru-author-task-plan/templates/delivery-prd.md",
+          ".claude/skills/guru-approve-task-plan/references/contract.md",
+          ".claude/skills/guru-author-task-plan/references/planning-body.md",
+          ".claude/skills/guru-author-task-plan/templates/delivery-design.md",
+          ".claude/skills/guru-author-task-plan/templates/delivery-implement.md",
+          ".claude/skills/guru-author-task-plan/templates/delivery-prd.md",
+          ".cursor/skills/guru-approve-task-plan/references/contract.md",
+          ".cursor/skills/guru-author-task-plan/references/planning-body.md",
+          ".cursor/skills/guru-author-task-plan/templates/delivery-design.md",
+          ".cursor/skills/guru-author-task-plan/templates/delivery-implement.md",
+          ".cursor/skills/guru-author-task-plan/templates/delivery-prd.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-design.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-implement.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-prd.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:f35767df-79f5-4fbc-aec9-bc140a74a282",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/prd.md",
+              "revision": "sha256:32e127d65966d64807c6bcbec0435ec932b0de475fbd42ba3d7ac19016c02e79"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/design.md",
+            "revision": "sha256:3e00bec5e0e17410cec1b0eb4b8738fa32146e3f72d6d900c144609dfb5946df"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/prd.md",
+              "revision": "sha256:dcb280f0ed68d1a80aa2de12274f69cce7b99387d6649886a505c154bac7530a"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/design.md",
+              "revision": "sha256:3e00bec5e0e17410cec1b0eb4b8738fa32146e3f72d6d900c144609dfb5946df"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/implement.md",
+              "revision": "sha256:1772b0ac12758a4a360aa96a6f8f1622d2967fb39be9d4f7c571ca716d6d5f67"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:9b88f410fe194079988f74d3532b8cf604d3720f79e1307e0da497fa1118d2a3",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/prd.md",
+              "revision": "sha256:32e127d65966d64807c6bcbec0435ec932b0de475fbd42ba3d7ac19016c02e79"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/design.md",
+            "revision": "sha256:3e00bec5e0e17410cec1b0eb4b8738fa32146e3f72d6d900c144609dfb5946df"
+          },
+          "candidate": {
+            "base_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+            "content_ref": "sha256:0c9bf7e8dc02c24b3d51fdd4a9487784390b65705b27a61765202d0ef8a6c80b",
+            "head_ref": "e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-approve-task-plan/references/contract.md",
+              ".agents/skills/guru-author-task-plan/references/planning-body.md",
+              ".agents/skills/guru-author-task-plan/templates/delivery-design.md",
+              ".agents/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".agents/skills/guru-author-task-plan/templates/delivery-prd.md",
+              ".claude/skills/guru-approve-task-plan/references/contract.md",
+              ".claude/skills/guru-author-task-plan/references/planning-body.md",
+              ".claude/skills/guru-author-task-plan/templates/delivery-design.md",
+              ".claude/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".claude/skills/guru-author-task-plan/templates/delivery-prd.md",
+              ".cursor/skills/guru-approve-task-plan/references/contract.md",
+              ".cursor/skills/guru-author-task-plan/references/planning-body.md",
+              ".cursor/skills/guru-author-task-plan/templates/delivery-design.md",
+              ".cursor/skills/guru-author-task-plan/templates/delivery-implement.md",
+              ".cursor/skills/guru-author-task-plan/templates/delivery-prd.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-design.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-implement.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-prd.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:f35767df-79f5-4fbc-aec9-bc140a74a282",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/prd.md",
+              "revision": "sha256:dcb280f0ed68d1a80aa2de12274f69cce7b99387d6649886a505c154bac7530a"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/design.md",
+              "revision": "sha256:3e00bec5e0e17410cec1b0eb4b8738fa32146e3f72d6d900c144609dfb5946df"
+            },
+            {
+              "locator": ".trellis/tasks/11-11-delivery-target-preflight/deliveries/ab2f681d-68b8-4678-8f76-bb4dfad94c6b/implement.md",
+              "revision": "sha256:1772b0ac12758a4a360aa96a6f8f1622d2967fb39be9d4f7c571ca716d6d5f67"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

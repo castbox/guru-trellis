@@ -28,6 +28,8 @@
 
 按 [原 Policy 合同](../references/authoring.md#solution-writing-and-complete-positive-capability) 选择 full/partial/staged，不发明新字段协议。full 写本批整体覆盖与完成条件；partial 写独立切片、剩余责任及整体 Completion 条件；staged 写有序阶段、当前阶段、进入/退出、剩余阶段及最终条件。没有延期责任不等于已完成验收，Delivery 合并不等于 Task Completion。
 
+按共享正文合同第4节落实实际发布安排、当前可继续工作和依赖动作的前提、原责任及恢复时应读取的事实；不把目标分支名称代替安排。
+
 本批存在真实临时限制时，在 Policy 中写明对象、原因、解除条件、当前阶段边界和后继责任；限定到实际能力和适用环境。
 
 ## 6. Docs SSOT Plan（唯一）
