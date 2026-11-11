@@ -121,9 +121,10 @@ planning-external observation stops that worker before any edit, added test,
 self-fix, severity, classification, or route. Its complete invocation-local
 candidate shape is `candidate_ref`, `observed_behavior`, `locators`, and
 `minimal_reproduction_hint`; it is ephemeral input, not a worker-owned finding
-or handoff. This owner rereads the live evidence and completes fresh
-`phase2_candidate_set` qualification before continuing or redispatching work
-for that candidate. Official `trellis-*` agent files remain unchanged and
+or handoff. This owner rereads the live evidence and applies
+[Qualification Applicability](../SKILL.md#qualification-applicability), refreshing
+affected judgments through `phase2_candidate_set` when required before
+continuing or redispatching work for that candidate. Official `trellis-*` agent files remain unchanged and
 upstream-owned.
 
 ## Public Entry
@@ -396,8 +397,10 @@ separately from retry recovery and preserve the evidence's actual layer and
 scope. Passing functional tests alone is insufficient; this consumer does not
 restate principle prose or the main method.
 
-Form concrete candidate observations and qualify them through the existing
-Phase 2 profiles before severity or findings. An unnecessary mechanism returns
+Form concrete candidate observations and apply Qualification Applicability
+to each original owner before severity or findings; load and invoke only an
+owner whose conditions require a current invocation, or adopt its still-applicable
+conclusion. An unnecessary mechanism returns
 through `mechanism_revision_required` for remove/replace and fresh complete
 check while preserving accepted scope. A conflict in the requirement itself
 re-enters the Architecture owner: `architecture_conflict` returns to Planning
@@ -431,7 +434,8 @@ adequacy dimensions and validation summaries.
 
 Before proposing a fix, test, validation obligation, severity or route,
 separately establish problem validity, current-task necessity and mechanism
-suitability through the existing qualification profiles. Identify the concrete
+suitability through this owner's current review and the existing qualification
+owners whose conditions require invocation or adoption. Identify the concrete
 current goal or affected contract that would fail without the work. Preserve
 necessary refactoring, consumer adaptation and obsolete-path exit; do not leave
 duplicated logic or a second authority for minimum diff. Unrelated historical
@@ -468,18 +472,23 @@ qualification, finding/fix and blocked routes.
    provenance does not exempt the file, and path, UTF-8, and JSON validation
    always remains active.
 3. Form the actual candidate-only set for this complete current round.
-   If it is empty, do not invoke `guru-qualify-normal-scenario`,
+   If it is empty, do not load or invoke `guru-qualify-normal-scenario`,
    `guru-qualify-solution-mechanism`, or `guru-qualify-root-cause`; their input
    contracts still require non-empty sets. Record `candidate_classifications=[]`
    and continue the complete review and original recorder/checker/public entry.
    Reviewed paths, business functions and invented no-defect placeholders are
-   not defect candidates. If it is non-empty, invoke
-   `guru-qualify-normal-scenario:phase2_candidate_set` and the applicable
-   solution-mechanism profile. The root owner receives only the eligible refs
-   returned by those preceding owners, never an empty or fabricated input.
-   Keep final classifications and witnesses for every actual candidate,
-   including rejected candidates; all-rejected is distinct from no candidates.
-   Only candidates returned eligible through `classified` may receive P0-P3 findings.
+   not defect candidates. If it is non-empty, follow
+   [Qualification Applicability](../SKILL.md#qualification-applicability)
+   independently for each owner. Invoke
+   `guru-qualify-normal-scenario:phase2_candidate_set` only when normal's
+   conditions require current admission; apply solution/root's own conditions
+   to their actual applicable nonempty sets. Root consumes current caller
+   scenario/authority-placement judgments and actual outcomes from upstream
+   owners that triggered, never invented outcomes from untriggered owners.
+   Keep this owner's final classifications and witnesses for every actual
+   candidate, including rejected candidates; all-rejected is distinct from
+   no candidates. Only currently eligible candidates may receive P0-P3 findings;
+   a triggered qualifier must establish eligibility through actual `classified`.
    `scope_confirmation_required` enters requirements clarification,
    `mechanism_revision_required` returns to implementation for remove/replace
    and a current complete-coverage Check, and `blocked` stops. Rejected candidates

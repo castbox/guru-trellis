@@ -272,7 +272,7 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 
 ## #382 根因候选资格增量（.79）
 
-`ARCH-CUR-052`（reviewed #382 contribution；promotion 后 fresh gates pending）：canonical `guru-qualify-root-cause` 独占目标感知因果候选准入，十个 caller profiles、七 classifications 与四 exits 经现有 normal→solution→root 边界返回原 owner。诊断与合格缓解诚实保留未知根因；实质机制变化重审，caller/stage 变化不重复同资格且不替代当前阶段判断。共同完成语义仍归 #383，未在本任务实现。共享 `qualification_facts.py` 只提取确定性 Git/planning/path 事实，既有两 qualification API 保持；installer kernel inventory 机械拆分。结果和边界仅由[唯一 Test](../../requirements-design-test-contributions/382-root-cause-qualification/test.md)拥有，不在 CURRENT 复制认知正文。
+`ARCH-CUR-052`（reviewed #382 contribution；promotion 后 fresh gates pending）：canonical `guru-qualify-root-cause` 独占目标感知因果候选准入，十类 lifecycle 及已有 Author profile、七 classifications 与四 exits 按各原 owner 的短适用条件加载/调用并返回原 owner。root 承接 caller 当前场景/authority-placement 判断与真正触发的上游结果，未触发不造结果；条件调用决定见 [ADR-CONDITIONAL-QUALIFICATION](../adr/conditional-qualification.md)。诊断与合格缓解诚实保留未知根因；实质机制变化重审，caller/stage 变化不重复同资格且不替代当前阶段判断。共同完成语义仍归 #383，未在本任务实现。共享 `qualification_facts.py` 只提取确定性 Git/planning/path 事实，既有两 qualification API 保持；installer kernel inventory 机械拆分。原 #382 的结果和观察截止由其[唯一 Test](../../requirements-design-test-contributions/382-root-cause-qualification/test.md)拥有；条件调用的本轮观察见 [#793 Test](../../requirements-design-test-contributions/793-conditional-qualifiers/test.md)。CURRENT 不复制认知正文。
 
 ## #383 因果完成语义增量（.80）
 

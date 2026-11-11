@@ -18,13 +18,17 @@ execution owner performs the investigation or change and judges its completion.
 
 ## Select The Entry
 
-Read `references/contract.md` completely, including its entry boundaries, and
-select the actual use before constructing input or invoking a script:
+Caller first reads [applicability](references/applicability.md) before loading
+this Skill. When it requires invocation, read `references/contract.md`
+completely, including its entry boundaries, and select the actual use before
+constructing input or invoking a script:
 
 - **Candidate qualification:** use a declared caller/profile from the current
-  `interface.json`, a real target and candidate set, and the actual normal-scenario
-  and solution-mechanism outcomes consumed by that caller. Standalone mode has
-  the same prerequisites and runtime dependency as workflow mode.
+  `interface.json`, a real target and candidate set, and the caller's current
+  scenario/authority-placement judgments. Consume actual normal/solution
+  outcomes when those owners independently trigger; do not require results
+  from owners that did not trigger. Standalone mode has the same prerequisites
+  and runtime dependency as workflow mode.
 - **Independent change review:** `guru-review-change` reads the causal method
   and common semantics within its own review. Method reuse invokes no root
   qualification and creates no Task, candidate identity, profile or typed exit.
@@ -34,7 +38,8 @@ select the actual use before constructing input or invoking a script:
   cause alone does not prevent bounded diagnosis.
 - **Discussion of this Skill:** explain the Skill without running qualification.
 
-When an actual caller/profile or upstream outcome is missing, state the concrete
+When an actual caller/profile or an applicable required judgment is missing,
+state the concrete
 prerequisite gap and return control to the actual caller or current project
 entry before constructing invocation input. Do not create resources or invent
 identities, upstream results or a qualification exit to make the request fit.

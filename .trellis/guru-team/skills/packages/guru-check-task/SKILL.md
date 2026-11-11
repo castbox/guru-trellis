@@ -21,6 +21,21 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Qualification Applicability
+
+At this Skill's candidate boundary, first read the original owners' short
+[normal](../guru-qualify-normal-scenario/references/applicability.md),
+[solution](../guru-qualify-solution-mechanism/references/applicability.md), and
+[root](../guru-qualify-root-cause/references/applicability.md) conditions before
+loading any qualifier in full. This owner judges each condition independently
+from current authority, actual candidates and material changes; it does not
+copy a qualifier's complete verdict. Adopt a still-applicable conclusion. Only
+when an owner's conditions require a current invocation, explicitly load that
+stable Skill and invoke it with its real applicable nonempty set and the
+profile below. If it does not trigger, load no qualifier body, assemble no
+input and emit no empty, classified or skipped result for it. The complete
+current-stage judgment and all applicable non-passing routes remain required.
+
 Enter this Skill for its formal stage purpose under the workflow's review entry.
 An independent read-only request retains its selected scope even with a bound
 Task/Delivery and enters `guru-review-change` in standalone mode.
@@ -69,8 +84,9 @@ nine-dimension semantic round. A negative coverage conclusion cannot rest on a
 single-language zero result, and the search process is not gate artifact data.
 
 Before a proposed implementation mechanism participates in Phase 2 severity,
-findings, tests, implementation routing, or planning-stale judgment, invoke
-`guru-qualify-solution-mechanism` with `phase2_candidate_set`. A
+findings, tests, implementation routing, or planning-stale judgment, apply
+Qualification Applicability. When solution requires a current invocation,
+invoke `guru-qualify-solution-mechanism` with `phase2_candidate_set`. A
 `mechanism_revision_required` result removes or replaces only that mechanism
 and returns here for fresh qualification; it never enters scope confirmation.
 
@@ -108,10 +124,13 @@ source, Closure authority or repository topology.
 When the complete current review observes no defect candidates, record
 `candidate_classifications=[]` and do not invoke the three qualification owners.
 Do not invent a no-defect candidate or use reviewed paths as candidates. When
-actual candidates exist, classify every candidate through
-`guru-qualify-normal-scenario:phase2_candidate_set` before assigning P0-P3
-severity, and invoke the applicable solution and root qualification profiles
-only for their eligible non-empty inputs. In both branches review all nine
+actual candidates exist, apply each owner's short conditions independently.
+Invoke `guru-qualify-normal-scenario:phase2_candidate_set` only for candidates
+whose conditions require current normal admission, before assigning their
+P0-P3 severity. Invoke solution or root only when its own conditions require
+it, with actual applicable nonempty inputs and any truly triggered upstream
+outcomes. Adopt still-applicable conclusions without replaying old invocations;
+keep this owner's required current candidate dispositions and witnesses. In both branches review all nine
 Phase 2 adequacy dimensions and the same Docs, Architecture, validation and
 freshness preconditions; an empty set does not supply a pass.
 Worker output is ephemeral input to
@@ -173,11 +192,12 @@ Every official worker invocation prompt authorizes approved-plan work only.
 For a planning-external observation, the worker must stop before editing,
 adding a test, self-fixing, assigning severity, classifying, or choosing a
 route, and may return only `candidate_ref`, `observed_behavior`, `locators`, and
-`minimal_reproduction_hint`. Reread those locators and run fresh qualification
-before continuing the work or dispatching another worker for it. Do not modify
+`minimal_reproduction_hint`. Reread those locators and apply Qualification
+Applicability, refreshing affected judgments before continuing the work or
+dispatching another worker for it. Do not modify
 or replace upstream-owned `trellis-*` agent files to enforce this boundary.
 
-After normal-scenario qualification, any implementation-discovery expansion of
+After the applicable qualification judgments, any implementation-discovery expansion of
 scope, risk, owner, state authority, persistence, SDK lifecycle, external
 integration, or another architecture boundary immediately invalidates the
 Planning-stage Architecture result. Stop before the expanded edit or test and
@@ -205,19 +225,24 @@ retirement unchanged. This package requires the complete compatible Guru Team
 preset runtime and is not self-contained or portable.
 
 
-At this candidate boundary, consume actual normal-scenario and solution-mechanism
-outcomes before loading `guru-qualify-root-cause` with `phase2_candidate_set`. Supply only eligible
-refs. New or materially changed incident/protection mechanisms enter that owner;
-ordinary features receive its stable applicability disposition. Consume a
-still-applicable same-mechanism conclusion on later stages and independently
-review this stage's current work/evidence; caller change alone does not repeat
-qualification. Root `classified` continues this stage, retaining diagnosis or
-mitigation disposition without claiming repair. `mechanism_revision_required`
-removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
-the unsupported repair and continues bounded investigation of the returned
-gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
-symptom suppression into unrelated scope confirmation, cache qualifications,
-or use qualification as completion. Actual scope changes use existing routes.
+At this candidate boundary, apply the original
+[root conditions](../guru-qualify-root-cause/references/applicability.md).
+When they require a current invocation, explicitly load `guru-qualify-root-cause`
+with `phase2_candidate_set` and supply only actual eligible refs. This caller uses its
+current scenario and authority-placement judgments and consumes actual normal
+or solution outcomes when those owners triggered. It never requires an outcome
+from an owner that correctly did not trigger. Adopt a still-applicable
+same-mechanism conclusion and independently review this stage's current
+work/evidence; stage or caller change alone does not repeat qualification.
+Material changes refresh only affected judgments; a lost necessary conclusion
+returns to its original owner for recovery or fresh judgment. Root `classified`
+continues this stage, retaining diagnosis or mitigation disposition without
+claiming repair. `mechanism_revision_required` removes/replaces that mechanism
+and reenters; `diagnosis_required` pauses only the unsupported repair and
+continues bounded investigation of the returned gaps through this owner, then
+resubmits. A concrete `blocked` stops. Do not turn symptom suppression into
+unrelated scope confirmation, cache qualifications, or use qualification as
+completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

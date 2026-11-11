@@ -22,8 +22,10 @@ task creation, activation and completion owners remain separate. Clarification
 does not require or establish a task personnel identity.
 
 Before a newly observed scenario can become a proposal, user question, scope
-decision, task update, or new-task draft, this owner supplies only candidate
-refs and live locators to
+decision, task update, or new-task draft, this owner follows
+[Qualification Applicability](../SKILL.md#qualification-applicability).
+When normal requires a current invocation, supply only its actual nonempty
+candidate refs and live locators to
 `guru-qualify-normal-scenario:requirements_scope_set`. `classified` returns to
 this owner, `mechanism_revision_required` returns for remove/replace and fresh
 qualification, `scope_confirmation_required` re-enters through the closed
@@ -37,8 +39,8 @@ unique `candidate_refs` set. It accepts no classification decisions, reasons,
 severity, authorization, result/checkpoint locator, or worker report. The
 qualifier output is projected directly into these fields. After the real scope
 choice, this owner updates live authority through its existing rules and returns
-to the exact closed `resume_target`; changed authority or candidates require the
-original owner to run fresh qualification.
+to the exact closed `resume_target`; material changes to authority or candidates
+require the original owner to refresh affected judgments under those conditions.
 
 ## Current Executing Owner
 

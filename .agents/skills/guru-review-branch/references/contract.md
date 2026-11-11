@@ -178,9 +178,13 @@ feature, or a passing check. An empty set does not establish `passed`,
 Architecture, Docs, range, dimension, evidence, freshness and route condition
 still applies. Bounded continuity remains bounded and archived review read-only.
 
-When real candidates exist, invoke the existing normal-scenario and
-solution-mechanism owners, then root-cause qualification for eligible refs,
-using `branch_review_candidate_set`. Keep every actual terminal classification,
+When real candidates exist, follow
+[Qualification Applicability](../SKILL.md#qualification-applicability)
+independently for each owner. Use `branch_review_candidate_set` only when that
+owner's conditions require a current invocation. Root accepts this owner's
+current scenario and authority-placement judgments plus actual outcomes of
+upstream owners that triggered; no outcome is demanded from a correctly
+untriggered owner. Keep every actual terminal classification,
 witness and semantic disposition. Nonempty all-rejected candidates are distinct
 from no candidates. Every finding, proposal, observation, follow-up and rejected
 candidate still binds a classified ref; an empty set cannot carry such a row.
@@ -282,8 +286,9 @@ candidate, it stops before any edit, added test, self-fix, severity,
 classification, or route and returns only the invocation-local
 `candidate_ref`, `observed_behavior`, `locators`, and
 `minimal_reproduction_hint`. The Guru owner rereads the live range and
-authority and completes fresh `branch_review_candidate_set` qualification
-before continuing or redispatching work for that candidate. Official
+authority and applies Qualification Applicability, refreshing affected
+judgments through `branch_review_candidate_set` when required before continuing
+or redispatching work for that candidate. Official
 `trellis-*` agent files remain unchanged and upstream-owned.
 
 The independent current-only `delivery_base_continuity` profile is entered
@@ -328,15 +333,18 @@ archived review read-only. Qualified current-scope defects and evidence gaps
 use the profile's existing finding or blocked routes and existing gate fields.
 
 Perform one independent semantic review of the complete current
-`base_oid..head_oid` range. For a nonempty actual candidate set, invoke
+`base_oid..head_oid` range. For a nonempty actual candidate set, apply
+Qualification Applicability. When normal requires a current invocation, invoke
 `guru-qualify-normal-scenario:branch_review_candidate_set` before assigning
-severity. Candidate input carries no decision, scenario class, severity,
-expected route, or caller assertion of a normal path. Only candidates returned
-eligible through `classified` may become a P0-P3 finding.
+that candidate severity. Candidate input carries no decision, scenario class, severity,
+expected route, or caller assertion of a normal path. Only currently eligible
+candidates may become a P0-P3 finding; a triggered qualifier must establish
+that eligibility through its actual `classified` outcome.
 
 Before a revision, test, severity or route, independently establish the problem,
 the current goal/affected contract that requires fixing it, and mechanism
-suitability through both existing qualification owners. Necessary local
+suitability through this owner's current review and the existing qualification
+owners whose conditions require invocation or adoption. Necessary local
 refactoring, consumer adaptation and old-path exit remain required; unrelated
 historical debt is not automatically a current finding, gate or follow-up.
 Task scope does not negate an evidenced Architecture violation, and finding

@@ -193,6 +193,12 @@ invalid interface projections stop fail closed.
 The active package and exit inventories come from the current registry and
 Interfaces. Standalone installation upgrade and extension verification are
 outside the business-task workflow's mandatory invokes.
+
+The three qualification markers below require explicit loading and invocation
+when that original owner's applicability conditions require a current call.
+The original caller reads its short conditions before any qualifier's full
+body, as routed under Mandatory qualification profiles below.
+
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -546,7 +552,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | original-request-route | Return to the original non-repository request. |
 | guru-workflow-standard-intake-router | Enter the existing mandatory `guru-sync-base` route without requiring a pre-existing Issue. |
 | guru-normal-scenario-classified-router | Validate the profile binding and return the current invocation-local classifications to the exact original owner. |
-| guru-normal-scenario-mechanism-router | Validate the profile binding and return to the exact original owner for remove/replace, then require fresh qualification before further stage judgment. |
+| guru-normal-scenario-mechanism-router | Validate the profile binding and return to the exact original owner for remove/replace, then refresh affected original-owner judgments before further stage judgment. |
 | guru-task-free-completed | Report the checked bounded-change edited paths, concise validation results, and explicit unverified boundaries without creating lifecycle or publication resources. |
 | guru-task-free-resume-active-task-router | Resume the exact active task from its current status route. |
 | guru-task-free-scope-change-router | Enter the existing Scope Change Gate through `guru-clarify-requirements`. |
@@ -687,19 +693,30 @@ or post-Completion Closure/Finish judgments from their owning packages.
 
 ### Mandatory qualification profiles
 
-The workflow invokes the normal and solution qualification owners at these exact candidate
-boundaries. `guru-qualify-normal-scenario` qualifies the problem scenario and
-`guru-qualify-solution-mechanism` qualifies the proposed mechanism; neither
-owner replaces the other. Each caller supplies only its profile-specific
-candidate set and live locators; the workflow consumes only the four declared
-exits from each owner.
+At the candidate boundaries below, the original caller first reads each
+qualifier's own short `references/applicability.md` from the complete matching
+provider's `guru-qualify-normal-scenario`, `guru-qualify-solution-mechanism`, and
+`guru-qualify-root-cause` packages. Installed paths are under
+`.trellis/guru-team/skills/packages/`; canonical source paths are under
+`trellis/skills/guru-team/packages/`. The caller judges those conditions
+independently before loading any qualifier's full Skill or contract. Conditions
+and complete qualification behavior remain step-local to those original owners.
 
-| Profile | Trigger before | Classified/mechanism return owner |
+When an owner's conditions require a current invocation, the workflow must
+explicitly load that stable Skill and invoke its original semantic loop with the actual
+applicable nonempty profile-specific candidate set and live locators. Adopt a
+still-applicable conclusion when its owner conditions permit. If an owner does
+not trigger, load no full body, assemble no input and emit no classified,
+empty or skipped result for it. The original stage still performs its complete
+current judgment. The workflow consumes the original declared exits only.
+
+| Profile | Boundary for the caller's applicability judgment | Classified/mechanism return owner |
 | --- | --- | --- |
 | `task_free_pre_write` | task-free pre-write suitability or any target write | `guru-execute-task-free-change` |
 | `task_free_evolution` | post-write scope/risk evolution judgment or further target write | `guru-execute-task-free-change` |
 | `requirements_scope_set` | clarification scope proposal, scope question, or scope disposition | `guru-clarify-requirements` |
 | `change_request_candidate_set` | change-request readiness finding, requested test, or blocker | `guru-review-change-request` |
+| `author_candidate_set` | Author candidate before independent Architecture assessment | `guru-author-task-plan` |
 | `planning_scenario_set` | planning acceptance, negative test, finding, or revision action | `guru-approve-task-plan` |
 | `implementation_discovery` | Phase 2 edits or tests for a planning-external discovered candidate | `guru-phase2-implementation-coordinator` |
 | `base_impact_candidate_set` | base-impact finding, validation obligation, or route | `guru-reconcile-task-base` |
@@ -707,19 +724,22 @@ exits from each owner.
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
 | `publication_candidate_set` | Delivery Review finding, task-work return, or blocker | `guru-review-task-delivery` |
 
-For every row above, the caller invokes `guru-qualify-solution-mechanism` with
-the same profile before promoting a proposed mechanism into that stage's
-acceptance, test, finding, implementation, or publication judgment. A forbidden
-OS/kernel/process/descriptor mechanism returns `mechanism_revision_required`
-and never enters scope confirmation.
+For every row, the caller separately applies normal, solution and root
+conditions. Normal's scenario admission does not replace solution's authority
+placement or root's causal admission, and none replaces the stage judgment.
+A triggered solution qualification that finds a forbidden mechanism returns
+`mechanism_revision_required` and never enters scope confirmation. The
+applicability judgment is not an OS/kernel/process/descriptor keyword filter.
 
 `guru-qualify-normal-scenario:scope_confirmation_required` invokes
 `guru-clarify-requirements:normal_scenario_scope_confirmation`, while
 `guru-qualify-solution-mechanism:scope_confirmation_required` invokes
 `guru-clarify-requirements:solution_mechanism_scope_confirmation`. Each
 target-owned profile returns a real authority choice to the closed original
-owner; a changed authority or candidate set starts fresh qualification. Already
-rejected candidates never enter clarification. Unknown, empty, multiple,
+owner; material changes refresh affected judgments under the original owner's
+conditions. Lost necessary conclusions return to their original owner for
+recovery or fresh judgment. Stage/caller change alone does not repeat the same
+qualification. Already rejected candidates never enter clarification. Unknown, empty, multiple,
 mismatched, or unmapped normal-scenario results stop at
 `normal-scenario-qualification-blocked`; the corresponding solution-mechanism
 results stop at `solution-mechanism-qualification-blocked`.
@@ -730,12 +750,14 @@ target is the existing `guru-resume-implementation` workflow API.
 
 ### Root-cause qualification routing
 
-For each profile in the table, after the caller consumes actual normal and
-solution qualification outcomes, explicitly load `guru-qualify-root-cause`
-for new or materially changed eligible mechanisms. Consume still-applicable
-same-mechanism conclusions at later stages; stage/caller change alone does not
-repeat qualification. Step-local applicability and causal judgment belong to
-the new package. Each stage still independently reviews current work/evidence.
+For each profile in the table, apply root's own short conditions independently.
+When they require a current invocation, the caller must explicitly load
+`guru-qualify-root-cause` for its actual eligible nonempty set. The caller first
+completes current scenario and authority-placement judgments, consuming actual
+normal/solution outcomes when those owners triggered and resolving their
+non-passing routes. It does not require or invent an outcome from an owner that
+correctly did not trigger. Consume still-applicable conclusions under root's
+conditions; each stage still independently reviews current work/evidence.
 
 The three root-cause workflow routers consume their own closed schemas with
 direct projections. All select the existing owner in the table by `profile`;
@@ -1390,20 +1412,25 @@ stop before editing, adding a test, self-fixing, assigning severity,
 classifying, or choosing a route, and return only one invocation-local
 candidate shape: `candidate_ref`, `observed_behavior`, `locators`, and
 `minimal_reproduction_hint`. The Guru owner rereads the live authority, caller,
-diff, and tests and performs fresh qualification before it may continue that
-work or dispatch a worker again for it. Official `trellis-*` agent files remain
+diff, and tests and applies the original qualifier conditions, refreshing
+affected judgments before it may continue that work or dispatch a worker again
+for it. Official `trellis-*` agent files remain
 unchanged upstream-owned inputs to this invocation contract.
 
-If implementation discovery produces any candidate not already closed by the
-approved planning, invoke
-`guru-qualify-normal-scenario:implementation_discovery` before adding an edit,
-test, finding, or route for that candidate. Rejected candidates are dropped;
-then invoke `guru-qualify-solution-mechanism:implementation_discovery` and
-`guru-qualify-root-cause:implementation_discovery` for new eligible mechanisms before
-accepting a proposed implementation mechanism. Mechanism revision returns
-here for remove/replace and a fresh invocation;
-blocked stops. The coordinator consumes the result in-process and writes no
-qualification artifact or checkpoint.
+If implementation discovery produces a candidate not already closed by the
+approved planning, this coordinator reads the three original owners' short
+conditions at the provider paths above before further edits or tests for it.
+Judge each condition independently, adopting a still-applicable conclusion or,
+when current invocation is required, explicitly loading that original stable
+Skill with `implementation_discovery` and its actual applicable nonempty set.
+When normal triggers, promotion requires its actual or still-applicable
+eligible conclusion; rejected candidates are dropped. A root invocation uses
+current caller scenario and authority-placement judgments plus actual outcomes of upstream owners that
+triggered; correctly untriggered owners require no outcome. Mechanism revision
+returns here for remove/replace and affected fresh judgment; diagnosis and
+blocked retain their original consumers. Untriggered owners have no full load,
+input or invented exit. The coordinator retains its whole current judgment and
+consumes actual results in-process without a qualification artifact or checkpoint.
 
 After qualification, an expansion of scope, risk, owner, state authority,
 persistence, SDK lifecycle, external integration, or another architecture
@@ -1413,9 +1440,10 @@ edit or test and mandatory invoke
 Only its fresh current route resumes this coordinator; stale authority returns
 `sync_required` and every other non-current exit follows its unique router.
 Dispatch the assessment through the Architecture Skill's independent entry,
-not an implementation worker already exposed to task narratives. The two
-qualification owners retain problem/task-necessity/mechanism judgments before
-any planning-external edit or test; this coordinator consumes their routes.
+not an implementation worker already exposed to task narratives. The original
+qualification owners retain their separate scenario/task-necessity,
+authority-placement and causal judgments before any planning-external edit or
+test; this coordinator consumes their applicable routes.
 
 #### 2.2 Task check
 
