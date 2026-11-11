@@ -10,5 +10,5 @@
 {"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "短reference公开声明与I/O迁移"}
 {"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "完整五原则及真实必要性"}
 {"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concern及晋升前后质量链"}
-{"file": ".trellis/tasks/11-11-793-conditional-qualifiers/deliveries/55d0c98b-a483-4ee3-b8ff-7ad547ef3ee9/architecture-contribution.md", "reason": "真实隔离贡献与拟晋升责任"}
-{"file": ".trellis/tasks/11-11-793-conditional-qualifiers/deliveries/55d0c98b-a483-4ee3-b8ff-7ad547ef3ee9/adr-conditional-qualification.md", "reason": "条件调用对旧前置的窄替代"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-793-conditional-qualifiers/deliveries/55d0c98b-a483-4ee3-b8ff-7ad547ef3ee9/architecture-contribution.md", "reason": "真实隔离贡献与拟晋升责任"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-793-conditional-qualifiers/deliveries/55d0c98b-a483-4ee3-b8ff-7ad547ef3ee9/adr-conditional-qualification.md", "reason": "条件调用对旧前置的窄替代"}
