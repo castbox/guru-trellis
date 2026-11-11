@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-11T10:45:41Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-11-795-discovery-authoring-diagnostic",
+    "title": "修复 Discovery 普通字段错误诊断与 authoring 恢复导航",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-11-795-discovery-authoring-diagnostic",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/795-discovery-authoring-diagnostic",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "修复 Discovery 普通字段错误诊断与 authoring 恢复导航",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic",
+          ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/prd.md",
+          ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#795"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/795-discovery-authoring-diagnostic"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic",
+        ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/prd.md",
+        ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复 Discovery 普通字段错误诊断与 authoring 恢复导航；#795；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}

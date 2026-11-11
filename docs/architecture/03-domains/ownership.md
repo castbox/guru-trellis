@@ -126,7 +126,7 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 `ARCH-DOM-034` 的 #503 successor：Guru substrate reader 拥有身份占用/selected 严格读取，Fork 官方 task writer 已由独立 #29 交付。migration owner 与单写边界不变；无第二索引/store/writer。task contribution 与 expected-current `.75→.76` RDT/Architecture 晋升分别由对应 owner 串行执行。
 
-`ARCH-DOM-035`（#382 reviewed）：normal-scenario、solution-mechanism、root-cause 分别拥有场景、authority 承载与因果候选准入。原 stage owner 继续拥有其实现/证据/完成判断；#383 拥有共同完成语义，root qualification 不创建第二 SSOT。runtime 只校结构与事实，不判断根因。RDT/Architecture promotion 保持既有 expected-current 单写 owners；无资格缓存、数据库或审批链。
+`ARCH-DOM-035`（#382 reviewed）：normal-scenario、solution-mechanism、root-cause 分别拥有场景、authority 承载与因果候选准入。原 stage owner 继续拥有其实现/证据/完成判断；#383 拥有共同完成语义，root qualification 不创建第二 SSOT。各原包短 reference 独占加载前适用条件，caller 只判断是否触发并采用或刷新结论，正式资格仍归各原 owner；完整职责见 [ARCH-DOM-QUALIFIER-APPLICABILITY](./qualifier-applicability.md)。runtime 只校结构与事实，不判断根因或适用性。RDT/Architecture promotion 保持既有 expected-current 单写 owners；无资格缓存、数据库或审批链。
 
 `ARCH-DOM-036`（#383 reviewed）：共同 spec 单写共用语义；root 只判候选准入，各 stage owner 单写本阶段 evidence sufficiency/route，Delivery Review 审 payload、Publish 执行，Completion 独占 whole-task 完成判断，Closure 拥有 source Issue action-set，Finish 承接 terminal bookkeeping。Delivery/Reactivate 的原 evidence slots 与 current anchor 保持；unknown production effect 由同 task pending/refresh 承接。Architecture/RDT 原 owner 串行 expected `.79→.80` promotion，没有新 writer、审批链或公共 causal DTO。
 
@@ -198,6 +198,8 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 原 Publish 拥有独立闭合的精确 Open PR Draft/Ready recovery profiles。明确 pr_ref 与 source_commit 绑定同 Task/Delivery、Planning、候选和 repo/base/head/owner；source 未入 main 仍可合法，与 candidate head 不同时核真实历史和完整差额。只复用同一个 Open PR并补未完成动作，绝不另建 PR；相同 head/payload 不重复 push/edit，已 Ready 不产生当前 readiness。Draft 不写最终 PublicationFact，新的未审修订仍先退 Draft。当前 Readiness 不适用回原质量 owner。MERGED 沿原 Merge 手动恢复核公共 Publication、真实双亲/actual head/target 后只补 Delivery fact，不重复 merge；Completion 仍判断 actual 差额、CI 和整个 scope。
 
 本机 branch/worktree/ignored runtime 责任限定对应 common-dir/generation；共享 remote ref 以 repository/full ref/expected head 核验。旧 seal、binding 退出或 Cleanup pending 不撤销共享 Finish，也不阻塞另一 Task 或不同合法新资源。同一资源未完责任仍冲突；B 不取得 A 清理权。Cleanup 保留未知 ownership、新代资源及已推进 remote ref，不删除或回退新提交。原合法子 Agent 并行职责保持；不引入双主、锁、scheduler、全局恢复台账或第二 authority。
+
+`ARCH-DOM-061`（#795 reviewed source）：Discovery 继续独占 context evidence/coverage 与 owner-result authoring 诊断。Git-object record 先校验当前 owner-result 结构，再由同一 owner 读取 fixed Git evidence 和生成派生 identity；共享 schema validator 提供字段诊断，共享 dispatcher 只保留真实未知异常的维护路由。普通同范围结构错误保留原失败，可由原 Discovery owner 用完整正确输入重跑原 record/check/invoke；Clarify、Wording、Readiness、Architecture、Check 与安装 owner 的职责不变。同步来源 owner-result 3.0 与当前 Git-object 4.0 各保留明确版本和 consumer，不形成第二来源模型。
 
 
 ## Phase 2 authoring 与结果消费职责

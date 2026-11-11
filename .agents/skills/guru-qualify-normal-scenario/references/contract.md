@@ -14,7 +14,14 @@
 
 `guru-qualify-normal-scenario` is the only semantic owner of normal-scenario qualification. It decides whether a newly proposed behavior scenario is eligible to enter a caller's own scope, acceptance, test, finding, implementation, or publication judgment. It does not decide severity, planning sufficiency, implementation design, publication readiness, or the caller's final route.
 
-The global workflow owns mandatory invocation and typed-exit routing. Each caller owns only its profile-specific candidate set and its post-qualification stage judgment. Workers and reviewers may report a candidate reference, observed behavior, locators, and a minimal reproduction hint; they do not assign severity, scenario class, qualification, or an implementation route.
+The global workflow owns conditional mandatory invocation and typed-exit routing.
+[Applicability](applicability.md) owns the loading, adoption and refresh
+conditions. The caller reads it before this full contract and judges whether
+dedicated admission is needed, without assigning a qualification verdict.
+Each caller owns its profile-specific candidate set and post-qualification stage
+judgment. Workers and reviewers may report a candidate reference, observed
+behavior, locators and a minimal reproduction hint; they do not assign severity,
+scenario class, qualification or an implementation route.
 
 ## 2. Closed Profiles And Callers
 
@@ -64,8 +71,8 @@ For every candidate, judge in this fixed order:
    unrelated historical defect into current work, a finding, gate or follow-up.
 
 Problem validity does not alone prove task necessity or mechanism suitability.
-Return qualified inputs to the original owner; it still invokes solution-
-mechanism qualification before accepting that mechanism. Never qualify only
+Return qualified inputs to the original owner; it independently applies
+solution-mechanism applicability before accepting a mechanism. Never qualify only
 because a plan was approved, implementation exists, tests are green, a reviewer
 recommended it or the user said continue. Legal non-default inputs/configuration
 remain legal under current authority; defaults and missing diagnostic tags do
@@ -211,17 +218,30 @@ print(hashlib.sha256(encoded).hexdigest())
 PY
 ```
 
-If a selected file changes, reread the source/candidate evidence, recompute this
-identity, and perform the original qualification again. Do not keep an earlier
-identity or patch a recorded result to make it current.
+If a selected file changes, reread its source/candidate evidence and apply
+[applicability](applicability.md) to the affected judgment. A new invocation
+recomputes the identity from current files; adoption of a still-applicable
+semantic conclusion does not replay an old invocation. Never patch an earlier
+identity or recorded result to make it current.
 
 Never create or request an output path, result locator, checkpoint path, temporary result file, tracked file, ignored `.trellis/.runtime/**` qualification state, cross-process locator, report, candidate or rejection state store, approval, signoff, assignment, handoff, or transcript. `artifacts` and `private_artifacts` are empty. This Skill and its runtime never write a Phase 2, Branch Review, or Publication gate. After consuming the process-local stdout, the corresponding stage Owner performs its own direct review and directly authors only the minimal classification and witness required by that stage's existing owner-private gate. The stage Owner does not copy, cite, or reread a Skill result or artifact.
 
 ## 7. Re-entry And Callers
 
-The result is valid only for its current authority, planning, target, caller graph, candidate set, diff/range/HEAD or base pair, tests, and publication payload. Any relevant change requires a complete fresh invocation. A mechanism revision, scope choice, or finding fix also requires a full rerun.
+Each invocation binds its current authority, planning, target, caller graph,
+candidate set, diff/range/HEAD or base pair, tests and publication payload.
+Adoption and material-change refresh follow [applicability](applicability.md).
+Stage/caller or unrelated byte changes alone do not repeat semantic admission;
+a new invocation still supplies current facts and cannot replay an old envelope.
+Revisions refresh the judgments whose actual premises changed.
 
-The classified and mechanism routers route only by validator-confirmed profile and its fixed resume owner. They do not parse reasons or witnesses and do not repeat qualification. After scope clarification, the original Owner rereads live context, reconstructs the appropriate profile input, and invokes this Skill again. Unknown, missing, duplicate, multiple, unmapped, or consumer-mismatched results fail closed.
+The classified and mechanism routers route only by validator-confirmed profile
+and its fixed resume owner. They do not parse reasons or witnesses or repeat
+qualification. After scope clarification, the original Owner rereads live
+context and refreshes the affected admission through this same Skill. Unknown,
+missing, duplicate, multiple, unmapped or consumer-mismatched results from an
+entered invocation fail closed. A legitimately untriggered qualifier has no
+result to consume and is not a missing-result error.
 
 ## Author candidate set
 

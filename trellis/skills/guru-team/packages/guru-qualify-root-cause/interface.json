@@ -37,19 +37,19 @@
     },
     {
       "id": "profile_binding",
-      "evidence": "one declared closed input profile from the current interface selector with its fixed caller, mode, current target identity, and resume mapping",
+      "evidence": "one declared closed input profile with its fixed caller, mode, current target identity and resume mapping",
       "binding": "the exact semantic Owner that is about to promote a candidate into a stage judgment",
       "freshness": "the caller authors a new closed input for every invocation"
     },
     {
       "id": "live_authority",
-      "evidence": "current accepted scope, RDT/Architecture, code, tests and available incident evidence read through candidate locators; upstream normal/solution outcomes consumed by caller",
+      "evidence": "current accepted scope, RDT/Architecture, code, tests and available incident evidence; caller current scenario/authority-placement judgments and real normal/solution outcomes only when those owners independently trigger",
       "binding": "the current target and supported normal action path reviewed directly by the qualification AI",
       "freshness": "the AI rereads live sources and the checker validates current structural and Git identities"
     },
     {
       "id": "candidate_set",
-      "evidence": "non-empty unique candidate refs with exactly one locator set and one AI-authored decision per candidate",
+      "evidence": "caller applies references/applicability.md before full loading; an entered invocation has non-empty unique applicable candidate refs, one locator set and one AI-authored decision per candidate",
       "binding": "one invocation-local candidate set, with no worker severity or route authority",
       "freshness": "candidate, locator, decision, and AI gate ref sets must match exactly"
     },
@@ -57,7 +57,7 @@
       "id": "invocation_freshness",
       "evidence": "call-local input digest, semantic result digest, current Git identities, typed exit, and unique consumer binding",
       "binding": "one stdin/stdout invocation with no repository result state",
-      "freshness": "reread current facts; only new or materially changed mechanisms require fresh qualification; stage change alone does not invalidate an applicable conclusion"
+      "freshness": "new invocations bind current facts; loading, adoption, material-change refresh and lost-conclusion recovery follow references/applicability.md; stage/caller or unrelated changes alone do not repeat semantic qualification"
     }
   ],
   "runtime_dependency": {
@@ -222,7 +222,7 @@
   ],
   "reentry": {
     "identity": "profile, fixed caller, mode, current target, candidate refs and locators, current semantic decisions and witnesses, AI gate, typed exit, and unique consumer",
-    "freshness": "call-local validation; stale facts reenter automatically; downstream owner consumes applicable same-mechanism conclusions and independently reviews its stage",
+    "freshness": "call-local validation remains current; adopt still-applicable conclusions or refresh affected judgments under references/applicability.md; a new invocation never replays an old envelope",
     "stale_behavior": "fail_closed"
   },
   "tests": [

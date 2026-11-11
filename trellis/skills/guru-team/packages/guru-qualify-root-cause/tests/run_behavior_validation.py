@@ -1,4 +1,4 @@
-"""Collect native #735 observations; semantic assessment remains with the owner.
+"""Collect bounded native observations; semantic assessment stays with the owner.
 
 Run roots are external. Models see complete provider contracts and factual cases,
 never host expectations. This is fixture preparation, not installer proof.
@@ -35,6 +35,7 @@ KERNEL = PACKAGE.parents[1]
 
 CASES = {
     'v1-cheap': ('author', '普通工具功能：新增 normalize_name(value)，仅去除字符串两端空白，保留内部空格和大小写。空字符串有效。纯函数，无I/O、设备或配置，测试执行毫秒级。尚未实现；旧函数不存在。采用当前完整Author入口完成本Delivery规划。'),
+    'conditional-diagnosis': ('author', '当前Task只诊断core.parse_csv_line对带引号逗号的解析错误，产出首个偏离及证据缺口，不实施修复。当前已接受合同：CSV双引号内逗号属于字段内容。真实函数与同输入运行输出在core.py和parser-observation.txt；现有实现直接按逗号split。合法输入为双引号包围的a,b字段后接c，要求输出两个字段a,b和c。诊断只读取现有源码/记录并执行同一纯函数样本；不改业务状态、资格/身份/权限、资源协调或任何保护机制，不需生产操作。采用当前完整Author入口完成本Delivery诊断规划。'),
     'v1-device': ('author', '普通功能：设备适配器新增 read_temperature()，读取真实设备固件返回的摄氏度。离线环境没有设备SDK或设备；本机已有模拟传输可以开发适配逻辑。需求是返回设备温度，断连时返回 typed disconnected 错误，不编造默认温度。真实设备下周可用，最终验收必须测设备读数及断连。当前无实现，无故障。采用当前完整Author入口完成本Delivery规划。'),
     'v2-existing': ('root', '当前candidate是已实现的根因修复，调用方做当前变更准入审查。合同：每次request使用该request的credential，不得读取前一request的缓存。事实：原失败日志request B在shared_header初始化后换credential，仍发送A；代码在client构造时缓存header，send未更新；修复只将header生成移动到send、使用request credential。修后同一A→B输入发送A、B；并发1/8均无串号或拒绝，原失败点已消失，无迁移到其它失败阶段。已有记录scope、entry、conditions、candidate版本与当前完全相同。调用方要求因进入新阶段再做隔离回退红绿；未提出其它未决观察。'),
     'v3-reach': ('root', '当前candidate是每次send按request credential构造header的根因修复。原first deviation是client缓存header，A后B继续发送A。原缺陷及改动因果链明确，修后原A→B场景发送A、B。新增回归绿色，有人询问是否触达。实际源码：test sends A then B through public Client.send，spy记录HTTP adapter收到的真实header；spy只在网络边界，不替换header生成。分支trace显示send的credential读取分支在A/B都执行，且assert captured_headers == [A,B]；所有调用配置与正常路径一致。并发1/8既有记录同版本适用，无新增其它疑问。'),
@@ -136,6 +137,13 @@ def run_case(source, output, case_id):
     environment={**os.environ,'PYTHONDONTWRITEBYTECODE':'1','TRELLIS_CONTEXT_ID':'projection-test'}
     if kind in {'author', 'dispatch'}:
         target_authority(root)
+        if case_id == 'conditional-diagnosis':
+            with (root/'core.py').open('a') as stream:
+                stream.write('\ndef parse_csv_line(value: str) -> list[str]:\n    return value.split(",")\n')
+            with (root/'docs/requirements/README.md').open('a') as stream:
+                stream.write('\nparse_csv_line must preserve commas inside quoted CSV fields. Diagnosis may observe the existing pure-function failure; no repair or protection is requested.\n')
+            observed = command([sys.executable, '-c', 'from core import parse_csv_line; print(repr(parse_csv_line(\'"a,b",c\')))'], root)
+            (root/'parser-observation.txt').write_text(observed.stdout)
         context=author_fixture(source,root,facts)
         public={'profile':'delivery_initial_review','mode':'workflow','task_ref':context['task_ref'],'delivery_key':context['delivery_key'],'source_selection':[{'locator':'facts.md','section':'行为合同','authority_kind':'requirement'}]}
         entry='Read .trellis/guru-team/skills/packages/guru-author-task-plan/SKILL.md and follow its normal complete entry. Start delivery_initial_review from public-input.json. Author the current Delivery requirements, perform the required genuine candidate qualifications. For Architecture candidate assessment launch a fresh independent codex exec --ephemeral reviewer with only the Architecture entry contract, candidate and required locators; do not preload it with your PRD/acceptance narrative or decide its first assessment yourself. Have that reviewer actually invoke the Architecture public wrapper and consume its actual result, then continue delivery_solution_planning and invoke the Author public scripts/invoke.sh for both stages. You are the semantic owner for this local fixture: decide from facts, do not copy example judgments. Host established only real Task/Delivery/Git prerequisites; no current semantic results exist. Read actual current selection first and recover receiving-session binding through original owners if needed. Complete current plan files, context and public handoff; do not implement product code. Save actual invocations/results outside planning documents as local invocation files.'
@@ -148,7 +156,7 @@ def run_case(source, output, case_id):
         public['candidate_refs']=['current-candidate'];public['candidate_locators']=[{'candidate_ref':'current-candidate','locators':['path:facts.md']}]
         context={}
         if kind=='root':
-            entry='Read .trellis/guru-team/skills/packages/guru-qualify-root-cause/SKILL.md and execute its normal complete qualification entry using public-input.json and facts.md. First execute the actual guru-qualify-normal-scenario and guru-qualify-solution-mechanism complete Skill entries with their task_free_pre_write profiles, reading their current interface/schemas and authoring your own judgments from facts.md; actually invoke their public wrappers and consume their results. No upstream semantic decision is supplied by the host. Only after their eligible outcomes enter Root using public-input.json. Infer the actual goal, author your complete call-local semantic result using the package schema, perform the AI gate and actually invoke the public scripts/invoke.sh --invocation - wrapper. Save your invocation to invocation.json, actual stdout to wrapper-result.json. Describe adopted evidence, any specific additional observation and the stopping boundary. Do not implement a repair.'
+            entry='The current original caller is assessing the real candidate in public-input.json and facts.md. Read the three original qualifier applicability references before selecting full entries, using their actual profiles and same-provider contracts. Execute any triggered qualification through its real public wrapper and consume its result; the host supplies no upstream decision. Follow the Root entry only when applicable. Infer the actual goal, author the complete call-local semantic result, perform the AI gate and actually invoke the public wrapper. Save an actual Root invocation as invocation.json and its stdout as wrapper-result.json if it occurs; do not invent either for an untriggered entry. Describe adopted evidence, any specific additional observation and the stopping boundary. Do not implement a repair.'
         else:
             entry='Execute the normal Phase2 implementation dispatch responsibility defined by .trellis/workflow.md section 2.1, using complete same-provider quality and applicable referenced contracts. This local fixture dispatch is read-only evidence assessment; no product or Task artifact writes are requested. Read facts.md as the current selected validation observations and assigned task. Decide the actual validation actions and acceptance gaps. Return a concrete assessment grounded in each observation, including what may be adopted, what remains and what you will do next. Do not fabricate missing results or invoke formal Check.'
     if kind=='dispatch':

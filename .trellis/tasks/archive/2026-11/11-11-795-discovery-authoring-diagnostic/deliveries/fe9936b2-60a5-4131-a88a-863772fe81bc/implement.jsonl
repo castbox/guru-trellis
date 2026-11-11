@@ -1,0 +1,10 @@
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/prd.md", "reason": "Delivery requirements and in-scope behavior"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/design.md", "reason": "Implementation design, source disposition and validation design"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/implement.md", "reason": "Ordered implementation, Policy and Docs SSOT plan"}
+{"file": ".trellis/tasks/archive/2026-11/11-11-795-discovery-authoring-diagnostic/deliveries/fe9936b2-60a5-4131-a88a-863772fe81bc/architecture-contribution.md", "reason": "Architecture impact and proposed target definitions"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "Required writing rules for changed prose"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Current workflow candidate and recovery contract"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Intermediate receipt and error classification contract"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Discovery owner-result version and data contract"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Skill package, public I/O and projection contract"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation scope and test value contract"}

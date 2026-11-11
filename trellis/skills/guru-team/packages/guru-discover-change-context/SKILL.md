@@ -69,6 +69,13 @@ A caller-authored `refresh_base` result
 records only the observed current stale codes, then reruns the complete Skill
 through `guru-sync-base` and live authority.
 
+For a Git-object source, use owner-result 4.0. Owner-result 3.0 remains the
+compatibility contract only for the synchronized source. Record validates the
+Git-object 4.0 authoring shape with fixed schema-only placeholders before it
+reads reviewed evidence, history, or a candidate. A missing
+`history_review.deep_reads[*].source` therefore returns `schema_mismatch`;
+`source_kind` is not an alias for that field.
+
 For an active Task workflow invocation, including source-selection recovery
 and context review for its current Delivery owner, pass
 `--active-task <task>` to record,
@@ -83,6 +90,12 @@ validation consumes.
 Fail closed on stale base/live/blob/query/archive identity, invalid evidence,
 unknown exits, or missing compatible runtime. This package is not
 self-contained or portable.
+
+For an ordinary authoring correction, preserve the first failure, reread the
+same source and upstream output, and rerun the original record/check/invoke
+sequence with the complete corrected input. Only actual public invoke success
+returns `context_ready`. A genuine unknown `internal_error` remains a package
+maintenance failure and does not become a field-level authoring diagnosis.
 
 After the semantic gate and owner recorder/checker complete, invoke
 `scripts/invoke.sh --invocation -` with the closed call-local public input,

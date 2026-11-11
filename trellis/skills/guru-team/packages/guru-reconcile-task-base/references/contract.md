@@ -67,7 +67,10 @@ block. Insufficient applicable evidence fails closed. A semantic conclusion is
 recorded only after the AI has bound the pair, reviewed scope, key delta,
 validation adequacy, findings, remaining boundaries, and exactly one exit.
 
-The AI first forms a candidate-only set from the exact base delta and invokes
+The AI first follows
+[Qualification Applicability](../SKILL.md#qualification-applicability) for the
+exact base delta. When normal requires a current invocation, form its actual
+nonempty candidate-only set and invoke
 `guru-qualify-normal-scenario:base_impact_candidate_set`. Candidate inputs carry
 observation and live locators only, never impact classification, severity,
 route, or a caller-authored normal-path conclusion. `classified` returns to this

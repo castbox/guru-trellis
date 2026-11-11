@@ -2347,7 +2347,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         }
         self.assertTrue(solution_mechanism_output_ids <= set(typed_output_schema_ids))
         self.assertIn(
-            "guru-stage0-discover-change-context-output-context-ready-4.0",
+            "guru-stage0-discover-change-context-output-context-ready-5.0",
             typed_output_schema_ids,
         )
         self.assertNotIn(
@@ -2364,8 +2364,12 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             artifact["path"]: artifact["id"] for artifact in discovery_interface["artifacts"]
         }
         self.assertEqual(
+            artifact_by_path["examples/public-context-ready-output-5.0.json"],
+            "public_output_context_ready_example_5_0",
+        )
+        self.assertEqual(
             artifact_by_path["examples/public-context-ready-output-4.0.json"],
-            "public_output_context_ready_example_3_0",
+            "legacy_718_public_context_ready_example_4_0",
         )
         self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
         self.assertEqual(

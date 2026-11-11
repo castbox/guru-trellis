@@ -19,12 +19,13 @@ are below `GURU_SKILL_PACKAGE`. Cross-package `consumers/` paths are below
 require a new helper, direct module import, or system-Python dependency install.
 
 The public input example is
-`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-3.0.json`.
-The complete result example is
-`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/change-context-owner-result-3.0.json`;
-It is a complete result example. Only the recorder-owned fields explicitly
-listed below may be omitted; the remaining required source facts and semantic
-fields still come from the caller's current read and review.
+`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-4.0.json`.
+The current Git-object result example is
+`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/change-context-owner-result-4.0.json`.
+The 3.0 input and owner-result examples remain compatibility assets for the
+synchronized source. Only the recorder-owned fields explicitly listed below
+may be omitted; the remaining required source facts and semantic fields still
+come from the caller's current read and review.
 
 ## Ownership And Modes
 
@@ -58,7 +59,8 @@ check-context-discovery.sh, and invoke.sh with the existing envelopes.
 Keep this owner's authoring and recorded result in call-local memory for its
 own record/check/invoke sequence. Pass only actual public invoke stdout through
 the declared thin projection to the next consumer; never read or reconstruct
-producer-private results. This responsibility does not waive missing authority,
+producer-private results. Neither the public input nor owner result reconstruct
+Sync private result. This responsibility does not waive missing authority,
 freshness, schema, prerequisite, or unresolved-choice checks: use the existing
 declared blocker or re-entry route when a real gap remains. Do not bypass the
 workspace gate or ask for a corrective Prompt merely because your review has
@@ -77,7 +79,10 @@ baseline authority.
 
 For `base.kind=git_object`, `repository` uses `repo`,
 `source_kind=git_object`, `selected_ref`, and `commit`. Recorder derives the
-owner-private 4.0 observation without checkout branch or cleanliness fields.
+owner-result 4.0 `base_observation` without checkout branch or cleanliness
+fields. A Git-object source uses owner-result 4.0; owner-result 3.0 remains the
+synchronized-source compatibility contract.
+
 Read each current source file through `scripts/read-change-context-source.sh
 --source-transition <base_current JSON> --path <path>`; its receipt contains
 `commit`, `path`, `blob`, and exact UTF-8 `content`. The same command reads
@@ -273,6 +278,16 @@ facts return the caller-authored `refresh_base` exit for complete re-entry from
 live authority. The commands do not reconstruct or persist a prior-result
 chain.
 
+For a Git-object source, record first validates the owner-result 4.0 structure
+on a schema-only copy with fixed `canonical_query`, `history_preview`, and
+`result_identity` placeholders. This validation does not read reviewed
+evidence, history, a candidate, or real derived identity. It preserves every
+AI-authored field. After the structure passes, record reads reviewed evidence,
+candidate content, and history, derives the real values, and validates the
+complete result again. `history_review.deep_reads[*].source` remains required;
+`repository.source_kind` does not alias it. A structural failure returns the
+existing `schema_mismatch` diagnostic and does not reach an evidence reader.
+
 The caller supplies the Sync public `base_current` transition separately from
 Discovery public input. Before reading issue, Docs, code, test, or history
 content, the executing Discovery AI checks the transition's actual source variant.
@@ -307,7 +322,7 @@ These commands do not fetch, check out, reset, stash, or write a ref. Ordinary
 active-Task edits retain the separate `--active-task` contract above.
 
 After the semantic reads and AI Gate, the original recorder and checker run
-their read-only observer again for the selected source variant. Record derives
+their read-only Discovery observer again for the selected source variant. Record derives
 `base_observation` from those current facts. The observer is part of record/check,
 not a separate public command or an earlier semantic result that the caller
 must obtain. Do not call record with a placeholder Gate to perform the first
@@ -363,8 +378,10 @@ This is a direct command-input replacement. The recorder/checker flags
 removed. Existing scripts must migrate together with this package; old argv
 returns `invalid_arguments`, not an implicit compatibility path. At that
 migration, public input 2.0 and owner result 3.0 were retained. Public input and
-handoffs now follow the current Interface 1.8 contract above; owner result 3.0
-and the command envelope remain current. Previously incomplete invoke envelopes must also add the declared
+handoffs now follow the current Interface 1.8 contract above. Current
+Git-object authoring uses owner result 4.0; owner result 3.0 remains current
+only for synchronized-source compatibility. The command envelope remains
+current. Previously incomplete invoke envelopes must also add the declared
 `schema_version` and `owner_context` fields.
 
 All three commands use the existing shared closed schema
@@ -382,10 +399,10 @@ All three commands use the existing shared closed schema
 
 The empty public/transition/owner objects above illustrate only the envelope
 shape, not a runnable valid call. Populate them with the current Discovery
-`pre_task` 3.0 or `context_request` 1.0 public input, the independent Sync
+`pre_task` 4.0 or `context_request` 2.0 public input, the independent Sync
 `base_current` transition, and the
-AI authoring fields described below. Record completes owner result 3.0;
-check and invoke consume that complete result. Discovery has no additional owner-context fields,
+AI authoring fields described below. Record completes Git-object owner result
+4.0 or synchronized-source owner result 3.0; check and invoke consume that complete result. Discovery has no additional owner-context fields,
 so supply `{}` for `owner_context`. `public_input.mode` is the sole mode input.
 The shared envelope schema closes the outer shape; the existing Discovery
 validators still own the nested semantic evidence and freshness contracts.
@@ -509,8 +526,14 @@ OS exception details. These deterministic comparisons do not add provider
 reads or automatically compare the current live Issue body. This AI still
 reads that complete body and judges applicability before invoking the original
 chain. Ordinary same-scope assembly repair follows its mapped recovery without
-another continuation question; real scope choices and side effects retain
-their original boundaries.
+another continuation question. Preserve the first failed command, exit status,
+stdout, and stderr. The original owner rereads the same source, upstream public
+output, current schema/example, and still-applicable semantic review, then
+rebuilds the complete input and reruns the original record/check/invoke
+sequence. Only actual public invoke success returns `context_ready`. A genuine
+unknown `internal_error` retains its maintenance-owner route; do not classify it
+as a field error or edit runtime state to turn it into a pass. Real scope
+choices and side effects retain their original boundaries.
 
 ## Caller-aware context requests (#250)
 

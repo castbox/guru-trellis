@@ -1,0 +1,20 @@
+task_id: 793-conditional-qualifiers
+source: https://github.com/castbox/guru-trellis/issues/793
+status: promoted
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e
+architecture:
+  locator: docs/architecture/README.md
+  version: e30c7bb5d4c24bc075dc14cfcd04c1da00fcf78e
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/qualifier-applicability.md
+  - docs/design/current/qualifier-applicability.md
+  - docs/test/current/qualifier-applicability.md

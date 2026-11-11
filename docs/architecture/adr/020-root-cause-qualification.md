@@ -7,7 +7,12 @@
 
 新增 `guru-qualify-root-cause` semantic owner，独占新提出或实质变化真实故障机制的因果候选准入、稳定适用性与回程。按诊断、缓解、修复、保护和普通 feature 实际目标判断；不把未知根因一律阻断，不把症状抑制包装为修复。normal-scenario 继续拥有场景，solution-mechanism 继续拥有 authority placement；root 不循环调用或复制其正文。
 
-四 typed exits 返回现有十 profile owners：classified 继续，mechanism revision 移除/替换，diagnosis required 暂停未经证明的修复并继续必要取证，blocked 保留真实阻塞。后续阶段消费仍适用结论并独立审其当前工作；实质变化回 root，caller/stage 变化本身不重审。阶段完成与 #383 的共同因果完成语义不由 root 承接。
+原 caller 先读各原包短适用条件；root 接受其当前场景/authority-placement 判断，
+以及实际触发的 normal/solution 结果，正确未触发时不要求这些结果。当前条件调用
+与 matching 采用由 [ADR-CONDITIONAL-QUALIFICATION](./conditional-qualification.md)
+窄承接，原因果职责不变。
+
+四 typed exits 返回原 lifecycle 与已有 Author profile owners：classified 继续，mechanism revision 移除/替换，diagnosis required 暂停未经证明的修复并继续必要取证，blocked 保留真实阻塞。后续阶段消费仍适用结论并独立审其当前工作；实质变化回 root，caller/stage 变化本身不重审。阶段完成与 #383 的共同因果完成语义不由 root 承接。
 
 ## Alternatives and consequences
 

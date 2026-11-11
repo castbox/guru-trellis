@@ -53,6 +53,18 @@ def base_failure(classification,reason,field):
               "Reread the indicated base-authority evidence. Resolve it through the original Sync/checkout owner, then obtain fresh base_current from guru-sync-base scripts/invoke.sh and rerun Discovery record/check/invoke.")
  return {"classification":classification,"reason":reason,"diagnostic":{"code":"stale_identity","field_path":field,"remediation":remediation}}
 
+_SCHEMA_ONLY_QUERY={"issue_refs":[],"pr_refs":[],"branches":[],"paths":[],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":[],"queries":[],"tokens":[],"query_sha256":"0"*64}
+_SCHEMA_ONLY_PREVIEW={"algorithm_id":"guru-context-history-score-1.0","canonical_query":_SCHEMA_ONLY_QUERY,"query_sha256":"0"*64,"archive_manifest_sha256":"0"*64,"preview_sha256":"0"*64,"limit":20,"manifest":[],"candidates":[{"candidate_id":"0"*64,"finish_summary_path":".trellis/tasks/archive/0000-00/schema-only/finish-summary.json","index_sha256":"0"*64,"score":{"total":1,"exact":0,"token":0,"exact_match_count":0,"token_match_count":0},"matched_clues":{},"index_projection":{}}],"invalid":[]}
+_SCHEMA_ONLY_IDENTITY={"query_sha256":"0"*64,"archive_manifest_sha256":"0"*64,"live_change_sha256":"0"*64,"base_head":"0"*40,"payload_sha256":"0"*64,"result_sha256":"0"*64}
+
+def _schema_shape_owner_result(value):
+ """Validate AI-authored shape without reading evidence or deriving current identities."""
+ shape=copy.deepcopy(value)
+ shape["canonical_query"]=copy.deepcopy(_SCHEMA_ONLY_QUERY)
+ shape["history_preview"]=copy.deepcopy(_SCHEMA_ONLY_PREVIEW)
+ shape["result_identity"]=copy.deepcopy(_SCHEMA_ONLY_IDENTITY)
+ return shape
+
 def _git(repo,*args):
  proc=subprocess.run(["git","-C",str(repo),*args],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
  return proc.returncode,proc.stdout.strip()
@@ -138,6 +150,7 @@ def bind_owner_to_public(package_root,repo,public_input,transition,owner_result)
   value["schema_version"]="4.0"
   expected_repository={"repo":live["repo"],"source_kind":"git_object","selected_ref":live["selected_ref"],"commit":live["commit"]}
   if repository!=expected_repository:raise CommandError("stale_identity","repository","Use the selected Git-object repository/ref/commit, independently of the execution branch.",3)
+  validate(package_root,_schema_shape_owner_result(value))
   validate_source_evidence(observation["repo"],live["commit"],value)
   candidate=public_input.get("candidate_file") or transition.get("candidate",{}).get("locator")
   if candidate:value["candidate_observation"]=candidate_observation(candidate,observation["repo"],value["live_change"]["body_sha256"])

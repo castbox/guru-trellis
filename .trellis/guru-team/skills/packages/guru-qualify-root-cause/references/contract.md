@@ -2,11 +2,15 @@
 
 ## Owner and entry
 
-This semantic owner owns candidate admission, applicability and return routes.
-Caller first consumes actual normal-scenario outcomes for real/current/supported
-scope and solution-mechanism outcomes for authority placement, supplying only
-eligible refs and current evidence locators. Root owner does not recursively
-invoke them, duplicate their judgment, classify severity or decide completion.
+This semantic owner owns causal candidate admission and return routes.
+[Applicability](applicability.md) owns the loading, adoption, upstream and refresh
+conditions; the original caller reads that short contract before this full one.
+The caller completes current scenario and authority-placement judgments, using
+real normal/solution outcomes when those owners independently trigger. An
+untriggered owner supplies no result and creates no prerequisite gap here.
+Supply only eligible refs and current evidence locators. Root does not
+recursively invoke those owners, duplicate their judgment, classify severity or
+decide completion.
 Workflow and standalone have identical preconditions and review. The current
 `interface.json` input selector owns the declared profiles and their schemas;
 use its actual caller, target identity and consumer binding.
@@ -25,13 +29,15 @@ Choose the actual entry before authoring public input:
 
 | Current purpose | Behavior |
 | --- | --- |
-| A current Guru caller qualifies an eligible new or materially changed mechanism | Consume that caller's actual normal-scenario and solution-mechanism outcomes; use its declared profile and current target. Workflow and standalone follow the same semantic method and runtime dependency. |
+| A current Guru caller qualifies an eligible new or materially changed mechanism | Consume the caller's current scenario/authority-placement judgments and actual normal/solution outcomes when applicable, under [applicability](applicability.md); use its declared profile and current target. Workflow and standalone follow the same semantic method and runtime dependency. |
 | `guru-review-change` performs an independent review | Read and apply this contract's causal method and the common causal semantics under the independent review owner. This is method reuse, not a qualification invocation, and supplies no root typed exit or formal stage result. |
 | The user directly asks to investigate a failure | Keep evidence collection and action permissions with the current project's actual investigation/execution entry. That owner may later submit a candidate through its real profile. Do not manufacture a Task or caller to begin diagnosis. |
 | The user discusses this Skill or its wording | Answer that discussion without qualification. |
 
-A missing actual caller/profile, current candidate set or consumed upstream
-outcome prevents entry to this invocation. Explain the specific missing input
+A missing actual caller/profile, current candidate set or applicable required
+judgment prevents entry to this invocation. A correctly untriggered normal or
+solution qualifier requires no placeholder or synthetic upstream outcome.
+Explain the specific missing input
 and return control to the actual caller or current project entry; do not
 construct placeholder identities, invent upstream conclusions, or emit a root
 qualification exit for an invocation that did not occur. Existing Guru entry
@@ -60,9 +66,11 @@ honest gaps, never invented evidence. The call-local result has one goal,
 classification, reason and goal-specific evidence object per ref. This is not
 a persisted questionnaire or public handoff.
 
-- **Ordinary feature:** inspect applicability and actual behavior. With no
-  incident-resolution or protection mechanism, return `not_incident_applicable`
-  and continue the original stage without an incident questionnaire.
+- **Ordinary feature:** [applicability](applicability.md) keeps pure ordinary
+  features out of formal invocation. If a genuine entered review establishes
+  that a candidate has no incident-resolution or protection mechanism, retain
+  `not_incident_applicable` and continue the original stage without an incident
+  questionnaire. This existing classification is not an output for skipped work.
 - **Diagnosis:** real failure and bounded investigation allow observation,
   collection and hypothesis testing. Review action impact. Unknown first
   failure/causal chain stays in evidence gaps. `diagnosis_incomplete` returns
@@ -176,13 +184,12 @@ Unknown, multiple, stale or unmapped exits stop closed.
 
 ## Stage reuse and completion boundary
 
-An unchanged mechanism with still-applicable scope, authority, conditions and
-causal evidence consumes the earlier minimal conclusion in the conversation,
-or an existing owner gate already requiring it. Next stage independently
-reviews current implementation/evidence. Stage/caller change alone does not
-repeat qualification. New/materially changed behavior, conditions, authority
-or causal evidence, stale facts or lost conclusions reenter from live sources.
-Never reconstruct pass or create a qualification database.
+Apply [applicability](applicability.md) for adoption and material-change refresh.
+The next stage independently reviews current implementation/evidence. Each new
+invocation still binds current facts and cannot replay an old envelope. Invalid
+results from an entered invocation retain their original fail-closed handling;
+a legitimately untriggered qualifier has no missing result. Never reconstruct
+pass or create a qualification database.
 
 Diagnosis route pauses only unsupported repair, continues bounded collection
 through the existing stage owner and then resubmits. Branch Review changes use

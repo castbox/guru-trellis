@@ -46,8 +46,10 @@ authorization, an AI gate, or an exit. Re-entry reasons select the owner entry;
 they do not decide the owner result.
 
 Before planning scenarios can influence acceptance, negative tests, findings,
-revision actions, scope proposals, or approval, the owner forms only candidate
-refs plus current authority/planning/caller/test locators and invokes
+revision actions, scope proposals, or approval, the owner follows
+[Qualification Applicability](../SKILL.md#qualification-applicability).
+When normal requires a current invocation, form only its actual nonempty
+candidate refs plus current authority/planning/caller/test locators and invoke
 `guru-qualify-normal-scenario:planning_scenario_set`. `classified` returns to
 this owner; `scope_confirmation_required` enters requirements clarification;
 `mechanism_revision_required` returns here to remove or replace a mechanism and
