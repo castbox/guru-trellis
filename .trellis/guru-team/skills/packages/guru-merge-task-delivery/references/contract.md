@@ -368,7 +368,9 @@ History remains optional where Completion already has sufficient public facts.
 `delivered` contains only `exit_id`, `task_ref` and `task_key`. Completion
 reads the public aggregate and current authority to review all actual Delivery
 facts and whole Task responsibilities. Historical facts remain facts; current
-Check/readiness and Completion still require their own actual conclusions.
+The single committed Review, readiness and Completion still require their
+own actual conclusions. The Review projects both public check/full_review
+results; Merge does not invoke an independent Check or repeat Architecture.
 
 `implementation_required` contains `task_ref`, `finding_refs`, and
 `resume_target=phase-2`. `review_refresh_required` contains `task_ref` and a

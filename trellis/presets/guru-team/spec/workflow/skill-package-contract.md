@@ -816,43 +816,29 @@ or lifecycle writer belongs to this boundary.
 
 ### Four-Package Manifest And Versioned Migration
 
-`trellis/skills/guru-team/contracts/production-current-4.0.json` with contract id
-`production-current-v4` is a pinned historical four-package submanifest. The
-current selector is `production-current-v5`; #292 migrates Approval revision
-and normal qualification while retaining this membership and the historical
-160-case control. The DTOs, profile count and self-authoring edge below describe
-the pinned snapshot, not current Planning. Its historical
-activation extended the then-live six-Skill/23-exit Intake contract, not the
-#434 split Intake graph. The production contract contains exactly:
+The retained `production-current-v1` through `production-current-v5` submanifests
+and their versioned files describe their original experiment snapshots. The v5
+alias `contracts/production-current.json` retains that snapshot's identity for
+its existing experiment facts. Its Check/Commit profiles and authoring edges
+are predecessor contracts, not current workflow authority. They cannot execute
+retired profiles using the current runtime. Supported old operations use the
+complete fixed provider under MIGRATION-794.
 
-`contracts/production-current-5.0.json` is the current four-package
-submanifest; it binds the selected Delivery profiles and independent output
-schemas of Approval, Check and Task Commit, plus the delivered #292 normal-scenario qualification, including
-its author_candidate_set input and current outputs. It is a subset of the full registry, not an alternate lifecycle
-selector. Versioned v1-v4 manifests remain historical assets and cannot select
-current inputs. `production-current.json` is the current v5 alias.
+The current registry and selected package Interfaces own active inputs, output
+DTOs and thin consumer projections. Task root PRD owns whole scope; each Delivery
+owns its five public planning files. Approval's private result serves its local
+checker and Activation consumes only the checked public Planning result.
+Activation enters implementation and engineering preparation. Necessary knowledge
+integration/readback precedes TaskCommit; its `pre_review_committed` enters the
+original fixed-candidate router and the single independent Review. That Review
+records the real Check and full_review roles before Delivery Review/readiness.
+No public phase or historical manifest implies semantic pass.
 
-The selected producer and target Interfaces own public schemas, authoring seed
-fields and thin projections. Workflow/stop consumers own independent schemas
-under the shared `consumers/` roots. A semantic consumer authors its own missing
-intent fields from current facts; neither example values nor private lookup
-supplies a missing TaskKey/DeliveryKey or predecessor result by default.
-
-Task root PRD owns whole scope. Each Delivery owns all five public planning
-files under its upstream planning locator; Approval's compact private result
-serves its local checker only. The checked Guru Planning token reaches only
-Delivery Activation. Activation's actual upstream Planning result reaches
-implementation and Check. Check's result reaches Commit; Commit's actual HEAD
-reaches independent complete Branch Review; full review reaches Readiness.
-No public phase means a semantic pass. Exact current schemas and gate
-applicability remain required after recovery.
-
-TaskCommit keeps one semantic owner for dirty exact commits and clean committed
-reentry. The latter preserves HEAD, consumes fresh Check, and reaches the first
-complete independent Review. It never dirties tracked content for proof.
-New Delivery profiles reject legacy Task-status inputs; the old whole installed
-version stays pinned until the public D2 and Guru private migrations are ready.
-See [task-delivery-migration.md](task-delivery-migration.md) for the supported switch boundary.
+Dirty and clean TaskCommit entries preserve one semantic owner. Clean reentry
+verifies the actual committed candidate without stage/commit or prior Check.
+New Delivery inputs reject old Task-status/profile shapes. The explicit migration
+boundary remains MIGRATION-794 and task-delivery-migration.md; historical assets
+do not supply a second active graph.
 
 ### Fixed Git Source Compatibility (#718)
 
@@ -1007,36 +993,35 @@ records the predecessor writing contract; task-delivery-migration.md owns the
 #531 object/I/O migration. Old pass records cannot acquire a DeliveryKey by
 mechanical conversion; current purpose-bound gates must be rerun.
 
-`guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
-before every task work stage/commit side effect. It exposes only `committed`,
-`revision-required`, and `blocked`: Branch Review/finding closure consumes the
-first, the skill re-enters on the second, and the workflow stops on the third.
-Finding-fix task work returns through implementation and current complete
-Phase 2 coverage before a new plan sequence may invoke the skill again. Apply
-[Candidate Applicability And Coverage](workflow-contract.md#candidate-applicability-and-coverage)
-to retained coverage, the entire delta and affected dependencies; this does not
-require repeating unaffected commands or changing reviewer identity.
-Workflow and standalone entry
-preconditions include ordinary Git operation state. Gitlink snapshot identity
-is conditional on index mode `160000` and binds an initialized, clean worktree
-HEAD; for non-deleted gitlinks that artifact HEAD is also the exact index OID,
-not a hint for `git add` to reread from the worktree. Current snapshot
-producers distinguish rename and copy with mutually exclusive `renamed_from`
-and `copied_from`. Only a rename source inherits destination deletion/exact-
-stage authority; copy provenance never stages its source, and a dirty copy
-source requires an independent classification. Current schema 3.0
-SHA-256/mode/delete/rename facts are the only exact-index authority.
-The validated in-memory plan is the only candidate-self byte authority. Executor
-staging and hooks run on an isolated index/detached transaction HEAD; parent,
-message, path set, complete tree, candidate, worktree, operation state, branch
-ref, and live index preimage are checked before publication. Standard
-`git update-ref <ref> <new> <old>` conditionally advances the branch and `git
-reset --mixed --quiet HEAD` refreshes the live index. The executor owns no
-custom lock, atomic-replace, rollback, concurrency, or linearization protocol.
-Failure before the conditional ref update leaves the live ref/index untouched;
-failure after a successful ref advance reports the created commit for bounded
-same-plan recovery. On success Git remains the source of commit facts and the
-ignored candidate is removed.
+`guru-create-task-commit` runs after applicable accepted Planning, engineering
+self-check and necessary original-owner integration/readback. Dirty work uses
+`delivery_pre_review_commit`; a clean committed candidate uses
+`delivery_pre_review_committed_reentry`. Neither requires Check. The current
+`pre_review_committed` output goes only to `guru-pre-review-commit-router`, which
+binds fixed B and complete H through the original constructor/begin_check before
+independent Review. Revision and blocked exits retain their exact Interface
+consumers. A fix returns through implementation, current engineering/knowledge
+readiness and a fresh private candidate sequence; applicable prior evidence may
+be adopted under Candidate Applicability And Coverage.
+
+Both entries retain ordinary Git operation checks. Current private candidate
+4.0 binds non-Gitlink bytes/mode/delete and exact path relations. Gitlinks bind
+only the parent stage-0 mode160000/OID; a staged deletion uses index absence.
+No child root, HEAD, cleanliness or initialization is required. Rename and copy
+remain mutually exclusive relations. Only a reviewed rename destination grants
+source deletion/exact staging; copy provenance grants neither, and a dirty source
+requires its own classification.
+
+The validated in-memory plan owns exact candidate bytes. Staging/hooks run on
+an isolated index and detached transaction HEAD. Parent, raw message, path set,
+complete tree, candidate/worktree, operation state, branch ref and live index
+preimage are checked before publication. Standard `git update-ref <ref> <new>
+<old>` conditionally advances the branch, then `git reset --mixed --quiet HEAD`
+refreshes the live index. No custom lock, atomic-replace, rollback, concurrency
+or linearization protocol is added. Before ref update, failure preserves the
+live ref/index; after ref advance, bounded same-plan recovery verifies the same
+created commit. Git remains the source of commit facts and success retires the
+owner-private candidate/receipt.
 
 `guru-sync-base` is mandatory immediately after tool-free Phase 0 request
 classification and before the first repo/network semantic read. It declares
@@ -1440,99 +1425,15 @@ Public plan/result stdout and examples contain no absolute workspace path; the
 checker derives the expected worktree from current repo config, reviewed slug,
 and live Git facts. Absolute mappings stay only in ignored runtime files.
 
-## Phase 2 Task Check Package
+## Task Check Recovery And Committed Review Ownership
 
-`guru-check-task` is the only semantic owner of the complete Phase 2 task
-check and of the single ignored-runtime `phase2-check.json` checkpoint. It declares
-`judgment_mode=semantic`, the exact five-stage semantic profile, and identical
-workflow/standalone preconditions in this order: `runtime_dependency`,
-`task_checkout`, `approved_planning`, `live_implementation`,
-`validation_scope`, `docs_ssot`, `issue_scope`, and `invocation_freshness`.
+Current development performs engineering self-check and necessary original-owner knowledge integration before TaskCommit. The independent committed review belongs to `guru-review-branch`, which is both runtime `owners.check` and `owners.full_review`. It completes the nine Check dimensions and all full-range Branch Review duties in one real semantic assessment. The two public gate roles remain distinct actual judgments and are recorded in order; neither role is inferred from the other.
 
-The Skill owns repository check selection, scope qualification before severity,
-complete adequacy and Docs SSOT review, current-scope findings, current-candidate
-re-entry identity, the AI Review Gate, re-entry, and its declared exits. Final exits retain their meaning:
-`passed` -> active Skill `guru-create-task-commit`,
-`implementation_required` -> workflow target `guru-resume-implementation`,
-`planning_stale` -> workflow target `guru-task-check-planning-router`, and
-`blocked` -> stop `task-check-blocked`. The planning router consumes only the
-checker-validated `reapprove_plan` or `clarify_requirements` discriminator and
-maps it to one exact active Skill; it does not repeat semantic scope judgment.
+`guru-check-task` is standalone-only recovery/legacy maintenance. Its active interface retains `delivery_planning_stale_recovery` and the declared legacy-control retirement entry. Original #775 rollback recovery preserves the real cause, revision references and prior scope disposition without restoring old Planning or repeating rework. Normal candidate/final Check profiles, `candidate_checked` and their workflow edges are retired. The pinned complete predecessor alone owns supported old checkpoint and already-executed operation recovery. Read the same-provider migration contract at source `trellis/presets/guru-team/MIGRATION-794.md` or installed `.trellis/guru-team/MIGRATION-794.md`; current runtime does not import old modules as fallback.
 
-Official unchanged `trellis-check` workers provide review evidence only. Every
-Guru-owned dispatch prompt authorizes approved-plan verification only and
-requires planning-external observations to return as candidate ref, observed
-behavior, locators, and a minimal reproduction hint without an edit, test,
-self-fix, severity, classification, or route. The Guru owner rereads and freshly
-qualifies that projection before any follow-up dispatch. Workers cannot own the
-Guru Gate, artifact, finding severity, or route. The package
-publishes current-only schema `guru-phase2-check-6.0`. Recorder/checker runtime
-commands accept AI-authored closed input and validate only objective schema,
-`phase2_capture_commit` ancestry, recomputed
-private `guru-phase2-worktree-content-2.0` identity over live tracked and
-untracked business paths including executable mode, current dirty reviewed-path
-coverage, finding/scope linkage, and exit/consumer invariants. The local token
-uses the existing metadata exclusions from
-`data-contracts.md#reviewed-content-identity`; it remains distinct from the
-durable `guru-reviewed-content-1.0` identity used by the candidate handoff.
-Any non-current input or checkpoint
-shape fails closed rather than synthesizing a semantic result.
+Configured Trellis implement/check agents provide engineering observations. Guru-owned dispatches authorize approved-plan work only. Planning-external observations return candidate ref, observed behavior, locators and a minimal reproduction hint without self-fix, severity, classification or route. The coordinator applies original qualifier applicability before follow-up work. No implementation handoff, assignment or liveness artifact is created.
 
-Reviewed paths and validation evidence are non-empty. Every adequacy dimension
-has current evidence from planning, implementation, Docs SSOT, repository,
-tests, and issue scope. These are direct semantic inputs; AI still owns
-sufficiency, qualification, findings, and route.
-
-Each re-entry completes the current semantic round. Check owns the current
-applicable check set under its `references/contract.md` Dependency-Scoped
-Validation entry and the shared Candidate Applicability And Coverage contract.
-Reuse binds a
-current result through existing validation summaries; it neither changes old
-candidate records nor creates a public receipt, cache, or cross-Skill authority.
-Only final passed retains Task Commit's checkpoint consumer. The independent
-`delivery_candidate_check` profile has one additional `candidate_checked` exit
-with task_ref/delivery_key/candidate only. Check validates the actual public
-candidate and full proposed content, uses original rework to implementation
-with affected_results=[readiness], then emits that exit without record_gate.
-It preserves Planning and real historical results without granting current
-applicability. Its unique workflow consumer invokes original final integration;
-implementation rebuilds candidate/begin_check before final Check. Candidate
-checkpoint retirement belongs to this producer. See MIGRATION-638.
-
-Candidate hygiene treats exact bytes at an exact repo-relative path as upstream
-Trellis template-managed only when that path has a valid matching SHA-256 entry
-in schema-v2 `.trellis/.template-hashes.json`. The `HEAD`, index, and worktree
-projections are matched independently, and each match suppresses only that
-projection's Git diff-check or untracked-text trailing-whitespace and blank-EOF
-findings, including tracked upstream-template migration deltas. Missing/invalid
-provenance, unknown paths, local edits, or hash mismatch remain ordinary
-candidates, while path, UTF-8, and JSON validation is never bypassed.
-
-The ignored-runtime schema 6.0 checkpoint contains only
-`phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths, validation
-evidence, final Docs SSOT result, semantic dimensions/findings, and typed route.
-The content identity serves only the local checker before Task Commit; a
-mismatch returns to the owner for AI delta classification. Metadata-only
-HEAD/status changes do not change the identity. It is not authorization,
-semantic approval, public handoff, or whole-chain authority.
-Routine assignment, handoff, liveness, raw worker payload, recovery transcript,
-review rounds, repository snapshots, per-file or artifact digest bundles, and
-`implementation_handoff` are absent. The checker rereads live entry facts and
-validates this compact result without creating another artifact.
-
-When an already validated `passed` DTO is lost before Task Commit but the
-producer-retained schema-6.0 checkpoint is still current, continuation reruns
-the existing `check-phase2-check` and original `invoke-guru-check-task` path to
-project the same minimal `passed` output. This checker-to-invoker path is the
-only deterministic rematerialization contract. It adds no public recovery
-profile, output schema, exit, semantic shortcut, or second checkpoint. Missing,
-stale, consumed, non-current, or mismatched checkpoints require a complete
-fresh `guru-check-task` semantic round.
-
-The adjacent-output rule remains primary: when the current `passed` DTO is
-still held by the invocation chain, Task Commit consumes it directly and no
-rematerialization runs. The workflow, platform entries, and other Skills may
-not read the private checkpoint or manufacture the DTO themselves.
+Candidate hygiene retains exact same-path upstream template provenance and the ordinary path, UTF-8 and JSON checks. Gitlinks use only superproject stage-0 mode/OID, including staged deletion; child checkout state is irrelevant. These deterministic engineering checks do not establish a semantic pass.
 
 ## Active-task producer recovery boundary
 
@@ -1573,14 +1474,15 @@ phase alone never restarts initial Author. Preserve plans and applicable results
 phase reset is introduced. Scope/implementation
 projections are stateless modules, not one-command wrapper Skills.
 
-`guru-create-task-commit` keeps its existing `recovery_resume` public input and
-same-candidate transaction recovery. The producer validates the retained
-candidate, Phase 2 anchor, current ref, transaction stage, created commit, tree,
-message, and path facts. A uniquely proven already-published commit returns the
-normal `committed` DTO and retires the candidate/checkpoint; ambiguity or drift
-stops in the commit owner. No continuation caller may prepare a replacement
-candidate, create an empty or duplicate commit, amend history, or synthesize
-`committed` from Git shape alone.
+Current TaskCommit owns same-candidate transaction and lost-output recovery.
+It verifies the actual candidate, parent/ref, transaction stage, created commit,
+tree, raw message and exact paths. A uniquely proven already-published commit
+returns the same `pre_review_committed` DTO and retires its private state.
+Ambiguity or drift stops at that owner. Continuation cannot prepare a replacement,
+create an empty/duplicate commit, amend history or manufacture a DTO from Git shape.
+Pinned-old `recovery_resume` and Check-anchor/`committed` contracts remain only in
+the complete predecessor's supported recovery path; current runtime does not
+import or convert those old candidates/results.
 
 Semantic producers do not gain equivalent readers. Lost Planning wording,
 Planning Architecture, Approval, Branch Review, or Delivery Review output reruns
@@ -1908,71 +1810,17 @@ is unchanged: same-run workflow binding is not a new transcript-byte signature.
 
 ## Branch Review Owner And Historical Publication Bridge
 
-`guru-review-branch` is the semantic owner of the post-commit full-range review
-and bounded base-continuity review. Aggregate public input schema 5.0 also
-includes the independent `archived_review` profile. The two original profiles
-retain their contracts. The `branch_review` schema 2.0 profile requires exactly `profile`,
-`mode`, `task_ref`, `base_ref`, `branch_review_commit`, and `review_intent`; the
-committed producer supplies the three identity fields and the caller AI freshly
-authors `profile`, `mode`, and `review_intent`. The current-only
-`base_continuity` schema 2.0 profile separately binds the prior complete
-`branch_review_commit` and current committed reconciled `task_head`, plus the
-exact old/new base candidate, from
-`guru-reconcile-task-base:review_continuity_required`. Neither profile
-reopens the Phase 2 private checkpoint. Current issue scope, findings, range,
-candidate identity, and freshness remain owner-private evidence. The
-current-only compact gate schema 7.0 is ignored runtime state and stores
-profile-specific identity plus `review_commit`, the prior complete review
-commit for continuity, `reviewed_content_algorithm`, and
-`reviewed_content_sha256`. Aggregate input schema 3.0 and gate schema 6.0 or
-older remain legacy stale inventory, not current runtime authority; any
-non-7.0 gate fails closed.
+`guru-review-branch` owns the single independent committed assessment. Delivery aggregate input 4.0 selects branch-review, continuity and promotion-alignment input 2.0 without a prior Check result, plus its exact rollback/legacy profiles. The read-only archived profile retains its separate contract. First review uses a fresh Agent that did not implement the change. It reads fixed-B Architecture authority before candidate code and affected consumers, then reads Task explanations and contributions. It performs the original independent Architecture assessment in this same review.
 
-The six outputs are independent minimal DTOs:
+The owner judges requirements, design, implementation, tests, docs_ssot, cross_layer, compatibility, deployment_and_operations and verification_completeness. It also owns complete fixed B..H coverage, scope qualification before P0–P3 severity, findings, deletion/replacement/reuse, affected unchanged consumers, successor coverage and actual publication impact. Existing engineering evidence is adopted only after applicability judgment; concrete gaps receive necessary validation. Bounded continuity remains bounded and cannot substitute for the complete public gate.
 
-- `passed`: `exit_id`, `task_ref`, `branch_review_commit`;
-- `continuity_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
-  `task_head`, `old_base_head`, `new_base_head`,
-  `candidate_tree_sha256`, and `resume_target`; the public
-  `branch_review_commit` is the current continuity-reviewed reconciliation
-  commit, not a claim that a second complete Branch Review occurred;
-- `implementation_required`: `exit_id`, `task_ref`, `branch_review_commit`,
-  `finding_refs`;
-- `scope_confirmation_required`: `exit_id`, `task_ref`, `proposal_refs`;
-- `blocked`: `exit_id`;
-- `archived_review_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
-  `pr_payload_snapshot_sha256`, and `reviewed_base_head`; only the read-only
-  historical `archived_review` profile emitted this success to Publication's
-  `archived_publication_review`. Its only other exit is `blocked`.
+The private Delivery gate is `guru-review-branch-private-delivery-gate-2.0` (schema_version 8.0). It contains the real nine-dimension assessment and independently authored `gate_judgments.check` and `gate_judgments.full_review`. Invoke first records actual check with Planning predecessor, then actual full_review with that check predecessor. Only both real current writes permit `passed`. Same-operation recovery binds the exact candidate, scope, plan and Planning result; missing semantic evidence requires actual review. No empty slot or prior pass is converted.
 
-In the pinned-old graph the Branch Review `passed` edge supplied only
-`task_ref/branch_review_commit` through `skill_input_authoring_seed`; the
-caller authors `profile/mode/review_intent` for active
-`guru-review-task-publication`. In the current graph `passed` enters
-`guru-review-task-delivery` through its declared input projection. The commit
-remains the Git range/ancestry anchor;
-the shared reviewed-content identity defined by
-`data-contracts.md#reviewed-content-identity` remains fresh across excluded
-workflow metadata changes and becomes stale for any reviewed-content change.
-The old Publication/Finalizer graph and Branch Review/Verification used the
-one canonical shared helper for that contract; no package owns a second
-implementation. The
-Branch Review owner-private checkpoint is current-only. A schema 5.0 or older
-checkpoint from the former package-local identity implementation is stale and
-routes to a fresh Branch Review without compatibility reads, migration, or
-rewriting.
+Each exit uses its Interface-selected minimal DTO and unique consumer. `passed` output 2.0 supplies task_ref, delivery_key, branch_review_commit and full_review_result_id to Delivery Review. Implementation, scope, planning-stale, stopped and revised exits return through their declared original owners. `planning_stale` carries only the selected reapprove_plan or clarify_requirements handoff. Historical archive and continuity outputs keep their own shapes and do not assert a second complete review.
 
-In the pinned-old graph, the bounded continuity edge supplied the Publication seed shape after its
-router restores `resume_target=publication_review`, `task_finalization`, or
-`finalization_resume`: it selects the current `branch_review_commit` produced by
-`continuity_passed`. The prior complete review commit remains a separate
-continuity identity and is not projected as Publication's current anchor.
+Commit remains the Git range/ancestry anchor. The common reviewed-content identity retains its original metadata exclusions. Private gates never become public handoffs. Original finding closure, candidate qualification, schema freshness and checkpoint retirement remain package-owned. Pinned-old Publication/Finalizer and archive contracts retain only their expressly supported historical consumers; they do not restore an active early-publication edge.
 
-For every structured projection, an `exit_id` field whose schema is the exact
-matching const may be omitted only as the already selected route discriminator.
-Every other producer field must be consumed. If the consumer requires
-`exit_id`, it must still be projected. This rule is general and does not permit
-dropping business data or inventing another projection operation.
+For structured projections, an exact matching const `exit_id` may be omitted only as the already-selected route discriminator. All other fields must be consumed through the declared direct, select or authoring-seed projection.
 
 ## Historical Task Publication Review Owner (Pinned-Old-Only)
 
@@ -2346,16 +2194,8 @@ commit, payload and recovery rather than restarting or synchronizing.
 
 #577 adds the independent archive_resume input profile to guru-maintain-legacy-task. Original convert/history_closeout/resume/rollback and minimal typed exits retain their meaning. The original six private owners accept source_task_ref only to separate physical archived source from task_ref control attribution; omission preserves the original input. See MIGRATION-577 and the package-owned contract.
 
-## Early Draft Skill I/O (#636)
+## Early Draft Migration Boundary (#636 / #794)
 
-TaskCommit and Publication select current Delivery aggregate 2.0. Branch Review
-selects Delivery aggregate 3.0 and legacy-index 3.0, retaining the existing
-promotion alignment and maintenance profiles. New early profiles have their
-own closed input/output contracts. Existing final profile schemas and semantic
-meanings remain unchanged. Package interfaces declare five workflow-owned
-consumers for early commit, publication, revision and content feedback. Each
-projection carries only that consumer's required fields. Current runtime does
-not read old candidate/transaction schemas; the original named one-time
-migration owner alone consumes them. Historical assets remain for their real
-diagnostic/migration consumers, not current fallback. Draft feedback never
-serves as Check, formal full_review, readiness or Merge input.
+New early Draft commit, content-review and publication profiles are retired. TaskCommit aggregate 3.0 emits only `pre_review_committed` to the original review-candidate router. Delivery Review aggregate 2.0 owns readiness; Publication aggregate 4.0 consumes that actual current ready result. No Commit output enters Publication.
+
+Already-executed old Commit/Draft operations recover through the fixed complete predecessor named in MIGRATION-794. Current remote-Draft recovery 2.0 reports completed facts only; pending remote actions return review_stale and require current independent review/readiness before the original transaction proceeds. Recovery never repeats a completed action or converts Draft into final publication. Historical schemas are pinned assets, not current-runtime fallback.

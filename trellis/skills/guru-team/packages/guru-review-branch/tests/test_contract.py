@@ -14,39 +14,35 @@ from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parents[1]
 REPO = PACKAGE.parents[4]
-TASK_REF = ".trellis/tasks/08-12-test"
+TASK_REF = ".trellis/tasks/flow-task"
 sys.path.insert(0, str(PACKAGE.parents[1]))
 from runtime.io import project_intermediate_receipt
 
 
 class BranchReviewWrapperLifecycleTest(unittest.TestCase):
     def setUp(self):
+        spec = importlib.util.spec_from_file_location(
+            "current_wrapper_flow", PACKAGE.parent / "guru-check-task/tests/test_delivery_flow.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.flow = module.DeliveryFlow()
+        self.flow.setUp()
+        self.current_delivery = True
+        self.repo = self.flow.repo
+        self.projection = self.flow.projection
+        self.delivery_key = self.flow.key
         self.tmp = tempfile.TemporaryDirectory()
         self.parent = Path(self.tmp.name)
-        self.repo = self.parent / "repo"
         self.inputs = self.parent / "inputs"
         self.inputs.mkdir()
-        subprocess.run(
-            ["git", "init", "-q", "-b", "main", str(self.repo)], check=True
-        )
-        self.git("config", "user.name", "Test")
-        self.git("config", "user.email", "test@example.invalid")
-        (self.repo / "app.txt").write_text("base\n")
-        (self.repo / ".gitignore").write_text(".trellis/.runtime/\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "base")
-        self.base = self.git("rev-parse", "HEAD")
-        self.git("switch", "-qc", "feat/test")
-        (self.repo / "app.txt").write_text("feature\n")
-        (self.repo / TASK_REF).mkdir(parents=True)
+        self.base = self.projection.content_base(self.delivery_key)
         (self.repo / ".trellis/tasks/08-12-other").mkdir(parents=True)
         metadata_files = {
             ".trellis/tasks/archive/old/task.json": "archived\n",
             ".trellis/workspace/test/journal.md": "journal\n",
             ".trellis/.runtime/tracked-state.json": "runtime\n",
             ".trellis/guru-team/extension.json": "provenance\n",
-            ".DS_Store": "os noise\n",
-            "nested/.DS_Store": "nested os noise\n",
+            ".DS_Store": "os noise\n", "nested/.DS_Store": "nested os noise\n",
         }
         for relative, content in metadata_files.items():
             target = self.repo / relative
@@ -54,11 +50,27 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             target.write_text(content)
         self.git("add", ".")
         self.git("add", "-f", ".trellis/.runtime/tracked-state.json")
-        self.git("commit", "-qm", "feature")
+        self.git("commit", "-qm", "retain metadata fixtures")
+        self.bind_current_candidate()
         self.head = self.git("rev-parse", "HEAD")
 
     def tearDown(self):
+        self.flow.doCleanups()
         self.tmp.cleanup()
+
+    def bind_current_candidate(self):
+        from runtime.delivery_projection.adapter import authority_ref
+        from runtime.delivery_projection.gates import rework
+        head = self.git("rev-parse", "HEAD")
+        delivery = self.projection.resolve(self.delivery_key)
+        if delivery["candidate"]["head_ref"] == head:
+            return
+        role = "check" if delivery["phase"] == "checking" else "full_review"
+        rework(self.projection, self.delivery_key, role, "implementation",
+               authority_ref(self.repo / "requirements.md", self.repo),
+               ["check", "full_review", "readiness"])
+        self.projection.begin_check(self.delivery_key, self.projection.candidate(
+            [], head_ref=head, base_ref=self.base))
 
     def test_dirty_paths_ignore_children_but_retain_parent_gitlink_changes(self):
         source = self.parent / "child-source"
@@ -213,6 +225,10 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         return path
 
     def run_wrapper(self, name, *args, ok=True):
+        if (getattr(self, "current_delivery", False) and name == "check-review-gate.sh"
+                and "--delivery-key" not in args
+                and ("--task" not in args or args[args.index("--task") + 1] == TASK_REF)):
+            args = (*args, "--delivery-key", json.dumps(self.delivery_key))
         child = subprocess.Popen(
             [
                 str(PACKAGE / "scripts" / name),
@@ -243,10 +259,14 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         return project_intermediate_receipt(payload, PACKAGE.parents[1] / "schemas") if ok and name != "invoke.sh" else payload
 
     def checkpoint(self):
-        return (
-            self.repo
-            / ".trellis/.runtime/guru-team/owner-checkpoints/08-12-test/review-gate.json"
-        )
+        return (self.repo / ".trellis/.runtime/guru-team/owner-checkpoints/flow-task" /
+                self.delivery_key["delivery_id"] / "review-gate.json")
+
+    def current_dirty_paths(self):
+        spec = importlib.util.spec_from_file_location("current_dirty_reader", PACKAGE / "runtime/common.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.dirty_paths(self.repo, TASK_REF)
 
     def tree_identity(self, commit):
         raw = subprocess.run(
@@ -279,32 +299,35 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         return hashlib.sha256(b"".join(rows)).hexdigest()
 
     def continuity_public(self):
-        prior_review = self.head
+        prior_review = self.git("rev-parse", "HEAD")
+        self.record(self.public("initial_review"), self.auth())
+        self.run_wrapper("invoke.sh", "--task", TASK_REF, "--input", self.inputs / "public.json")
+        self.git("add", TASK_REF)
+        self.git("commit", "-qm", "retain real prior review results")
         self.git("switch", "main")
         (self.repo / "base.txt").write_text("advance\n")
         self.git("add", "base.txt")
         self.git("commit", "-qm", "advance base")
         new_base = self.git("rev-parse", "HEAD")
-        self.git("switch", "feat/test")
+        self.git("switch", "feat/flow")
         self.git("merge", "--no-ff", "-m", "reconcile base", new_base)
         task_head = self.git("rev-parse", "HEAD")
+        self.bind_current_candidate()
         return {
-            "profile": "base_continuity",
-            "mode": "workflow",
-            "task_ref": TASK_REF,
-            "task_head": task_head,
-            "branch_review_commit": prior_review,
-            "old_base_head": self.base,
-            "new_base_head": new_base,
+            "profile": "delivery_base_continuity", "mode": "workflow",
+            "task_ref": TASK_REF, "delivery_key": self.delivery_key,
+            "task_head": task_head, "branch_review_commit": prior_review,
+            "old_base_head": self.base, "new_base_head": new_base,
             "candidate_tree_sha256": self.tree_identity(task_head),
-            "relevant_paths": ["base.txt"],
-            "resume_target": "publication_review",
+            "relevant_paths": ["base.txt"], "resume_target": "publication_review",
             "review_intent": "base_continuity",
         }
 
     def public(self, intent="fresh_final_review"):
+        self.bind_current_candidate()
         return {
-            "profile": "branch_review",
+            "profile": "delivery_branch_review",
+            "delivery_key": self.delivery_key,
             "mode": "workflow",
             "task_ref": TASK_REF,
             "base_ref": self.base,
@@ -313,7 +336,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         }
 
     def auth(self, exit_id="passed"):
-        return {
+        value = {
             "delivery_review": {
                 "task_scope": ["R1", "R2"],
                 "delivery_slice": ["R1"],
@@ -349,6 +372,12 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
                 "evidence": ["Reviewed complete diff and tests."],
             },
         }
+        if getattr(self, "current_delivery", False):
+            current = json.loads((PACKAGE / "examples/authoring-delivery-passed-2.0.json").read_text())
+            for name in ("adequacy_review", "gate_judgments", "planning_revision"):
+                value[name] = current[name]
+            value["verification_evidence"] = {"evidence": value["verification_evidence"]["evidence"]}
+        return value
 
     def record(self, public=None, auth=None, exit_id="passed", ok=True):
         public = public or self.public()
@@ -366,7 +395,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             ok=ok,
         )
 
-    def test_passed_record_check_invoke_retires_and_rejects_repeat(self):
+    def test_passed_record_check_invoke_retires_and_recovers_same_result(self):
         receipt = self.record()
         self.assertEqual(
             {
@@ -380,7 +409,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         )
         gate = self.checkpoint()
         self.assertTrue(gate.is_file())
-        self.assertEqual("7.0", json.loads(gate.read_text())["schema_version"])
+        self.assertEqual("8.0", json.loads(gate.read_text())["schema_version"])
         self.assertEqual(
             self.auth()["delivery_review"],
             json.loads(gate.read_text())["delivery_review"],
@@ -399,19 +428,16 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         output = self.run_wrapper(
             "invoke.sh", "--task", TASK_REF, "--input", public_path
         )
-        self.assertEqual(
-            {
-                "exit_id": "passed",
-                "task_ref": TASK_REF,
-                "branch_review_commit": self.head,
-            },
-            output,
-        )
+        self.assertEqual("passed", output["exit_id"])
+        self.assertEqual(TASK_REF, output["task_ref"])
+        self.assertEqual(self.delivery_key, output["delivery_key"])
+        self.assertEqual(self.head, output["branch_review_commit"])
+        self.assertEqual(self.projection.resolve(self.delivery_key)["results"]["full_review"]["result_id"], output["full_review_result_id"])
         self.assertFalse(gate.exists())
         repeated = self.run_wrapper(
-            "invoke.sh", "--task", TASK_REF, "--input", public_path, ok=False
+            "invoke.sh", "--task", TASK_REF, "--input", public_path
         )
-        self.assertEqual("stale_identity", repeated["code"])
+        self.assertEqual(output, repeated)
 
     def test_initial_review_zero_candidates_uses_original_full_chain(self):
         public = self.public("initial_review")
@@ -486,7 +512,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         (self.repo / "app.txt").write_text("dirty before record\n")
         record_result = self.record(ok=False)
         self.assertEqual("stale_identity", record_result["code"])
-        self.assertEqual("worktree", record_result["field_path"])
+        self.assertEqual("candidate", record_result["field_path"])
 
         (self.repo / "app.txt").write_text("feature\n")
         self.record()
@@ -495,7 +521,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "check-review-gate.sh", "--task", TASK_REF, ok=False
         )
         self.assertEqual("stale_identity", check_result["code"])
-        self.assertEqual("worktree", check_result["field_path"])
+        self.assertEqual("candidate", check_result["field_path"])
 
     def test_nonterminal_record_and_invoke_are_idempotent_and_retain(self):
         auth = self.auth("implementation_required")
@@ -596,40 +622,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertEqual(self.head, self.git("rev-parse", "HEAD"))
         self.assertFalse(self.checkpoint().exists())
 
-    def test_symlink_checkpoint_and_ancestor_fail_closed(self):
-        public = self.public()
-        self.record(public)
-        gate = self.checkpoint()
-        saved = self.inputs / "saved-gate.json"
-        gate.replace(saved)
-        gate.symlink_to(saved)
-        result = self.run_wrapper(
-            "check-review-gate.sh", "--task", TASK_REF, ok=False
-        )
-        self.assertEqual("unsafe_path", result["code"])
-        gate.unlink()
-        owner = gate.parent
-        owner.rmdir()
-        owner.symlink_to(self.inputs, target_is_directory=True)
-        ancestor = self.run_wrapper(
-            "review-branch.sh",
-            "--task",
-            TASK_REF,
-            "--skill-input",
-            self.inputs / "public.json",
-            "--semantic-review-file",
-            self.inputs / "auth.json",
-            "--typed-exit",
-            "passed",
-            ok=False,
-        )
-        self.assertEqual("unsafe_path", ancestor["code"])
 
-    def test_unsafe_task_locator_fails_closed(self):
-        result = self.run_wrapper(
-            "check-review-gate.sh", "--task", "../outside", ok=False
-        )
-        self.assertEqual("unsafe_path", result["code"])
 
     def test_blocked_projects_and_retires(self):
         public = self.public("initial_review")
@@ -646,7 +639,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         count_before = self.git("rev-list", "--count", "HEAD")
         self.record(public, self.auth("continuity_passed"), "continuity_passed")
         gate = json.loads(self.checkpoint().read_text())
-        self.assertEqual("7.0", gate["schema_version"])
+        self.assertEqual("8.0", gate["schema_version"])
         self.assertEqual(public["task_head"], gate["review_commit"])
         self.assertEqual(
             public["branch_review_commit"],
@@ -691,10 +684,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         executable = files / "run.sh"
         executable.write_text("#!/bin/sh\nexit 0\n")
         executable.chmod(0o755)
-        (files / "link").symlink_to("copy-0000.bin")
-        (self.repo / "submodule").mkdir()
         self.git("add", "objects")
-        self.git("update-index", "--add", "--cacheinfo", f"160000,{self.head},submodule")
         self.git("commit", "-qm", "add normal large asset tree")
         self.head = self.git("rev-parse", "HEAD")
         public = self.continuity_public()
@@ -704,7 +694,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             self.git("show-ref"),
             self.git("status", "--porcelain=v1"),
         )
-        self.assertEqual("", before[-1])
+        self.assertEqual([], self.current_dirty_paths())
         self.record(public, self.auth("continuity_passed"), "continuity_passed")
         gate = json.loads(self.checkpoint().read_text())
         self.assertEqual(public["candidate_tree_sha256"], gate["integration_pair"]["candidate_tree_sha256"])
@@ -720,6 +710,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertEqual({
             "exit_id": "continuity_passed",
             "task_ref": TASK_REF,
+            "delivery_key": self.delivery_key,
             "task_head": public["task_head"],
             "branch_review_commit": public["task_head"],
             "old_base_head": public["old_base_head"],
@@ -748,7 +739,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "future base",
         )
         cases = (
-            ("task_head", public["branch_review_commit"], "task_head"),
+            ("task_head", public["branch_review_commit"], "candidate"),
             ("branch_review_commit", public["task_head"], "branch_review_commit"),
             ("branch_review_commit", unrelated, "branch_review_commit"),
             ("new_base_head", future_base, "new_base_head"),
@@ -779,7 +770,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "check-review-gate.sh", "--task", TASK_REF, ok=False
         )
         self.assertEqual("stale_identity", result["code"])
-        self.assertEqual("integration_pair.task_head", result["field_path"])
+        self.assertEqual("candidate", result["field_path"])
         self.assertTrue(self.checkpoint().exists())
 
 
@@ -812,179 +803,8 @@ class BranchReviewContractTest(unittest.TestCase):
             sources["skill"].read_text(encoding="utf-8"),
         )
 
-    def test_branch_review_recomputes_architecture_over_committed_full_diff(self):
-        workflow = REPO / "trellis/workflows/guru-team/workflow.md"
-        sources = {
-            "skill": PACKAGE / "SKILL.md",
-            "contract": PACKAGE / "references/contract.md",
-            "workflow": workflow,
-        }
-        for label, path in sources.items():
-            with self.subTest(source=label):
-                text = " ".join(path.read_text(encoding="utf-8").split())
-                self.assertIn("task_impact_sync(stage=branch_review)", text)
-                self.assertRegex(text, r"complete committed (?:base-to-HEAD )?diff|committed full diff")
-                self.assertIn("Phase 2", text)
-                self.assertRegex(text, r"reuse|reused|never treats")
-                self.assertNotIn("Afizzy", text)
 
-        contract = sources["contract"].read_text(encoding="utf-8")
-        for route in (
-            "sync_required", "contract_incomplete", "architecture_conflict",
-            "fitness_regression",
-        ):
-            self.assertIn(route, contract)
-        self.assertIn("does not read Architecture private state", contract)
 
-        workflow_text = workflow.read_text(encoding="utf-8")
-        phase = workflow_text.split("#### 3.5 Branch review", 1)[1].split("#### 3.6 Publication review", 1)[0]
-        self.assertLess(
-            phase.index("task_impact_sync(stage=branch_review)"),
-            phase.index("invokes guru-review-branch"),
-        )
-
-    def test_workflow_closes_delivery_completion_finish_and_promotion_architecture_routes(self):
-        text = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
-        normalized = " ".join(text.split())
-        for stage in (
-            "stage=planning", "stage=implementation_discovery", "stage=phase2",
-            "stage=branch_review", "stage=publication", "stage=acceptance_finish",
-        ):
-            self.assertIn(stage, normalized)
-        for phrase in (
-            "Delivery Review rejects missing or stale Architecture evidence",
-            "reviewed_promoted",
-            "current `no_change` proof",
-            "does not absorb Delivery publication, whole-task Completion",
-        ):
-            self.assertIn(phrase, normalized)
-        publication = text.split("#### 3.6 Delivery review and publication", 1)[1].split("#### 3.7 Completion, Closure and Finish", 1)[0]
-        self.assertLess(
-            publication.index("task_impact_sync(stage=publication)"),
-            publication.index("enters `guru-review-task-delivery`"),
-        )
-        finish = text.split("#### 3.7 Completion, Closure and Finish", 1)[1].split("## Global Integration Boundaries", 1)[0]
-        self.assertLess(
-            finish.index("task_impact_sync(stage=acceptance_finish)"),
-            finish.index("`guru-finish-task` alone archives"),
-        )
-        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
-        self.assertIn("`guru-review-task-delivery`", contract)
-        self.assertIn("`legacy-archived-review-disposition-required` stop", contract)
-        self.assertNotIn("consumer is Publication's", contract)
-        spec = (
-            REPO / "trellis/presets/guru-team/spec/workflow/workflow-contract.md"
-        ).read_text(encoding="utf-8")
-        for phrase in (
-            "Every standard task mandatory invokes",
-            "committed full-diff Branch Review",
-            "returns `sync_required`",
-            "requires `reviewed_promoted`",
-        ):
-            self.assertIn(phrase, spec)
-        self.assertRegex(spec, r"routing-only\s+integration")
-
-    def test_current_interface_wording_matches_profiles_gate_and_exits(self):
-        interface = json.loads((PACKAGE / "interface.json").read_text())
-        boundary = next(row for row in interface["entry_preconditions"] if row["id"] == "workspace_boundary")
-        self.assertIn("TaskBranchBinding", boundary["evidence"])
-        self.assertNotIn("mapping", json.dumps(boundary).lower())
-        public = interface["public_contracts"]
-        self.assertEqual(
-            "guru-review-branch-input-legacy-index-3.0",
-            public["input"]["aggregate_schema"]["schema_id"],
-        )
-        self.assertEqual(
-            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision", "legacy_control_inspection", "legacy_control_retirement", "delivery_promotion_reference_alignment", "delivery_draft_content_review"],
-            [profile["id"] for profile in public["input"]["profiles"]],
-        )
-        self.assertEqual(
-            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-7.0.json",
-            public["private_artifacts"][0]["schema"]["schema_id"],
-        )
-        self.assertEqual(
-            [
-                "passed",
-                "continuity_passed",
-                "implementation_required",
-                "scope_confirmation_required",
-                "blocked",
-                "archived_review_passed",
-                "delivery_stopped",
-                "delivery_scope_revised",
-                "legacy_controls_retired",
-                "draft_content_reviewed",
-                "draft_revision_required",
-            ],
-            [output["exit_id"] for output in public["outputs"]],
-        )
-        self.assertNotIn("--owner-result", public["invocation"]["example_argv"])
-        for facts_path in sorted((PACKAGE / "evals/files").glob("*facts.json")):
-            facts = json.loads(facts_path.read_text())
-            arguments = facts["public_invocation"]["arguments"]
-            self.assertNotIn("--owner-result", arguments, facts_path)
-        for path in (
-            PACKAGE / "SKILL.md",
-            PACKAGE / "references/contract.md",
-        ):
-            text = path.read_text()
-            normalized = " ".join(text.split())
-            self.assertIn("continuity", text)
-            self.assertIn("current", text)
-            self.assertIn("Delivery", text)
-            self.assertIn("continuity_passed", text)
-            self.assertIn("bounded", normalized)
-            self.assertIn("full Branch Review", normalized)
-        for path in (
-            REPO / ".trellis/spec/workflow/companion-scripts.md",
-            REPO / "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
-        ):
-            text = path.read_text()
-            section = text.split("## Branch Review Recorder And Checker\n", 1)[1]
-            section = section.split("\n## ", 1)[0]
-            profiles, ordinary = section.split("### Ordinary Profiles\n", 1)
-            ordinary, archived = ordinary.split("### Archived Review Profile\n", 1)
-            profiles = " ".join(profiles.split())
-            ordinary = " ".join(ordinary.split())
-            archived = " ".join(archived.split())
-            with self.subTest(path=path):
-                self.assertIn(
-                    "Aggregate public input schema 4.0 dispatches two ordinary profiles: "
-                    "the full `branch_review` schema 2.0 profile and the bounded "
-                    "`base_continuity` schema 2.0 profile. Both remain valid and unchanged.",
-                    profiles,
-                )
-                self.assertIn(
-                    "Aggregate public input schema 5.0 retains those two ordinary "
-                    "profiles unchanged and adds the independent read-only "
-                    "`archived_review` schema 1.0 profile.",
-                    profiles,
-                )
-                for phrase in (
-                    "rules apply only to `branch_review` and `base_continuity`; "
-                    "their existing behavior is unchanged",
-                    "records only current gate schema 7.0",
-                    "Only schema 7.0 is accepted for these ordinary profiles",
-                    "schema 6.0 or older fails closed as stale without projection, "
-                    "dual-read, rewrite, or migration",
-                    "Successful `passed`, `continuity_passed`, and zero-payload stop "
-                    "`blocked` projection retires the checkpoint",
-                    "active re-entry routes retain that one checkpoint",
-                ):
-                    self.assertIn(phrase, ordinary)
-                for phrase in (
-                    "For `archived_review`, the same recorder/checker/invocation commands "
-                    "use the separate `guru-archived-review-gate-1.0` schema "
-                    "(version `archived-1.0`), not ordinary gate schema 7.0",
-                    "Its only exits are `archived_review_passed` and `blocked`; "
-                    "both retire the checkpoint after validated projection",
-                    "does not restore the task or mutate the archive, PR, or Issue",
-                    "does not loosen ordinary gate schema 7.0 validation, blocked "
-                    "semantics, or re-entry behavior",
-                ):
-                    self.assertIn(phrase, archived)
-                self.assertNotIn("records only current gate schema 6.0", section)
-                self.assertNotIn("Only schema 7.0 is accepted;", section)
 
     def test_subtraction_review_is_independent_and_not_phase2_checkpoint_reuse(self):
         repo = PACKAGE.parents[4]

@@ -14,29 +14,7 @@ from runtime.task_lifecycle import LifecycleContractError
 from migration import matches_committed, read_source
 
 
-def _current_check(projection, public):
-    delivery = projection.resolve(public["delivery_key"])
-    check = delivery["results"]["check"]
-    if (check is None or check["result_id"] != public["check_result_id"]
-            or projection.gate_applicability(public["delivery_key"])["check"]["kind"] != "applicable"):
-        raise CommandError("stale_identity", "check_result_id", "Run the current Delivery Check owner.", 3)
-    try:
-        projection._call(projection.api.delivery_store.verify_candidate, projection.root, delivery["candidate"])
-    except LifecycleContractError as exc:
-        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
-    if delivery["candidate"]["head_ref"] != git(projection.root, "rev-parse", "HEAD").stdout.strip():
-        raise CommandError("stale_identity", "candidate.head_ref", "Run fresh Check at the actual committed HEAD.", 3)
-    return delivery
-
-
-def current_check(projection, public):
-    try:
-        return _current_check(projection, public)
-    except LifecycleContractError as exc:
-        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
-
-
-def current_draft(projection, public):
+def current_pre_review(projection, public):
     """Validate accepted Planning and the fixed range without creating Check."""
     try:
         projection.selection_preflight(public["delivery_key"])
@@ -58,8 +36,7 @@ def current_draft(projection, public):
 
 def clean_candidate(projection, public):
     repo = projection.root
-    early = public.get("profile") == "delivery_draft_committed_reentry"
-    delivery = current_draft(projection, public) if early else current_check(projection, public)
+    delivery = current_pre_review(projection, public)
     try:
         checkout = resolve_active_task_checkout(repo, public["task_ref"])
     except LifecycleContractError as exc:
@@ -75,10 +52,10 @@ def clean_candidate(projection, public):
     base = record["base_branch"]
     if not isinstance(base, str) or not base:
         raise CommandError("stale_identity", "base_branch", "Resolve the task selected base before Task Commit.", 3)
-    base_ref = public["base_ref"] if early else delivery["candidate"]["base_ref"]
+    base_ref = public["base_ref"]
     if (base_ref is None or projection.commit(base_ref) != base_ref
             or not git(repo, "diff", "--name-only", base_ref, head).stdout.strip()):
-        raise CommandError("stale_identity", "base_ref", "Use the current Check's fixed, nonempty complete content range.", 3)
+        raise CommandError("stale_identity", "base_ref", "Use this Delivery's fixed, nonempty complete content range.", 3)
     committed = git(repo, "show", f"HEAD:{public['task_ref']}/task.json", check=False)
     try:
         metadata = json.loads(committed.stdout)
@@ -113,18 +90,14 @@ def projection_package():
 
 
 def invoke(package, repo, public, owner):
-    validate_json(public, package / "schemas" / ("public-" + public["profile"].replace("_", "-") + "-input-1.0.schema.json"), "input")
+    if public.get("profile") != "delivery_pre_review_committed_reentry":
+        raise CommandError("schema_mismatch", "profile", "Use the current pre-review clean profile; recover old operations with the pinned provider in MIGRATION-794.")
+    validate_json(public, package / "schemas/public-delivery-pre-review-committed-reentry-input-1.0.schema.json", "input")
     projection = DeliveryProjection(repo, public["task_ref"])
-    if public["profile"] not in {"delivery_committed_reentry", "delivery_draft_committed_reentry"}:
-        raise CommandError("invalid_arguments", "profile", "Use the reviewed exact-commit candidate entry for dirty work.")
     validate_json(owner, package / "schemas/delivery-commit-review-1.0.schema.json", "owner_result")
     _delivery, head, base_ref = clean_candidate(projection, public)
     if owner["status"] == "passed":
-        if public["profile"] == "delivery_draft_committed_reentry":
-            output = {"exit_id": "draft_committed", "task_ref": public["task_ref"], "delivery_key": public["delivery_key"], "base_ref": base_ref, "commit_sha": head}
-        else:
-            output = {"exit_id": "committed", "task_ref": public["task_ref"], "delivery_key": public["delivery_key"],
-                      "base_ref": base_ref, "branch_review_commit": head, "check_result_id": public["check_result_id"]}
+        output = {"exit_id": "pre_review_committed", "task_ref": public["task_ref"], "delivery_key": public["delivery_key"], "branch_review_commit": head}
     elif owner["status"] == "revision-required":
         output = {"exit_id": "revision-required", "task_ref": public["task_ref"], "delivery_key": public["delivery_key"]}
     else:

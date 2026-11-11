@@ -29,8 +29,8 @@ def git(repo,*args,env=None,check=True,input=None):
  return p
 def sha_file(path):return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
 def validate(package_root,value):
- if "delivery_key" in value and value.get("schema_version")!="delivery-3.0":raise CommandError("stale_identity","candidate.schema_version","Reprepare an unexecuted candidate with the current parent-index contract; recover any existing commit receipt through the original invoke first.",3)
- validate_json(value,package_root/("schemas/delivery-commit-candidate-3.0.schema.json" if "delivery_key" in value else "schemas/task-commit-candidate.schema.json"),"candidate")
+ if "delivery_key" in value and value.get("schema_version")!="delivery-4.0":raise CommandError("stale_identity","candidate.schema_version","Reprepare an unexecuted candidate with the current parent-index contract; recover any existing commit receipt through the original invoke first.",3)
+ validate_json(value,package_root/("schemas/delivery-commit-candidate-4.0.schema.json" if "delivery_key" in value else "schemas/task-commit-candidate.schema.json"),"candidate")
 def repo_rel(repo,path):return path.resolve().relative_to(repo.resolve()).as_posix()
 def task_dir(repo,value):
  p=(repo/str(value or "")).resolve()
@@ -103,9 +103,9 @@ def canonical_candidate_locator(repo,value):
 def commit_result_path(repo,task_key,sequence):return repo/".trellis/.runtime/guru-team/task-commit-results"/task_key/f"{sequence}.json"
 def build_candidate(package_root,repo,public,authoring):
  profile=public.get("profile")
- if profile=="delivery_draft_committed_reentry":raise CommandError("invalid_arguments","input.profile","Use invoke --input for clean committed Draft reentry; prepare accepts a dirty commit profile.")
+ if profile=="delivery_pre_review_committed_reentry":raise CommandError("invalid_arguments","input.profile","Use invoke --input for clean committed Draft reentry; prepare accepts a dirty commit profile.")
  delivery_profile=str(profile).startswith("delivery_");schemas={"initial_commit":"public-initial-commit-input.schema.json","revision_reentry":"public-revision-reentry-input.schema.json","finding_fix_commit":"public-finding-fix-commit-input.schema.json","recovery_resume":"public-recovery-resume-input.schema.json"}
- if not delivery_profile:raise CommandError("schema_mismatch","input.profile","Use a current Delivery commit profile; old Task planning is diagnostic-only.")
+ if profile not in {"delivery_pre_review_commit", "delivery_pre_review_committed_reentry"}:raise CommandError("schema_mismatch","input.profile","Use a current Delivery commit profile; old Task planning is diagnostic-only.")
  if delivery_profile:schemas[profile]="public-"+profile.replace("_","-")+"-input-1.0.schema.json"
  if profile not in schemas:raise CommandError("schema_mismatch","input.profile","Use one declared task commit profile.")
  validate_json(public,package_root/"schemas"/schemas[profile],"input");td=task_dir(repo,public["task_ref"])
@@ -113,12 +113,10 @@ def build_candidate(package_root,repo,public,authoring):
  except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
  task=json_file(td/"task.json","task")
  if delivery_profile:
-  from delivery import current_check, current_draft
+  from delivery import current_pre_review
   from runtime.delivery_projection.adapter import DeliveryProjection
-  early=profile in {"delivery_draft_commit","delivery_draft_committed_reentry"}
   projection=DeliveryProjection(repo,public["task_ref"])
-  selected=current_draft(projection,public) if early else current_check(projection,public)
-  if not early:public={**public,"phase2_commit_anchor":selected["candidate"]["head_ref"]}
+  selected=current_pre_review(projection,public)
  cp,sequence=candidate_path(repo,td)
  receipt=commit_result_path(repo,td.name,sequence)
  if cp.is_file() and receipt.is_file():raise CommandError("stale_identity","candidate","Recover the existing candidate and commit receipt through invoke before preparing another operation.",3)
@@ -136,12 +134,11 @@ def build_candidate(package_root,repo,public,authoring):
   if source:exact.add(source)
  review=authoring.get("ai_review")
  if not isinstance(review,dict) or review.get("status") not in {"passed","revision-required","blocked"} or not isinstance(review.get("evidence"),list) or not review["evidence"]:raise CommandError("schema_mismatch","ai_review","Provide the completed AI review.")
- base=str(task.get("base_branch") or "main");base_ref=public["base_ref"] if early else selected["candidate"]["base_ref"]
- candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":checkout.artifact.task_id,"path":public["task_ref"],"status":"in_progress","branch":checkout.branch_name},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),**({"phase2_commit_anchor":public["phase2_commit_anchor"]} if not early else {})},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
+ base=str(task.get("base_branch") or "main");base_ref=public["base_ref"]
+ candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":checkout.artifact.task_id,"path":public["task_ref"],"status":"in_progress","branch":checkout.branch_name},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip()},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
  if delivery_profile:
-  candidate.update(delivery_key=public["delivery_key"],commit_kind="draft" if early else "final",schema_version="delivery-3.0")
-  if not early:candidate["check_result_id"]=public["check_result_id"]
-  candidate["$schema"]="https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-3.0.json"
+  candidate.update(delivery_key=public["delivery_key"],commit_kind="pre_review",schema_version="delivery-4.0")
+  candidate["$schema"]="https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-4.0.json"
   candidate["task"].pop("status")
  validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n",encoding="utf-8",newline="\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
  try:receipt.parent.rmdir()
@@ -150,11 +147,10 @@ def build_candidate(package_root,repo,public,authoring):
 def validate_candidate(package_root,repo,c):
  validate(package_root,c)
  if "delivery_key" in c:
-  from delivery import current_check, current_draft
+  from delivery import current_pre_review
   from runtime.delivery_projection.adapter import DeliveryProjection
   projection=DeliveryProjection(repo,c["task"]["path"])
-  if c["commit_kind"]=="draft":current_draft(projection,{**c,"base_ref":c["git"]["base_ref"]})
-  else:current_check(projection,c)
+  current_pre_review(projection,{**c,"base_ref":c["git"]["base_ref"]})
  if git(repo,"rev-parse","HEAD").stdout.strip()!=c["git"]["pre_commit_head"] or git(repo,"rev-parse","--abbrev-ref","HEAD").stdout.strip()!=c["task"]["branch"]:raise CommandError("stale_identity","git.pre_commit_head","Reprepare candidate from current branch HEAD.",3)
  entries={x["path"]:x for x in c["dirty_snapshot"]["entries"]}
  by={x["path"]:x for x in c["path_classifications"]};exact=set(c["exact_stage_paths"]);reviewed={p for p,x in by.items() if x["category"]=="task-reviewed"};rename_sources={entries[p]["renamed_from"] for p in reviewed if p in entries and entries[p].get("renamed_from")}

@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "新文案与代码说明执行唯一写作合同"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "固定候选、工程采用、后继覆盖及真实消费者合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value及本Issue定向验证界限"}
+{"file": ".trellis/delivery-contract.md", "reason": "保留公开phase、role、真实两槽与predecessor"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "公共Author受本次知识顺序迁移影响，保持正文写作边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "修改原Author消费时保留设计正文九节职责"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "修改Policy/Docs Plan消费者时保留唯一正文职责"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "旧提交、审核、发布和恢复的完整设计单元"}

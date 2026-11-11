@@ -35,12 +35,12 @@ class PromotionAlignmentTest(unittest.TestCase):
         self.flow.git("add", ".")
         self.flow.git("commit", "-qm", "add promotion reference fixture")
         self.restart_check("check")
-        original = self.flow.full_review(self.flow.check())
+        original = self.flow.single_review()
         # Lost original stdout is recovered before rework from the actual
         # public result, after its original private checkpoint was retired.
         self.assertFalse(self.checkpoint().exists())
         self.prior = self.flow.wrapper("guru-review-branch", "invoke.sh", "--input",
-            str(self.flow.inputs / "review.json"))
+            str(self.flow.inputs / "single-review.json"))
         self.assertEqual(original, self.prior)
         self.base = self.projection.content_base(self.flow.key)
         self.assertFalse(self.checkpoint().exists())
@@ -49,7 +49,6 @@ class PromotionAlignmentTest(unittest.TestCase):
         self.flow.git("add", ".")
         self.flow.git("commit", "-qm", "align promotion references")
         self.restart_check("full_review")
-        self.current_check = self.flow.check()
         self.assertIsNone(self.projection.resolve(self.flow.key)["results"]["full_review"])
 
     def checkpoint(self):
@@ -69,14 +68,11 @@ class PromotionAlignmentTest(unittest.TestCase):
             "profile": "delivery_promotion_reference_alignment", "mode": "workflow",
             "task_ref": self.flow.task_ref, "delivery_key": self.flow.key,
             "base_ref": self.base, "branch_review_commit": self.flow.head,
-            "check_result_id": self.current_check["check_result_id"],
             "prior_review": copy.deepcopy(self.prior), "prior_reviewed_base_head": self.base,
         }
 
     def record(self, public=None, status="passed", success=True):
-        fixture = json.loads((PACKAGE / "examples/review-gate.json").read_text())
-        auth = {key: fixture[key] for key in (
-            "candidate_classifications", "semantic_review", "verification_evidence", "delivery_review")}
+        auth = json.loads((PACKAGE / "examples/authoring-delivery-passed-2.0.json").read_text())
         auth["semantic_review"]["qualified_findings"] = []
         auth["semantic_review"]["ai_review_gate"] = {
             "status": status,
@@ -95,7 +91,7 @@ class PromotionAlignmentTest(unittest.TestCase):
         return self.flow.wrapper("guru-review-branch", "invoke.sh", "--input",
             self.flow.write("alignment.json", public or self.public()), success=success)
 
-    def test_actual_prior_output_cleared_slot_and_new_check_reach_delivery_consumer(self):
+    def test_prior_output_and_current_two_projections_reach_delivery_consumer(self):
         self.record()
         gate = json.loads(self.checkpoint().read_text())
         delta = subprocess.run(["git", "diff", "--no-ext-diff", "--no-textconv", "--binary",
@@ -111,20 +107,18 @@ class PromotionAlignmentTest(unittest.TestCase):
         self.assertEqual("passed", reviewed["exit_id"])
         self.assertNotEqual(self.prior["full_review_result_id"], reviewed["full_review_result_id"])
         stored = self.projection.resolve(self.flow.key)["results"]["full_review"]
-        self.assertEqual(self.current_check["check_result_id"], stored["predecessor_result_id"])
+        self.assertEqual(self.projection.resolve(self.flow.key)["results"]["check"]["result_id"], stored["predecessor_result_id"])
         self.assertEqual(self.flow.head, stored["candidate"]["head_ref"])
         self.assertFalse(self.checkpoint().exists())
         self.assertEqual(reviewed, self.invoke())  # Output-loss recovery uses current public result.
         self.assertEqual("ready", self.flow.readiness(reviewed)["exit_id"])
 
-    def test_normal_wrong_base_missing_result_and_stale_check_do_not_record(self):
-        for key in ("prior_reviewed_base_head", "prior_review", "check_result_id"):
+    def test_wrong_base_or_missing_original_result_does_not_record(self):
+        for key in ("prior_reviewed_base_head", "prior_review"):
             with self.subTest(field=key):
                 public = self.public()
                 if key == "prior_review":
                     public.pop(key)  # Normal lost original result cannot be reconstructed.
-                elif key == "check_result_id":
-                    public[key] = "check:previous-candidate"
                 else:
                     public[key] = self.prior["branch_review_commit"]
                 self.record(public, success=False)
@@ -142,8 +136,7 @@ class PromotionAlignmentTest(unittest.TestCase):
     def test_owner_stop_for_real_behavior_delta_does_not_publish_a_new_full_review(self):
         (self.repo / "app.txt").write_text("A new behavior requires complete review.\n")
         self.flow.git("commit", "-qam", "change implementation behavior")
-        self.restart_check("full_review")
-        self.current_check = self.flow.check()
+        self.restart_check("check")
         self.record(status="blocked")
         self.assertEqual({"exit_id": "blocked"}, self.invoke())
         self.assertIsNone(self.projection.resolve(self.flow.key)["results"]["full_review"])

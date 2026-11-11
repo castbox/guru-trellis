@@ -108,7 +108,7 @@ obtain disjoint paths.
    repair, clarification or blocked route. Do not silently fill the gap from
    an apparent latest summary or report a complete answer.
 
-Planning, implementation, final Check, independent Review and promotion use
+Planning, implementation, independent committed Review and promotion use
 this contract within their existing responsibilities. A prior semantic pass
 is not the current stage's judgment.
 
@@ -138,13 +138,14 @@ definition, directly or at a unique proposed-target locator. It does not edit
 another Task's contribution or compete for shared current. Do not duplicate
 unchanged authority into every delta.
 
-After the original Check owner completes the first complete candidate Check,
-actual promotion occurs in the same Delivery final-integration stage. Before
-that boundary, independent Architecture and Check read the complete task-owned
-proposed definitions, their fixed applicable sources and affected consumers.
-A reviewed proposal is not shared current and cannot supply final Check,
-readiness or delivery. No-change follows its original route without empty
-contributions, ADRs or navigation edits.
+After approved Planning, implementation and genuine engineering verification,
+the original maintenance owners integrate the complete task-owned proposals
+before local TaskCommit. Neither candidate Check nor an independent precommit
+implementation Architecture pass is a prerequisite. A complete proposal is not
+shared current. Actual integration records only the completed write/readback
+fact pending independent committed review; it cannot supply quality pass or
+readiness. No-change follows its original route without empty contributions,
+ADRs or navigation edits.
 
 At final integration, each original maintenance owner fixes one real target
 branch/commit and rereads the contribution, affected shared units and necessary
@@ -154,9 +155,9 @@ applicable source, complete proposal and real target; preserve all still-valid
 conditions from both. Git automatic merging is a text operation, not proof
 that the combined definition is semantically consistent. Review the complete
 combination and affected consumers; do not take one side without judging which
-conditions remain valid. The original independent owner applies the shared
-Candidate Applicability And Coverage contract to the complete actual delta and
-affected unchanged consumers before writing a changed combination. Changed
+conditions remain valid. The original maintenance owner applies the shared Candidate Applicability
+And Coverage contract to the complete actual delta and affected unchanged
+consumers before writing a changed combination. Changed
 requirements return to scope/Planning; changed behavior, interfaces or
 validation duties return to the earliest affected quality owner. Integrate the
 delta into the complete current unit, including still-effective predecessor
@@ -174,17 +175,20 @@ A later target advance alone does not restart the operation. No merge/rebase,
 latest-SHA chase or queue admission is required without a real conflict,
 necessary dependency integration or observed platform update blocker.
 
-Architecture's independent Phase 2 assessment covers the complete candidate
-and proposed targets. Candidate Check returns to implementation through its
-existing public rework and writes no final Check gate. At final integration the
-original Architecture and RDT owners write the reviewed current definitions and
-check actual-write applicability. Implementation then binds a new candidate,
-including all body, relationship and navigation writes, through begin_check.
-Final Check, Task Commit and
-independent committed full-diff Review cover the resulting content. This
-contract adds no separate review owner. Implementation, public contracts and
-current documents ship in the same final PR; final owners never treat a
-candidate-only result as completed promotion.
+After actual integration/readback, TaskCommit includes every body, relationship
+and navigation write. Implementation binds the complete committed candidate
+through the existing constructor and begin_check. The new independent reviewer
+first reads fixed-B constitution/baseline/change-contract authority, then the
+actual full committed before/after and consumers, before Task explanations.
+Within that same merged review it performs the implementation Architecture
+judgment and all applicable quality responsibilities once. Planning Architecture
+remains independent. Integration is not `reviewed_promoted`; only actual
+committed before/after review can establish that status. Later fixes return to
+the original writers, form a successor commit and receive affected independent
+review. Do not edit the frozen candidate during review. Implementation, public
+contracts and complete current definitions ship together. The original readers
+retain complete semantic authoring and accurate original-result consumption or
+same-owner recovery; no template or receipt supplies a missing judgment.
 
 ## Stage limits and result observations
 
@@ -211,8 +215,8 @@ its own final pass, final HEAD or post-archive result.
 If explanatory text genuinely needs revision, its original writer makes that
 change at a lawful content boundary. Apply Candidate Applicability And Coverage
 to the changed files and consumers; an explanatory edit does not exempt review.
-Shared-current writes still require candidate Check, original final_integration,
-actual candidate rebinding, final Check and complete committed Review. Reuse
+Shared-current writes still require original final_integration and readback,
+TaskCommit, actual committed candidate binding and complete independent Review. Reuse
 applicable engineering facts without repeating completed promotion, merge or
 unaffected validation. Closure/Finish own terminal actions and bookkeeping;
 they do not acquire shared-current writing authority or create an empty Delivery
@@ -276,8 +280,8 @@ semantically; chronology alone cannot settle them. Prepare complete task-owned
 proposed bodies, entry changes and affected
 references first. Verify each former navigation alias remains searchable in
 its owning complete unit; add missing aliases there without copying its body.
-Switch the shared entry only through the original candidate Check,
-final-integration writes/readback and final quality chain, after owner
+Switch the shared entry only through original final-integration writes/readback
+and the committed quality chain, after owner
 completeness, traceability and applicable sample gates are satisfied.
 
 List actual migrated units and remaining unmigrated scope. For the latter,

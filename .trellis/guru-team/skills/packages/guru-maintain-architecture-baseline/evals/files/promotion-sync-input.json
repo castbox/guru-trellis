@@ -1,7 +1,7 @@
 {
-  "schema_version": "5.0",
+  "schema_version": "6.0",
   "profile": "promotion",
-  "source_exit": "sync_required",
+  "source_exit": "engineering_ready",
   "mode": "workflow",
   "continuation_id": "eval-promotion",
   "stage": "final_integration",
@@ -40,7 +40,7 @@
     ]
   },
   "project_contract": {
-    "guru_contract_identity": "guru-maintain-architecture-baseline:5.0",
+    "guru_contract_identity": "guru-maintain-architecture-baseline:6.0",
     "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
     "change_contract_identity": "project-change-contract-v1",
     "required_concern_set_identity": "project-concerns-v1"

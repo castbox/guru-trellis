@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "原审核范围核语义与清晰度"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "完整范围和工程/覆盖采用的当前判断"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "核有效测试和证据层次，不扩Release矩阵"}
+{"file": ".trellis/delivery-contract.md", "reason": "核单次语义审查的合法公开结果与恢复"}
+{"file": ".trellis/spec/workflow/review-sufficiency.md", "reason": "按实际来源和消费者完成充分审查"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "核重复Check删除、early Draft退出与真实在途兼容"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "现有定向覆盖与本批T794实际证据的归属"}

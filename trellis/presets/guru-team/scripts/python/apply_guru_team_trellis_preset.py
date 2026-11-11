@@ -208,6 +208,10 @@ MANAGED_SOURCE_PATHS = (
         Path("trellis/presets/guru-team/source/trellis-source.json"),
         Path(".trellis/guru-team/trellis-source.json"),
     ),
+    (
+        Path("trellis/presets/guru-team/MIGRATION-794.md"),
+        Path(".trellis/guru-team/MIGRATION-794.md"),
+    ),
 )
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),

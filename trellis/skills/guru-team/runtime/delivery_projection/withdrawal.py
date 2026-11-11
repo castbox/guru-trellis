@@ -9,7 +9,7 @@ from runtime.task_lifecycle import LifecycleContractError
 from .adapter import DeliveryProjection
 
 
-def stop(root, package, public, semantic, *, owner_role, expected_phase):
+def stop(root, package, public, semantic, *, owner_role, expected_phase, output_version="1.0"):
     validate_json(public, package / 'schemas/public-delivery-scope-withdrawal-input-1.0.schema.json', 'input')
     validate_json(semantic, package / 'schemas/delivery-scope-withdrawal-review-1.0.schema.json', 'semantic_result')
     projection = DeliveryProjection(root, public['task_ref'])
@@ -32,7 +32,7 @@ def stop(root, package, public, semantic, *, owner_role, expected_phase):
         projection.release(public['delivery_key'])
         key = {name: public['delivery_key'][name] for name in ('task_id', 'lifecycle_generation')}
         output = {'exit_id': 'delivery_stopped', 'task_ref': public['task_ref'], 'task_key': key}
-        validate_json(output, package / 'schemas/public-delivery-stopped-output-1.0.schema.json', 'stdout')
+        validate_json(output, package / ('schemas/public-delivery-stopped-output-' + output_version + '.schema.json'), 'stdout')
         return output
     except LifecycleContractError as exc:
         raise CommandError('stale_identity', exc.field_path, exc.remediation, 3) from exc

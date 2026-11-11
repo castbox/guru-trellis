@@ -264,11 +264,11 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 
 ## ARCH-CUR-051：独立评估执行与下游 eligibility
 
-`ARCH-CUR-051`（#404 独立职责，ADR-034 窄后继）：Architecture Skill 在 Planning、适用 implementation discovery、Phase2 和 committed Branch Review 的首次独立判断，由未参与当前候选编写/实现、未预载任务通过叙事的 fresh generic subagent 执行。先读 constitution/baseline/change contract、真实候选与受影响 consumers，形成判断后再核必要解释。后继候选由仍实际独立的合规 reviewer 按合法原覆盖、全部差额和受影响依赖接续；覆盖不足补审，组合影响无法界定则完整评估。HEAD、阶段或身份变化本身不强制重建同质评估。
+Architecture 保留 Planning candidate_assessment/final_plan 和实质边界扩张后的 implementation discovery。实现后独立判断在提交后的同一次完整 Review 完成，不再执行普通独立 Phase2 assessment。新的 reviewer 未参与当前实现，先读固定 B 的 constitution/baseline/change contract，再读完整 committed before/after、实际 decisions/consumers及必要约束，形成判断后才核Task解释。其后在同次承担九维和 full Branch Review，不用实现者自批或Planning结果代替。
 
-各阶段仍亲自判断 project checks、当前语义和适用性，并调用原 matching formal wrapper；一名合规 reviewer 可先 Architecture 后 Branch Review，不能以实现者自批、Planning 或上游 DTO 替代。publication/acceptance_finish 由原 owner 核当前 authority/candidate/review/promotion，执行 matching-stage eligibility；新架构事实回相应独立评估。Phase2 与 committed 完整范围判断保留，工程命令结果按定义/版本、输入/依赖、工具链、环境、参数和期望采用或补命中项，不把原命令或旧 pass 当当前 project-check 结果。
+合规 reviewer 仍独立时可接续后继，读可核验覆盖、完整差额和受影响依赖；影响不明或覆盖丢失时补足完整判断。工程命令事实按真实定义/输入/环境等采用，当前 project checks仍亲自判断。publication/acceptance_finish 原 owner核实际 authority/candidate/review/integration状态，只消费 no_change 或 reviewed_promoted；caller或阶段变化不重做同实施评估。
 
-原 promotion、Closure、Completion、当前公共 profile/exit/DTO、constitution 和 GAP 生命周期不变。首次与后继的完整读取及 source 边界由 canonical Skill 及唯一共享合同拥有；[ADR-034](../adr/034-candidate-applicability-and-coverage.md)明确窄替代 ADR-019/029 的无因 fresh reviewer/相同完整重审片段，历史原文在固定 Git 中保留。无新 reviewer ledger、授权存储、长期缓存或兼容 reader。
+职责与代价见 [ADR-POSTCOMMIT-INDEPENDENT-REVIEW](../adr/postcommit-independent-review.md)；ADR-028/034 的固定范围和覆盖采用保留。Planning、原维护单写、Delivery Review/readiness和终态不变，无 reviewer ledger、授权存储或第二质量状态机。
 
 ## #382 根因候选资格增量（.79）
 
@@ -306,13 +306,11 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 
 本条与[ADR-035](../adr/035-current-continuation-scope-routing.md)窄替代ADR-011/023/024命中的旧恢复和scope路由，保留原producer恢复、唯一continuation、官方API、独立语义门禁和终态责任。current执行细节由canonical workflow/packages单写，matching切换见[MIGRATION-657](../../../trellis/presets/guru-team/MIGRATION-657.md)。[本批Test](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/test.md)分别拥有source、installed/native、Agent及未验证结果；知识接受不证明业务采用、Task完成或Release。
 
-## ARCH-CUR-059：已提交候选的正式接续（.86）
+## ARCH-CUR-059：已提交候选的正式接续
 
-本节保留 #530 当时的原路径。selected-base ancestry、默认 post_check/post_commit guard 与仅 base 前进即回 fresh Phase2 的要求已由 ARCH-CUR-065 / ADR-028 替代；dirty 精确提交、clean 同一已提交候选恢复及首次独立完整审查的职责继续有效。ARCH-CUR-036/032 中相同的默认祖先/追赶片段也按此 successor 读取。
+TaskCommit 保留精确 dirty提交、真实hook、clean同提交重入和原输出恢复。当前 pre-review profiles 不要求先验 Check，通过当前 Planning、真实工程/必要知识整合及精确内容的 semantic gate 后形成待审 H。clean reentry 不stage或重复commit；结果只交implementation固定完整 B/H Candidate/begin_check，再由新独立 Review。提交事实不产生质量 pass。
 
-原 TaskCommit owner 在既有 public invoke 中增加互斥 `committed_reentry` 输入，先执行自己的 semantic gate，再复用原 Check checker 校验当前 Phase2；从 live TaskId/generation/registered checkout、clean HEAD/index、无 active Git operation、selected-base ancestor/非空 range 与 committed task metadata 承接已有候选。正式输出仍是原 `task_ref/base_ref/branch_review_commit`，成功只消费原 Phase2 checkpoint。
-
-post_commit Reconcile → fresh Phase2 → unchanged post_check → clean committed identity → 原 post_commit guard → fresh Branch Architecture → 首次完整独立 BranchReview 继续由原 owners 执行。dirty 候选仍使用原非空 exact_stage_paths 提交；base 再演进和 stale 经原恢复路径重建，不复用旧 commit。没有空提交、相同内容提交、第二内容算法、candidate/receipt/store 或 tracked 推进文件。[职责来源](../contributions/530-clean-committed-reentry.md)与[唯一测试结果](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)分别承接架构和实际验证层次。
+Reconcile 仍判断实际 base归属、冲突和组合影响，caller不缩 B..H；正常后继和同提交恢复保原对象。新remote动作只在独立完整Review及原readiness通过后发生。旧#530/#636 profiles不静默改义，准确迁移、已执行事实恢复与pending处置见 MIGRATION-794；原历史来源和结果保留。
 
 `ARCH-CUR-060`（#531 reviewed candidate promotion）：Task 保留身份、来源、整体 accepted scope 与 Completion；公共上游 Task2/Delivery API1/Plan2 唯一拥有执行模型和转换。全部 Delivery（含D1）在首次 Planning 前取得公共identity，原Guru语义owners通过薄projection记录自身阶段，旧Task status/首次激活/后续resume分叉退出新schema2流程。当前registry38 packages/187 exits/114 commands，workflow36 invokes/180 exits；live registry/interface才是inventory authority。matching本地mixed CLI5aeeb81c/Core45bb受控installed、旧断点与正常恢复由[唯一Test](../../requirements-design-test-contributions/531-task-delivery-lifecycle/test.md)分层记录；不称正式source-lock、Release、业务安装或原会话已恢复。现有软件四轴、constitution和GAP状态保持。
 
@@ -340,7 +338,7 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 
 `ARCH-CUR-069`（#589 D7 reviewed source）：manual recovery/history query2 直接消费固定 Fork 的公开 `GitCandidateContent`，上游 `delivery_store` 保留摘要算法与序列化。Guru `CandidateObjects` 及临时 snapshot 生产路径退出；原 caller 保留对象准备、Task/Delivery/PR/ancestor/expected/cutoff 与恢复校验。操作内 context 在 actual-root 变化前关闭重建，退出释放；不新增持久缓存或公共 DTO。责任与晋升范围见[已晋升贡献](../contributions/589-git-object-performance.md)，实际结果和未验证边界由[唯一 Test](../../requirements-design-test-contributions/589-git-object-performance/test.md)拥有。
 
-`ARCH-CUR-070`：原独立Architecture phase2比较晋升前authority、完整implementation与拟写正文，原Check先检查完整隔离候选。candidate_checked只进入原owners的final_integration；实际写入与适用性由原owners核对，implementation随后重新candidate/begin_check，再最终Check、TaskCommit、独立committed Architecture与完整BranchReview覆盖真实after。候选不写最终public Check，Ready/Finish不接受未晋升状态。no-change无空贡献/ADR/commit；普通晋升可沿用稳定identity，不强制全局入口写入。single-writer、before比较起点、原恢复与完整质量保留，决定由[ADR-KNOWLEDGE-FINAL-INTEGRATION](../adr/knowledge-final-integration.md)拥有，实际结果仅由[#638 Test](../../requirements-design-test-contributions/638-shared-current-promotion/test.md)记录。
+`ARCH-CUR-070`：原 Architecture/RDT owners 在提交前 final_integration 读取完整 proposed、实际 target和必要关系，保有效条件，写入/readback并核实际适用性；前置是批准 Planning、完整实施和真实工程结果，无独立 candidate Check/implementation Architecture pass。Architecture 只记录 integrated_pending_review。TaskCommit 纳入所有after，implementation 用固定B/H构造完整committed candidate。新独立 reviewer 在同次完整Review先作Architecture before/after，再九维/full-diff，真实通过才顺序写check/full_review；实际整合且该独立判断通过才 reviewed_promoted。Ready/Finish不接受pending，no_change无空贡献/ADR/commit。原single-writer、expected-current、before authority与partial/output-loss同intent恢复保持；当前时机由 [ADR-POSTCOMMIT-INDEPENDENT-REVIEW](../adr/postcommit-independent-review.md)窄替代，原#638结果仍保历史意义。
 
 `ARCH-CUR-071`（#577）：原 source-loaded `guru-maintain-legacy-task` 在独立 `archive_resume` profile 内承接人工旧归档，普通 current lifecycle 不增加旧格式 reader。公共 Trellis 独占数据投影、archive/active 关系、generation、session/binding 与 operation 恢复；Guru 消费真实 `resumed_task`，原私有 owners 核验历史、读取归档来源并处置自己精确 controls。当前 Identity/Bind 复用目标 installed active resolver；初始 C4 前沿公共 parser 和 active 占用检查进入原 binding owner，创建/历史 reservation 继续保留。未完成 Closure/Finish/Finalizer 回原事务，正式 Finish 及合法人工 Cleanup 回 Reactivate；恢复不制造新 Task、空 Delivery、门禁或业务完成。原 upgrade owner 仅对 receipt 明确记录 dirty 的真实 provenance commit 保留逐路径历史候选资格，原路径 bytes 检查与未知 preimage 显式处置不变。职责及退出读 [贡献](../contributions/577-manual-archive-resume.md)、ADR-024/027；实际结果与未验证边界由 [唯一 Test](../../requirements-design-test-contributions/577-manual-archive-resume/test.md) 拥有。
 
@@ -350,13 +348,11 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 
 `ARCH-CUR-074`（#630 reviewed source）：shared runtime采用本机Path与标准file URI转换，bootstrap fixture通过验证后的原生Bash/POSIX路径/UTF8 stdin进入原公开wrapper；TaskCommit按UTF8候选bytes写入、读回及最终commit验证，原真实hook/index保持。installer按[ADR-032](../adr/032-managed-text-lf.md)维护限定LF和精确恢复，raw校验及用户编辑保护保持。固定Fork来源选择及精确CLI/Core配对由canonical source lock单写；源码实现和本地工程验证不证明最终native candidate、Windows实际Agent或正式发布。职责与采用边界见ARCH-DOM-057/ARCH-INT-060，#630的`.5`实际观察由[#630唯一Test](../../requirements-design-test-contributions/630-native-compatibility/test.md)保留；#687固定来源采用与installed停止回归的当前观察由[#687 Test](../../requirements-design-test-contributions/687-adopt-castbox6/test.md)拥有。
 
-## ARCH-CUR-075：原 owners 内的早期 Draft 反馈
+## ARCH-CUR-075：审核前远端 Draft 路径退出
 
-#636 将有界早期提交与 Draft 反馈纳入原 TaskCommit/Publication。早期候选不要求完整 Check；原精确 staging、敏感检查、目标核验、真实 hook 事务及同提交恢复保持。Publication 在同 PR 的未审候选 push 前确保 Draft，支持 Draft 创建/更新、Ready 回退与最终 Ready，并从同操作实际 PR/HEAD/payload 恢复输出丢失。Draft 不写最终 PublicationFact、不构成 gate 或整体完成。
+当前链在提交后一次独立完整 Review 和原 Delivery Review/readiness 通过前不push、不建PR。原 TaskCommit 仅产生待审本地提交，保exact paths、敏感检查、真实hook及同提交恢复，不再直接交 early Publication。Publication 仍独占通过后的同PR/精确payload发布、Ready及同事务恢复。
 
-固定 B/H 的独立完整内容分析和风险匹配验证在 Draft 后并行；target 前进不使内容审核中断。HEAD 与组合候选证据分别承接，冲突/无 merge ref/CI 未触发保留 HEAD支持入口和具体组合缺口。早期 Review 不写 public full_review；最终真实 Check predecessor、fresh committed Architecture/完整 Branch Review、readiness和Merge保持。最终Check前的真实晋升由ARCH-CUR-070当前顺序承接；#637候选适用性保持。
-
-本条与 [ADR-033](../adr/033-early-draft-feedback.md)窄替代 ARCH-CUR-059/060 及继承合同中“所有提交/PR反馈统一在完整Check/readiness之后”的时机片段；保留Task/Delivery API、阶段ownership、Refs-only/Closure、历史事实与既有终态能力。源码/投影、实际Agent/GitHub和未验证边界只由 [唯一Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md) 拥有。
+旧#636 Draft已有push/PR/绑定/metadata事实保留，由固定完整provider准确恢复，不重复副作用、不变成最终通过；尚未执行的远端动作先回当前独立Review/readiness再按同PR原事务接续。MIGRATION-794定义逐状态边界，窄替代ADR-033审核前远端资格。原#636来源、结果和未知范围保留历史，不制造current fallback或新审核pass。
 
 ## ARCH-CUR-076：当前候选适用性与完整覆盖
 
@@ -364,7 +360,7 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 
 原 passed full_review 可定位范围/plan/outcome；初次 implementation_required 没有 passed 覆盖，finding refs 和已建立的理解不补造权威。合法公开结果/调用对象、Git/当前正文与原始命令结果不足时补真实工作；不跨读私有状态、不重建退休 checkpoint、不增公共覆盖字段或账本。Publication/Merge 核自身 payload、Issue、候选及 live 事实；真实 authority/scope/依赖变化回最早 owner。
 
-ADR-034 与 [MIGRATION-637](../../../trellis/presets/guru-team/MIGRATION-637.md)拥有精确替代及完整 matching 在途切换；fresh_final_review wire 保留但不再强制换人。ADR-028 固定 B、ADR-030 最终 Check 前晋升、ADR-033 Draft 非最终结果和真实 Check predecessor 保留。这里承接已审目标与源码职责；安装、实际 Agent、分阶段耗时、GitHub 和未验证边界只由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)记录，不以本文或知识晋升证明全部已采用、Task 完成或 Release。
+ADR-034 与 [MIGRATION-637](../../../trellis/presets/guru-team/MIGRATION-637.md)拥有精确替代及完整 matching 在途切换；fresh_final_review wire 保留但不再强制换人。ADR-028 固定 B、ADR-034 覆盖适用性及真实两槽 predecessor 保留；ADR-030/033 的命中时机由 ADR-POSTCOMMIT-INDEPENDENT-REVIEW 窄替代。这里承接已审目标与源码职责；安装、实际 Agent、分阶段耗时、GitHub 和未验证边界只由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)记录，不以本文或知识晋升证明全部已采用、Task 完成或 Release。
 
 ## ARCH-CUR-077：Discovery authoring 结构诊断与恢复边界
 

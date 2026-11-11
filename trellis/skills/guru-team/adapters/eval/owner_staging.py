@@ -111,6 +111,9 @@ def stage_owner_execution(
         return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {
             "TRELLIS_CONTEXT_ID": os.environ.get("TRELLIS_CONTEXT_ID") or DELIVERY_CONTEXT,
         }
+    if skill_id == "guru-check-task" and request.get("case_id") == "legacy-control-retirement":
+        from adapters.eval.check_legacy_fixture import stage
+        return stage(request, fixture)
     if skill_id == "guru-qualify-root-cause":
         from adapters.eval.root_cause_fixtures import stage
         return stage(request, fixture)

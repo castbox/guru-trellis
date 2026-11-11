@@ -1,6 +1,6 @@
 ---
 name: guru-publish-task-delivery
-description: Publish early Draft feedback or final Ready through the original recoverable transaction.
+description: Publish current readiness through the original recoverable transaction.
 ---
 
 # Guru Publish Task Delivery
@@ -48,21 +48,14 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 
 ## Early Draft and Ready revision
 
-`delivery_draft_publish` consumes task/key/B/H and exact Chinese pr_title/pr_body.
-It requires accepted Planning in implementing, a nonempty fixed complete range
-and actual HEAD H. It does not consume readiness. Review scope, target,
-sensitive content and evidence claims. The body separates HEAD checks from
-target/integration checks and truthfully lists executed, failed, SKIP and pending
-work. Every Delivery body remains Refs-only.
-
-Preview the exact same repo/base/head/PR, title/body and maximum remote writes.
-Obtain current-dialogue confirmation only for actual remote mutation. Invoke
-the original public wrapper with the completed semantic review. This profile's
-route.typed_exit is draft_published. The current 2.0 transaction records its
-action/terminal and necessary mutation preimage/postimage. ensure_draft precedes
-push. An existing Ready PR is first returned to Draft; binding and exact
-metadata convergence reuse that PR. draft_published reads actual PR/HEAD/payload
-and enters the feedback router. It never records final PublicationFact.
+New early Draft publication is retired. Current input aggregate4.0 has no
+`delivery_draft_publish` profile. No unreviewed candidate can push or create a
+PR. First complete the fixed committed independent Review and original
+Delivery Review/readiness, then use `delivery_review_ready`.
+MIGRATION-794 fixes the complete old provider for recovering already executed
+old Draft transactions. Retain actual PR, remote HEAD and metadata. Pending
+remote actions receive no eligibility from the old transaction or a relabeled
+pass; return to current committed Review/readiness before those actions.
 
 Before a publishing Delivery receives unreviewed changes, use independent
 `delivery_return_to_draft` with concrete revision_reason. Read the original
@@ -72,7 +65,7 @@ check/full_review/readiness while retaining Planning, identity and history.
 The review route is draft_revision_ready. Its output returns task/key/repo/PR
 to implementation. A new HEAD cannot use old readiness.
 
-Same-plan resume keeps the original action/exit and reads actual state after
+Current same-plan resume keeps the original supported action/exit and reads actual state after
 lost push/create/edit/Draft/Ready output. It accepts the original preimage or
 completed postimage. No second PR, repeated push or empty commit restores
 stdout. Recover an old action before previewing a new one. The next action
@@ -111,7 +104,9 @@ Use its independent `delivery_remote_draft_recovery` or
 `delivery_remote_ready_recovery` input with exact PR and available source commit.
 Review the complete B..H/source/local deltas and public identity/Planning before
 invocation. Remote PR head and local binding are separate facts. Retain the
-same PR and original executor; complete only remaining actions. Ready requires
-current applicable readiness and fresh payload judgment. Draft supplies no gate.
-No remaining remote mutation means no new confirmation. Missing applicability
-returns to its original owner; MERGED recovery stays with Merge.
+same PR and original executor. Ready may complete remaining actions after
+current readiness. Draft recovery2.0 only reports already completed exact
+PR/HEAD/payload facts and performs no remote action. Pending Draft work returns
+to current committed Review/readiness. No remaining remote mutation means no
+new confirmation. Missing applicability returns to its original owner;
+MERGED recovery stays with Merge.

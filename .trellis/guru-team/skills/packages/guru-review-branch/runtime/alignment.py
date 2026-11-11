@@ -16,7 +16,7 @@ def facts(package_root, repo, public):
     """Bind the original public result and all Git bytes; AI judges their meaning."""
     validate_json(
         public,
-        package_root / "schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        package_root / "schemas/public-delivery-promotion-reference-alignment-input-2.0.schema.json",
         "input",
     )
     prior = public["prior_review"]
@@ -58,7 +58,7 @@ def validate_facts(package_root, repo, gate):
     public = {
         "profile": PROFILE, "mode": gate["mode"], "task_ref": gate["task_dir"],
         "delivery_key": gate["delivery_key"], "base_ref": gate["base_ref"],
-        "branch_review_commit": gate["review_commit"], "check_result_id": gate["check_result_id"],
+        "branch_review_commit": gate["review_commit"],
         **{key: gate["promotion_alignment"][key]
            for key in ("prior_review", "prior_reviewed_base_head")},
     }

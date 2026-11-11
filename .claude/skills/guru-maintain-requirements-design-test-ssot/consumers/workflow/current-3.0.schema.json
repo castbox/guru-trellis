@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-requirements-design-test-ssot-consumer-current-3.0",
+  "$ref": "../../schemas/public-ssot-current-output-3.0.schema.json"
+}

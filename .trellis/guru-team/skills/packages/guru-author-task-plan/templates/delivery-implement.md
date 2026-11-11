@@ -34,4 +34,4 @@
 
 定位解除后真正需要维护的当前规范、指南和派生说明，历史正文保持原观察。
 
-按 [原 Docs Plan 合同](../references/authoring.md#solution-writing-and-complete-positive-capability) 选择一种 strategy，写真实差额、命中的 requirement/behavior、design、test、Architecture canonical 引用、原 writer、直接 consumer 和晋升时点。delta 在最终 Phase 2 前由原 owners reconciliation/promotion；no_docs_update_needed 说明依据。模板填充不写共享导航、不预建空贡献；真实 Architecture contribution/ADR 候选仍归原职责。
+按 [原 Docs Plan 合同](../references/authoring.md#solution-writing-and-complete-positive-capability) 选择一种 strategy，写真实差额、命中的 requirement/behavior、design、test、Architecture canonical 引用、原 writer、直接 consumer 和晋升时点。delta 在本地 TaskCommit 前由原 owners 整合/readback，提交后一次独立 Review 审核真实 after；no_docs_update_needed 说明依据。模板填充不写共享导航、不预建空贡献；真实 Architecture contribution/ADR 候选仍归原职责。

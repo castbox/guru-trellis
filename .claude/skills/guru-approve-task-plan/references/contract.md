@@ -61,8 +61,9 @@ stdout, a result/report, locator, or checkpoint.
 
 ## Architecture Stage Consumption
 
-Planning remains purpose 3.0 / Delivery1.0. Nonplanning Architecture5.0 /
-Delivery3.0, RDT2.0 and Check6.0 move actual promotion to final integration;
+Planning remains purpose 3.0 / Delivery1.0. Nonplanning Architecture6.0 /
+Delivery4.0 and RDT3.0 integrate actual documents before TaskCommit, pending
+independent committed Review;
 this does not change final_plan or permit candidate_assessment as approval.
 Planning names complete task-owned proposed targets, not early current writes.
 

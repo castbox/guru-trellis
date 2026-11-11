@@ -228,11 +228,11 @@
     },
     {
       "id": "delivery_delivery_review_input",
-      "path": "schemas/public-delivery-delivery-review-input-1.0.schema.json"
+      "path": "schemas/public-delivery-delivery-review-input-2.0.schema.json"
     },
     {
       "id": "delivery_input_aggregate",
-      "path": "schemas/public-input-delivery-1.0.schema.json"
+      "path": "schemas/public-input-delivery-2.0.schema.json"
     },
     {
       "id": "ready_delivery_output",
@@ -399,19 +399,19 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-review-task-delivery-input-delivery-aggregate-1.0",
-        "path": "schemas/public-input-delivery-1.0.schema.json"
+        "schema_id": "guru-review-task-delivery-input-delivery-aggregate-2.0",
+        "path": "schemas/public-input-delivery-2.0.schema.json"
       },
       "profiles": [
         {
           "id": "delivery_delivery_review",
           "schema": {
-            "schema_id": "guru-review-task-delivery-input-delivery-delivery-review-1.0",
-            "path": "schemas/public-delivery-delivery-review-input-1.0.schema.json"
+            "schema_id": "guru-review-task-delivery-input-delivery-delivery-review-2.0",
+            "path": "schemas/public-delivery-delivery-review-input-2.0.schema.json"
           },
           "example": {
             "id": "delivery_delivery_review_input",
-            "path": "examples/public-delivery-delivery-review-input-1.0.json"
+            "path": "examples/public-delivery-delivery-review-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",

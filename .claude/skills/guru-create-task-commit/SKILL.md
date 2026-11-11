@@ -1,6 +1,6 @@
 ---
 name: guru-create-task-commit
-description: Create an exact reviewed Delivery commit for early Draft feedback or the final Check-bound path.
+description: Create a fixed local Delivery candidate before independent complete Review.
 ---
 
 # Create Task Commit
@@ -20,100 +20,31 @@ Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicabil
 for shared candidate coverage, engineering facts and recovery. This package
 retains its own current judgment, formal result and action boundary.
 
-Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
+Read [references/contract.md](references/contract.md) completely before execution.
+Use the current Delivery aggregate3.0 and its two pre-review profiles. Read the
+selected planning_root and Task accepted scope. Complete implementation,
+engineering self-checks and necessary knowledge integration/readback first.
+This semantic gate judges the exact local commit action; independent complete
+implementation review remains pending.
 
-Use this skill for creating a task commit, committing Phase 2 changes,
-committing a Branch Review finding fix, or creating a revision commit.
+For dirty work, use the installed complete package's
+`scripts/prepare-task-commit.sh` once, present exact repository/branch/HEAD,
+paths and structured Chinese message, then invoke
+`scripts/invoke.sh --candidate-artifact <prepared-locator>` after the current
+dialogue authorizes that unchanged action. Preserve unrelated paths and index.
+No authorization enters public input, runtime, Task state or archive.
 
-Read `references/contract.md` completely. Validate every declared entry
-precondition in workflow and standalone mode, then execute the ordered
-closed-loop stages exactly once for the current candidate and live authority.
+For clean committed reentry, use `scripts/invoke.sh --input <input.json>
+--owner-result <semantic-review.json>`. Both arguments are regular JSON file
+locators; one may be stdin `-`. This validates the actual committed candidate
+without stage, hooks or a new commit. Read the contract's Plan2 source rules.
 
-`workflow` means mandatory global workflow routing. `standalone` means direct
-platform discovery without that routing; it still requires the complete,
-current Guru Team preset and extension runtime. This Skill directory is not
-a self-contained or portable package.
+The exact executor, hooks, isolated index, path checks and same-commit recovery
+remain in force. Candidate4.0 and receipt3.0 are owner-private ignored state.
+Only the public invocation emits a formal exit. Return exactly one of
+`pre_review_committed`, `revision-required` or `blocked`. The first exit goes
+only to the fixed-candidate router, never directly to Publication.
 
-For a clean committed candidate, use `scripts/invoke.sh --input <public-input.json> --owner-result <semantic-review.json>` with two regular JSON files. Read the contract's clean re-entry carriers before assembling those files. Each argument is a file locator; inline JSON text is unsupported. The original loader also accepts `-` to read one object from stdin; supply the other object as a regular JSON file. After semantic review this entry returns the existing candidate without stage, commit, hook or ref mutation.
-
-For a necessary dirty increment the Happy Path is exactly two package calls:
-
-Resolve the package-relative commands below from
-`.trellis/guru-team/skills/packages/guru-create-task-commit/`. Platform discovery
-copies include `scripts/invoke.sh` but do not include the preparation script.
-Use the complete installed package for preparation.
-
-1. Use `scripts/prepare-task-commit.sh` once to record the AI-owned path
-   classifications, seven structured message fields, and completed semantic
-   result. Present its exact repo, branch, HEAD, paths, subject, and body.
-2. After the current conversation confirms that unchanged action, use
-   `scripts/invoke.sh --candidate-artifact <prepared-locator>` once. Do not
-   pass confirmation text or state. The public invocation performs the
-   mutation-boundary validation, exact transaction, typed-exit projection, and
-   same-commit stdout-loss recovery.
-
-The user may answer with any clear affirmative response after the Skill
-presents one current, unique commit action. That conversational authority is
-never written to public input, private runtime, task metadata, archive, or the
-public invocation. Missing or mismatched runtime state fails closed with
-full-preset install/upgrade remediation before a task/Git side effect. A
-current exact commit request is the dialogue-local authority for that displayed
-action. Branch name, role, protection, sharing, task ownership, remote
-publication, or PR state neither grant nor deny commit authority and are not
-read as commit preconditions.
-
-`scripts/invoke.sh` is the sole public invocation wrapper. Its
-`--candidate-artifact` mode is the exact dirty transaction; `--input` is the
-clean committed re-entry. These argument shapes are mutually exclusive.
-Legacy `--invocation` envelopes are retired; recover a committed candidate
-through the current Delivery input after its fresh Check and semantic review.
-
-`scripts/check-task-commit-plan.sh` and `scripts/create-task-commit.sh` remain
-package-private diagnostic, testing, and bounded recovery entries. They must
-not be added between prepare and the confirmed public invocation.
-
-Return exactly one declared exit: `draft_committed`, `committed`, `revision-required`, or
-`blocked`. Unknown, multiple, stale, or unmapped results fail closed.
-
-For an explicit independent manual operation after an automatic stop, read
-`.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
-That global boundary does not relax this Skill's entry or completion contract.
-
-The current candidate lives only under ignored
-`.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
-removed after success. Candidate delivery-3.0 has no authorization, branch
-classification, publication eligibility, freshness digest, or terminal result
-fields. The public invocation may retain one minimal ignored result receipt after success
-so the same locator can recover lost stdout without repeating the commit; a
-fresh prepare for the same task retires that receipt. A pre-Delivery candidate is rejected or replaced only by a complete
-reprepare from current Phase 2 and live Git evidence. Git supplies committed
-tree/message/path facts.
-
-Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
-Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
-
-For actual Plan2 planning relocation, this owner may explicitly review and select the bounded `markdown_relative_links_v1` private source mode described in the contract. Existing absent-mode source mappings stay strict bytes/modes. Planning owners never consume this private association.
-
-## Early Draft commit
-
-`delivery_draft_commit` requires the exact registered Task/Delivery, accepted
-current Planning and implementing phase. It binds fixed base B without a
-check_result_id. Review the complete dirty snapshot and actual proposed content
-against scope. Run Planning-selected minimum self-checks. Check sensitive
-content, precise target, stage paths, message and unrelated preservation before
-prepare and the current-dialogue commit boundary. Complete Check, heavy tests
-and final Branch Review remain pending duties.
-
-Use the same prepare and exact invoke transaction, real hooks and same-commit
-receipt recovery. The private candidate uses delivery-3.0; the result receipt retains delivery-2.0.
-Draft contains no Check or phase2 anchor; final retains both real bindings.
-`draft_committed` carries task_ref/key/B/commit_sha only to the workflow draft
-router and original Publication. It cannot enter formal Branch Review.
-
-For an already committed nonempty B..HEAD candidate, including a legal resolved
-integration commit, `delivery_draft_committed_reentry` performs the same bounded
-semantic review and proves committed Task identity and all five Planning files.
-It returns the early DTO without stage, commit, hook, begin_check or gate.
-Active merge/sequencer state is still rejected. New dirty content uses prepare;
-no empty commit restores output. Final profiles keep Check and `committed`
-semantics. Matching migration is defined by MIGRATION-636.
+Old final Check-bound and early Draft profiles are retired from current calls.
+Use MIGRATION-794 and the complete pinned old provider to recover actual old
+operations. Do not synthesize a new pass from their results.

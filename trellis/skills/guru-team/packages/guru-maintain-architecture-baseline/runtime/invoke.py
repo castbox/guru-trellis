@@ -16,11 +16,11 @@ PROFILES = {"bootstrap_foundation", "task_impact_sync", "promotion", "repair"} |
 PROFILE_SCHEMAS = {
     "bootstrap_foundation": "public-input-bootstrap.schema.json",
     "task_impact_sync": "public-input-impact.schema.json",
-    "delivery_task_impact_sync": "public-input-delivery-task-impact-sync-3.0.schema.json",
-    "delivery_promotion": "public-input-delivery-promotion-3.0.schema.json",
+    "delivery_task_impact_sync": "public-input-delivery-task-impact-sync-4.0.schema.json",
+    "delivery_promotion": "public-input-delivery-promotion-4.0.schema.json",
     "delivery_repair": "public-input-delivery-repair-1.0.schema.json",
     "delivery_bootstrap_foundation": "public-input-delivery-bootstrap-foundation-1.0.schema.json",
-    "promotion": "public-input-promotion-5.0.schema.json",
+    "promotion": "public-input-promotion-6.0.schema.json",
     "repair": "public-input-repair.schema.json",
 }
 ARCHIVED_READONLY_STAGES = {
@@ -315,20 +315,22 @@ def _check_architecture_current(public: dict, recorded: dict) -> None:
             "change_path",
             "contribution_locator",
             "contribution_identity",
-            "project_check_descriptors",
-            "project_checks",
-        ):
+        ) + (() if public["profile"] in {"promotion", "delivery_promotion"} else ("project_check_descriptors", "project_checks")):
             if field not in recorded:
                 raise CommandError("semantic_result_invalid", f"owner_result.{field}", "Architecture impact requires the reviewed task-local contribution and bound project checks.", 3)
-        if recorded.get("promotion_state") not in {"reviewed_candidate", "reviewed_promoted"}:
+        integration = public["profile"] in {"promotion", "delivery_promotion"}
+        allowed_states = {"integrated_pending_review"} if integration else {"reviewed_candidate", "reviewed_promoted"}
+        if recorded.get("promotion_state") not in allowed_states:
             raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Architecture impact requires a reviewed candidate or reviewed promoted contribution.", 3)
-        _check_project_checks(
-            recorded["project_check_descriptors"],
-            recorded["project_checks"],
-            public["freshness_identity"],
-            "owner_result.project_checks",
-        )
+        if integration:
+            if "review" in recorded:
+                raise CommandError("semantic_result_invalid", "owner_result.review", "Integration records actual writes pending committed independent review.", 3)
+        else:
+            _check_project_checks(recorded["project_check_descriptors"], recorded["project_checks"],
+                                  public["freshness_identity"], "owner_result.project_checks")
         if public["stage"] == "branch_review":
+            if recorded["promotion_state"] != "reviewed_promoted":
+                raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Committed Architecture impact requires actual integrated contents and independent before/after review.", 3)
             _check_review(
                 recorded.get("review"),
                 public.get("committed_range"),
@@ -389,8 +391,8 @@ def _planning_facts(public: dict) -> None:
 def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
     recorded = copy.deepcopy(owner)
     delivery_profile = public["profile"] in DELIVERY_PROFILES
-    current = public.get("schema_version") in {"5.0", "delivery-3.0"}
-    result_schema = ("semantic-result-delivery-3.0.schema.json" if delivery_profile else "semantic-result-5.0.schema.json") if current else ("semantic-result-delivery-1.0.schema.json" if delivery_profile else "semantic-result.schema.json")
+    current = public.get("schema_version") in {"6.0", "delivery-4.0"}
+    result_schema = ("semantic-result-delivery-4.0.schema.json" if delivery_profile else "semantic-result-6.0.schema.json") if current else ("semantic-result-delivery-1.0.schema.json" if delivery_profile else "semantic-result.schema.json")
     validate_json(recorded, _schema(package_root, result_schema), "owner_result")
     if recorded["input_sha256"] != _digest(public):
         raise CommandError("stale_identity", "owner_result.input_sha256", "Rerun semantic review against the exact current profile input.", 3)
@@ -503,8 +505,8 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
             sync_kind = public["sync_kind"]
             target = public["sync_target"]
             if sync_kind == "promotion_required":
-                if recorded.get("impact_kind") != "architecture_impact" or recorded.get("promotion_state") != "reviewed_promoted":
-                    raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Successful promotion must return reviewed_promoted architecture impact.", 3)
+                if recorded.get("impact_kind") != "architecture_impact" or recorded.get("promotion_state") != "integrated_pending_review":
+                    raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Precommit integration returns integrated_pending_review architecture impact.", 3)
 
                 if (
                     recorded.get("contribution_locator") != target["locator"]
@@ -579,9 +581,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     planning = profile == "delivery_task_impact_sync" and public.get("stage") == "planning"
     if profile not in PROFILES:
         raise CommandError("schema_mismatch", "profile", "Use one declared Architecture Baseline profile.")
-    schema_name = "public-input-impact-nonplanning-5.0.schema.json" if profile == "task_impact_sync" else PROFILE_SCHEMAS[profile]
+    schema_name = "public-input-impact-nonplanning-6.0.schema.json" if profile == "task_impact_sync" else PROFILE_SCHEMAS[profile]
     if profile in {"promotion", "delivery_promotion", "task_impact_sync", "delivery_task_impact_sync"} and not planning:
-        expected_version = "delivery-3.0" if profile in DELIVERY_PROFILES else "5.0"
+        expected_version = "delivery-4.0" if profile in DELIVERY_PROFILES else "6.0"
         if public.get("schema_version") != expected_version:
             raise CommandError("schema_mismatch", "schema_version", "Re-enter the original Architecture owner with the current final-integration contract, or retain the pinned complete old installation; legacy inputs are validation assets only.")
     validate_json(public, _schema(package_root, schema_name), "input")
@@ -647,11 +649,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if profile in DELIVERY_PROFILES and (exit_id != "blocked" or planning):
         output.update(delivery_key=public["delivery_key"], planning_root=public["planning_root"])
         output_schema = ("public-blocked-output-3.0.schema.json" if exit_id == "blocked" else "public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json")
-    if public.get("schema_version") in {"5.0", "delivery-3.0"} and exit_id == "baseline_current":
+    if public.get("schema_version") in {"6.0", "delivery-4.0"} and exit_id == "baseline_current":
         output["before_authority"] = public["before_authority"]
         output["candidate"] = owner.get("post_candidate", public["candidate"])
-        output_schema = "public-output-delivery-baseline-current-3.0.schema.json" if profile in DELIVERY_PROFILES else "public-baseline-current-output-5.0.schema.json"
+        output_schema = "public-output-delivery-baseline-current-4.0.schema.json" if profile in DELIVERY_PROFILES else "public-baseline-current-output-6.0.schema.json"
     if public["stage"] == "final_integration" and exit_id in {"sync_required", "architecture_conflict", "contract_incomplete", "fitness_regression"}:
-        output_schema = "public-output-" + exit_id.replace("_", "-") + "-index-5.0.schema.json"
+        output_schema = "public-output-" + exit_id.replace("_", "-") + "-index-6.0.schema.json"
     validate_json(output, _schema(package_root, output_schema), "stdout")
     return copy.deepcopy(output)

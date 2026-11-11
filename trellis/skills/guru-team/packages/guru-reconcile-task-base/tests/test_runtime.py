@@ -621,26 +621,24 @@ class RuntimeTest(unittest.TestCase):
                                         'plan_ref':authority_ref(plan,self.repo),'candidate':None,'predecessor_result_id':None,
                                         'obligations':[],'evidence':[authority_ref(plan,self.repo)]}})
             projection.begin_check(self.delivery_key,projection.candidate(['base.txt','task.txt','conflict.txt'],head_ref=phase2,base_ref=self.new))
-            record_gate(projection,self.delivery_key,'check','check-before-reconciliation','passed',[authority_ref(plan,self.repo)],[])
         self.git('switch','main'); (self.repo/'conflict.txt').write_text('base\n'); self.git('add','conflict.txt'); self.git('commit','-qm','base conflict'); new=self.git('rev-parse','HEAD'); self.git('switch','feature')
         merge=subprocess.run(['git','merge','--no-commit','--no-ff',new],cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         self.assertNotEqual(0,merge.returncode); (self.repo/'conflict.txt').write_text('resolved\n'); self.git('add','conflict.txt')
         tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
-        request={'profile':'delivery_resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'delivery_key':self.delivery_key,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        request={'profile':'delivery_resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'delivery_key':self.delivery_key,'committed_candidate_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
         return request
 
-    def fresh_resolved_check(self,request):
+    def bind_resolved_candidate(self,request):
         projection=DeliveryProjection(self.repo,self.task_ref)
         reason=authority_ref(projection.planning_directory(self.delivery_key)/'design.md',self.repo)
-        rework(projection,self.delivery_key,'full_review','implementation',reason,['check','full_review','readiness'])
+        rework(projection,self.delivery_key,'check','implementation',reason,['check','full_review','readiness'])
         candidate=projection.candidate(['base.txt','task.txt','conflict.txt'],head_ref=self.git('rev-parse','HEAD'),base_ref=self.new)
         projection.begin_check(self.delivery_key,candidate)
-        record_gate(projection,self.delivery_key,'check','check-after-reconciliation','passed',[reason],[])
 
     def project_resolved(self,request,result,check_id):
         import project
         authoring={'profile':'delivery_branch_review','mode':'workflow','base_ref':self.new,
-                   'review_intent':'initial_review','check_result_id':check_id}
+                   'review_intent':'initial_review'}
         return project.run(PACKAGE,{'id':'project-resolved-full-review'},[
             '--root',str(self.repo),'--input',str(self.write('project-resolved-input.json',request)),
             '--result',str(self.write('project-resolved-result.json',result)),
@@ -656,9 +654,9 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             self.project_resolved(request,second,'check-before-reconciliation')
         self.assertEqual('stale_identity',raised.exception.code)
-        self.fresh_resolved_check(request)
+        self.bind_resolved_candidate(request)
         output=self.project_resolved(request,second,'check-after-reconciliation')
-        self.assertEqual({'profile':'delivery_branch_review','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.delivery_key,'base_ref':self.new,'branch_review_commit':commit,'review_intent':'initial_review','check_result_id':'check-after-reconciliation'},output)
+        self.assertEqual({'profile':'delivery_branch_review','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.delivery_key,'base_ref':self.new,'branch_review_commit':commit,'review_intent':'initial_review'},output)
         self.assertEqual(output,self.project_resolved(request,second,'check-after-reconciliation'))
         self.assertEqual(commit,self.git('rev-parse','HEAD'))
 
@@ -668,7 +666,7 @@ class RuntimeTest(unittest.TestCase):
         self.git('add', '-f', str(metadata.relative_to(self.repo)))
         request['stage0_tree'] = self.git('write-tree')
         request['index_tree_sha256'] = index_tree_digest(self.repo)
-        self.fresh_resolved_check(request)
+        self.bind_resolved_candidate(request)
         return request, metadata
 
     def test_resolved_candidate_accepts_only_unstaged_current_public_metadata(self):
@@ -727,12 +725,12 @@ class RuntimeTest(unittest.TestCase):
         path = self.write('other-metadata-resolved.json', request)
         with self.assertRaises(CommandError):
             execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
-        self.assertEqual(request['phase2_commit_anchor'], self.git('rev-parse', 'HEAD'))
+        self.assertEqual(request['committed_candidate_anchor'], self.git('rev-parse', 'HEAD'))
         other.write_text('{}\n')
         (self.repo / 'task.txt').write_text('unreviewed\n')
         with self.assertRaises(CommandError):
             execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
-        self.assertEqual(request['phase2_commit_anchor'], self.git('rev-parse', 'HEAD'))
+        self.assertEqual(request['committed_candidate_anchor'], self.git('rev-parse', 'HEAD'))
 
     def test_resolved_candidate_accepts_reviewed_staged_rename(self):
         request = self.resolved_merge()
@@ -745,7 +743,7 @@ class RuntimeTest(unittest.TestCase):
     def resolved_projection_after_normal_edit(self,changed):
         request=self.resolved_merge(public_check=True)
         result=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(self.write('live-input.json',request))])
-        self.fresh_resolved_check(request)
+        self.bind_resolved_candidate(request)
         projection=DeliveryProjection(self.repo,self.task_ref)
         path=self.repo/'conflict.txt' if changed=='candidate' else projection.planning_directory(self.delivery_key)/'design.md'
         path.write_text(path.read_text()+'正常下一轮修改\n')
@@ -775,7 +773,7 @@ class RuntimeTest(unittest.TestCase):
         tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
         self.assertEqual(self.git('show','-s','--format=%T',phase2),tree)
         self.assertEqual('',self.git('diff','--cached'))
-        request={'profile':'delivery_resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'delivery_key':self.delivery_key,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        request={'profile':'delivery_resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'delivery_key':self.delivery_key,'committed_candidate_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
         path=self.write('task-head-tree-resolved-input.json',request)
 
         first=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
@@ -898,7 +896,7 @@ class RuntimeTest(unittest.TestCase):
 
     def preimplementation_candidate(self, *, pending=True):
         resolved = self.resolved_merge()
-        self.head = resolved['phase2_commit_anchor']
+        self.head = resolved['committed_candidate_anchor']
         self.new = resolved['new_base_head']
         tree = resolved['stage0_tree']
         if pending:

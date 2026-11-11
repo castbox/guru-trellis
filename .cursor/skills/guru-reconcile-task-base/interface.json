@@ -204,11 +204,11 @@
     },
     {
       "id": "public_input_resolved_candidate",
-      "path": "schemas/delivery-public-resolved-candidate-input.schema.json"
+      "path": "schemas/delivery-public-resolved-candidate-input-2.0.schema.json"
     },
     {
       "id": "public_input_aggregate",
-      "path": "schemas/delivery-public-input.schema.json"
+      "path": "schemas/delivery-public-input-3.0.schema.json"
     },
     {
       "id": "candidate_request",
@@ -228,11 +228,11 @@
     },
     {
       "id": "resolved_reconciliation_result",
-      "path": "schemas/delivery-resolved-reconciliation-result.schema.json"
+      "path": "schemas/delivery-resolved-reconciliation-result-2.0.schema.json"
     },
     {
       "id": "resolved_full_review_authoring",
-      "path": "schemas/delivery-resolved-full-review-authoring.schema.json"
+      "path": "schemas/delivery-resolved-full-review-authoring-2.0.schema.json"
     },
     {
       "id": "private_result",
@@ -240,7 +240,7 @@
     },
     {
       "id": "invocation_envelope",
-      "path": "schemas/delivery-invocation-envelope.schema.json"
+      "path": "schemas/delivery-invocation-envelope-3.0.schema.json"
     },
     {
       "id": "public_invocation_error",
@@ -288,7 +288,7 @@
       "id": "resolved_reconciliation_executor",
       "command": "scripts/execute-resolved-base-reconciliation.sh",
       "runtime_command": "execute-resolved-base-reconciliation",
-      "objective_scope": "Validate the exact active resolved merge state and fresh Phase 2 anchor, create one local merge commit, or recover the same parents/tree/message commit without duplication"
+      "objective_scope": "Validate the exact active resolved merge and committed candidate anchor, create one local merge commit, or recover its exact parents/tree/message without duplication."
     },
     {
       "id": "resolved_full_review_projection",
@@ -403,8 +403,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-reconcile-task-base-input-aggregate-2.0-delivery-1.0",
-        "path": "schemas/delivery-public-input.schema.json"
+        "schema_id": "guru-reconcile-task-base-input-aggregate-3.0-delivery-2.0",
+        "path": "schemas/delivery-public-input-3.0.schema.json"
       },
       "profiles": [
         {
@@ -500,8 +500,8 @@
         {
           "id": "delivery_resolved_candidate",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-resolved-candidate-1.0-delivery-1.0",
-            "path": "schemas/delivery-public-resolved-candidate-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-resolved-candidate-1.0-delivery-2.0",
+            "path": "schemas/delivery-public-resolved-candidate-input-2.0.schema.json"
           },
           "example": {
             "id": "resolved_candidate_input",
@@ -663,12 +663,11 @@
           "authoring_fields": [
             "profile",
             "mode",
-            "review_intent",
-            "check_result_id"
+            "review_intent"
           ],
           "authoring_example": {
             "id": "review_continuity_required_delivery_authoring",
-            "path": "examples/authoring-delivery-review-continuity-required-1.0.json"
+            "path": "examples/authoring-delivery-review-continuity-required-2.0.json"
           }
         }
       },

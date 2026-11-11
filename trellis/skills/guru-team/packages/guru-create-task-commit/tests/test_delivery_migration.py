@@ -83,15 +83,7 @@ class SourceMigrationTests(unittest.TestCase):
         delivery = self.projection.resolve(self.key)
         self.projection.apply({"api_version": "1.0", "operation": "record_gate", "key": self.key, "owner_role": "planning", "owner_id": owners["planning"], "expected_phase": "planning", "result": {"result_id": "planning:source", "owner_role": "planning", "owner_id": owners["planning"], "outcome": "accepted", "scope_ref": delivery["scope_ref"], "plan_ref": authority_ref(planning / "implement.md", self.repo), "candidate": None, "predecessor_result_id": None, "obligations": [], "evidence": [metadata["accepted_scope"]]}})
         BranchBindingStore(inspect_repository(self.repo)).establish(TaskLifecycleKey("source-task", 0), "feature/source")
-        self.projection.begin_check(self.key, self.projection.candidate(["app.txt"], head_ref=self.head, base_ref=self.git("rev-parse", "main")))
-        module_path = SKILLS / "packages/guru-check-task/runtime/common.py"
-        spec = importlib.util.spec_from_file_location("migration_check_common", module_path)
-        common = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(common)
-        owner = json.loads((SKILLS / "packages/guru-check-task/examples/phase2-check.json").read_text())
-        owner.update(task_ref=self.task_ref, phase2_capture_commit=self.head, reviewed_content_sha256=common.content_identity(self.repo), reviewed_paths=["app.txt"], candidate_classifications=[])
-        checked = self.wrapper("guru-check-task", "invoke.sh", "--input", self.write("check.json", {"profile": "delivery_initial_check", "mode": "workflow", "source_exit": "implementation_complete", "task_ref": self.task_ref, "delivery_key": self.key, "planning_accepted_result_id": "planning:source"}), "--owner-result", self.write("check-owner.json", owner))
-        self.public = {"profile": "delivery_committed_reentry", "mode": "workflow", "task_ref": self.task_ref, "delivery_key": self.key, "check_result_id": checked["check_result_id"]}
+        self.public = {"profile": "delivery_pre_review_committed_reentry", "mode": "workflow", "task_ref": self.task_ref, "delivery_key": self.key, "base_ref": self.git("rev-parse", "main")}
         self.review = {"status": "passed", "summary": "Original owner reviewed actual Plan2 mapping.", "evidence": ["Original committed root planning blobs and current scope."]}
 
     def migrate(self, planning_projection=None):
@@ -111,20 +103,11 @@ class SourceMigrationTests(unittest.TestCase):
         self.assertEqual("stale_identity", self.reentry(False)["code"])
         self.assertEqual("source_bound", self.migrate()["status"])
         self.assertEqual("source_bound", self.migrate()["status"])
-        self.assertEqual("committed", self.reentry()["exit_id"])
+        self.assertEqual("pre_review_committed", self.reentry()["exit_id"])
         self.assertEqual(self.head, self.git("rev-parse", "HEAD"))
         self.assertEqual("", self.git("diff", "--cached", "--name-only"))
-        # This is the first full independent Review, not Check or continuity.
-        package = SKILLS / "packages/guru-review-branch"
-        fixture = json.loads((package / "examples/review-gate.json").read_text())
-        semantic = {key: fixture[key] for key in ("candidate_classifications", "semantic_review", "verification_evidence", "delivery_review")}
-        semantic["candidate_classifications"] = []
-        semantic["semantic_review"]["qualified_findings"] = []
-        public = {"profile": "delivery_branch_review", "mode": "workflow", "task_ref": self.task_ref, "delivery_key": self.key, "check_result_id": self.public["check_result_id"], "base_ref": self.projection.content_base(self.key), "branch_review_commit": self.head, "review_intent": "initial_review"}
-        self.wrapper(package.name, "review-branch.sh", "--task", self.task_ref, "--skill-input", self.write("branch.json", public), "--semantic-review-file", self.write("branch-review.json", semantic), "--typed-exit", "passed")
-        reviewed = self.wrapper(package.name, "invoke.sh", "--input", self.write("branch.json", public))
-        self.assertEqual("passed", reviewed["exit_id"])
-        self.assertEqual(self.head, self.git("rev-parse", "HEAD"))
+        self.assertIsNone(self.projection.resolve(self.key)["results"]["check"])
+        self.assertIsNone(self.projection.resolve(self.key)["results"]["full_review"])
 
     def test_normal_plan_change_cannot_reuse_source_association(self):
         self.migrate()
@@ -140,8 +123,16 @@ class SourceMigrationTests(unittest.TestCase):
                 projected = path.read_bytes().replace(b"../../../docs/", b"../../../../../docs/")
                 path.write_bytes(projected)
                 row["target_content_base64"] = base64.b64encode(projected).decode()
+        # The actual migration owner records accepted Planning for the projected
+        # destination bytes. A later link relocation cannot reuse stale authority.
+        from runtime.delivery_projection.gates import rework
+        from runtime.delivery_projection.adapter import authority_ref
+        rework(self.projection,self.key,"implementation","planning",authority_ref(planning/"implement.md",self.repo),["planning","check","full_review","readiness"])
+        delivery=self.projection.resolve(self.key)
+        owner=self.projection.declaration()["owners"]["planning"]
+        self.projection.apply({"api_version":"1.0","operation":"record_gate","key":self.key,"owner_role":"planning","owner_id":owner,"expected_phase":"planning","result":{"result_id":"planning:projected","owner_role":"planning","owner_id":owner,"outcome":"accepted","scope_ref":delivery["scope_ref"],"plan_ref":authority_ref(planning/"implement.md",self.repo),"candidate":None,"predecessor_result_id":None,"obligations":[],"evidence":[authority_ref(planning/name,self.repo) for name in ("prd.md","design.md","implement.md")]}})
         self.assertEqual("source_bound", self.migrate("markdown_relative_links_v1")["status"])
-        self.assertEqual("committed", self.reentry()["exit_id"])
+        self.assertEqual("pre_review_committed", self.reentry()["exit_id"])
         self.assertEqual(self.head, self.git("rev-parse", "HEAD"))
         self.assertEqual("", self.git("diff", "--cached", "--name-only"))
         (planning / "design.md").write_text((planning / "design.md").read_text() + "New design obligation\n")

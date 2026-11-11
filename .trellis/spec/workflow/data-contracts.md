@@ -988,9 +988,10 @@ by the workflow/interface graph. Unknown, missing, duplicate, multi-exit,
 profile/caller mismatch, stale identity, or consumer mismatch fails closed.
 
 No schema defines a qualification result/report/checkpoint locator. The checked
-result is process-local stdout and expires when the invocation ends. Phase 2,
-Branch Review and Delivery Review's selected gates independently record only
-terminal qualified/rejected classifications for their own direct consumers.
+result is process-local stdout and expires when the invocation ends. Current
+Branch Review and Delivery Review record only terminal qualified/rejected
+classifications for their own direct consumers. The retired Phase 2 gate is
+read only by its matching pinned provider or explicit original recovery owner.
 Every row contains unique `candidate_ref`, one terminal decision, a six-field
 witness (`requirement_refs`, `supported_entry_refs`,
 `existing_caller_refs`, `honest_action_sequence`, `defect_observation`,
@@ -1002,109 +1003,52 @@ compatibility reader converts them to a current schema.
 
 ## Phase 2 Check Artifact
 
-New active evidence uses closed schema `guru-phase2-check-6.0` and
-`skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
-parallel pass artifact is allowed. The independent candidate profile has
-`candidate_checked` output containing only task_ref, delivery_key and existing
-candidate head/content_identity. It records no final public Check and cannot
-supply check_result_id to TaskCommit. It returns through original public rework
-and final integration; actual writes require implementation candidate rebinding
-before final Check. RDT candidate_ready independently carries only contribution
-and applicable authority locators/version, not a current-success claim. The ignored owner checkpoint stores only
-mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
-executed validation evidence, the final Docs SSOT result, semantic
-adequacy/findings, final candidate classifications with direct-consumer
-witness, and one typed exit/route/reason/consumer. The private
-`guru-phase2-worktree-content-3.0` identity covers live tracked and untracked
-business worktree paths, including regular-file executable mode. It uses the
-existing metadata exclusions owned by [Reviewed Content Identity](#reviewed-content-identity),
-so recording lifecycle metadata does not change the checked business content.
-Only the original Check recorder/checker and public wrapper consume this local
-equality token. It remains distinct from the durable `guru-reviewed-content-1.0`
-identity used in the candidate handoff.
-Its supported atomic entries include regular files, executable files,
-symlinks, missing paths, and Gitlinks. Gitlinks bind only the superproject's
-unique stage-0 mode `160000` and OID. Added or updated pointers need not match
-old `HEAD`; staged deletion uses index absence even when a child directory
-remains. Type replacements use the resulting parent entry. No child root,
-HEAD, cleanliness, initialization, files or object availability is inspected.
-Unmerged or ambiguous parent entries still fail closed. Ordinary non-gitlink
-worktree bytes and executable mode retain their existing meaning.
-Current `3.0` replaces the former child-state admission. Old unexecuted local
-checkpoints are rerun through their original recorder/checker, not converted.
-The resolved profile additionally uses `guru-phase2-resolved-content-2.0` to bind
-HEAD, the unique MERGE_HEAD, stage-0 entries/tree and the validated public
-Delivery context. Only that validated current Task's task.json may carry its
-natural unstaged lifecycle metadata; other Task or business changes receive no
-such exception. Check and Reconcile preserve that file's original bytes/index.
-It detects reviewed-content drift and returns control to the AI owner for delta
-classification; it is not authorization, semantic approval, public handoff, or
-whole-chain authority. Live implementation output, Planning owner state, issue
-scope, repository snapshots, raw worker evidence, assignment/liveness,
-per-file or artifact digest bundles, and handoff narration are transient entry
-facts and are not copied into it.
+Current Delivery development has no independent pre-commit Check artifact or
+`candidate_checked` prerequisite. After engineering validation and necessary
+original-owner knowledge integration/readback, Task Commit forms the committed
+review candidate. The implementation constructor binds that Candidate and
+`begin_check`. One independent `guru-review-branch` invocation then owns both
+`check` and `full_review`, including the nine adequacy dimensions. Its private
+Delivery gate is described in [Review Gate Artifact](#review-gate-artifact).
+Neither Task Commit nor Branch Review cross-reads a Check private checkpoint.
 
-Reviewed paths and validation evidence are non-empty. The semantic owner uses
-current planning, implementation, Docs SSOT, issue scope, diff, tests, and
-worker observations directly to judge the nine adequacy dimensions and
-findings; the recorder/checker validates only the compact closed result and live
-freshness, never semantic sufficiency.
+The former `guru-phase2-check-6.0`, `phase2-check.json`, worktree/resolved-content
+identities and `phase2_commit_anchor` remain historical contracts. They are not
+current commit eligibility or public input. A real old operation uses the
+complete matching pinned provider under MIGRATION-794; an unexecuted old gate
+cannot be relabeled as current Check or Review. The original #775 Check
+planning-rollback recovery remains the Check owner's explicit standalone entry.
+It recovers its original handoff and does not create a new development pass.
+Current Review planning rollback has its own retained-gate recovery.
 
-Every candidate issue is classified before severity as `current_scope`,
-`scope_change_required`, `followup_proposal`, or `out_of_scope`; only
-`current_scope` may carry P0-P3 and a finding id. Every `current_scope`
-candidate must carry a non-empty finding id and resolve to exactly one matching
-finding with the same candidate id and severity; every finding points back to
-one current-scope candidate and is referenced by at least one adequacy
-dimension. Every unverified item is likewise referenced by an adequacy
-dimension; unknown, duplicate, missing, or dangling ids fail closed. Every
-finding is blocking; a passing Gate requires no
-open current-scope finding,
-no blocking unverified item, all nine adequacy dimensions passed, and a full
-rerun over the complete current
-scope. A fixed finding cannot promote a prior partial round to pass.
-
-The checker rereads the current task, planning, live implementation/diff,
-validation scope, Docs SSOT, issue scope, `phase2_capture_commit` ancestry, and
-the current reviewed-content identity. A metadata-only HEAD/status change keeps
-the identity fresh; a reviewed-content change fails closed. The `passed` DTO's
-unique consumer, Task Commit, rereads this checkpoint together with the current
-reviewed-content identity and commit parent before candidate construction and
-execution. Routine assignment/liveness and the exceptional private recovery
-checkpoint are not Phase 2 inputs and do not enter the owner checkpoint.
-
-The closed exits are `passed`, `implementation_required`, `planning_stale`, and
-`blocked`. `planning_stale` alone carries route discriminator `reapprove_plan`
-or `clarify_requirements`, with one corresponding consumer. Schema/runtime
-reject unknown, multiple, ambiguous, or Gate/exit/consumer-inconsistent states.
-Any non-current shape fails schema validation and the owner must run a complete
-current semantic round. `passed` projects only
-`task_ref + phase2_commit_anchor` to Task Commit. After output-schema validation,
-the Phase 2 producer retains the `passed` checkpoint for that one consumer and
-deletes it for `implementation_required`, `planning_stale`, and `blocked`.
-Task Commit deletes the retained checkpoint only after a commit is successfully
-published or the same published commit is successfully recovered; a failed
-candidate or executor attempt retains it for bounded retry. Branch Review then
-consumes the committed Task Commit DTO and validates parent, paths, content
-continuity and the complete range directly from live Git. Commit message format
-is not downstream freshness authority. Downstream
-workflow metadata is validated by its owning gate and is never projected back
-into Phase 2.
+Engineering checks remain implementation duties. Their actual inputs,
+dependencies, tools, environment, parameters, definitions and expectations must
+remain applicable before Review adopts their results. A green command or an
+old Check result does not establish current semantic adequacy. Qualification,
+normal-scenario witnesses, findings and unverified boundaries remain owned by
+the current semantic reviewer. Recorder/checker validation proves structure and
+objective freshness only.
 
 ## Task Commit Candidate
 
-Each `guru-create-task-commit` invocation owns one temporary candidate under
-ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
-where `sequence` is a fresh three-digit
-increasing id. Current Delivery candidate schema `delivery-3.0` binds only Task
-identity/branch and DeliveryKey, base/pre-commit/Check identity, the complete
-staged/unstaged/untracked/delete/rename/copy snapshot, unique path
-classifications, exact stage paths, canonical UTF-8 message fields/bytes, and
-the completed AI review. Live `task.json`, the Phase 2 DTO,
-Git operation state, snapshot freshness, and shared commit-message parser facts
-are reread by the builder/validator; they are not copied into a cross-Skill
-digest chain. The candidate contains no user authorization, confirmation
-wording, terminal result journal, reviewer identity, or timestamp.
+Current Task Commit uses public aggregate 3.0 with profiles
+`delivery_pre_review_commit` and `delivery_pre_review_committed_reentry`.
+Both require the exact Task/Delivery, applicable accepted Planning,
+implementing phase, fixed complete base B, real engineering validation and
+necessary original-owner knowledge integration/readback. Neither profile
+accepts `check_result_id` or reads another owner's private checkpoint.
+Integration remains pending independent review.
+
+Each dirty invocation owns one temporary candidate under ignored
+`.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
+where `sequence` is a fresh three-digit increasing id. Current private candidate
+schema `delivery-4.0` uses `commit_kind=pre_review`. It binds Task identity/branch,
+DeliveryKey, fixed base and pre-commit HEAD, the complete staged/unstaged/
+untracked/delete/rename/copy snapshot, unique path classifications, exact stage
+paths, canonical UTF-8 message fields/bytes and the completed AI candidate
+review. The builder/validator rereads live task, Planning, source authority,
+Git operation state, snapshot and shared message-parser facts. No Check
+identity, authorization, reviewer identity or timestamp enters the candidate.
 
 Snapshot entries for non-deleted Gitlinks use `mode=160000`, `index_blob`
 as the reviewed parent stage-0 OID, and `worktree_sha256=null`. They contain no
@@ -1115,88 +1059,94 @@ parent entry follows ordinary worktree content rules. Current producers emit
 `copied_from` for copy destinations and null otherwise.
 
 Candidate and executor revalidation compare the parent index entry, never child
-state. Exact staging writes the captured mode/OID with update-index --cacheinfo;
+state. Exact staging writes the captured mode/OID with `update-index --cacheinfo`;
 a staged Gitlink deletion removes the isolated index entry. Ordinary paths keep
-the original staging and hook transaction. The parent pointer changing after
-capture is stale; a child checkout changing alone is irrelevant.
-
-Old unexecuted delivery-2.0 private candidates require fresh prepare and have no
-new-execution fallback. If the original operation already produced a commit or
-result receipt, its original owner first verifies and recovers that same result;
-it must not prepare a duplicate commit. An unchanged result receipt retains its
-own existing version. Historical task candidate 5.0 is not current execution.
+the original staging and hook transaction. A parent pointer change after
+capture is stale; a child checkout change alone is irrelevant.
 
 For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, and `deleted`
 form the path's ordinary content authority. `renamed_from` and `copied_from`
-are mutually exclusive relation fields: only `renamed_from` grants the reviewed
+are mutually exclusive relation fields. Only `renamed_from` grants the reviewed
 destination authority to remove and exact-stage its source. `copied_from`
-records provenance only and never grants source deletion or staging authority.
-If a copy source has its own staged, unstaged or untracked state, it appears as
-an independent snapshot entry and requires its own classification and Phase 2
-coverage; unrelated staged source content blocks, while a clean source is not
-added to the plan. A non-delete path must still expose the exact reviewed bytes
-and mode when the executor materializes its Git blob; a delete or rename source
-is an exact index absence. The private candidate never enters its own snapshot,
-classifications, or exact stage set.
-
-Repository operation state is immediate runtime evidence rather than a plan
-field. Candidate validation and executor checks before staging and immediately
-before `git commit` reject active merge, cherry-pick, revert, rebase, sequencer,
-or `git am` state. The detector never clears or rewrites operation markers.
+records provenance only and grants no source deletion or staging authority.
+A dirty copy source appears as an independent snapshot entry and requires its
+own classification and engineering coverage. Unrelated staged source content
+blocks; a clean source is not added to the plan. A non-delete path must expose
+exact reviewed bytes and mode when the executor materializes its Git blob.
+A delete or rename source is an exact index absence. The private candidate
+never enters its own snapshot, classifications or exact stage set.
 
 Every dirty path belongs to exactly one of `task-reviewed`,
-`unrelated-preserved`, `unreviewed-blocking`, or `ambiguous-blocking`. The plan
-candidate is ignored owner-private runtime and is excluded from the snapshot.
-Public artifacts store
-only repo-relative paths, digests and structured facts, never file bodies,
-credentials, signed URLs, customer data or machine-local absolute paths.
-The current Phase 2 passed DTO is consumed before candidate construction. The
-candidate builder and executor reread the producer-private Phase 2 checkpoint,
-verify its current reviewed-content identity and `phase2_capture_commit`, and
-bind the DTO's `phase2_commit_anchor` without exposing the checkpoint or its
-digest in the candidate or public output.
+`unrelated-preserved`, `unreviewed-blocking`, or `ambiguous-blocking`.
+Only task-reviewed paths and authorized rename sources enter the exact set.
+Execution requires a passed AI candidate review, no blocking classifications,
+fresh task/HEAD/snapshot/message/parser facts and exact semantic index equality.
+Candidate validation and checks before staging and immediately before commit
+reject active merge, cherry-pick, revert, rebase, sequencer or `git am` state.
+The detector never clears or rewrites operation markers. Public artifacts use
+repo-relative locators and structured facts, never file bodies, credentials,
+signed URLs, customer data or machine-local absolute paths.
 
-Execution requires a passed AI review, no blocking classifications, fresh
-task/HEAD/snapshot/message/parser facts, and exact semantic index equality. The
-executor first revalidates planned gitlinks before any stage side effect, binds
-their artifact OIDs into the exact index, and then binds the complete pre-hook
-index tree and each exact path's blob/mode. Real hooks run against a temporary
-detached worktree plus that isolated index. Their objective exit records,
-message-file bytes, post-hook index/worktree state and the created commit object
-must all match the reviewed candidate before the live ref can advance.
+The normal dirty path prepares once, then invokes the public wrapper with
+`--candidate-artifact` after any necessary current-dialogue Git confirmation.
+The exact executor revalidates Gitlinks before staging, materializes the captured
+blobs/modes in an isolated index and runs real hooks in a temporary detached
+worktree. Hook exits, message-file bytes, post-hook index/worktree, parent,
+committed paths, complete tree, live semantic snapshot and index preimage must
+match before the live ref can advance. A hook-created temporary commit is not
+yet a published live result.
 
-The failure result separates transaction creation from live publication. If a
-hook or post-hook gate fails after Git created the temporary commit, it reports
-`created_commit_sha` and a transaction stage while the live branch remains at
-`pre_commit_head`; candidate and Phase 2 checkpoint remain recovery inputs. A
-failure after conditional live-ref advance reports
-`transaction_stage=live_ref_published`. The successful public DTO remains only
-`pre_commit_head` and `commit_sha`.
-Before publication, the executor creates and validates the isolated commit. It
-then uses standard `git update-ref <ref> <new> <old>` followed by `git reset
---mixed --quiet HEAD`; it owns no custom lock, atomic replacement, rollback, or
-concurrency protocol. On success it returns only `pre_commit_head` and
-`commit_sha`, deletes the private candidate and consumed Phase 2 checkpoint, and
-never writes Git-derived result/tree evidence into tracked metadata. Failure
-before ref publication leaves the live ref/index untouched and retains both
-checkpoints; failure after a successful conditional ref advance reports the
-created commit for bounded same-plan recovery, which retires both checkpoints
-after verifying the published commit. A later finding-fix commit requires a new
-sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
+Before `git update-ref <ref> <new> <old>`, the normal invocation writes a minimal
+private `delivery-3.0` result receipt for same-commit recovery. The receipt binds
+the candidate locator, Task/base/ref, parent, tree and raw-message digest.
+It is not itself proof that the live ref advanced. After conditional ref
+advance, the executor refreshes only the exact live index paths and compares
+semantic mode/blob/stage/path entries. It owns no custom lock, atomic-replace,
+rollback or concurrency protocol. Unrelated live paths and index state remain
+preserved.
+
+Failure before live-ref publication leaves the live ref/index untouched and
+retains the candidate for bounded retry. A failure after Git creates the
+transaction commit reports `created_commit_sha`; a failure after live-ref
+advance additionally reports `transaction_stage=live_ref_published`.
+Candidate plus receipt recover the same published commit, exact-index
+postconditions and cleanup without rerunning hooks or creating another commit.
+Changed ref, parent, tree or message fails closed. Successful execution or
+same-plan recovery retires the candidate and call-local semantic authoring.
+The next complete prepare retires the prior receipt. Git remains the source
+for parent, message, paths and tree; no such result is added to tracked metadata.
+
+Clean reentry uses regular JSON `--input` and `--owner-result` locators; one
+object may use stdin. It verifies a real nonempty fixed B..HEAD range, committed
+Task/source identity, all five Delivery planning files and clean business
+content with no active Git operation. It never stages, runs hooks or creates a
+commit. The bounded committed-source Planning bridge remains owner-private and
+requires exact original blobs/modes, except the explicitly reviewed
+`markdown_relative_links_v1` projection. Genuine content changes use dirty
+prepare rather than an empty output-restoration commit.
+
+The only formal exits are `pre_review_committed`, `revision-required`, and
+`blocked`. Success projects only `task_ref`, `delivery_key` and
+`branch_review_commit` to `guru-pre-review-commit-router`. The router constructs
+and binds the actual implementation Candidate and `begin_check`, then enters
+independent Review. No Commit result enters Publication. Old final/draft
+profiles and candidates use the complete pinned predecessor provider only for
+real original-operation recovery; pending new execution follows MIGRATION-794.
+No old private artifact or pass is converted into current eligibility.
 
 ### Executor Boundary
 
 `create-task-commit --candidate-artifact <ignored-runtime-candidate>` validates
-one schema `guru-task-commit-candidate-5.0` private candidate. It materializes
-only AI-reviewed blobs/modes in an isolated index, runs repository commit hooks, and
-verifies parent, raw message, committed path set, complete tree and unrelated
-preservation before conditionally advancing the live branch/index.
+one current private `delivery-4.0` candidate. It materializes only AI-reviewed
+blobs/modes, runs repository commit hooks and verifies parent, raw message,
+committed paths, complete tree and unrelated preservation before conditionally
+advancing the live branch and refreshing exact live index paths.
 
-The private candidate is never staged. A normal validation or hook failure
-preserves the candidate and unrelated state for bounded recovery. Success
-returns `pre_commit_head` and `commit_sha`, then removes the candidate. Commit
-tree, message, path and parent facts remain derivable from Git and are not
-copied into tracked task metadata.
+The executor's private result is only `pre_commit_head` and `commit_sha`.
+The public wrapper projects `pre_review_committed` only after verifying that
+live HEAD equals the receipt-bound commit. Candidate and receipt bodies never
+enter the public DTO. Ordinary failure preserves bounded recovery inputs and
+unrelated state. Authorization remains solely in the current conversation.
 
 ## Private Agent Recovery Checkpoint
 
@@ -1382,44 +1332,80 @@ source binding requires no tail and remains published at the reviewed head.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 7.0 `review-gate.json` at the exact
-task-owned ignored-runtime checkpoint after the independent semantic judgment
-exists. The gate
-contains only schema/skill identity, task/mode/review intent, typed exit,
-`review_commit`, `reviewed_content_algorithm`, `reviewed_content_sha256`,
-`base_ref`, normalized semantic
-candidates/findings, minimum independent reviewer/evidence facts, and
-`facts_sha256`.
+Current Delivery Branch Review uses private `delivery-review-gate-2.0` with
+`schema_version=8.0`, written as `review-gate.json` at the exact task-owned
+ignored-runtime checkpoint only after the independent semantic judgment.
+The selected public `delivery_branch_review` input 2.0 contains mode, task_ref,
+delivery_key, base_ref, branch_review_commit and review_intent. It has no prior
+check_result_id. Both public roles `check` and `full_review` belong to
+`guru-review-branch` in the matching complete provider.
 
-The gate deliberately omits a second conclusion rollup, changed-file/diff
-copies, command argv, deployment projection, assignment
-continuity and report digests. The consumer derives Git/range/task facts from
-live state and validates the compact semantic result. A resolved finding keeps
-its original `introduced_head`, records the fixing commit as `fix_head`, binds
-the later transient closure as `closure_head`, and uses `review_commit` for the
-current final-review range. Ancestry across those anchors proves normal
-finding-fix closure. `passed` after any resolved finding requires
-`review_intent=fresh_final_review` over the complete current range. Its explicit
-successor meaning is defined by MIGRATION-637 and
-[Candidate Applicability And Coverage](workflow-contract.md#candidate-applicability-and-coverage);
-the same compliant independent reviewer may verify closure and form the final
-judgment. This does not change the gate shape or ancestry checks.
+The first reviewer is newly opened and did not author or implement the candidate.
+The reviewer freezes fixed B..H. Before Task narratives, it reads the fixed B
+Architecture Baseline, constitution and change contract, then H/full diff and
+necessary unchanged consumers. It then reads selected Delivery plans, root
+accepted scope, source authority, acceptance and contributions. The same
+independent invocation performs the authority-first committed Architecture
+assessment and complete Review. Original document owners integrate/read back
+before commit; pending integration is not reviewed promotion.
 
-The gate is valid only while `guru-reviewed-content-1.0` recomputes to the
-stored `reviewed_content_sha256`; excluded task/publication/finalization metadata
-may change without changing that identity. `review_commit` remains the Git
-anchor for review range and finding ancestry. `review_source` must be
-`independent-agent`; main-session/self-review identities are rejected. Any
-non-current gate shape fails closed. Enforcement lives in
-the package-local recorder, checker, and public wrapper.
+Semantic authoring contains `candidate_classifications`, `semantic_review`,
+`delivery_review`, `verification_evidence={evidence}`, `adequacy_review`,
+`gate_judgments`, and `planning_revision` (null except `planning_stale`).
+The nine adequacy dimensions are requirements, design, implementation, tests,
+docs_ssot, cross_layer, compatibility, deployment_and_operations and
+verification_completeness. Each carries status, summary and evidence.
+`gate_judgments.check` and `.full_review` each carry an actual outcome and
+summary. Neither conclusion is inferred from the other or from filled fields.
+The recorder derives objective identities, scope/plan/Planning/candidate and
+original rollback bindings. No reviewer transcript, reviewer metadata or
+authorization enters the semantic result.
 
-The recorder returns only a minimal receipt. The checker resolves the exact
-checkpoint from task identity, and the public wrapper accepts only current
-public input before rerunning that checker. Successful `passed`,
-`continuity_passed`, and zero-payload stop `blocked` projection retires the
-checkpoint; active re-entry routes retain the same checkpoint for deterministic
-same-owner re-entry. No public DTO
-or caller-authored invocation contains the private gate.
+Recorder and checker return non-formal receipts. Only public invoke records the
+actual upstream `check` with Planning predecessor, then actual `full_review`
+with that Check predecessor. Two result slots project one independent review;
+there is no separate pre-commit Check or second checkpoint. `passed` 2.0
+requires both exact current results, complete applicable adequacy, no open
+current-scope finding and no blocking unverified boundary. Its DTO contains
+only task_ref, delivery_key, branch_review_commit and full_review_result_id.
+Its unique consumer is Delivery Review.
+
+A partial projection retains this one checkpoint. Same-candidate retry verifies
+it and records only the missing slot. After checkpoint retirement, matching
+actually recorded public results recover lost stdout. Missing semantic coverage
+requires actual review. Implementation findings return through original owners
+for repair, integration/readback, engineering validation and a successor commit.
+Rework clears check/full_review/readiness while preserving legitimate Planning
+and fixed B. The retained gate recovers the original handoff without another
+rework.
+
+Planning rollback captures the original binding before clearing
+planning/check/full_review/readiness. Current-scope planning repair uses
+`reapprove_plan` with concrete revision_actions and no proposal_refs; real scope
+change uses `clarify_requirements` with proposal_refs. The explicit
+`delivery_planning_stale_recovery` input uses original_review_input and the same
+retained gate to recover the same handoff without a second rollback or pass.
+The original #775 Check recovery remains its separate standalone contract.
+
+A resolved finding retains introduced_head, fix_head and closure_head. Current
+review_commit remains the full-range anchor. After fixes, fresh_final_review
+must cover the complete current range under the shared Candidate Applicability
+And Coverage contract. The same compliant independent reviewer may continue;
+unbounded combined effects or missing coverage require complete review.
+The gate remains valid only while unchanged `guru-reviewed-content-1.0`
+recomputes to reviewed_content_sha256. Excluded lifecycle metadata can change
+without changing that identity. This local freshness token is not semantic
+authority; review_commit remains the Git range and finding-ancestry anchor.
+
+Continuity 2.0 remains bounded and writes neither new check/full_review results
+nor full-review dimensions/two pass judgments. Promotion-reference alignment
+2.0 requires real prior passed 2.0 and current nine-dimensional coverage plus
+two actual conclusions for projection. It retains its narrow reference/status
+scope. Archived review retains separate `archived-1.0` and does not write an
+active Delivery gate. Old gates use their complete pinned provider; no reader
+converts an old pass into this current result.
+
+### Historical Archive Locator Boundary
 
 Before `task.py archive`, `prepare_closeout()` fixes both the active and future
 archive locators. The active task remains the task-local boundary until the
@@ -1593,21 +1579,23 @@ intent cannot route through `not_required`.
 
 ## Current Task Commit Authority
 
-Current private candidate/result use the independently versioned delivery-2.0
-closed draft/final union. Draft carries no check_result_id or phase2 anchor;
-final binds real current Check. Public committed keeps its final meaning.
-draft_committed hands only task/key/B/commit_sha to the Draft workflow router.
-Both paths retain complete snapshot classification, exact staging, structured
-message, real hook isolation, Git operation-state checks and unrelated state
-preservation. The same locator recovers a successful commit without duplication.
-Authorization stays in the current conversation. Old candidates/receipts follow
-the original producer's bounded recovery/reprepare before matching cutover.
+Current Task Commit uses public aggregate 3.0, private candidate `delivery-4.0`
+and result receipt `delivery-3.0`, with `commit_kind=pre_review`. Accepted
+Planning, fixed B, engineering checks and necessary knowledge integration/
+readback precede commit. No independent Check result or producer-private Check
+checkpoint is consumed. Full snapshot classification, exact staging, structured
+message, real hook isolation, Git operation-state checks, Gitlink parent-index
+authority and unrelated state preservation remain mandatory.
 
-Publication transaction 2.0 binds action and terminal inside the same original
-owner. Draft/readback DTOs carry task/key/B/H/repo/PR only as needed by their
-workflow consumers. They are not PublicationFact or a second candidate ledger.
-Formal Ready, candidate-bound readiness and PublicationFact remain distinct.
-See task-delivery-early-draft-migration.md for the exact current conversion.
+`pre_review_committed` carries only task_ref, delivery_key and
+branch_review_commit to the fixed-candidate router and independent Review.
+Same-candidate/receipt recovery returns the same actual commit without duplicate
+staging, hooks or commit creation. Authorization stays in the current
+conversation. Retired draft/final profiles and old receipts use the original
+complete pinned provider for actual same-operation recovery under MIGRATION-794.
+No current Commit output permits early Publication. New push/PR actions require
+current independent Review and original Delivery Review readiness. Historical
+Publication transactions remain original-owner recovery facts, not current pass.
 
 ## Historical PR Merge Gate And Results (Pinned-Old-Only)
 
@@ -1807,48 +1795,54 @@ completed execution; it does not claim a new grade-to-transcript byte digest.
 
 ## Branch Review Data Boundary
 
-Current Delivery Branch Review uses the selected independent Delivery input
-schema, exact candidate and public Check predecessor. This predecessor is an
-applicability fact, not independent review proof. Complete Review independently
-judges the committed full diff; bounded continuity still requires its prior
-complete Review. The read-only archived review remains a historical disposition
-profile and never writes a current Delivery gate.
+Current Delivery Branch Review selects input 2.0 through Delivery aggregate
+4.0 or legacy index 4.0. It binds the exact committed Candidate and fixed B
+without prior check_result_id. Both check/full_review roles belong to
+`guru-review-branch`. Its private gate is `delivery-review-gate-2.0`,
+schema_version 8.0; alignment uses 2.0. Archived review remains separate,
+read-only historical disposition and never writes an active Delivery gate.
 
-After a fix commit, finding closure is an internal transient AI judgment by the
-finding owner or a real unfinished-agent replacement. It has no public exit or
-artifact. The original compliant reviewer may continue to the current final
-judgment under the shared candidate contract; missing coverage is supplemented,
-and an unbounded combined effect requires the complete review. The selected
-current private gate accepts the intent allowed by its
-profile and, for continuity, records the prior complete review commit separately
-from the current `review_commit`. The delivered #532/#535 gate 7.0 remains the
-private consumer for that evidence. Historical input/gate schemas remain stale
-inventory and are never substituted for the selected Delivery input or a
-current gate.
+One independent complete review authors nine adequacy dimensions and two real
+gate judgments. The recorder/checker validate objective facts only. Public
+invoke sequentially records Check with Planning predecessor and full_review
+with that Check predecessor. Both slots represent the same real review.
+The passed 2.0 DTO exposes only task_ref, delivery_key, branch_review_commit
+and full_review_result_id to Delivery Review. No private gate crosses Skills.
+Same-candidate partial projection records only missing results; matching actual
+public results recover lost output after checkpoint retirement. Historical
+result slots or a recovered stdout do not create a new current pass.
+
+After a fix commit, finding closure is a transient AI judgment with no public
+exit or artifact. The original compliant reviewer may continue under the shared
+candidate contract. It must cover the successor delta, combined effects,
+conflicts and affected unchanged consumers. Missing coverage or an unbounded
+combined effect requires complete review. Continuity binds its prior complete
+review and stays bounded without new check/full_review. Alignment requires
+real prior passed 2.0, actual current coverage and two conclusions; it cannot
+change obligations or create new claims from reference/status edits.
 
 Only `review-gate.json` is written for a new review. Its terminal-only
 `candidate_classifications` set is empty when the complete selected-profile
-review finds no real candidate. Empty does not establish a passing exit or skip
-any remaining gate condition. Nonempty sets retain every actual candidate.
-Each row binds `candidate_ref`,
-one of the three qualified or four rejected terminal decisions, the six-part
-normal-scenario witness, and `consumer_use=branch_review_route_checker`.
-Duplicate refs, a scope-confirmation/mechanism/blocked decision, or any
-qualification result/checkpoint locator fail closed. A reviewed candidate has
-exactly one of `qualified_finding`, `scope_proposal`,
-`observation`, `followup_candidate`, or `rejected_candidate`.
-`qualified_finding` alone carries P0-P3 severity and must bind the current
-`candidate_ref`,
-`introduced_head`, `fix_head`, `closure_head`, and closure evidence. `scope_proposal` uses
-no severity and never selects an implementation route. Every semantic
-disposition row binds one candidate from the same gate.
-Each current typed output has exactly one consumer declared by Interface. The
-upstream full_review result is the only public gate slot; producer-private
-same-operation recovery is retired after its checked output is consumed. Neither
-public phase, historical result nor a recovered stdout creates current pass.
-The same current owner returns scope or implementation findings through the
-explicit workflow routers. Existing qualification-before-severity and
-normal-scenario witness contracts remain unchanged.
+review finds no real candidate. Empty does not establish pass or skip remaining
+gate conditions. Nonempty sets retain every actual candidate. Each row binds
+candidate_ref, one of the three qualified or four rejected terminal decisions,
+the six-part normal-scenario witness and
+`consumer_use=branch_review_route_checker`. Duplicate refs, nonterminal
+qualification decisions or qualification checkpoint locators fail closed.
+A reviewed candidate has exactly one of qualified_finding, scope_proposal,
+observation, followup_candidate or rejected_candidate. Only qualified_finding
+carries P0-P3 and binds candidate_ref, introduced_head, fix_head, closure_head
+and closure evidence. A scope_proposal has no severity and selects no
+implementation route. Every disposition binds a candidate in the same gate.
+
+Implementation findings clear check/full_review/readiness and return through
+original implementation/integration/validation/commit owners. Planning-stale
+recovery uses original_review_input and the retained original gate after its
+captured binding is rolled back. It returns the same planning handoff without
+another rollback or pass. Each typed output has one Interface consumer.
+Qualification-before-severity and normal-scenario witness duties remain
+unchanged. Current development Check and early Draft analysis are retired;
+real old operations recover only through the matching complete pinned provider.
 
 ## Historical Publication Readiness Gate (Pinned-Old-Only)
 

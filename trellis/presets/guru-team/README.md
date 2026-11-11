@@ -27,7 +27,7 @@ DAG 按仓核项目、基线及环境，保留旧单仓简写。默认协调器 
 Task/Delivery，独立审核都显式调用 `guru-review-change`，由它保留指定范围并返回
 用户报告，不创建 Task、推进生命周期或生成正式 Guru pass。
 workflow 调用或用户要求正式阶段结果时，才按原前置与完整范围进入
-现有 Check、Branch Review 或 Completion。普通 review 关键词和 Task 存在本身
+提交后完整 Review 或 Completion。普通 review 关键词和 Task 存在本身
 不选择正式门禁。专项选择方法唯一见
 [Specialist Review Standards](./spec/workflow/quality-guidelines.md#specialist-review-standards)。
 `guru-ai-guides` 的需求、概要设计、详细设计、Go-Guru 实现与集成测试计划审核
@@ -37,7 +37,7 @@ workflow 调用或用户要求正式阶段结果时，才按原前置与完整�
 
 行为测试、因果验证、证据采用和实验停止的共同方法见
 [Test And Validation Value](./spec/workflow/quality-guidelines.md#test-and-validation-value)。
-Author、实施派工、Check 和 Branch Review 在原职责内采用该方法。
+Author、实施派工和提交后完整 Review 在原职责内采用该方法。
 
 Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change`；它们保留
 现有 Issue、需求专项或项目动议/上游需求入口，Git 文件是否有改动不改变该边界。
@@ -49,7 +49,7 @@ Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change
 `reviewed` 表示完成本次审核，可以包含 Findings；它不代表正式门禁通过。
 共同覆盖与结束规则由 [审核充分性规范](./spec/workflow/review-sufficiency.md) 唯一维护，
 安装到 provider 的 `.trellis/spec/workflow/review-sufficiency.md`，由各原审核 owner 加载。
-Check 与 Branch Review 另读同源工程方法组合，并继续各自的正式流程。
+提交后完整 Review 另读同源工程方法组合，并继续各自的正式流程。
 组合读取 Architecture、current-knowledge 和专题 SSOT，不读取 Check/Branch 的私有阶段方法。
 原 owner 仍须实际形成架构基线吻合度、基线规则适用性和需求实现覆盖结论。原 Architecture 独立读序、适用性与重审规则继续生效；无 Task
 独立审核不调用或伪造正式 Task/Delivery 架构结果。
@@ -98,12 +98,12 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 已有安装须完整采用匹配的 preset 与四个原 packages，再检查 reapply、投影、drift
 及 sidecar；源码更新本身不证明旧安装已经采用。
 
-首次完整候选 Check 审核隔离贡献和完整拟写正文；`candidate_checked` 只进入
-原维护 owners 的最终整合。实际晋升后由 implementation 重建 candidate/begin_check，
-再完成最终 Check、TaskCommit 和完整 committed Review。Ready/Publication 不接受
-未晋升候选。普通知识晋升保留稳定 authority identity，根导航仅在入口自身合同实际变化时写入，
-不要求全局版本递增。当前 schema/consumer 成套切换和三类在途恢复见
-[MIGRATION-638](MIGRATION-638.md)。源码变更不证明安装采用或真实 Agent 验证完成。
+原知识 owners 在工程自检后、提交前整合必要文档并读回；整合事实等待提交后独立审核。
+原 `guru-review-branch` 在固定提交上一次完成 Check 与 Branch Review 的全部适用职责，
+包括一次实现后独立 Architecture 判断，再由原 Delivery Review 记录 readiness。
+普通晋升保留稳定 identity、single-writer 和实际 expected-current/readback；
+当前与在途采用边界见 [MIGRATION-794](MIGRATION-794.md)，历史来源和原验证截止点保持。
+源码变更不证明安装、实际 Agent 行为或外部采用。
 
 并行知识采用稳定入口、限定目录及稳定 ID 查找完整正文；独立主题不在共享入口逐项登记。
 共同方法、既有项目切换条件、未迁移范围、在途最终整合与旧写退出见
@@ -167,7 +167,7 @@ is installed at `.trellis/spec/workflow/causal-completion-semantics.md` through
 the existing managed-spec installer. Qualification and stage packages read
 that one source; apply/reapply distributes their stage-local contracts.
 
-Normal revision/recovery contracts live in `guru-check-task` and
+Normal revision/recovery contracts live in `guru-review-branch` and
 `guru-review-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
 it does not replace the cumulative Upgrade/Release matrix.
@@ -218,13 +218,14 @@ matching 安装、`fresh_final_review` 的窄后继含义及同 Delivery 在途�
 [MIGRATION-637](MIGRATION-637.md)。源码修改不代表活跃 Task 已迁移，静态分发不证明实际
 Agent 行为或耗时改善。#636 已有接口需命中组合验证，#638 未来接口明确未验证。
 
-## 提前 Draft 与最终门禁
+## 提交后一次独立完整审核
 
-原 TaskCommit 支持无 Check 的有界早期提交及已提交候选 reentry。原 Publication
-创建/更新同一 Draft，并在更新 Ready PR 前先退回 Draft。Draft 输出只启动固定 B/H
-的独立内容分析和风险匹配 HEAD 验证，不写最终 PublicationFact。最终 Check、正式
-full_review、readiness、Ready 和 Merge 保持完整门禁。早期反馈不要求最终文档晋升。
-成套 I/O、在途状态、私有事务 2.0 与安装/恢复合同见 [MIGRATION-636.md](MIGRATION-636.md)。
+当前顺序是实现/工程自检、必要知识整合、本地提交、一次独立完整 Review，
+然后原 Delivery Review/readiness 与 Publication。未独立通过前不新 push、不创建 PR。
+原 TaskCommit 的待审提交和干净重入保留精确事务、hook 与同提交恢复。
+早期 Draft 新发布路径退出；既有 PR/HEAD 和已执行动作由原 owner 准确恢复，
+pending 新远端动作回当前审核/readiness。完整版本、退休入口和在途处置见
+[MIGRATION-794](MIGRATION-794.md)；不把旧 pass 机械转换为新通过。
 
 ## 构建所选 Fork
 
@@ -625,6 +626,6 @@ AI 自行新建 linked worktree 时，先读取 live Git topology 与确证 prim
 工具投影并验证 drift/sidecar，保留 Task/session 和用户配置。完整多平台安装、升级及 Release
 矩阵不属于本项验证范围。
 
-Check 对所有范围内规划修复传递真实 actions，原结果恢复使用同 owner 的独立入口。
+当前完整 Review 对范围内规划修复传递真实 actions；原旧 Check rollback 仅通过显式恢复入口承接。
 完整 matching 采用、已回退旧现场、缺来源 blocked 及验证边界见
 [MIGRATION-775](MIGRATION-775.md)；恢复不生成 Planning 或 Check pass。

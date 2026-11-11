@@ -38,39 +38,30 @@ class CommittedReentryTest(unittest.TestCase):
     def write(self, name, value):
         return self.fixture.write(name, value)
 
-    def phase2(self, mode='workflow'):
-        self.fixture.head = self.git('rev-parse', 'HEAD')
-        package = SKILLS / 'packages/guru-check-task'
-        spec = importlib.util.spec_from_file_location('reentry_check_identity', package / 'runtime/common.py')
-        common = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(common)
-        owner = json.loads((package / 'examples/phase2-check.json').read_text())
-        owner.update(mode=mode, task_ref=self.task_ref, phase2_capture_commit=self.fixture.head,
-                     reviewed_content_sha256=common.content_identity(self.repo), reviewed_paths=self.projection.resolve(self.key)['candidate']['paths'], candidate_classifications=[])
-        public = {'profile':'delivery_initial_check','mode':mode,'task_ref':self.task_ref,'delivery_key':self.key,
-                  'source_exit':'implementation_complete','planning_accepted_result_id':'planning:flow'}
-        return self.call('guru-check-task','invoke.sh','--input',self.write('check.json',public),'--owner-result',self.write('check-owner.json',owner))
+    def pre_review(self, mode='workflow'):
+        self.restart_implementation()
+        return {}
 
     def restart_implementation(self):
         from runtime.delivery_projection.gates import rework
         from runtime.delivery_projection.adapter import authority_ref
         delivery = self.projection.resolve(self.key)
-        role = 'full_review' if delivery['phase'] == 'reviewing' else 'check'
-        rework(self.projection,self.key,role,'implementation',authority_ref(self.repo/'requirements.md',self.repo),['check','full_review','readiness'])
-        self.projection.begin_check(self.key,self.projection.candidate(['app.txt'],head_ref=self.git('rev-parse','HEAD'),base_ref=self.projection.content_base(self.key)))
+        if delivery['phase'] != 'implementing':
+            role = {'reviewing':'full_review','checking':'check','publishing':'publication'}[delivery['phase']]
+            rework(self.projection,self.key,role,'implementation',authority_ref(self.repo/'requirements.md',self.repo),['check','full_review','readiness'])
 
     def reentry(self, passed, status='passed', ok=True, mode='workflow', extra=()):
-        public={'profile':'delivery_committed_reentry','mode':mode,'task_ref':self.task_ref,'delivery_key':self.key,'check_result_id':passed['check_result_id']}
+        public={'profile':'delivery_pre_review_committed_reentry','mode':mode,'task_ref':self.task_ref,'delivery_key':self.key,'base_ref':self.projection.content_base(self.key)}
         owner={'status':status,'summary':'Fixture current clean candidate.','evidence':['Actual current candidate, planning and full range.']}
         return self.call(PACKAGE.name,'invoke.sh','--input',self.write('reentry.json',public),'--owner-result',self.write('reentry-owner.json',owner),*extra,ok=ok)
 
     def prepare(self, passed, ok=True):
         from runtime.reviewed_content import reviewed_content_metadata_path
         paths=subprocess.run(['git','status','--porcelain=v1','--untracked-files=all'],cwd=self.repo,capture_output=True,text=True,check=True).stdout.splitlines()
-        authoring={'path_classifications':[{'path':row[3:],'category':'unrelated-preserved' if reviewed_content_metadata_path(row[3:]) else 'task-reviewed','reason':'Preserve derived public metadata; commit only genuine content.','coverage_source':'Current public Check'} for row in paths],
+        authoring={'path_classifications':[{'path':row[3:],'category':'unrelated-preserved' if reviewed_content_metadata_path(row[3:]) else 'task-reviewed','reason':'Preserve derived public metadata; commit only genuine content.','coverage_source':'Current approved plan and engineering checks'} for row in paths],
                    'message':{'type':'fix','scope':'fixture','summary':'验证Delivery增量','background':'保留clean候选接续。','changes':'提交真实增量。','boundaries':'只作用临时仓库。','validations':'运行真实wrapper。'},
                    'ai_review':{'status':'passed','summary':'Fixture-only authoring.','evidence':['Actual dirty snapshot.']}}
-        public={'profile':'delivery_initial_commit','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'source_exit':'passed','check_result_id':passed['check_result_id']}
+        public={'profile':'delivery_pre_review_commit','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'base_ref':self.projection.content_base(self.key)}
         return self.call(PACKAGE.name,'prepare-task-commit.sh','--input',self.write('dirty-input.json',public),'--candidate-json',self.write('dirty-owner.json',authoring),ok=ok)
 
 
@@ -117,42 +108,8 @@ class CommittedReentryTest(unittest.TestCase):
         shutil.copy2(Path(common) / 'guru-team/python/active.json', pointer)
         return installed
 
-    def architecture(self, committed):
-        package = SKILLS / 'packages/guru-maintain-architecture-baseline'
-        installed = self.install_fixture_packages(package.name)
-        public = json.loads((package / 'examples/public-input-delivery-task-impact-sync-3.0.json').read_text())
-        # Existing fixture authority is app.txt at both ends of the range.
-        # Use real committed bytes without writing after the current Check.
-        public['constitution']['authority_locator'] = 'app.txt'
-        public['baseline']['locator'] = 'app.txt'
-        public['project_contract']['change_contract_locator'] = 'app.txt'
-        public['before_authority'] = {'git_revision': self.git('rev-parse', committed['base_ref']),
-                                    'baseline_locator': 'app.txt', 'constitution_locator': 'app.txt',
-                                    'change_contract_locator': 'app.txt'}
-        from runtime.reviewed_content import reviewed_content_identity
-        public['candidate'] = {'head': self.git('rev-parse', 'HEAD'),
-                               'content_identity': 'sha256:' + reviewed_content_identity(self.repo)['sha256']}
-        public.update(schema_version='delivery-3.0', profile='delivery_task_impact_sync',
-                      delivery_key=self.key, planning_root=self.projection.resolve(self.key)['planning_root'],
-                      source_exit=committed['exit_id'], stage='branch_review', task_locator=self.task_ref,
-                      freshness_identity=committed['branch_review_commit'], committed_range={
-                          'base_ref':committed['base_ref'], 'base_head':self.git('rev-parse',committed['base_ref']),
-                          'review_head':committed['branch_review_commit']})
-        owner = {key:public[key] for key in ('schema_version','profile','mode','continuation_id','stage','task_locator',
-                                            'baseline','constitution','project_contract','freshness_identity','delivery_key','planning_root','before_authority','candidate')}
-        owner.update(input_sha256=hashlib.sha256(json.dumps(public,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
-                     typed_exit='baseline_current', consumer={'kind':'workflow','id':'guru-architecture-baseline-current-router'},
-                     baseline_identity=public['baseline']['identity'], constitution_identity=public['constitution']['identity'],
-                     impact_kind='no_architecture_impact', impact_reason='Fixture changes application text, with all architecture boundaries retained.',
-                     promotion_state='no_change', ai_review_gate={'status':'passed','reviewed_scope':'Complete fixture committed range.',
-                         'evidence_summary':'Fixture-only authoring, not independent AI assessment.','findings':[], 'conclusion':'Fixture no-impact projection.'})
-        result = subprocess.run(['bash',str(installed/'skills/packages'/package.name/'scripts/invoke.sh'),'--invocation','-'],
-                                input=json.dumps({'public_input':public,'owner_result':owner}),cwd=self.repo,capture_output=True,text=True)
-        self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-        return json.loads(result.stdout)
-
     def test_real_reconcile_fresh_check_and_first_full_review(self):
-        self.phase2(); self.reconcile(); passed=self.phase2()
+        self.pre_review(); self.reconcile(); passed=self.pre_review()
         # No manufactured empty commit: metadata-only dirty does not suffice.
         failed=self.prepare(passed,ok=False)
         self.assertEqual('schema_mismatch',failed['code']); self.assertIn('exact_stage_paths',failed['field_path'])
@@ -161,43 +118,37 @@ class CommittedReentryTest(unittest.TestCase):
         before=self.snapshot(); output=self.reentry(passed)
         self.assertEqual(before,self.snapshot()); self.assertFalse(marker.exists())
         self.assertIsNone(self.projection.resolve(self.key)['results']['full_review'])
-        architecture = self.architecture(output)
-        self.assertEqual('baseline_current',architecture['exit_id'])
-        self.assertEqual(output['branch_review_commit'],architecture['freshness_identity'])
-        self.assertEqual(self.key,architecture['delivery_key'])
-        self.assertEqual(before,self.snapshot())
-        self.assertEqual('passed',self.fixture.full_review(passed)['exit_id'])
+        self.projection.begin_check(self.key,self.projection.candidate(['app.txt','base-only.txt'],head_ref=self.git('rev-parse','HEAD'),base_ref=self.projection.content_base(self.key)))
+        self.assertEqual('passed',self.fixture.single_review()['exit_id'])
         self.assertEqual(output['branch_review_commit'],self.git('rev-parse','HEAD'))
 
     def test_clean_stdout_loss_keeps_public_check_and_same_dto(self):
-        passed=self.phase2(); before=self.snapshot(); output=self.reentry(passed)
+        passed=self.pre_review(); before=self.snapshot(); output=self.reentry(passed)
         self.assertEqual(output,self.reentry(passed)); self.assertEqual(before,self.snapshot())
-        self.assertEqual(passed['check_result_id'],self.projection.resolve(self.key)['results']['check']['result_id'])
+        self.assertIsNone(self.projection.resolve(self.key)['results']['check'])
         self.assertFalse(list((self.repo/'.trellis/.runtime/guru-team/task-commit-results').rglob('*.json')))
 
     def test_dirty_increment_exact_transaction_recovers_once(self):
-        passed=self.phase2(); (self.repo/'app.txt').write_text('next genuine increment\n')
+        passed=self.pre_review(); (self.repo/'app.txt').write_text('next genuine increment\n')
         self.assertEqual('stale_identity',self.reentry(passed,ok=False)['code'])
-        self.restart_implementation(); prepared=self.prepare(self.phase2()); before=int(self.git('rev-list','--count','HEAD'))
+        self.restart_implementation(); prepared=self.prepare(self.pre_review()); before=int(self.git('rev-list','--count','HEAD'))
         args=('--candidate-artifact',prepared['candidate_artifact']); output=self.call(PACKAGE.name,'invoke.sh',*args)
         self.assertEqual(output,self.call(PACKAGE.name,'invoke.sh',*args)); self.assertEqual(before+1,int(self.git('rev-list','--count','HEAD')))
-        self.restart_implementation(); self.assertEqual(output['branch_review_commit'],self.reentry(self.phase2())['branch_review_commit'])
+        self.restart_implementation(); self.assertEqual(output['branch_review_commit'],self.reentry(self.pre_review())['branch_review_commit'])
 
     def test_normal_mode_base_and_checkout_changes_require_reentry(self):
-        passed=self.phase2(); (self.repo/'app.txt').chmod(0o755); self.git('commit','-qam','change executable mode')
-        self.assertEqual('stale_identity',self.reentry(passed,ok=False)['code'])
-        self.restart_implementation(); passed=self.phase2()
-        self.git('add',self.task_ref); self.git('commit','-qm','persist actual public facts before checkout')
+        passed=self.pre_review(); (self.repo/'app.txt').chmod(0o755); self.git('commit','-qam','change executable mode')
+        self.assertEqual('pre_review_committed',self.reentry(passed)['exit_id'])
         self.git('switch','main'); (self.repo/'base-only.txt').write_text('base advance\n'); self.git('add','base-only.txt'); self.git('commit','-qm','advance'); self.git('switch','feat/flow')
-        self.assertEqual('stale_identity',self.reentry(passed,ok=False)['code'])
+        self.assertEqual('pre_review_committed',self.reentry(passed)['exit_id'])
         self.git('switch','-qc','feat/other'); self.assertEqual('stale_identity',self.reentry(passed,ok=False)['code'])
 
     def test_standalone_recovers_without_legacy_checkpoint(self):
-        passed=self.phase2(mode='standalone'); before=self.snapshot(); output=self.reentry(passed,mode='standalone')
+        passed=self.pre_review(mode='standalone'); before=self.snapshot(); output=self.reentry(passed,mode='standalone')
         self.assertEqual(output,self.reentry(passed,mode='standalone')); self.assertEqual(before,self.snapshot())
 
     def test_missing_selected_base_has_explicit_diagnostic(self):
-        passed = self.phase2()
+        passed = self.pre_review()
         task_file = self.repo / self.task_ref / 'task.json'
         record = json.loads(task_file.read_text())
         record['base_branch'] = None  # Normal incomplete old installation metadata.
@@ -209,22 +160,22 @@ class CommittedReentryTest(unittest.TestCase):
         self.assertEqual(before,self.snapshot())
 
     def test_target_reaches_head_preserves_fixed_content_range(self):
-        passed=self.phase2(); self.git('branch','-f','main','HEAD')
-        before=self.snapshot(); self.assertEqual('committed',self.reentry(passed)['exit_id']); self.assertEqual(before,self.snapshot())
+        passed=self.pre_review(); self.git('branch','-f','main','HEAD')
+        before=self.snapshot(); self.assertEqual('pre_review_committed',self.reentry(passed)['exit_id']); self.assertEqual(before,self.snapshot())
 
     def test_nonpass_conflicting_arguments_and_real_merge(self):
-        passed=self.phase2(); before=self.snapshot()
+        passed=self.pre_review(); before=self.snapshot()
         self.assertEqual('blocked',self.reentry(passed,status='blocked')['exit_id']); self.assertEqual('revision-required',self.reentry(passed,status='revision-required')['exit_id'])
         self.assertEqual(before,self.snapshot()); self.assertEqual('conflicting_arguments',self.reentry(passed,ok=False,extra=('--invocation','-'))['code'])
         self.git('add',self.task_ref); self.git('commit','-qm','persist actual public facts')
-        self.restart_implementation(); passed=self.phase2(); self.git('add',self.task_ref); self.git('commit','-qm','persist actual fresh Check')
+        self.restart_implementation(); passed=self.pre_review()
         self.git('switch','main'); (self.repo/'base-only.txt').write_text('merge base\n'); self.git('add','base-only.txt'); self.git('commit','-qm','advance')
         self.git('switch','feat/flow'); self.git('merge','--no-commit','--no-ff','main')
         self.assertEqual('stale_identity',self.reentry(passed,ok=False)['code'])
 
     def test_native_boundary_consumes_actual_delivery_public_outputs(self):
         from adapters.eval.native_adapter import start_public_runtime_boundary
-        passed = self.phase2()
+        passed = self.pre_review()
         expected = self.reentry(passed)
         installed = self.install_fixture_packages(PACKAGE.name)
         package = installed / 'skills/packages' / PACKAGE.name
@@ -236,8 +187,8 @@ class CommittedReentryTest(unittest.TestCase):
         boundary, thread, stop = start_public_runtime_boundary(execution_root, target, package, projection, projection / 'scripts/invoke.sh', {})
         try:
             args = ['--package-root',str(projection),'--input',self.write('native-input.json',{
-                'profile':'delivery_committed_reentry','mode':'workflow','task_ref':self.task_ref,
-                'delivery_key':self.key,'check_result_id':passed['check_result_id']}),
+                'profile':'delivery_pre_review_committed_reentry','mode':'workflow','task_ref':self.task_ref,
+                'delivery_key':self.key,'base_ref':self.projection.content_base(self.key)}),
                 '--owner-result',self.write('native-owner.json',{'status':'passed','summary':'Fixture current clean candidate.','evidence':['Actual public Check.']})]
             result = subprocess.run([str(boundary),*args],cwd=self.repo,capture_output=True,text=True,timeout=30)
             self.assertEqual(0,result.returncode,result.stdout+result.stderr)

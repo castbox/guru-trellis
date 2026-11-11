@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-create-task-commit",
   "name": "guru-create-task-commit",
-  "description": "Create an exact reviewed Delivery commit for early Draft feedback or the final Check-bound path.",
+  "description": "Create a fixed local Delivery candidate before independent complete Review.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -12,7 +12,7 @@
       "entry_precondition_ids": [
         "workspace_boundary",
         "task_identity",
-        "phase2_result",
+        "planning_and_engineering",
         "pre_commit_head",
         "git_operation_state",
         "dirty_snapshot"
@@ -23,7 +23,7 @@
       "entry_precondition_ids": [
         "workspace_boundary",
         "task_identity",
-        "phase2_result",
+        "planning_and_engineering",
         "pre_commit_head",
         "git_operation_state",
         "dirty_snapshot"
@@ -44,8 +44,8 @@
       "freshness": "files and current branch still match"
     },
     {
-      "id": "phase2_result",
-      "evidence": "Selected profile: current accepted Planning in implementing for early Draft, or current real public Check for final commit.",
+      "id": "planning_and_engineering",
+      "evidence": "Current accepted Planning in implementing, engineering self-checks and necessary original-owner knowledge integration/readback.",
       "binding": "Exact Task/Delivery and selected closed input.",
       "freshness": "Rechecked before exact mutation."
     },
@@ -289,14 +289,6 @@
   ],
   "external_exits": [
     {
-      "id": "committed",
-      "evidence": "minimal committed DTO and current live Git HEAD",
-      "consumer": {
-        "kind": "skill",
-        "id": "guru-review-branch"
-      }
-    },
-    {
       "id": "revision-required",
       "evidence": "AI review or candidate validation revision evidence",
       "consumer": {
@@ -313,16 +305,16 @@
       }
     },
     {
-      "id": "draft_committed",
-      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "id": "pre_review_committed",
+      "evidence": "Exact local commit; independent review remains pending.",
       "consumer": {
         "kind": "workflow",
-        "id": "guru-draft-commit-router"
+        "id": "guru-pre-review-commit-router"
       }
     }
   ],
   "reentry": {
-    "identity": "Delivery key and fixed base; final profiles additionally bind current Check; dirty transactions bind pre-commit HEAD.",
+    "identity": "Delivery key, fixed base and actual committed HEAD; dirty transactions bind exact pre-commit snapshot.",
     "freshness": "Current selected profile prerequisites and live candidate; dirty paths match the complete snapshot.",
     "stale_behavior": "fail_closed"
   },
@@ -359,113 +351,38 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-create-task-commit-input-delivery-aggregate-2.0",
-        "path": "schemas/public-input-delivery-2.0.schema.json"
+        "schema_id": "guru-create-task-commit-input-delivery-aggregate-3.0",
+        "path": "schemas/public-input-delivery-3.0.schema.json"
       },
       "profiles": [
         {
-          "id": "delivery_initial_commit",
+          "id": "delivery_pre_review_commit",
           "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-initial-commit-1.0",
-            "path": "schemas/public-delivery-initial-commit-input-1.0.schema.json"
+            "schema_id": "guru-create-task-commit-input-delivery-pre-review-commit-1.0",
+            "path": "schemas/public-delivery-pre-review-commit-input-1.0.schema.json"
           },
           "example": {
-            "id": "delivery_initial_commit_input",
-            "path": "examples/public-delivery-initial-commit-input-1.0.json"
+            "id": "delivery_pre_review_commit_input",
+            "path": "examples/public-delivery-pre-review-commit-input-1.0.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "delivery_initial_commit"
+            "value": "delivery_pre_review_commit"
           }
         },
         {
-          "id": "delivery_revision_reentry",
+          "id": "delivery_pre_review_committed_reentry",
           "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-revision-reentry-1.0",
-            "path": "schemas/public-delivery-revision-reentry-input-1.0.schema.json"
+            "schema_id": "guru-create-task-commit-input-delivery-pre-review-committed-reentry-1.0",
+            "path": "schemas/public-delivery-pre-review-committed-reentry-input-1.0.schema.json"
           },
           "example": {
-            "id": "delivery_revision_reentry_input",
-            "path": "examples/public-delivery-revision-reentry-input-1.0.json"
+            "id": "delivery_pre_review_committed_reentry_input",
+            "path": "examples/public-delivery-pre-review-committed-reentry-input-1.0.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "delivery_revision_reentry"
-          }
-        },
-        {
-          "id": "delivery_finding_fix_commit",
-          "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-finding-fix-commit-1.0",
-            "path": "schemas/public-delivery-finding-fix-commit-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_finding_fix_commit_input",
-            "path": "examples/public-delivery-finding-fix-commit-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_finding_fix_commit"
-          }
-        },
-        {
-          "id": "delivery_recovery_resume",
-          "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-recovery-resume-1.0",
-            "path": "schemas/public-delivery-recovery-resume-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_recovery_resume_input",
-            "path": "examples/public-delivery-recovery-resume-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_recovery_resume"
-          }
-        },
-        {
-          "id": "delivery_committed_reentry",
-          "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-committed-reentry-1.0",
-            "path": "schemas/public-delivery-committed-reentry-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_committed_reentry_input",
-            "path": "examples/public-delivery-committed-reentry-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_committed_reentry"
-          }
-        },
-        {
-          "id": "delivery_draft_commit",
-          "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-draft-commit-1.0",
-            "path": "schemas/public-delivery-draft-commit-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_draft_commit_input",
-            "path": "examples/public-delivery-draft-commit-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_draft_commit"
-          }
-        },
-        {
-          "id": "delivery_draft_committed_reentry",
-          "schema": {
-            "schema_id": "guru-create-task-commit-input-delivery-draft-committed-reentry-1.0",
-            "path": "schemas/public-delivery-draft-committed-reentry-input-1.0.schema.json"
-          },
-          "example": {
-            "id": "delivery_draft_committed_reentry_input",
-            "path": "examples/public-delivery-draft-committed-reentry-input-1.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "delivery_draft_committed_reentry"
+            "value": "delivery_pre_review_committed_reentry"
           }
         }
       ]
@@ -475,7 +392,7 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "delivery_initial_commit"
+        "profile_id": "delivery_pre_review_commit"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
@@ -492,20 +409,6 @@
       ]
     },
     "outputs": [
-      {
-        "exit_id": "committed",
-        "schema": {
-          "schema_id": "guru-create-task-commit-output-delivery-committed-1.0",
-          "path": "schemas/public-output-delivery-committed-1.0.schema.json"
-        },
-        "example": {
-          "id": "committed_delivery_output",
-          "path": "examples/public-output-delivery-committed-1.0.json"
-        },
-        "consumer_use_ids": [
-          "project_committed"
-        ]
-      },
       {
         "exit_id": "revision-required",
         "schema": {
@@ -535,51 +438,21 @@
         ]
       },
       {
-        "exit_id": "draft_committed",
+        "exit_id": "pre_review_committed",
         "schema": {
-          "schema_id": "guru-create-task-commit-output-delivery-draft-committed-1.0",
-          "path": "schemas/public-output-delivery-draft-committed-1.0.schema.json"
+          "schema_id": "guru-create-task-commit-output-delivery-pre-review-committed-1.0",
+          "path": "schemas/public-output-delivery-pre-review-committed-1.0.schema.json"
         },
         "example": {
-          "id": "draft_committed_output",
-          "path": "examples/public-output-delivery-draft-committed-1.0.json"
+          "id": "pre_review_committed_output",
+          "path": "examples/public-output-delivery-pre-review-committed-1.0.json"
         },
         "consumer_use_ids": [
-          "project_draft_committed"
+          "project_pre_review_committed"
         ]
       }
     ],
     "consumer_inputs": [
-      {
-        "id": "branch_review_seed_input",
-        "consumer": {
-          "kind": "skill",
-          "id": "guru-review-branch"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-branch/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "delivery_branch_review",
-          "seed_fields": [
-            "task_ref",
-            "delivery_key",
-            "check_result_id",
-            "base_ref",
-            "branch_review_commit"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode",
-            "review_intent"
-          ],
-          "authoring_example": {
-            "id": "committed_delivery_authoring",
-            "path": "examples/authoring-delivery-committed-1.0.json"
-          }
-        }
-      },
       {
         "id": "revision_reentry_seed_input",
         "consumer": {
@@ -591,20 +464,19 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-create-task-commit/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "delivery_revision_reentry",
+          "profile_id": "delivery_pre_review_commit",
           "seed_fields": [
-            "source_exit",
             "task_ref",
             "delivery_key"
           ],
           "authoring_fields": [
             "profile",
             "mode",
-            "check_result_id"
+            "base_ref"
           ],
           "authoring_example": {
             "id": "revision_required_delivery_authoring",
-            "path": "examples/authoring-delivery-revision-required-1.0.json"
+            "path": "examples/authoring-pre-review-revision-required-1.0.json"
           }
         }
       },
@@ -617,58 +489,26 @@
         "payload_kind": "zero_payload"
       },
       {
-        "id": "draft_committed_workflow_input",
+        "id": "pre_review_committed_workflow_input",
         "consumer": {
           "kind": "workflow",
-          "id": "guru-draft-commit-router"
+          "id": "guru-pre-review-commit-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "schema_id": "guru-workflow-create-task-commit-draft-committed-1.0",
-          "path": "consumers/workflow/production/create-task-commit-draft-committed.schema.json",
+          "schema_id": "guru-workflow-create-task-commit-pre-review-committed-1.0",
+          "path": "consumers/workflow/production/create-task-commit-pre-review-committed.schema.json",
           "kind": "json_schema"
         }
       }
     ],
     "projections": [
       {
-        "id": "project_committed",
-        "exit_id": "committed",
-        "consumer_input_id": "branch_review_seed_input",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "delivery_key",
-            "target": "delivery_key"
-          },
-          {
-            "source": "check_result_id",
-            "target": "check_result_id"
-          },
-          {
-            "source": "base_ref",
-            "target": "base_ref"
-          },
-          {
-            "source": "branch_review_commit",
-            "target": "branch_review_commit"
-          }
-        ]
-      },
-      {
         "id": "project_revision_required",
         "exit_id": "revision-required",
         "consumer_input_id": "revision_reentry_seed_input",
-        "operation": "rename",
+        "operation": "select",
         "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
           {
             "source": "task_ref",
             "target": "task_ref"
@@ -687,9 +527,9 @@
         "mappings": []
       },
       {
-        "id": "project_draft_committed",
-        "exit_id": "draft_committed",
-        "consumer_input_id": "draft_committed_workflow_input",
+        "id": "project_pre_review_committed",
+        "exit_id": "pre_review_committed",
+        "consumer_input_id": "pre_review_committed_workflow_input",
         "operation": "select",
         "mappings": [
           {
@@ -701,12 +541,8 @@
             "target": "delivery_key"
           },
           {
-            "source": "base_ref",
-            "target": "base_ref"
-          },
-          {
-            "source": "commit_sha",
-            "target": "commit_sha"
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
           }
         ]
       }
@@ -763,6 +599,24 @@
         "schema": {
           "schema_id": "guru-task-commit-planning-source-1.0",
           "path": "schemas/delivery-planning-source-1.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_commit_candidate_4_0",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-4.0.json",
+          "path": "schemas/delivery-commit-candidate-4.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_commit_result_3_0",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-3.0.json",
+          "path": "schemas/delivery-commit-result-3.0.schema.json"
         },
         "persistence": "ignored_runtime"
       }

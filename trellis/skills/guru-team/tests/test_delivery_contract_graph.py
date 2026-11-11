@@ -101,7 +101,12 @@ class DeliveryGraphTests(unittest.TestCase):
     def test_all_versioned_outputs_compose_with_their_unique_consumer(self):
         for name in PACKAGES:
             package = SKILLS / "packages" / name
-            contract = json.loads((package / "interface.json").read_text())["public_contracts"]
+            interface = json.loads((package / "interface.json").read_text())
+            contract = interface["public_contracts"]
+            if interface.get("execution_kind") == "instruction_only":
+                # Conversation exits have no JSON DTO projection boundary.
+                self.assertEqual("conversation", contract["input"]["kind"])
+                continue
             outputs = {row["exit_id"]: row for row in contract["outputs"]}
             consumers = {row["id"]: row for row in contract["consumer_inputs"]}
             for projection in contract["projections"]:

@@ -18,6 +18,10 @@ ARCHITECTURE_PUBLIC_INPUT = ".trellis/tasks/architecture-evidence/public-input.j
 def stage_architecture_facts(request: dict, fixture: Path) -> None:
     fixture = fixture.resolve()
     public = json.loads(public_input_path(request).read_text())
+    if public['stage'] != 'planning' and public['profile'] in {'task_impact_sync', 'delivery_task_impact_sync'}:
+        expected = 'delivery-4.0' if public['profile'].startswith('delivery_') else '6.0'
+        if public.get('schema_version') != expected:
+            raise ValueError('Use the current nonplanning Architecture input; historical inputs are not upgraded by staging.')
     task = Path(public["task_locator"])
     if task.is_absolute() or ".." in task.parts:
         raise ValueError("Architecture task locator is unsafe")
@@ -176,9 +180,7 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         public["freshness_identity"] = "sha256:" + current
     if public["stage"] != "planning" and public["profile"] in {"task_impact_sync", "delivery_task_impact_sync"}:
         from runtime.reviewed_content import reviewed_content_identity
-        public["schema_version"] = "delivery-3.0" if public["profile"].startswith("delivery_") else "5.0"
         public.pop("planning_purpose", None)
-        public["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:5.0"
         public["before_authority"] = {"git_revision": base,
             "baseline_locator": public["baseline"]["locator"],
             "constitution_locator": public["constitution"]["authority_locator"],
@@ -214,7 +216,11 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
 
 def contract_paths(public: dict) -> tuple[str, ...]:
     """Select actual current public contracts without choosing a semantic route."""
-    if public.get("schema_version") == "delivery-3.0":
+    if public.get("schema_version") == "delivery-4.0":
+        semantic = "schemas/semantic-result-delivery-4.0.schema.json"
+    elif public.get("schema_version") == "6.0":
+        semantic = "schemas/semantic-result-6.0.schema.json"
+    elif public.get("schema_version") == "delivery-3.0":
         semantic = "schemas/semantic-result-delivery-3.0.schema.json"
     elif public.get("schema_version") == "5.0":
         semantic = "schemas/semantic-result-5.0.schema.json"

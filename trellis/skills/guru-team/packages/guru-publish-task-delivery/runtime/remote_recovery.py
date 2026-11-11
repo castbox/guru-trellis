@@ -105,6 +105,15 @@ def plan(root, source, existing, ref):
         effects.append("converge_metadata")
     if ready and pr["is_draft"]:
         effects.append("mark_ready")
+    if not ready:
+        # Recovery reports only already-completed remote facts. Any missing
+        # external action returns to committed Review/readiness before mutation.
+        if effects:
+            return {"typed_exit": "review_stale", "output": {"exit_id": "review_stale", "task_ref": source["task_ref"],
+                    "delivery_key": source["delivery_key"], "stale_reason": "draft_pending_actions_require_committed_review_and_readiness"}}
+        return {"typed_exit": "historical_terminal", "output": {"exit_id": "draft_published", "task_ref": source["task_ref"],
+                "delivery_key": source["delivery_key"], "base_ref": base, "candidate_head": head,
+                "repo_ref": repo, "pr_number": pr["number"]}}
     identity = {"task_ref": source["task_ref"], "delivery_key": source["delivery_key"], "repo_ref": repo,
                 "pr_number": pr["number"], "base_branch": task["base_branch"], "head_branch": branch,
                 "remote_ref": "refs/heads/" + branch,
@@ -126,12 +135,7 @@ def plan(root, source, existing, ref):
 
 def initial(context):
     import owner as o
-    ready = context["input"]["profile"] == "delivery_remote_ready_recovery"
-    if ready:
-        tx = o.initial_transaction(context)
-        tx["public_publication"] = context["public_publication"]
-    else:
-        from draft import initial as draft_initial
-        tx = draft_initial(context)
+    tx = o.initial_transaction(context)
+    tx["public_publication"] = context["public_publication"]
     tx["existing_pr_number"] = context["candidate_pr"]["number"]
     return tx

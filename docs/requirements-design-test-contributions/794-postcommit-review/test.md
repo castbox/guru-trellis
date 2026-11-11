@@ -1,0 +1,49 @@
+# #794 实际验证与证据边界
+
+状态：下述定向工程与采用验证已执行，原知识 owners 已实际整合并读回。正式提交后独立 Review、Delivery 和 Task 完成尚未发生。D1 design/implement V1–V7拥有本轮验证合同，本文只承接实际观察，旧raw logs/首次失败保持原义。
+
+## Knowledge 定向验证
+
+- RDT原公开wrapper合同套件 `tests/test_contract.py`：11项通过。覆盖正常impact/proposed、真实writer已写后的current投影、同结果消费、版本/Architecture/freshness绑定及普通缺字段/错阶段；这是确定性组件证据，不证明实际独立Agent判断。
+- Architecture原 `test_promotion.py` 使用真实Git与公开wrapper：初次16项执行发现旧fixture仍声明precheck reviewed状态及phase2/current5前置，以及新增下游case遗漏当前continuation；修订后16项全部通过。实际整合pending、expected-current、真实readback、partial/output-loss同intent、冲突、固定before/committed range和下游pending拒绝都通过原入口验证；该套件只证明确定性目标/候选/readback和消费边界，不证明Agent独立性。
+- Architecture原 `test_contract.py`：首次41项执行中14个失败。已确认受影响旧fixture版本/phase2、branch reviewed_candidate期待、旧文案锁定及managed Python首次selection写入混入无业务写断言；按新合法入口和原层次修订后的41项运行仅余两处失败。原registry owner同步当前manifest inventory后，该单项补验通过；删除旧workflow纯文案锁定、保留真实bootstrap/repair wrapper场景后，该单项补验通过。受影响eval inventory在退休重复phase2独立案例后另行补验通过。完整41项最后一次全套运行是39通过/2失败，两个剩余问题随后定向验证解决；不将此前失败改记通过。
+
+原系统PATH Python缺jsonschema，未进入被测行为；后续均由现有 `resolve-python.sh` 运行managed interpreter。最初原fixture缺 `GURU_UPSTREAM_DELIVERY_SCRIPTS`，也未进入行为。随后使用repo外隔离view复制本checkout真实`.trellis/scripts`和version事实；后取得固定Fork `castbox/Trellis@aa898d090fc27c9ce6145cfa3c787a6f400da4e2`的精确source tar，CLI package version=`0.7.0-castbox.6`，直接使用其`packages/cli/src/templates/trellis/scripts`。公共脚本与本checkout安装交集无字节差异；installed只多两个upstream测试文件。该fixture是API/组件证据，不是正式安装、工具升级或业务采用。一次并行启动定向测试在runtime解析前报runtime_dependency_missing，未进入被测行为；未修runtime，随后同入口顺序执行通过，原失败保留，不推断根因。
+
+本轮四个Knowledge/Planning packages全部JSON可解析、runtime Python内存编译和git diff --check通过。12份完整proposed targets按拟晋升位置检查，未新增无法解析的文件引用；这只证明引用定位，不证明语义充分性或实际晋升。
+
+## V1–V4：实际 producer、consumer 与恢复
+
+Commit 51项、Reconcile 60项、Delivery Review 21项、Publication 47项、Delivery family 5项、content identity 2项定向测试通过。它们执行原公开入口和真实Git；Publication仅以provider端口隔离远端写入，不证明真实GitHub发布。Commit后两个审查槽仍空；原Review调用后才产生真实check/full_review及其predecessor。未审、缺完整结果、HEAD变化和pending-review的发布阻塞按各自入口验证。
+
+Review的当前流程/退休入口11项、迁移wrapper22项、archive11项、legacy5项顺序通过。Check原runtime13项、#775 rollback3项、退休入口2项与legacy5项通过。Review原normal入口和旧normal checkpoint只诊断，不恢复第二条质量审核链。continuity的真实blocked输入经record/check/invoke返回blocked，不产生公共通过槽；两种非法专属pass组合仍拒绝。固定B、真实后继、完整路径、Planning回程、输出丢失和缺步恢复通过组件入口观察；不能据此宣称AI覆盖判断已经执行。
+
+从MIGRATION-794固定完整前驱导出的隔离provider中，旧Commit三项同提交恢复、旧Draft两项已执行副作用恢复通过。当前runtime没有导入旧模块作fallback。真实installed adapter的dirty commit、clean reentry、Review和base continuity均到达原入口并通过。曾出现managed runtime解析前失败的执行不计业务失败或成功，随后顺序补验到达行为并通过；未新增锁或竞态机制。
+
+## V6：真实独立审查与后继
+
+隔离真实Git场景在B已有两个formatter消费者。H新增显式币种能力，但把参数改为必填，两个未改消费者抛出TypeError。首次新独立generic reviewer依次读取固定B的Architecture权威、完整B..H及未改消费者，最后读取需求/Task规划和工程证据。它确定完整检查集后采用适用的原执行事实：新功能单测通过，全量测试有两个消费者错误。原Architecture实际返回fitness_regression，阻止该候选进入通过链；没有为获取Review DTO制造baseline_current。
+
+修复后H2保留单参调用结果和显式币种行为。原全量三个测试真实通过。同一仍独立的reviewer读取完整H..H2、固定B..H2、受影响消费者和当前承诺，采用仍适用工程事实并完成当前九维判断。原Architecture实际返回current/no_change；原Review recorder、checker和public invoke顺序执行，最终返回passed。实际public check以Planning为predecessor，full_review以本次check为predecessor，两个owner均为guru-review-branch，绑定同一个固定候选。
+
+首次receiving Ensure曾返回binding_required；原Branch owner查明已有C4而缺C5，沿公开入口补齐，Ensure/Bind/Selection实际成功后才继续。一个Architecture调用误用文件路径作为stdin carrier，返回invalid_json；fresh re-entry后用原stdin入口成功。失败原义保留，未转换成通过。H2工程结果采用原native命令返回；H的失败日志保持原样。此场景证明实际读取、判断、回退和后继承接，不证明Task创建/Planning、远端发布或生产效果。
+
+## V7：当前发现与采用边界
+
+当前接口及独立输出→唯一consumer的graph四项通过；source package validator通过。七个受影响包的公开eval目录发现成功。Check原eval目录引用退休normal profile，公开发现曾实际报eval_input_variant_unknown。当前catalog已退出这些normal选择，只保一个真实legacy retirement reader case；公开discover与shared run均通过，实际原wrapper返回legacy_controls_retired。确定性观察核实所选gate已退休、原source bytes/mode保留且没有当前quality checkpoint。这是reader/transport组件证据，不是AI或旧quality producer证据。Review native semantic-authoring现使用input2/gate2(schema8)，不再种旧Check或双槽结果。原业务场景、green断言和未改caller保留；定向stage、真实Architecture4与Review recorder/checker/invoke的blocked transport通过。接收AI仍自行判断九维和两judgments，fixture不证明AI审查。原Ensure复现C5缺失后，fixture沿既有caller_owned/not_applicable资源合同补齐；同HEAD实际checkout_resolved，完整定向集成测试通过。历史production-current-v1至v5只作为实验snapshot/hash事实，不选择当前业务workflow；不为本项创建新实验矩阵。
+
+同一个matching临时安装仓库的source/installed graph通过。MIGRATION-794通过原managed source投影，当次安装正文与当次canonical字节一致；其后迁移说明的文字补充不改变受管投影入口，本worktree采用后仍须核对最终正文。Check与Review的installed公开eval发现成功。默认Python bootstrap曾报dependency_install_failed，未到安装；显式选择已验证managed interpreter后原安装到达目标。正常replacement备份按原owner受管provenance与当前目标核对，再由同操作reapply消费，最终status=ok、无conflicts/.new/.bak。未新增clean仓库或平台矩阵；这些结果不等同于本worktree采用。当前Task已按原旧provider执行独立Architecture评估及候选Check负向回退；首张checking续接表和遗漏的活动TaskCommit合同已在原返回实现边界修复，后继candidate4随后由原installed B owner完成fresh Architecture及完整九维候选Check，真实返回candidate_checked并合法回implementing，未写public Check/full_review。
+
+原既有 `adapters/eval/test_branch_authoring.py` 曾仍使用退休input1/Architecture3且缺新版九维及双judgments，独立候选审查识别后经原Architecture负向与Check合法rework修复。现已迁移input2/Architecture4，保helper、FIFO、五次实际invoke/trace、真实implementation_required及原变更路径断言；原既有测试实际1/1通过（113.919s）。Architecture staging曾将当前输入覆写旧delivery3/5；现在保当前delivery4/6、拒绝历史nonplanning自动升级，并保Planning/maintenance独立版本。原nonplanning绑定和current6/Planning版本定向两项实际通过（151.423s），原方法合同重叠选择一项通过。新增transport1/1与上述原既有测试分别陈述，不互相替代。源码validator仍通过43 active/126 commands/181 package tests；这些结果是组件/transport证据，不是本Task的正式提交后Review或实际模型矩阵。
+
+## 本worktree实际整合与 matching 采用
+
+原installed B的Architecture先逐文件核boundary、写入六个完整目标并读回，正式delivery_promotion3返回baseline_current/reviewed_promoted。随后原RDT对六个完整目标同样写入/readback，promotion2正式返回ssot_current。十二目标实际正文均与已审完整proposed逐字一致，工具采用后再核仍一致。上述是旧provider真实合法结果，不改称新版committed Review通过；当前公共phase保持implementing，原Planning accepted保持，check/full_review/readiness仍空。
+
+原guru-upgrade-tools以当前完整canonical local_candidate及固定matching Fork CLI/Core运行。首调用等待在180秒超时并重置Node kernel；原executor仍实际执行到complete，无failure。原同操作resume随后真实返回tools_upgraded（0.7.0-guru.8），未准备第二个操作或重放完成的安装。local_candidate仍明确unverified=[formal_fork_source_lock]，独立Fork锁源核对不能代替完整正式Guru/Fork发布证明。
+
+实际目标自己的resolver/installed validation/native由原tools owner执行；额外显式Task原生读取返回准确D1/current/implementing，check与full_review owner均为guru-review-branch，readiness仍归guru-review-task-delivery。实际installed TaskCommit pre_review_committed discovery解析到唯一新router及constructor/begin_check→Review，未写gate。原dogfood drift命令通过，Claude/Codex/Cursor三平台选择及native/shared投影、workflow与spec匹配；迁移正文最终source/installed字节一致；受管sidecar守卫中无.new/.bak。用户config保持原字节，原tools owner完成peer/common观察保留校验；没有Task迁移。临时matching安装的实际reapply与本worktree同操作输出恢复分别报告，不把后者称为再次reapply。
+
+## 尚未验证
+
+正式本地提交及其后的独立Review尚未发生，当前没有本Task的最终质量通过。新provider不会再执行退休的提交前final Check；真实本地提交后的固定完整候选仍须原Review完成一次独立判断。完整多平台Upgrade/Release矩阵不属于本Task scope；临时Git场景和组件结果不产生本Task的commit、push、PR、merge或Issue关闭事实。

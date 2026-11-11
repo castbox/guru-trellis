@@ -48,14 +48,14 @@ Codex 的 Guru Skill 通过 `.agents/skills/` 公共投影发现，专属包仍�
 无论有无 Task/Delivery，都显式调用 `guru-review-change`，由它完成指定范围的
 只读审核和用户报告，不创建 Task、推进生命周期或生成正式 Guru pass。
 workflow 调用或用户要求正式阶段结果时，才按原前置与完整范围进入
-现有 Check、Branch Review 或 Completion。普通 review 关键词和 Task 存在本身
+提交后完整 Review 或 Completion。普通 review 关键词和 Task 存在本身
 不选择正式门禁。显式需求、概要设计、详细设计和测试计划文档审核按当前对象
 选择专项方法。选择方法唯一见
 [Specialist Review Standards](../../presets/guru-team/spec/workflow/quality-guidelines.md#specialist-review-standards)。
 
 行为测试、因果验证、证据采用和实验停止的共同方法见
 [Test And Validation Value](../../presets/guru-team/spec/workflow/quality-guidelines.md#test-and-validation-value)。
-Author、实施派工、Check 和 Branch Review 在原职责内采用该方法。
+Author、实施派工和提交后完整 Review 在原职责内采用该方法。
 
 Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即使它们是改动文件。
 它们保留现有 Issue、需求专项或项目动议/上游需求审核入口。需求用于判断实现覆盖时，
@@ -66,12 +66,12 @@ Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即�
 workflow 只负责显式调用和消费终端出口。`reviewed`、`blocked` 分别停止在该 owner
 声明的用户响应消费者，不进入正式交付阶段。共同覆盖与结束规则由
 [审核充分性规范](../../presets/guru-team/spec/workflow/review-sufficiency.md) 唯一维护。
-各原审核 owner 在原职责内读取；Check 与 Branch Review 另读
+各原审核 owner 在原职责内读取；提交后完整 Review 另读
 [工程方法组合](../../skills/guru-team/packages/guru-review-change/references/review-method.md)。
 该组合读取 Architecture、current-knowledge 和专题 SSOT，不读取 Check/Branch 的私有阶段方法。独立审核实际执行架构基线及其技术规则适用性判断、业务需求实现覆盖判断，
 报告依据和缺口。正式阶段的独立评估、重审适用性及公共结果仍遵守各自原合同。
 独立 owner 还必须按其本地合同使用不同 subagent 完成不同角度的审核，并核对
-原始证据作最终判断。正式 Check 和 Branch Review 不继承这项本地调度要求。
+原始证据作最终判断。正式完整 Review 不继承该独立只读 owner 的本地调度要求。
 
 Guru Team 拥有流程、完整范围和正式结论；`guru-ai-guides` 的专项 Skills 与同源
 标准包提供项目实际采用的需求/设计/Go-Guru 实现/集成测试计划方法。通用流程
@@ -114,7 +114,7 @@ final promotion 的 Bootstrap 回程，采用三个原 owner 的匹配当前合�
 
 当前知识读写由原 RDT 与 Architecture 维护 Skills 执行。它们共同读取
 [完整单元合同](../../skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)，
-workflow 仅调用原 owners；规划、实施、Check、独立 Review 和晋升消费适用正文。
+workflow 仅调用原 owners；规划、实施、提交后完整 Review 和晋升消费适用正文。
 本仓库实际迁移单元、未迁移范围、旧 Task 读取退出及 matching update/reapply 见
 [MIGRATION-331](../../presets/guru-team/MIGRATION-331.md)。原公共 I/O 保持不变。
 源码修改不代表既有安装已采用，也不证明真实 Agent 行为或成本改善。
@@ -125,12 +125,12 @@ Issue 创建与修订共用原 Clarify package 的
 保持原编排，不复制内容规则。原 preset 分发正文与去敏教学示例，已有项目须
 采用完整匹配安装。示例、投影一致或检查通过不证明实际写作与外部回读完成。
 
-首次完整候选 Check 审核隔离贡献和完整拟写正文；`candidate_checked` 只进入
-原维护 owners 的最终整合。实际晋升后由 implementation 重建 candidate/begin_check，
-再完成最终 Check、TaskCommit 和完整 committed Review。Ready/Publication 不接受
-未晋升候选。普通知识晋升保留稳定 authority identity，根导航仅在入口自身合同实际变化时写入，
-不要求全局版本递增。当前 schema/consumer 成套切换和三类在途恢复见
-[MIGRATION-638](../../presets/guru-team/MIGRATION-638.md)。源码变更不证明安装采用或真实 Agent 验证完成。
+原知识 owners 在工程自检后、提交前整合必要文档并读回；整合事实等待提交后独立审核。
+原 `guru-review-branch` 在固定提交上一次完成 Check 与 Branch Review 的全部适用职责，
+包括一次实现后独立 Architecture 判断，再由原 Delivery Review 记录 readiness。
+普通晋升保留稳定 identity、single-writer 和实际 expected-current/readback；
+当前与在途采用边界见 [MIGRATION-794](../../presets/guru-team/MIGRATION-794.md)，历史来源和原验证截止点保持。
+源码变更不证明安装、实际 Agent 行为或外部采用。
 
 并行知识采用稳定入口、限定目录及稳定 ID 查找完整正文；独立主题不在共享入口逐项登记。
 共同方法、既有项目切换条件、未迁移范围、在途最终整合与旧写退出见
@@ -139,7 +139,7 @@ Issue 创建与修订共用原 Clarify package 的
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)
 与同 package 的 `templates/` 定义整体 Task PRD 和 Delivery 三正文；原 Clarify、
-Wording、Approval、实施、Check、Delivery Review 与 Completion 在各自职责内实际
+Wording、Approval、实施、完整 Review、Delivery Review 与 Completion 在各自职责内实际
 读取同源合同和必要引用。workflow 只编排和定位，不复制正文规则或改变公共 I/O。
 `examples/planning-body/` 是带来源与修订过程的去敏教学材料，不是实际 V1–V7
 执行证据。验收分别报告真实 Agent 写作/审核、确定性检查和安装投影；一个代表平台
@@ -211,8 +211,8 @@ The Task has overall scope/completion responsibility and no development-status r
 Before implementation, an approved plan's resolved document conflict is owned
 by [Reconcile](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#pre-implementation-resolved-baseline).
 Its baseline integration returns the same Task generation and Delivery to
-Activation; business Check follows implementation. The post-implementation
-resolved-Check/full-review path remains separately owned.
+Activation; engineering preparation follows implementation. Actual resolved Git
+integration and the complete committed review remain with their original owners.
 
 The `guru-team` canonical workflow is the global AI routing contract. The
 canonical source is `workflow.md`; an installed `.trellis/workflow.md` is a
@@ -241,19 +241,21 @@ matching 安装、`fresh_final_review` 的窄后继含义及同 Delivery 在途�
 [MIGRATION-637](../../presets/guru-team/MIGRATION-637.md)。源码修改不代表活跃 Task 已迁移，静态分发不证明实际
 Agent 行为或耗时改善。#636 已有接口需命中组合验证，#638 未来接口明确未验证。
 
-## 提前 Draft 与最终门禁
+## 提交后一次独立完整审核
 
-原 TaskCommit 支持无 Check 的有界早期提交及已提交候选 reentry。原 Publication
-创建/更新同一 Draft，并在更新 Ready PR 前先退回 Draft。Draft 输出只启动固定 B/H
-的独立内容分析和风险匹配 HEAD 验证，不写最终 PublicationFact。最终 Check、正式
-full_review、readiness、Ready 和 Merge 保持完整门禁。早期反馈不要求最终文档晋升。
-成套 I/O、在途状态、私有事务 2.0 与安装/恢复合同见 [MIGRATION-636.md](../../presets/guru-team/MIGRATION-636.md)。
+当前顺序是实现/工程自检、必要知识整合、本地提交、一次独立完整 Review，
+然后原 Delivery Review/readiness 与 Publication。未独立通过前不新 push、不创建 PR。
+原 TaskCommit 的待审提交和干净重入保留精确事务、hook 与同提交恢复。
+早期 Draft 新发布路径退出；既有 PR/HEAD 和已执行动作由原 owner 准确恢复，
+pending 新远端动作回当前审核/readiness。完整版本、退休入口和在途处置见
+[MIGRATION-794](../../presets/guru-team/MIGRATION-794.md)；不把旧 pass 机械转换为新通过。
 
 ## Current Lifecycle
 
 ```text
 Intake -> task identity/scope -> Delivery creation -> Delivery Planning -> implementation
-  -> Task Commit -> Branch Review
+  -> engineering self-check / knowledge integration -> local Task Commit
+  -> one independent complete committed Review
   -> Delivery Review -> Publish Delivery -> Merge Delivery
   -> Completion -> (remaining work / another Delivery / Closure)
   -> Finish -> Cleanup
@@ -558,6 +560,6 @@ AI 自行新建 linked worktree 时，先读取 live Git topology 与确证 prim
 工具投影并验证 drift/sidecar，保留 Task/session 和用户配置。完整多平台安装、升级及 Release
 矩阵不属于本项验证范围。
 
-Check 对所有范围内规划修复传递真实 actions，原结果恢复使用同 owner 的独立入口。
+当前完整 Review 对范围内规划修复传递真实 actions；原旧 Check rollback 仅通过显式恢复入口承接。
 完整 matching 采用、已回退旧现场、缺来源 blocked 及验证边界见
 [MIGRATION-775](../../presets/guru-team/MIGRATION-775.md)；恢复不生成 Planning 或 Check pass。

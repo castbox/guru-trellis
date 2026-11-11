@@ -51,7 +51,8 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
           range_authority_body: str | None = None,
           fixture_files: dict[str, str] | None = None,
           candidate_files: dict[str, str] | None = None,
-          acquisition=None, fact_only: bool | None = None) -> OwnershipCurrent | None:
+          acquisition=None, fact_only: bool | None = None,
+          review_candidate: bool = False) -> OwnershipCurrent | None:
     fixture = fixture.resolve()
     package = package.resolve()
     stateful = request.get("case_id") in STATEFUL_CASES if fact_only is None else fact_only
@@ -251,14 +252,18 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
     runtime_target = fixture / '.trellis/guru-team/scripts/bash/run-skill-command.sh'
-    owner_runtime = load_package_owner_runtime(runtime_target, SKILL)
+    # The Review consumer reuses business facts and Planning prerequisites only.
+    # Its fixture must never load the retired independent Check owner.
+    owner_runtime = load_package_owner_runtime(
+        runtime_target, "guru-approve-task-plan" if review_candidate else SKILL)
     compose_production_fixture_runtime(runtime_target, owner_runtime)
     compose_production_owner_command_runtime(runtime_target, owner_runtime)
     activation_options = ({'preserve_existing_constitution': True}
-        if seed_bodies is not None or range_authority_body is not None else {})
+        if review_candidate or seed_bodies is not None or range_authority_body is not None else {})
     if not stateful:
-        public['planning_accepted_result_id'] = activate(
-            owner_runtime, fixture, task, public['delivery_key'], **activation_options)
+        planning_result = activate(owner_runtime, fixture, task, public['delivery_key'], **activation_options)
+        if not review_candidate:
+            public['planning_accepted_result_id'] = planning_result
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-qm", "stage inclusive range requirements and test fixture")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", run_git(fixture, "rev-parse", "HEAD"))
@@ -336,6 +341,15 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         })
     (evidence / "diff.patch").write_text(run_git(fixture, "diff", "HEAD") + "\n")
     # Only upstream call identity is prepared. Its semantic result is AI-authored.
+    if review_candidate:
+        # No Check DTO, Architecture judgment or quality result is staged.
+        write_json(fixture / FACTS, {
+            "task_ref": task_ref, "delivery_key": public["delivery_key"],
+            "planning_root": directory.relative_to(task).as_posix(),
+            "required_reads": sorted([*files, *spec_paths,
+                "docs/phase2-evidence/validation.json"]),
+        })
+        return resources
     architecture_schema = json.loads((
         package.parent / ARCHITECTURE / "schemas/public-input-impact.schema.json"
     ).read_text(encoding="utf-8"))

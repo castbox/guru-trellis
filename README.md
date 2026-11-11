@@ -134,7 +134,7 @@ workflow `--create-new` 只生成预览；实际替换使用同一 provider 的�
   可明确说“这次走 task-free”；创建资源和 Git/GitHub 副作用仍单独确认。
 - **独立审核**：说明要审核的改动、分支、PR 或路径。
   [guru-review-change](trellis/skills/guru-team/packages/guru-review-change/SKILL.md)
-  承接代码、测试覆盖和需求实现审核。正式 Check、Branch Review、Completion
+  承接代码、测试覆盖和需求实现审核。正式提交后完整 Review、Completion
   由 workflow 调用或明确的正式阶段请求进入。
 - **交付收口**：使用当前平台的 `guru-finish-work` 入口，由 workflow 接续交付和完成步骤。
   一个 Delivery 合并后，Task 可能仍有剩余工作。

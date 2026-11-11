@@ -1,3 +1,27 @@
+# Current Review validation
+
+Run test_postcommit_review.py with TRELLIS_DELIVERY_API_COMMON pointing to the
+matching installed upstream common directory. It exercises real Git, current
+Review recorder/invocation, two required results, exact recovery, fixed-base
+successors, bounded continuity and planning rollback. Semantic judgments are
+fixtures; these tests do not prove independent AI review or native Architecture.
+
+The migrated test_contract.py wrapper cases use actual schema2/Planning and the
+current Delivery candidate, findings and continuity entries. Its large-tree
+chain uses regular blobs and an executable. test_tree_identity.py independently
+checks committed symlink/gitlink reader semantics. That unit evidence does not
+claim that the public Candidate constructor supports the old symlink fixture.
+Old normal Task calls/checkpoints are checked only for their retirement
+rejection; fixed old providers remain the owners of their historical behavior.
+
+Run test_promotion_alignment.py for the current input2.0 and passed2.0 narrow
+alignment producer and actual Delivery Review consumer. Original full coverage
+plus its reviewed delta remains a semantic responsibility.
+
+The source-private performance harnesses below describe their pinned pre-794
+chain. They are historical diagnostic tools, not current development/acceptance
+entries. Current correctness tests use the single post-commit producer above.
+
 # Bounded continuity benchmark
 
 `benchmark_continuity.py` is a source-private integration harness using the

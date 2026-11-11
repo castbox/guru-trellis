@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-branch-input-delivery-planning-stale-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "delivery_key",
+    "original_review_input"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_planning_stale_recovery"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "original_review_input": {
+      "$ref": "public-delivery-branch-review-input-2.0.schema.json"
+    }
+  }
+}

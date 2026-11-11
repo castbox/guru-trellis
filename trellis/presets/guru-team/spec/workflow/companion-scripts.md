@@ -75,8 +75,10 @@ a GitHub-error or business Delivery/Completion route.
 exact Chinese `Refs`-only PR payload. Its normal public entry is
 `invoke-guru-review-task-delivery`; record/check are owner-local diagnostic and
 test commands. A checked `ready` goes only to `guru-publish-task-delivery`.
-Final Ready consumes that result. Early Draft consumes its own exact candidate
-input without readiness. That owner previews the exact remote/PR action with
+Current new remote actions, including Draft creation, require the committed
+independent Review and this readiness result. Old early-Draft operations recover
+only through the complete pinned predecessor provider under MIGRATION-794.
+The Publication owner previews the exact remote/PR action with
 `preview-task-delivery-publication`, obtains current-dialogue confirmation for
 remote mutation, and invokes `invoke-guru-publish-task-delivery`. Its private
 transaction binds push, PR metadata and Draft/Ready recovery without archiving
@@ -622,33 +624,40 @@ manifest rather than a historical fixed package count; the retired
 workflow-level `invoke-stage0-skill.sh` compatibility entry does not own or
 dispatch a package command.
 
-Planning/check invocation validates the selected closed public profile,
-materializes the current owner input in ignored runtime state, calls the
-existing owner recorder and checker for `task_ref`, and selects the actual exit
-only from checker-passed owner evidence. Commit invocation consumes the minimal
-Phase 2 DTO plus fresh AI-authored path classifications, structured commit
-message fields, and semantic result. A deterministic builder rereads the
-current task, requirement/source authority, HEAD, base, dirty snapshot, sequence and Phase 2 evidence;
-constructs the ignored-runtime `guru-task-commit-candidate-5.0`; canonicalizes
-the complete message; runs the shared parser; and calls the exact executor only
-for checker-passed `committed` semantic results under current dialogue-local
-authority.
-User authorization remains dialogue-local and never enters the
-public input, candidate, result, or archive.
+Planning invocation validates its selected closed public profile and uses its
+original recorder/checker after the AI Gate. Current development no longer
+runs an independent pre-commit Check. Task Commit public aggregate 3.0 selects
+`delivery_pre_review_commit` or `delivery_pre_review_committed_reentry`.
+Both require applicable accepted Planning, implementing phase, fixed B,
+engineering validation and necessary knowledge integration/readback. Neither
+accepts check_result_id or cross-reads a Check private checkpoint.
 
-The builder may return `revision-required` or `blocked` from the caller-owned
-route intent before Git mutation. A `committed` result is projected only after
-the executor returns a committed result and current HEAD equals its commit SHA.
-Public output is exactly `exit_id`, `task_ref`, `base_ref`, and
-`branch_review_commit`; candidate/result bodies remain private.
+Dirty commit prepares one ignored-runtime `delivery-4.0` candidate with
+`commit_kind=pre_review`, fresh AI path classifications, structured message
+and semantic candidate review. After any necessary current-dialogue Git
+confirmation, public `invoke-guru-create-task-commit --candidate-artifact`
+reuses the exact executor. The private result receipt is `delivery-3.0`.
+Clean committed reentry instead uses regular JSON `--input` and `--owner-result`
+locators, with at most one stdin object. It verifies the committed nonempty
+fixed B..HEAD candidate and clean business state without staging, hooks or a
+new commit. Authorization stays in the dialogue and never enters public input,
+candidate, receipt or archive.
 
-Public consumer probes for planning self-reentry, check-to-commit, and commit
-self-reentry consume only the producer's minimal DTO to build the declared
-seed. Fresh AI-owned authoring is loaded from the exact target-package example
-for validation/probe purposes, never synthesized by runtime. The seed and
-authoring objects are validated separately and merged without overwrite before
-the target wrapper is invoked; no producer gate/checkpoint/candidate artifact
-is read to fill the target input.
+The builder may return `revision-required` or `blocked` before Git mutation.
+`pre_review_committed` projects only task_ref, delivery_key and
+branch_review_commit after the actual commit and live HEAD verify. Candidate
+and receipt bodies remain private. Its sole consumer,
+`guru-pre-review-commit-router`, binds the implementation Candidate and
+begin_check before independent Review. No Commit output enters Publication.
+
+Consumer probes consume only each producer's minimal DTO. Fresh AI authoring
+comes from the exact target-package example for probe/validation purposes,
+never from runtime synthesis. Seed and authoring validate separately and merge
+without overwrite. No producer-private gate/checkpoint/candidate fills another
+Skill's input. Branch Review owns both actual check and full_review projections
+from one independent committed review; its recorder/checker receipts remain
+non-formal. Legacy Commit final/draft profiles and early Draft analysis have
+no current execution fallback.
 
 Because the installed runtime is Python-standard-library-only, 1.3 contract
 validation implements a recursive closed subset of Draft 2020-12, not
@@ -1116,57 +1125,58 @@ Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
-Task work commits use three deterministic entrypoints.
-`prepare-task-commit` writes and validates the next ignored-runtime candidate,
-canonicalizes its structured Chinese Conventional Commit message, and runs the
-shared `validate_commit_message()` parser before the commit action is shown.
-`check-commit-messages --candidate-artifact <ignored-runtime-path>` repeats
-schema, task, HEAD, complete dirty snapshot, path classification, exact stage
-set, message, parser, and Git-operation-state validation. `create-task-commit`
-accepts only the current schema 3.0 candidate; every other shape fails closed.
-The range form of `check-commit-messages` is standalone diagnostics only;
-Branch Review, Delivery Review/Publish/Merge, Completion, and Finish do not
-consume it or use commit
-subject/body/`Refs` as a freshness gate.
+The normal Task Commit path uses one `prepare-task-commit` followed by one
+public invocation with `--candidate-artifact`. Preparation writes and validates
+the current private `delivery-4.0` candidate, canonicalizes its structured
+Chinese Conventional Commit message and runs `validate_commit_message()`.
+The public invocation reuses the exact executor's authoritative validation;
+it does not add a duplicate compatibility-check call. Stable private
+`check-commit-messages --candidate-artifact` and `create-task-commit` remain
+available for diagnostics, tests and bounded recovery. Other candidate shapes
+cannot start current execution. The range form of message checking is standalone
+diagnostics; downstream Review/Delivery/Completion/Finish do not use commit
+subject/body/Refs as freshness authority.
 
 The executor materializes exact reviewed blobs/modes in an isolated index and
-temporary detached worktree at the reviewed parent, then invokes `git commit
---cleanup=verbatim -F` so `pre-commit`, `prepare-commit-msg`, `commit-msg` and
-`post-commit` receive normal Git arguments and the exact transaction
+temporary detached worktree at the reviewed parent. It invokes
+`git commit --cleanup=verbatim -F` so pre-commit, prepare-commit-msg, commit-msg
+and post-commit receive normal Git arguments and the exact transaction
 HEAD/index/worktree/message view. A transaction-local hooksPath proxy forwards
-to the repository's configured hook path and records objective exit codes; it
-does not replace hook behavior or decide whether a mutation is allowed.
+to the repository's configured hook path and records objective exit codes.
+It does not replace hook behavior or decide whether mutation is allowed.
 
 Before live-ref publication, the executor verifies hook exits, unchanged
-message-file bytes, transaction index/worktree state, parent, raw commit-object
-message, committed paths, complete tree, gitlink identities, candidate bytes,
-live worktree, operation state, branch ref, and semantic live index preimage.
+message-file bytes, transaction index/worktree, parent, raw commit message,
+committed paths, complete tree, Gitlink identities, candidate bytes, live
+semantic dirty snapshot, operation state, branch ref and semantic index preimage.
 Any hook-added tracked/untracked path, rename, deletion, stage/unstage,
 exact-path mutation, mode drift or message rewrite fails closed. Rename sources
-inherit deletion authority; copy sources do not. A non-deleted gitlink is
-written with `git update-index
---cacheinfo` from the reviewed `gitlink_head`, never reread through broad
-`git add`.
+inherit deletion authority; copy sources do not. Non-deleted Gitlinks use
+`git update-index --cacheinfo` with captured parent `index_blob`, never child
+HEAD or broad git add. Staged Gitlink deletion uses index absence even when a
+child directory remains. Replacements use the resulting parent entry type.
 
-Live-worktree preservation uses the semantic dirty snapshot rather than raw
-filesystem metadata. The isolated index is transaction-temporary, and every
-success/failure path must remove the detached worktree registration. A cleanup
-failure returns bounded recovery facts, including the created commit identity
-when Git already created it; it is never silently ignored.
+The isolated index is transaction-temporary. Every success/failure path removes
+the detached worktree registration. Cleanup failure returns bounded recovery
+facts, including created_commit_sha when Git already created a commit.
+A temporary commit is not proof that the live branch advanced.
 
-After isolated validation, standard Git compare-and-swap
-`git update-ref <ref> <new> <old>` publishes the commit and `git reset --mixed
---quiet HEAD` refreshes the live index. The runtime does not create its own
-lock, atomic-replace, rollback, linearization, or concurrency protocol. Any
-failure before `update-ref` leaves the live ref/index untouched. When the
-temporary transaction has already created a commit, including `post-commit`
-failure or mutation, the failure output includes that created commit identity
-while retaining the candidate and Phase 2 checkpoint. A failure after the
-conditional ref advance uses `transaction_stage=live_ref_published` and reports
-the same commit for bounded same-plan recovery instead of attempting a custom
-rollback. On success the candidate is
-removed and immutable Git history remains the source for parent, message, paths,
-and tree facts.
+Before `git update-ref <ref> <new> <old>`, the normal invocation writes its
+private `delivery-3.0` receipt, binding the candidate locator, Task/base/ref,
+parent, commit tree and raw-message digest. After conditional ref advance,
+the executor refreshes only exact live index paths and verifies semantic
+mode/blob/stage/path entries. Unrelated paths and index state remain preserved.
+It owns no custom lock, atomic-replace, rollback or concurrency protocol.
+
+Failure before ref advance leaves the live ref/index untouched and retains the
+candidate. A created transaction commit is reported even if a hook fails.
+Failure after ref advance reports `transaction_stage=live_ref_published` with
+the same commit identity. Candidate plus receipt recover that exact published
+commit, live-index postconditions and cleanup without another hook run, commit
+or ref update. A changed ref, parent, tree or message fails closed. Success
+retires the candidate and call-local semantic authoring; next complete prepare
+retires the prior receipt. Git remains the source for parent/message/paths/tree.
+No Check checkpoint is read, retained or deleted by Task Commit.
 
 Neither command classifies scope, authors message semantics, chooses a route,
 pushes, rewrites published history, stashes, amends, rebases, force-updates, or
@@ -1392,66 +1402,89 @@ an implicit protocol embedded in free-form summary text.
 
 ## Branch Review Recorder And Checker
 
-Aggregate public input schema 4.0 dispatches two ordinary profiles: the full
-`branch_review` schema 2.0 profile and the bounded `base_continuity`
-schema 2.0 profile. Both remain valid and unchanged. Aggregate public input
-schema 5.0 retains those two ordinary profiles unchanged and adds the independent
-read-only `archived_review` schema 1.0 profile. All resolve current objective
-facts before recording; archived review preserves completed archive state.
+Current Delivery aggregate 4.0 and legacy profile index 4.0 select
+`delivery_branch_review` input 2.0, bounded continuity 2.0 and current declared
+recovery/alignment profiles. Branch Review input binds mode, task_ref,
+delivery_key, base_ref, branch_review_commit and review_intent. It has no prior
+check_result_id. Both public check/full_review roles are guru-review-branch.
+The first reviewer is newly opened and did not author or implement the candidate.
 
-### Ordinary Profiles
+### Current Delivery Profiles
 
-The following recorder/checker rules apply only to `branch_review` and
-`base_continuity`; their existing behavior is unchanged.
+Before Task narratives, the reviewer reads the fixed B Architecture Baseline,
+constitution and change contract, then H/full diff and affected unchanged
+consumers. It then reads selected Delivery plans, root accepted scope, current
+source authority, acceptance and contributions. The same independent invocation
+performs committed authority-first Architecture assessment and complete Review.
+It judges all nine adequacy dimensions and current evidence; commands and filled
+fields cannot substitute for this semantic judgment.
 
-`review-branch` records only an already completed AI semantic review. It may
-rebuild task/worktree/base/HEAD/range, planning, Phase 2, requirement/source
-authority, commit-evidence, Docs SSOT, working-tree, hash, schema and freshness
-facts, then records only current gate schema 7.0 as `review-gate.json` at the exact task-owned
-owner-private ignored-runtime checkpoint and return only a minimal receipt.
-It must not decide
-scope, scenario class, qualification, severity, reviewer sufficiency, route, or
-pass.
+After the AI Gate, `review-branch` records only that completed judgment using
+private `delivery-review-gate-2.0`, schema_version 8.0. Semantic authoring includes
+candidate_classifications, semantic_review, delivery_review,
+verification_evidence={evidence}, adequacy_review, actual gate_judgments.check
+and .full_review outcomes/summaries, and planning_revision (null unless stale).
+The recorder derives objective Task/Delivery, fixed B/H, scope/plan/Planning/
+candidate and rollback bindings. It does not decide qualification, scope,
+severity, sufficiency, route or pass, and does not add reviewer process metadata.
 
-`check-review-gate` revalidates the same objective facts, finding lifecycle,
-`introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 7.0 is accepted for these ordinary profiles;
-schema 6.0 or older fails closed as
-stale without projection, dual-read, rewrite, or migration. The checker
-resolves the exact checkpoint from task identity. The
-public package wrapper accepts only closed public input, reruns the checker,
-reads the actual exit, and emits exactly one declared DTO. It never accepts a
-caller-authored gate or checker result. Successful `passed`,
-`continuity_passed`, and zero-payload stop `blocked` projection retires the
-checkpoint; active re-entry routes retain that one checkpoint for deterministic
-same-owner re-entry.
-`expected_exit` is never a wrapper input, owner-result field, or route selector.
-The checker output is deliberately non-formal: it returns
-`status=owner_checkpoint_validated` and `formal_exit=false`. This proves only
-that the owner-private checkpoint is structurally and objectively current; it
-must never be reported as Branch Review passing. Only the public
-`scripts/invoke.sh` output is a formal Branch Review exit.
+`check-review-gate` revalidates those objective facts, reviewed content,
+finding lifecycle and introduced_head/fix_head/closure_head, freshness and
+selected exit. Recorder/checker receipts are non-formal; checker returns
+status=owner_checkpoint_validated and formal_exit=false. Only public invoke
+emits one formal typed DTO. It records actual upstream Check with Planning
+predecessor, then actual full_review with that Check predecessor. Both judgments
+must exist from the same real review; neither result is synthesized from the
+other. Passed 2.0 requires both exact current results and all semantic conditions.
+There is no independent development Check or second checkpoint.
+
+A failed partial projection retains the single gate. Same-candidate retry
+records only missing results. After checkpoint retirement, matching actual
+public results recover lost stdout. Missing semantic coverage requires actual
+review. Implementation findings clear check/full_review/readiness and return
+through original implementation, integration/readback, validation and successor
+commit. Retained-gate retry recovers the same handoff without another rework.
+
+Planning-stale rollback captures original bindings before clearing
+planning/check/full_review/readiness. Current-scope omissions return
+reapprove_plan with concrete revision_actions and no proposal_refs. True scope
+change returns clarify_requirements with proposal_refs. Explicit
+`delivery_planning_stale_recovery` takes original_review_input and this retained
+gate to return the same handoff without another rollback/pass. Original #775
+Check rollback recovery stays its separate explicit standalone entry.
+
+Continuity 2.0 binds its exact prior review and real committed integration
+pair/tree. It stays bounded, authors no full-review dimensions/two pass judgments
+and records no new check/full_review. Alignment 2.0 requires real prior passed
+2.0, all actual delta/affected-consumer coverage and current nine dimensions/two
+conclusions for projection. It remains limited to promotion references/status.
+Changed obligations or missing coverage return to the appropriate original owner.
+`expected_exit` is never wrapper input, owner-result field or route selector.
+Old ordinary gates are not converted or read as current; real old operations use
+the complete matching pinned provider under MIGRATION-794.
 
 ### Archived Review Profile
 
 For `archived_review`, the same recorder/checker/invocation commands use the
 separate `guru-archived-review-gate-1.0` schema (version `archived-1.0`), not
-ordinary gate schema 7.0. It binds the current base B, archive HEAD A, PR identity
+current Delivery gate schema 8.0. It binds the current base B, archive HEAD A, PR identity
 and title/body snapshot to the fresh AI semantic review. Its only exits are
 `archived_review_passed` and `blocked`; both retire the checkpoint after
 validated projection. This read-only profile does not restore the task or
-mutate the archive, PR, or Issue. It does not loosen ordinary gate schema 7.0
-validation, blocked semantics, or re-entry behavior.
+mutate the archive, PR, or Issue. It does not loosen current Delivery gate validation, blocked semantics or
+re-entry behavior.
 
 ## Delivery Review, Publish, And Merge Invocation
 
-The active review owner uses `record-task-delivery-review` and
+After current full_review, the active Delivery Review owner uses
+`record-task-delivery-review` and
 `check-task-delivery-review` only after its AI semantic gate; the normal wrapper
 is `invoke-guru-review-task-delivery`. Review owns the current independently
 deliverable slice, remaining task work, evidence, findings, PR title/body and
 `Refs`-only effect. The checker validates objective freshness without selecting
-semantic sufficiency. A checked `ready` hands the minimal DTO to Publish; it
-does not push, create a PR, or inspect another owner's private checkpoint.
+semantic sufficiency. A checked `ready` hands the minimal DTO to Publish. New push/PR actions require
+this readiness and the current independent Review. Delivery Review does not
+push, create a PR or inspect another owner's private checkpoint.
 
 Publish owns `preview-task-delivery-publication`,
 `record-task-delivery-publication-gate`,
@@ -1791,14 +1824,19 @@ The existing maintenance transport forwards prepareArchivedTaskResume and accept
 
 ## Early Draft original-owner runtime (#636)
 
-The original TaskCommit exact executor consumes current delivery-2.0 draft/final
-candidate and receipt unions. Draft has no Check or phase2 anchor; final retains
-real Check bindings. The original Publication executor uses transaction 2.0
-action/terminal, confirms Draft before pushing early candidates, and writes
-PublicationFact only for the final Ready terminal. Same-plan readback recovers
-actual completed writes without repeating push/create/edit/state conversion.
-The original private migration command is the only reader of a supported old
-1.0 transaction; current execution has no fallback. Early Branch Review's
-public invocation validates call-local completed analysis and emits its minimal
-DTO without writing full_review or retaining a review checkpoint. Markdown
-owns scope, content/evidence sufficiency, findings and route judgments.
+Current Task Commit uses public aggregate 3.0, private delivery-4.0 pre_review
+candidate and delivery-3.0 receipt. Its minimal pre_review_committed output goes
+to the fixed-candidate router, implementation constructor/begin_check and one
+independent Review. The same Review records real check/full_review; original
+Delivery Review then owns readiness. No new push or PR creation occurs before
+those gates. Current pre-review Commit and Review do not expose early Draft
+analysis or Publication exits.
+
+Old final/draft candidates, early analysis and Publication transactions belong
+to the complete matching pinned predecessor provider or original migration owner
+under MIGRATION-794. Recover actual completed push/create/edit/state actions
+without repeating them or converting old pass into current review/readiness.
+An old pending remote action stops at that migration boundary and returns through
+the current committed Review/readiness path before new execution. Current
+runtime never cross-reads old private state or silently falls back to it.
+Markdown owns scope, sufficiency, findings and route judgments.

@@ -78,17 +78,19 @@ Public exits are `candidate_ready`, `ssot_current`, `sync_required`,
 - `bootstrap_foundation`: establish, reuse, or migrate one versioned three-layer
   authority; verify provenance, navigation, traceability, and Architecture
   Baseline inheritance.
-- `task_impact_sync` 2.0 (`schema_version=2.0`, `stage=phase2`): decide no-change,
+- `task_impact_sync` 3.0 (`schema_version=3.0`, `stage=phase2`): decide no-change,
   isolated complete proposed definitions, repair, or current-task revision.
   A complete changed proposal returns `candidate_ready`; do not write shared
   current here or call the proposal already current. No-change retains
   `ssot_current` and creates no empty contribution.
-- `promotion` 2.0 (`schema_version=2.0`, `stage=final_integration`): after
-  candidate Check, reread one contribution and the real current target, then review
+- `promotion` 3.0 (`schema_version=3.0`, `stage=final_integration`): after approved Planning, complete implementation and genuine engineering
+  verification, reread one contribution and the real current target, then review
   traceability, subtraction, version/history, and Architecture inheritance
   before integrating it into the complete current definitions. The original
   owner writes and reads back the real files before selecting `ssot_current`;
   the wrapper only validates a completed judgment and performs no document write.
+  This is an integration fact pending committed independent review, not an
+  implementation quality pass. The current router next enters TaskCommit.
 - `repair`: repair incomplete, stale, conflicting, version, navigation, or
   migration state without expanding business requirements or unrelated history.
 
@@ -108,7 +110,7 @@ Compute `input_sha256` using the exact public
 
 `candidate_ready` hands only contribution and applicable authority locators/version
 to `guru-requirements-design-test-ssot-current-router`, which routes the complete
-proposed definitions into candidate Check. It is not a current-authority update.
+proposed definitions to the original maintenance owner for precommit integration. It is not a current-authority update.
 `sync_required` re-enters this Skill through a target-authored `promotion`
 input. `revision_required` returns to the current planning/implementation
 owner. `baseline_incomplete` returns to bootstrap or controlled repair.

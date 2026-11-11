@@ -8,7 +8,7 @@
 
 ## 稳定设计身份
 
-`DES-007` 保留RDT/Architecture各自唯一authority与最小spec projection。`DES-026..034` 的双维合同、constitution、责任/check/contribution边界继续由Architecture正文和原package拥有；本单元迁移其日常知识读取/适用性/晋升关系，不改写项目具体架构答案。`DES-027` 的当前晋升顺序由D638/ADR-KNOWLEDGE-FINAL-INTEGRATION承接，`DES-033` 的无条件current推进stale片段按ADR-028/R567替代，其余有效条件保持。
+`DES-007` 保留RDT/Architecture各自唯一authority与最小spec projection。`DES-026..034` 的双维合同、constitution、责任/check/contribution边界继续由Architecture正文和原package拥有；本单元迁移其日常知识读取/适用性/晋升关系，不改写项目具体架构答案。`DES-027` 的当前晋升顺序由D638/ADR-POSTCOMMIT-INDEPENDENT-REVIEW承接，`DES-033` 的无条件current推进stale片段按ADR-028/R567替代，其余有效条件保持。
 
 ## D331-01 / CON331-01：完整单元与薄导航
 
@@ -32,15 +32,15 @@
 
 ## D331-04 / CON331-04：晋升和阶段适用性
 
-原 RDT/Architecture semantic owners 及四 profiles 保持。RDT impact/promotion2.0、Architecture 非Planning5.0/Delivery3.0、Check private6.0 与直接 consumers 成套采用新时机；Planning3.0/Delivery1.0、bootstrap/repair 不改义。真实 API版本独立于稳定知识身份。精确 source 使用完整 Git revision/locator；局部目标内容一致性不成为 semantic approval或全链 authority。
+原 RDT/Architecture semantic owners 及四 profiles 保持。RDT impact/promotion3.0、Architecture 非 Planning6.0/Delivery4.0 与直接 consumers 成套采用。Planning3.0/Delivery1.0、bootstrap/repair 保原合同；真实 API 版本独立于知识身份。精确 source 使用完整 Git revision/locator，局部一致性 token 不成为 semantic authority。
 
-`D638-02 / CON638-CANDIDATE`：implementation 先以固定 B、实际 HEAD 和全量 paths 调原 candidate/begin_check（implementing→checking）。独立 Architecture phase2 读 immutable before authority、完整 implementation 和 proposed targets，可返回真实 reviewed_candidate。RDT phase2 impact 的 candidate_ready 定位完整隔离贡献，no_change保持实际空影响。原 Check delivery_candidate_check 仍完整检查九维与受影响未改 consumers。通过时其原 role 以 rework(target_role=implementation, affected_results=[readiness]) 返回 implementing，不写 public Check gate，再发 candidate_checked；不清 Planning 或真实历史，不授权旧结果用于当前候选。
+`D638-02 / CON638-CANDIDATE`：实施完成全部代码、完整隔离 targets 及真实工程结果，RDT impact 的 candidate_ready 交原维护方，不进入独立 candidate Check。Planning 独立 candidate/final Architecture 保留。只有实质边界扩张才刷新 implementation discovery；它不成为普通整合的重复前置。
 
-`D638-03 / CON638-INTEGRATION`：唯一 workflow consumer 调原两 promotion owners 的 final_integration。一次固定真实目标 branch/commit，只读写命中单元及必要关系/导航；相同单元比较适用 before、本方完整 proposed 和真实 target，保留仍有效条件与双方变化。组合改变原已审内容时按唯一 Candidate Applicability And Coverage 补独立审核全部差额、组合语义及未改消费者，前提/义务变化回最早原owner。没有真实 Git阻塞不 merge/rebase或追目标。original owners 写完整 reviewed组合并读回，不从期望 DTO 推断实际成功。
+`D638-03 / CON638-INTEGRATION`：原两维护 owners 在 final_integration 一次固定真实 target branch/commit，读 applicable before、完整 proposal、实际 current 和必要关系/导航，保留双方有效条件。普通 mismatch/partial/output-loss 留原 writer；completed读回、pending只补未冲突内容、conflict或intent不唯一停止。RDT 原写作仍核完整三层 trace 和 Architecture inheritance，不由 wrapper 写正文。Architecture 以 before_authority/candidate、promotion_targets、post_candidate 和实际 readback 绑定结果，只返回 integrated_pending_review；项目 checks 的独立实现判断留提交后 Review，不伪造 precommit review。
 
-实际写入后 implementation 以同 B、实际 HEAD 和全部实际差额重新 candidate/begin_check（implementing→checking）。最终 Architecture/Check 使用新 content_ref；旧写前 candidate 不能验证 after bytes。仅最终 Check record_gate（checking→reviewing）供 TaskCommit和完整独立 committed Review消费。no_change也走合法回程，无空贡献、ADR或commit。Ready/Finish不消费候选状态。
+整合实际 after 进入 TaskCommit 精确本地提交。implementation 用原公开 constructor 固定 B、H 和全部 paths，再 begin_check；原 guru-review-branch 同时拥有 check/full_review。该新的独立 reviewer 先读原 authority，再审完整 committed before/after、消费者，完成一次 implementation Architecture 和九维/完整区间审查。通过后顺序 record check（Planning predecessor）与 full_review（该 check predecessor），只在两投影都完成才返回 passed。Architecture reviewed_promoted 来自真实整合和此同次独立 before/after；readiness 不消费 pending。固定候选不在审查时被修改；原 writers 修复后继提交，合法原覆盖和工程事实按 ADR-034 采用，缺口或无法界定影响补足完整判断。
 
-partial/output-loss 只恢复同一可唯一 intent：completed读回、pending补写、conflict停原owner。candidate_checked 丢失时按实际 phase/写入事实回原 Check、implementation或maintenance，不从phase补造pass；同 DeliveryKey与B保持。当前语义每次新作，工程事实按R578/ADR-029及唯一候选适用合同核真实定义、依赖、环境、工具链、参数/期望后采用，缺失/未知/变化才补命中检查。无需长期 cache、账本或授权持久化。
+输出丢失核同 key/B/H/候选和真实 public results，仅补尚缺投影或恢复同一结果；丢失必要语义不补造pass。没有另一 Check checkpoint、第二 current 或审计账本。工程事实仍按 R578/唯一候选适用合同判定义、输入、依赖、环境、工具链、参数和期望；未知/失效才补命中项。
 
 `D638-01 / CON638-IDENTITY`：完整单元与关系保持稳定ID，authority identity= guru-trellis-rdt；普通晋升允许同 identity，只校真实目标内容。根导航只在入口自身合同真实改变时写入，独立主题不登记共享列表，不追加每Issue业务摘要。Architecture使用独立稳定 identity guru-trellis-architecture。bootstrap仍要求其真正distinct successor，历史和真实接口版本不改义。
 
@@ -68,19 +68,19 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 
 **D648-03 / CON648-REENTRY**：原实施协调承担受影响操作停点与原owner路由。scope不变的方案修订使用原当前阶段合法rework和同Delivery Planning continuation；不新建身份或改accepted_scope。真正authority/scope问题回原Clarify，规划有效的实现/断言修复留原implementation/Check。新候选依原资格/机制入口处理；恢复必须与受影响最新规划、判断和实际候选匹配，无冲突工作仅按真实依赖继续。global workflow只定位触发与重入，step-local方法归原Skill。
 
-**D648-04 / CON648-EXPECTATION**：原Check/Branch Review从有效合同确定预期，再核代码/测试和真实消费者。完整当前Check、精确committed B..H Review和受影响未改consumer各自保持。测试私有固定值不能替代源约束；绿测试与一致设计不豁免职责缺陷。
+**D648-04 / CON648-EXPECTATION**：原独立 Review 从有效合同确定预期，再核代码/测试和真实消费者，在同次完整判断覆盖九维、精确 committed B..H 和受影响未改 consumer。测试私有固定值不能替代源约束；绿测试与一致设计不豁免职责缺陷。
 
 **D648-05 / CON648-APPLICABILITY**：原task-free pre-write/evolution gate判断gate保护语义及依赖必要性。样本以同域catalog的展示重命名A和生效目标选择B表达operation差异，具体业务名不进入公共方法。原实现/测试共同过度限制A时，owner在剩余受影响target write前停止，并沿原机制/evolution/scope consumer处理。A/B实际调用与state前后由测试记录，AI说明不适用理由、必要阻断和evidence职责。
 
 **D648-06 / CON648-COVERAGE**：单一Candidate Applicability And Coverage定义继续拥有复用规则。原owner读取新原证据后判定哪些前提失效、哪些覆盖仍有效；代码/测试未变不豁免，整体版本或身份变化不自动重跑。同一合规独立reviewer可接续，当前阶段结果仍实际发生。
 
-**D648-07 / CON648-VALIDATION**：原Architecture/Check semantic_authoring与原native Adapter扩展本项写作、实施、Review和task-free事实。测试私有运输只执行真实Agent请求、落其原字节、记录原wrapperstdout及状态变化；它不选语义结论或改public DTO。声明多owner连续性时，用同一stateful fixture消费实际前序stdout。预置合法前置只证明起点，不冒充本轮前序判断。RDT以隔离完整proposed目标进入candidate Check，原final_integration整合读回后以实际after重新candidate/begin_check，原最终Check/committedReview不省略。
+**D648-07 / CON648-VALIDATION**：原Architecture/Check semantic_authoring与原native Adapter扩展本项写作、实施、Review和task-free事实。测试私有运输只执行真实Agent请求、落其原字节、记录原wrapperstdout及状态变化；它不选语义结论或改public DTO。声明多owner连续性时，用同一stateful fixture消费实际前序stdout。预置合法前置只证明起点，不冒充本轮前序判断。RDT完整隔离proposed由原final_integration整合读回后进入TaskCommit，再绑定完整committed candidate进行独立Review。
 
 ## D649：当前成果收敛与结果引用
 
 **D649-06 / CON649-KNOWLEDGE** 承接 R649-07。原 RDT contract／current-knowledge 和 Architecture contract 在其既有职责中读取真实解除条件，更新当前定义、指南、派生说明，保留历史阶段观察。当前 R/D/T 单元展开行为，公共 Skill 内部步骤仍由各原 package 单写；spec 只作最小定位。
 
-隔离贡献提供九个完整 proposed targets，保留原身份及所有有效前驱条件。候选 Check 之后，原 final_integration 才写 shared current 并读回；implementation 以同 B、实际 after 重绑，最终 Check 与独立 committed Review 覆盖真实内容。没有新的晋升时机或状态。
+隔离贡献提供九个完整 proposed targets，保留原身份及所有有效前驱条件。当前 final_integration 在 TaskCommit 前写 shared current 并读回；其后同 B 的完整 committed after 进入一次独立 Review。#649 原专项时机及观察保留历史意义。
 
 #637 Test 的有限修正只使用原 archive 正式结果、PR #644 和已证 main ancestry；保留原命令、失败、未知、legacy reapply 阻塞及其它未证边界。#649 唯一实际结果记录各运行的真实层次、cutoff 和失败，不从相同 exit 或最后一次重跑推导成功。
 
@@ -92,7 +92,7 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 
 **D-MECH-03 / CON-MECH-KNOWLEDGE** 承接 R-MECH-03..05。原 current-knowledge 单写文档优先取证、完整决策单元和存量处置关系。RDT 足够时不追全部源码；行为、性能、消费者完整性或冲突有缺口才定向查。必要性已证、缺陷已证与缺证分别承接：已证问题由原 owner 有界纠正并适配必要消费者，缺证保留有界调查且不扩大采用；不将机制用途或 CURRENT 自证视为充分依据。纠正决策区分必须同步适配、可独立分期和场景保留，在原单元/change contract 承接真实 owner、共存依据、剩余消费者、可执行交付/触发及退出证据，不建永久迁移台账。
 
-项目方法投影由原 Architecture contribution/final_integration 写 change-contract。六个 RDT 完整拟写由原 RDT owner 保留有效前驱，先接受独立 Architecture/候选 Check，再由原 final_integration 写入读回、同 B 的实际 after 重绑及最终 Check/完整 committed Review。公共 I/O、schema、runtime、状态、原则、single-writer 和阶段保持；canonical 经原 preset 完整分发，既有业务安装采用另行证明。
+项目方法投影由原 Architecture contribution/final_integration 写 change-contract。六个 RDT 完整拟写由原 RDT owner 保留有效前驱，由原 final_integration 写入读回，经 TaskCommit 以同 B 绑定完整 committed after，再由同次独立 Review 覆盖 Architecture 及完整质量职责。公共 I/O、schema、runtime、状态、原则、single-writer 和阶段保持；canonical 经原 preset 完整分发，既有业务安装采用另行证明。
 
 ## D693：原方法与原消费者
 
@@ -100,29 +100,27 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 
 **D693-02 / CON693-HISTORY** 承接 R693-03。原当前调查 owner 以固定源码、当时安装规则、公开规划/阶段/交付及原命令形成有来源说明；原阶段对象、已知条件、执行/采用和记录缺口分别表达。不能恢复的 reviewer 理由不由后来规则或代码缺陷补齐。具体静态观察和未知项只由配对 Test contribution 拥有，不建立长期审核台账。
 
-**D693-03 / CON693-ADOPTION** 承接 R693-04。Delivery 原 owner 在真实 payload 中限制 consumer/entry/安装范围，读取原 Policy 保留后端正式采用的整体责任。项目 Architecture change-contract 消费同一方法，RDT 与 Architecture 各自准备完整隔离拟写，原候选 Check 后 final_integration/readback，再由 implementation 绑定全部 actual after，最终质量链覆盖。完整 preset 分发受管副本；目标项目按原正式 Upgrade owner 采用，不复制业务领域定义。
+**D693-03 / CON693-ADOPTION** 承接 R693-04。Delivery 原 owner 在真实 payload 中限制 consumer/entry/安装范围，读取原 Policy 保留后端正式采用的整体责任。项目 Architecture change-contract 消费同一方法，RDT 与 Architecture 各自准备完整隔离拟写，原 final_integration/readback 后 TaskCommit，再由 implementation 绑定全部 actual committed after，独立完整质量链覆盖。完整 preset 分发受管副本；目标项目按原正式 Upgrade owner 采用，不复制业务领域定义。
 
 三层稳定关系及本批来源见 [#693 traceability](../../requirements-design-test-contributions/693-contract-evidence-adoption/traceability.md)；原 D648/D-MECH 与前驱晋升/兼容条件保持。
 
 ## D710：语义 authoring、完整结果与原消费者
 
-来源：[Issue #710](https://github.com/castbox/guru-trellis/issues/710)及 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。R710/BEH710 定义完整能力；原 D331/D638/D648/D693 的条件、单写责任和最终整合保持。精确字段、参数、schema、回执 projection 和 profile 出口由 [Check contract](../../../trellis/skills/guru-team/packages/guru-check-task/references/contract.md)、interface 与 schemas 单写，以下不建立第二接口。
+R710/BEH710 的正常 authoring、客观身份派生、完整结果合法消费和恢复由当前 [Review contract](../../../trellis/skills/guru-team/packages/guru-review-branch/references/contract.md) 承接。MIGRATION-794 明确旧 Check profiles 及 provider 边界，MIGRATION-710 和原结果保历史含义。这里不重复字段、算法或具体 argv。
 
-**D710-01 / CON710-AUTHORING** 承接 R710-01。原 Check SKILL/contract 的 Recorder Authoring 与最小语义示例组成正常路径；完整结果示例标明消费用途。AI 先做完整判断，原 record 才基于语义输入、调用定位和 live facts 生成完整结果。复用已有能力可消除手工装配身份的必要性；双 authoring 选择会保留原歧义。无需新公共 DTO、wrapper、owner、状态或全链 token。
+**D710-01 / CON710-AUTHORING**：原 Review AI 实际完成一次当前完整语义判断，只写原 recorder 的最小语义输入；recorder 派生客观身份。最小示例是正常入口，完整结果示例只供消费说明，不形成双 authoring 或新 wrapper。
 
-**D710-02 / CON710-CONSUMPTION** 承接 R710-02。原 record/check/invoke 各有独立真实命令与输入职责。按原 stdout 合同读取 recorder receipt 的实际结果位置，checker 从原 checkpoint 验证同一结果，invoke 使用真实完整文件；checker 状态或 recorder receipt 不作为 owner result。profile-specific 回执原样承接。public candidate token 和 Phase 2 局部 token 的生成与消费保持独立，合法公共 Task/Delivery/Planning 身份不被删除或换算。候选成功仍进入原 final-integration router，最终 passed 才进入原 TaskCommit consumer。
+**D710-02 / CON710-CONSUMPTION**：record/check/invoke 独占各自输入和输出。原 receipt 定位本次完整结果，checker 验证该结果，invoke 消费真实完整文件；receipt/绿色状态不替代 owner result。公共候选/局部 token 按原 consumer 分离。真实 check 与 full_review 分别绑定一次实际判断的充分性和完整覆盖，由原 public API 顺序记录；成功只交原 Delivery Review，绝不回 TaskCommit 或提前 Publication。
 
-**D710-03 / CON710-RETIREMENT** 承接 R710-03。MIGRATION-710 拥有实际 consumer 清单、matching source 切换和明确 record 输入退出；原 runtime 直接演进为唯一语义输入。完整结果 schema/output、原 checker/invoke 与 maintenance 恢复不随之退休，原 checkpoint 不重新 record。测试和 eval 的受控 record callers 同批迁移；旧固定完整安装独立保留旧义，新 matching 安装不加长期双 parser、compat flag 或历史 Task 迁移。清单出现不能同步迁移的真实支持调用时，原 Author/Architecture 先修方案再继续。Architecture 独占兼容退出和 ADR 判断，RDT 只继承公开 baseline。
+**D710-03 / CON710-RETIREMENT**：record完整输入退休与完整结果消费/恢复分开；MIGRATION-794 定位旧受支持操作的固定完整provider及同操作恢复。新链直接选择新 Review 合同，不从旧Check结果换owner/version造pass；既有真实已完成结果只按其原语义读取。无长期双parser或第二状态。
 
-**D710-04 / CON710-STALE** 承接 R710-04。原 checker 细分已存在的客观比较诊断，保持错误 code、capture ancestry、路径覆盖、业务 bytes/modes 和既有 metadata 排除。诊断只指出确定的不一致，不推测语义根因；原 Check 恢复 owner 重新审当前事实。不能更新旧结果的客观身份来延续过期判断，也不通过参数修正或私有算法补算冒充首次 authoring 正确。
+**D710-04 / CON710-STALE**：保客观错误code/field、capture ancestry、路径覆盖、业务bytes/modes和metadata排除。实际内容改变使旧结果失效；缺步或输出丢失只核同对象、仍适用语义及真实 public facts 后恢复原结果。丢失语义覆盖重新实际审查，不重绑旧摘要延续结论。
 
-**D710-05 / CON710-BOUNDARY** 承接 R710-05。原 package tests 分开语义输入命令链与完整结果消费者单元；合同测试核实际正文、引用及示例入口。原 eval adapter 只运输 Agent 自己 authored 的原字节并执行真实请求，mock 只声明运输。五 profiles 的原成功、finding、规划、blocked 和 resolved 行为不因统一 authoring 改变；缺必要证据仍由原 owner 路由。共享 Candidate Applicability And Coverage 与 Test And Validation Value 继续单写方法。
+**D710-05 / CON710-BOUNDARY**：正常语义输入命令链与完整结果consumer单元各测真实入口。eval只运输Agent原字节，fixture不代当前owner生成结论。成功、finding、planning rollback、blocked/resolved及缺步恢复按当前实际profile验证，命令层不宣称native效果。
 
-**D710-06 / CON710-FIRST-NATIVE** 承接 R710-06。原 native-owner-clean/finding 与候选 fixture 运输扩展为同一 stateful 候选到最终案例；必需语义 owners 亲自读事实并调用原 public wrappers。implementation 用固定 B 和全量实际 paths 构造候选/begin_check；原 Architecture/RDT 前置和候选 Check 后，原 owners 执行 final integration 或实际 no-change，implementation 重绑 actual after，再进入匹配最终 Architecture/Check。host 不预填本阶段结果、摘要、内部选择或预期，不事后修参数、字段或发送纠偏提示。既有 repo 外 run-root 保留原输入、argv/stdin/stdout/stderr 和首次结果；验收在模型输入外比较预期，无新长期状态。setup、装配、能力缺失和真实语义 finding 分开表述。
+**D710-06 / CON710-FIRST-NATIVE**：新的独立 Review 从完整 committed candidate 入口实际读取 authority、候选及 consumers，先 Architecture 后九维/完整Review，原wrapper由该Agent调用。host不代填语义/摘要/答案，首次失败、修订与未验证如实保留。#710原候选/最终专项轨迹和次数是历史证据，不成为新链重复阶段。
 
-**D710-07 / CON710-ADOPTION** 承接 R710-07。原 guru-upgrade-tools/完整 preset 成套分发，保留用户定制及 Task/session；定向核 canonical/dogfood/installed、声明平台、reapply/drift/mode/sidecar，一个确有必要的代表 clean 只证明该安装边界。源码或 CLI 可用不等同 native 或业务采用。原 Test contribution 记录实际观察，后继引用固定可获取候选与 matching 安装，自行完成其当前质量链。
-
-本批原 RDT/Architecture 各写完整 isolated proposed，候选 Check 后才 final_integration/readback。implementation 按同 B 绑定全部实际 after，最终 Check 与完整 committed Review 覆盖真实内容。既有 current 单元定位和 authority identity 保持，不为本项制造导航改动或共享版本推进。
+**D710-07 / CON710-ADOPTION**：原tools/preset owner成套同步matchingsource、Task/session和受管平台，按差额验证source/installed/reapply/drift/mode/sidecar；定向安装、命令和实际Agent/业务采用分开。当前完整知识仍由原writer在final_integration真实读写，不生成共享导航登记。
 
 ## D711：目录发现、局部导航与原 owner 切换
 

@@ -85,38 +85,30 @@ class RemoteRecovery(unittest.TestCase):
         self.assertIsNone(self.f.projection.resolve(self.f.key)["publication_result"])
         self.assert_binding_preserved()
 
-    def test_existing_draft_only_finishes_metadata_with_no_push_create_or_ready(self):
-        public = self.public()
-        self.existing_pr(public)
-        self.pr.update(title="此前标题", body="此前待审正文")
+    def test_pending_draft_metadata_returns_review_without_remote_actions(self):
+        public=self.public();self.existing_pr(public)
+        self.pr.update(title="此前标题",body="此前待审正文")
         self.independent_clone()
-        remote = self.remote_input(public)
-        self.drop = "edit"
-        interrupted = self.invoke(remote)
-        self.assertEqual("resume_publication", interrupted["exit_id"])
-        result = self.invoke({"profile": "delivery_same_plan_resume", "mode": "workflow", "task_ref": self.f.task_ref,
-                              "delivery_key": self.f.key, "transaction_ref": interrupted["transaction_ref"]})
-        self.assertEqual("draft_published", result["exit_id"])
-        self.assertEqual(["edit"], self.effects)
+        result=self.invoke(self.remote_input(public))
+        self.assertEqual("review_stale",result["exit_id"])
+        self.assertEqual([],self.effects)
+        self.assertEqual("此前标题",self.pr["title"])
         self.assert_binding_preserved()
 
-    def test_existing_ready_is_draft_before_remaining_candidate_push(self):
-        public = self.public()
-        self.existing_pr(public, draft=False)
-        (self.f.repo / "app.txt").write_text("normal candidate correction\n")
-        self.f.git("add", "app.txt")
-        self.f.git("commit", "-qm", "candidate correction")
-        self.f.head = self.f.git("rev-parse", "HEAD").strip()
-        public = self.public()
+    def test_pending_draft_transition_and_push_return_review(self):
+        public=self.public();self.existing_pr(public,draft=False)
+        (self.f.repo/"app.txt").write_text("pending candidate\n")
+        self.f.git("add","app.txt");self.f.git("commit","-qm","candidate fix")
+        self.f.head=self.f.git("rev-parse","HEAD").strip()
+        public["candidate_head"]=self.f.head
         self.independent_clone()
-        result = self.invoke(self.remote_input(public))
-        self.assertEqual("draft_published", result["exit_id"])
-        self.assertEqual(["draft", "push"], self.effects)
-        self.assertTrue(self.pr["isDraft"])
+        result=self.invoke(self.remote_input(public))
+        self.assertEqual("review_stale",result["exit_id"])
+        self.assertEqual([],self.effects)
+        self.assertFalse(self.pr["isDraft"])
         self.assert_binding_preserved()
 
     def test_ready_recovers_original_publication_without_private_transaction_or_mutations(self):
-        self.invoke(self.public())
         final = self.final_input()
         with self.provider_reads():
             published = self.invoke(final)
@@ -185,7 +177,7 @@ class RemoteRecovery(unittest.TestCase):
             name = f"public-delivery-remote-{kind}-recovery-input-1.0"
             value = json.loads((PACKAGE / "examples" / (name + ".json")).read_text())
             validate_json(value, PACKAGE / "schemas" / (name + ".schema.json"), "input")
-            validate_json(value, PACKAGE / "schemas/public-input-delivery-3.0.schema.json", "input")
+            validate_json(value, PACKAGE / "schemas/public-input-delivery-4.0.schema.json", "input")
             value["transaction_ref"] = "a" * 64
             from runtime.io import CommandError
             with self.assertRaises(CommandError) as invalid:

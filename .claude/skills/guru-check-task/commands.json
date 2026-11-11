@@ -33,17 +33,17 @@
         },
         {
           "flag": "--dry-run",
-          "required": false,
+          "required": true,
           "kind": "boolean",
-          "description": "Validate without persistence.",
+          "description": "Required for original rollback semantic correction; no current development checkpoint write.",
           "repeatable": false,
           "conflicts": []
         },
         {
           "flag": "--skill-input",
-          "required": false,
+          "required": true,
           "kind": "string",
-          "description": "Original public Delivery input; required for planning_stale, resolved reconciliation and dry-run rollback correction.",
+          "description": "Original delivery_planning_stale_recovery input; required for dry-run correction.",
           "repeatable": false,
           "conflicts": []
         }
@@ -59,56 +59,13 @@
         "stale_identity",
         "internal_error"
       ],
-      "side_effect": "runtime_write",
-      "schema_bindings": [],
+      "side_effect": "none",
+      "schema_bindings": [
+        "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json",
+        "schemas/phase2-check.schema.json"
+      ],
       "validator_id": "phase2_check_recorder",
       "runtime_role": "record"
-    },
-    {
-      "id": "check-phase2-check",
-      "owner": "guru-check-task",
-      "entrypoint": "runtime/check.py",
-      "arguments": [
-        {
-          "flag": "--root",
-          "required": false,
-          "kind": "string",
-          "description": "Repository root.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--task",
-          "required": false,
-          "kind": "string",
-          "description": "Task locator.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--skill-input",
-          "required": false,
-          "kind": "string",
-          "description": "Original public Delivery input; required for resolved reconciliation capture.",
-          "repeatable": false,
-          "conflicts": []
-        }
-      ],
-      "stdin": "optional_json",
-      "stdout": "intermediate_receipt",
-      "errors": [
-        "invalid_arguments",
-        "conflicting_arguments",
-        "invalid_json",
-        "schema_mismatch",
-        "unsafe_path",
-        "stale_identity",
-        "internal_error"
-      ],
-      "side_effect": "git_read",
-      "schema_bindings": [],
-      "validator_id": "phase2_check_checker",
-      "runtime_role": "check"
     },
     {
       "id": "invoke-guru-check-task",
@@ -169,66 +126,6 @@
       "side_effect": "runtime_write",
       "schema_bindings": [],
       "validator_id": "public_invocation",
-      "runtime_role": "invoke"
-    },
-    {
-      "id": "project-resolved-reconciliation",
-      "owner": "guru-check-task",
-      "entrypoint": "runtime/invoke.py",
-      "arguments": [
-        {
-          "flag": "--root",
-          "required": false,
-          "kind": "string",
-          "description": "Repository root.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--input",
-          "required": true,
-          "kind": "json",
-          "description": "Resolved-tree Phase 2 public input.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--owner-result",
-          "required": true,
-          "kind": "json",
-          "description": "Checked private Phase 2 result.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--authoring",
-          "required": true,
-          "kind": "json",
-          "description": "Caller-authored resolved reconciliation facts.",
-          "repeatable": false,
-          "conflicts": []
-        }
-      ],
-      "stdin": "none",
-      "stdout": "intermediate_receipt",
-      "errors": [
-        "invalid_arguments",
-        "conflicting_arguments",
-        "invalid_json",
-        "schema_mismatch",
-        "unsafe_path",
-        "stale_identity",
-        "internal_error"
-      ],
-      "side_effect": "git_read",
-      "schema_bindings": [
-        "schemas/public-resolved-reconciliation-input.schema.json",
-        "schemas/phase2-check.schema.json",
-        "schemas/resolved-reconciliation-authoring.schema.json",
-        "schemas/public-delivery-resolved-reconciliation-input-1.0.schema.json",
-        "schemas/delivery-resolved-reconciliation-authoring-1.0.schema.json"
-      ],
-      "validator_id": "resolved_reconciliation_projection",
       "runtime_role": "invoke"
     },
     {

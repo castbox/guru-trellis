@@ -45,7 +45,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.head = self.flow.head
         self.bindings = BranchBindingStore(inspect_repository(self.repo))
         self.key = TaskLifecycleKey("flow-task", 0)
-        self.reviewed = self.flow.full_review(self.flow.check())
+        self.reviewed = self.flow.single_review()
 
     def tearDown(self):
         self.flow.doCleanups()
@@ -63,7 +63,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
                ["check", "full_review", "readiness"])
         self.flow.head = self.head
         projection.begin_check(self.flow.key, projection.candidate(["app.txt"], head_ref=self.head, base_ref=self.git("rev-parse", "main")))
-        self.reviewed = self.flow.full_review(self.flow.check())
+        self.reviewed = self.flow.single_review()
 
     def git(self, *args: str) -> str:
         return subprocess.run(

@@ -15,8 +15,8 @@ from runtime.schema import validate_json
 
 
 SKILL_ID = "guru-publish-task-delivery"
-STAGES = ("ensure_draft", "push_content", "bind_pr", "converge_metadata", "mark_ready", "ready", "draft", "draft_revision")
-TERMINALS = {"ready", "draft", "draft_revision"}
+STAGES = ("ensure_draft", "push_content", "bind_pr", "converge_metadata", "mark_ready", "ready", "draft_revision")
+TERMINALS = {"ready", "draft_revision"}
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA64 = re.compile(r"^[0-9a-f]{64}$")
 CYCLE_REF = re.compile(r"^delivery-cycle:v1:[0-9a-f]{64}$")
@@ -97,10 +97,12 @@ def gh_json(root: Path, command: list[str]) -> Any:
 
 
 def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
+    if value.get("profile") == "delivery_draft_publish":
+        raise WorkflowError("Early Draft publication is retired. Recover completed old actions with the complete pinned provider in MIGRATION-794; pending actions require current committed Review and readiness.", code="schema_mismatch")
     if value.get("profile") in {"delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
         package = Path(__file__).resolve().parents[1]
         name = value["profile"].replace("_", "-")
-        validate_json(value, package / f"schemas/public-{name}-input-1.0.schema.json", "input")
+        validate_json(value, package / (f"schemas/public-{name}-input-2.0.schema.json" if value["profile"] == "delivery_remote_draft_recovery" else f"schemas/public-{name}-input-1.0.schema.json"), "input")
         if CLOSING.search(value["pr_body"]):
             raise WorkflowError("Delivery PR body contains a closing keyword.", code="closing_keyword_forbidden")
         return value
@@ -109,8 +111,6 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
     common = {"profile", "mode", "task_ref"}
     if profile == "review_ready":
         required = common | {"delivery_cycle_ref", "reviewed_head", "pr_title", "pr_body", "remaining_work_state"}
-    elif profile == "draft_publish":
-        required = common | {"delivery_key", "base_ref", "candidate_head", "pr_title", "pr_body"}
     elif profile == "return_to_draft":
         required = common | {"delivery_key", "revision_reason"}
     elif profile == "same_plan_resume":
@@ -130,14 +130,14 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
         raise WorkflowError("Unsupported publication mode.", code="schema_mismatch")
     if not isinstance(value.get("task_ref"), str) or TASK_REF.fullmatch(value["task_ref"]) is None:
         raise WorkflowError("Invalid task_ref.", code="schema_mismatch")
-    if profile in {"draft_publish", "return_to_draft"} and not delivery_profile:
+    if profile == "return_to_draft" and not delivery_profile:
         raise WorkflowError("Draft entries require the current public Delivery identity.", code="schema_mismatch")
-    if profile in {"review_ready", "draft_publish"}:
+    if profile == "review_ready":
         if profile == "review_ready" and not delivery_profile and (not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None):
             raise WorkflowError("delivery_cycle_ref must use the current closed identity.", code="schema_mismatch")
-        if not isinstance(value.get("reviewed_head", value.get("candidate_head")), str) or SHA40.fullmatch(value.get("reviewed_head", value.get("candidate_head", ""))) is None:
+        if not isinstance(value.get("reviewed_head"), str) or SHA40.fullmatch(value.get("reviewed_head", "")) is None:
             raise WorkflowError("reviewed_head must be a full lowercase commit id.", code="schema_mismatch")
-        for field in (("pr_title", "pr_body", "remaining_work_state") if profile == "review_ready" else ("pr_title", "pr_body", "base_ref")):
+        for field in ("pr_title", "pr_body", "remaining_work_state"):
             if not isinstance(value[field], str) or not value[field].strip():
                 raise WorkflowError(f"{field} is required.", code="schema_mismatch")
         if profile == "review_ready" and value["remaining_work_state"] not in {"none", "remaining"}:
@@ -263,7 +263,7 @@ def read_pr(root: Path, number: int) -> dict[str, Any]:
 def transaction_ref(public_input: dict[str, Any]) -> str:
     if public_input["profile"].removeprefix("delivery_") == "same_plan_resume":
         return public_input["transaction_ref"]
-    if public_input["profile"] in {"delivery_draft_publish", "delivery_return_to_draft", "delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
+    if public_input["profile"] in {"delivery_return_to_draft", "delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
         return digest({"skill_id": SKILL_ID, "input": public_input})
     identity = {"delivery_key": public_input["delivery_key"], "readiness_result_id": public_input["readiness_result_id"]} if "delivery_key" in public_input else {"delivery_cycle_ref": public_input["delivery_cycle_ref"]}
     return digest({"skill_id": SKILL_ID, "task_ref": public_input["task_ref"], **identity})
@@ -306,7 +306,9 @@ def save_transaction(root: Path, transaction: dict[str, Any]) -> None:
 def validate_transaction(transaction: dict[str, Any]) -> None:
     if transaction.get("schema_version") != "2.0" or transaction.get("skill_id") != SKILL_ID:
         raise WorkflowError("Private transaction identity is invalid.", code="private_state_invalid")
-    if transaction.get("action") not in {"ready", "draft_publish", "return_to_draft"} or transaction.get("terminal") != {"ready":"ready", "draft_publish":"draft", "return_to_draft":"draft_revision"}.get(transaction.get("action")):
+    if transaction.get("action") == "draft_publish":
+        raise WorkflowError("Recover this old Draft transaction with the complete pinned provider in MIGRATION-794. Pending actions require current committed Review/readiness.", code="schema_mismatch")
+    if transaction.get("action") not in {"ready", "return_to_draft"} or transaction.get("terminal") != {"ready":"ready", "return_to_draft":"draft_revision"}.get(transaction.get("action")):
         raise WorkflowError("Private action/terminal contract is invalid.", code="private_state_invalid")
     if transaction.get("stage") not in STAGES or SHA64.fullmatch(str(transaction.get("transaction_ref", ""))) is None:
         raise WorkflowError("Private transaction stage/reference is invalid.", code="private_state_invalid")
@@ -342,10 +344,13 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
             if existing.get("input") != source:
                 raise WorkflowError("Publication transaction input drifted.", code="private_state_invalid")
 
+    if source["profile"] == "delivery_draft_publish":
+        raise WorkflowError("Recover the original Draft operation with the complete pinned provider in MIGRATION-794. Pending actions require current committed Review and readiness.", code="schema_mismatch")
+
     if source["profile"] in {"delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
         from remote_recovery import plan
         return plan(root, source, existing, ref)
-    if source["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+    if source["profile"] in {"delivery_return_to_draft"}:
         from draft import plan
         return plan(root, source, existing, ref)
 
@@ -435,7 +440,7 @@ def expected_publication_exit(root, public):
         if tx is None:
             raise WorkflowError("Recover the exact original publication transaction.", code="private_state_missing")
         source = tx["input"]
-    return {"delivery_draft_publish": "draft_published", "delivery_remote_draft_recovery": "draft_published", "delivery_return_to_draft": "draft_revision_ready"}.get(source["profile"], "ready_for_merge")
+    return {"delivery_remote_draft_recovery": "draft_published", "delivery_return_to_draft": "draft_revision_ready"}.get(source["profile"], "ready_for_merge")
 
 
 def retire_completed(root, new_transaction):
@@ -541,10 +546,6 @@ def push_content(root: Path, transaction: dict[str, Any]) -> None:
         return
     if remote != transaction["initial_remote_head"]:
         raise WorkflowError("Remote HEAD differs from this action's original preimage/postimage.", code="publication_stale")
-    if transaction["terminal"] == "draft":
-        current_pr = find_bindable_pr(root, transaction)
-        if current_pr is not None and not current_pr["is_draft"]:
-            raise WorkflowError("Confirm this same PR is Draft before pushing unreviewed content.", code="publication_stale")
     if remote and not is_ancestor(root, remote, head):
         raise WorkflowError("Remote branch is not a reviewed ancestor.", code="publication_stale")
     _run(root, ["git", "push", "origin", f"{head}:refs/heads/{transaction['head_branch']}"])
@@ -602,7 +603,7 @@ def converge_metadata(root: Path, transaction: dict[str, Any]) -> None:
         pr = read_pr(root, bound["number"])
         if pr["title"] != source["pr_title"] or pr["body"] != source["pr_body"]:
             raise WorkflowError("PR metadata mutation did not converge.", code="external_command_failed")
-    transaction["stage"] = "draft" if transaction["terminal"] == "draft" else "mark_ready"
+    transaction["stage"] = "mark_ready"
     save_transaction(root, transaction)
 
 
@@ -681,10 +682,10 @@ def ready_output(root: Path, transaction: dict[str, Any]) -> dict[str, Any]:
 def execute(root: Path, context: dict[str, Any]) -> dict[str, Any]:
     transaction = load_transaction(root, context["transaction_ref"])
     if transaction is None:
-        if context["input"]["profile"] in {"delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
+        if context["input"]["profile"] in {"delivery_remote_ready_recovery"}:
             from remote_recovery import initial
             transaction = initial(context)
-        elif context["input"]["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+        elif context["input"]["profile"] in {"delivery_return_to_draft"}:
             from draft import initial
             transaction = initial(context)
         else:
@@ -708,7 +709,7 @@ def execute(root: Path, context: dict[str, Any]) -> dict[str, Any]:
             mark_ready(root, transaction)
         elif stage == "ready":
             return ready_output(root, transaction)
-        elif stage in {"draft", "draft_revision"}:
+        elif stage == "draft_revision":
             from draft import output
             return output(root, transaction)
         transaction = load_transaction(root, context["transaction_ref"])

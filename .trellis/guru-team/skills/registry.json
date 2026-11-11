@@ -185,7 +185,7 @@
       "name": "guru-check-task",
       "package": "packages/guru-check-task",
       "interface": "packages/guru-check-task/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.6",
       "supported_platforms": [
         "shared",
         "claude",
@@ -212,7 +212,8 @@
         "snow"
       ],
       "validator_command": "check-skill-packages",
-      "workflow_route_id": "phase-2-task-check"
+      "workflow_route_id": "phase-2-task-check",
+      "workflow_integration_state": "standalone_only"
     },
     {
       "id": "guru-clarify-requirements",

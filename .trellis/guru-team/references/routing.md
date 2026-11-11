@@ -159,22 +159,12 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-base-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-task-base-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"blocked","consumer":{"kind":"stop","id":"task-base-reconciliation-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-check-task","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"candidate_checked","consumer":{"kind":"workflow","id":"guru-knowledge-final-integration-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"passed","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"resolved_reconciliation_passed","consumer":{"kind":"workflow","id":"guru-delivery-resolved-reconciliation-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-check-planning-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"blocked","consumer":{"kind":"stop","id":"task-check-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-create-task-commit","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"draft_committed","consumer":{"kind":"workflow","id":"guru-draft-commit-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"committed","consumer":{"kind":"skill","id":"guru-review-branch"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"pre_review_committed","consumer":{"kind":"workflow","id":"guru-pre-review-commit-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"revision-required","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"draft_revision_required","consumer":{"kind":"workflow","id":"guru-draft-content-revision-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"draft_content_reviewed","consumer":{"kind":"workflow","id":"guru-draft-content-review-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-check-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"archived_review_passed","consumer":{"kind":"stop","id":"legacy-archived-review-disposition-required"}} -->
@@ -237,7 +227,6 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"resume_reactivation","consumer":{"kind":"workflow","id":"task-reactivation-resume-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"reactivate_blocked","consumer":{"kind":"stop","id":"task-reactivate-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-activate-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
@@ -250,7 +239,6 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"unverified_legacy_history","consumer":{"kind":"workflow","id":"legacy-maintenance-merge-task-delivery-unverified-legacy-history"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-finish-task-legacy-controls-retired"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-approve-task-plan-legacy-controls-retired"}} -->
-<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-check-task-legacy-controls-retired"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-review-branch-legacy-controls-retired"}} -->
 
 ## Workflow and stop consumers
@@ -277,7 +265,7 @@ Return the owning Skill result and safe remediation, then stop this automatic ch
 
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-current-router"} -->
 
-Validate actual current authority and selected source_profile. Delivery planning dispatches solely by planning_purpose: candidate_assessment projects its actual assessment and key into Author delivery_solution_planning; final_plan projects the actual final assessment directly into adjacent Delivery Approval. Bootstrap/repair from final-integration promotion returns to that original promotion through the sync-router projection; other maintenance reruns impact for the original purpose/stage. Promotion returns to the original Architecture owner for actual-write applicability, then implementation rebinds the actual candidate and matching final Phase 2 invokes final Check; it does not restart an already completed full Review. Downstream Delivery/Completion still requires no_change or reviewed_promoted.
+Validate actual authority and source_profile. Planning candidate_assessment projects only the actual assessment/key to Author delivery_solution_planning; final_plan projects the actual final assessment directly to adjacent Approval. Precommit promotion returns through the original Architecture owner for actual-write/readback applicability, then original TaskCommit preparation. integrated_pending_review never enters readiness. The same new independent committed reviewer consumes matching branch_review assessment and completes original Review. Publication/Completion eligibility still requires no_change or reviewed_promoted. Bootstrap/repair retains original purpose/stage and exact recovery owner.
 
 ### guru-architecture-baseline-sync-router
 
@@ -313,7 +301,7 @@ Return the owning Skill result and safe remediation, then stop this automatic ch
 
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-current-router"} -->
 
-`candidate_ready` retains the actual contribution and applicable authority locators for the original candidate Check; it is not shared-current success. `ssot_current` resumes the original caller with actual authority. Final-integration promotion resumes implementation for candidate rebinding; the next owner rereads its stage-applicable complete bodies.
+candidate_ready retains complete isolated contribution and actual authority for original promotion after engineering preparation; it is not independent success. Invoke original RDT promotion at final_integration for actual changes. ssot_current resumes its caller with real integration/readback facts; complete necessary Architecture integration, then original TaskCommit. This route creates no candidate Check or public pass. The next original owner rereads applicable complete bodies.
 
 ### guru-requirements-design-test-ssot-planning-router
 
@@ -615,35 +603,23 @@ Consume the fixed integration result and resume its closed target through the or
 
 Return the bounded result to the original Check/Branch Review applicability owners; only their real current candidate-bound results resume the closed target. Continuity is not a full Review gate.
 
-### guru-draft-commit-router
+### guru-pre-review-commit-router
 
-<!-- guru-workflow-target: {"id":"guru-draft-commit-router"} -->
+<!-- guru-workflow-target: {"id":"guru-pre-review-commit-router"} -->
 
-Consume task_ref/key/B/commit_sha; rename commit_sha to candidate_head for original Publication delivery_draft_publish. The original Publication owner authors and reviews its exact Chinese title/body. No Check or final Review is inferred.
+Consume original TaskCommit pre_review_committed task_ref/key/branch_review_commit. Original implementation constructor reads the same Delivery fixed B and complete actual committed H, then invokes public begin_check. Project unchanged Candidate base/head and exact TaskRef/key into original Review delivery_branch_review current input; author only mode and actual review_intent. Do not hand-fill content_ref, add a commit, push or synthesize Check. Missing/changed facts return to original implementation/commit owner.
 
 ### guru-draft-feedback-router
 
 <!-- guru-workflow-target: {"id":"guru-draft-feedback-router"} -->
 
-Consume Draft task/key/B/H/repo/PR; retain this exact candidate for parallel independent guru-review-branch:delivery_draft_content_review and implementation/Check-owned risk-matched HEAD validation. No gate or new Delivery is created.
+This is an original existing Draft recovery fact under MIGRATION-794. Preserve exact PR/HEAD and report recovered already-executed effects. Resume current implementation or committed review obligations from actual public state. No early content-review or new push/PR is triggered; Draft supplies no pass.
 
 ### guru-draft-revision-router
 
 <!-- guru-workflow-target: {"id":"guru-draft-revision-router"} -->
 
-Consume the original Publication return-to-Draft result and resume the same implementing Delivery. Original TaskCommit and Publication publish its next candidate to the same PR.
-
-### guru-draft-content-review-router
-
-<!-- guru-workflow-target: {"id":"guru-draft-content-review-router"} -->
-
-Return the call-local complete B/H analysis to the implementation/Check coordinator. Validate actual HEAD before using facts; fresh formal full Review remains mandatory after Check.
-
-### guru-draft-content-revision-router
-
-<!-- guru-workflow-target: {"id":"guru-draft-content-revision-router"} -->
-
-Return immediate concrete revision_refs to the same implementation owner; rerun affected analysis on a changed HEAD. No cross-stage review cache is retained.
+Consume original return-to-Draft result and resume the same Delivery through lawful implementation rework. Preserve real PR and completed effects. Engineering work, necessary integration and a successor local commit precede current independent review and Delivery Review readiness before any new push.
 
 ### guru-resume-implementation
 
@@ -667,13 +643,13 @@ Enter the Scope Change Gate for the exact authority choice.
 
 <!-- guru-workflow-target: {"id":"guru-task-check-planning-router"} -->
 
-For every Check planning_stale/reapprove_plan, copy only task_ref/delivery_key/revision_actions unchanged, add profile=delivery_approval_revision and current mode, then invoke Author. Retained current_scope decisions do not become proposals. For clarify_requirements, pass actual scope-change proposal_refs to original Clarify. An already completed rollback returns to original Check delivery_planning_stale_recovery for its same planning handoff; load that owner contract and consume its actual exit without repeating rework. Implementation-only repair retains Phase 2.
+For current Review planning_stale/reapprove_plan, project only task_ref/delivery_key/revision_actions to original Author delivery_approval_revision with current mode. clarify_requirements passes actual proposal_refs to original Clarify. An already executed rollback is recovered by its same original Review owner before this handoff; never repeat rework or restore cleared Planning. Explicit old Check rollback recovery retains its original result and supported 1.0 projection under MIGRATION-794; this router consumes that actual completed handoff without invoking development Check.
 
 ### guru-delivery-resolved-reconciliation-router
 
-<!-- guru-workflow-target: {"id":"guru-delivery-resolved-reconciliation-router"} -->
+This is an explicit standalone/recovery reference, outside the active marker graph.
 
-Invoke Check owner’s explicit resolved projection with this TaskRef/DeliveryKey/phase2 commit anchor and fresh authoring of the actual Git integration facts. Feed its `delivery_resolved_candidate` input to Reconcile. Resolved Check and the integration executor leave the public Delivery in checking without a committed Check gate. The original Check owner legally reworks to implementation; implementation retains B and binds the actual reconciled HEAD through begin_check. Fresh applicable Check then seeds the original independent Branch Review.
+Resolved Git integration belongs to original Reconcile and exact local commit owners. Retain actual committed_candidate_anchor, fixed B and complete integration facts. After legal rework, original implementation binds actual committed H through constructor/begin_check; current Review covers Task/base attribution, conflict resolution and affected consumers. No resolved Check producer or precommit pass is created.
 
 ### guru-branch-review-implementation-router
 
@@ -851,7 +827,7 @@ Return the owning Skill result and safe remediation, then stop this automatic ch
 
 ### task-check-blocked
 
-<!-- guru-stop-target: {"id":"task-check-blocked"} -->
+This is an explicit standalone/recovery reference, outside the active marker graph.
 
 Return the owning Skill result and safe remediation, then stop this automatic chain until authority or external state changes. Do not guess another route or expose package-private state. An independently requested operation retains the Manual Git/GitHub Operations entry in the workflow.
 
@@ -963,12 +939,6 @@ Project task_ref/delivery_key and actual revision_actions to Author delivery_app
 
 Return the owning Skill result and safe remediation, then stop this automatic chain until authority or external state changes. Do not guess another route or expose package-private state. An independently requested operation retains the Manual Git/GitHub Operations entry in the workflow.
 
-### guru-knowledge-final-integration-router
-
-<!-- guru-workflow-target: {"id":"guru-knowledge-final-integration-router"} -->
-
-Consume only the current Check `candidate_checked` and its TaskRef/DeliveryKey/candidate after Check has returned the public phase to implementing. Invoke the original Architecture and RDT promotion owners at final_integration for actual knowledge changes; no_change skips writes. Return through the original implementation candidate/begin_check owner, then matching final Architecture phase2 and final Check. No TaskCommit, Review or Ready consumes candidate_checked.
-
 ### legacy-maintenance-publish-task-delivery-legacy-controls-retired
 
 <!-- guru-workflow-target: {"id":"legacy-maintenance-publish-task-delivery-legacy-controls-retired"} -->
@@ -1019,7 +989,7 @@ Return only to the explicitly selected original legacy maintenance call. Load [s
 
 ### legacy-maintenance-check-task-legacy-controls-retired
 
-<!-- guru-workflow-target: {"id":"legacy-maintenance-check-task-legacy-controls-retired"} -->
+This is an explicit standalone/recovery reference, outside the active marker graph.
 
 Return only to the explicitly selected original legacy maintenance call. Load [selected maintenance owner exits](legacy.md#selected-maintenance-owner-exits); preserve its exact controls-retired/history disposition. Never enter ordinary publication, merge, Completion or Finish from this result.
 
@@ -1066,10 +1036,8 @@ self-authoring, a prior-stage DTO or an overall gate for that invocation.
 | Planning candidate | `delivery_task_impact_sync(stage=planning, planning_purpose=candidate_assessment)` | `guru-author-task-plan:delivery_solution_planning` |
 | Planning final | `delivery_task_impact_sync(stage=planning, planning_purpose=final_plan)` | Adjacent Delivery `guru-approve-task-plan` |
 | Qualified implementation expansion | `delivery_task_impact_sync(stage=implementation_discovery)` | `guru-phase2-implementation-coordinator` |
-| Candidate Check | `delivery_task_impact_sync(stage=phase2)` over the complete candidate and proposed targets | `guru-check-task:delivery_candidate_check` |
-| Final integration | Original `delivery_promotion(stage=final_integration)` only for reviewed changes | Original implementation candidate/begin_check owner |
-| Final Phase 2 | `delivery_task_impact_sync(stage=phase2)` over actual rebound content after integration | `guru-check-task` final profile |
-| Branch Review | `delivery_task_impact_sync(stage=branch_review)` over the committed full diff | `guru-review-branch` |
+| Precommit integration | Original `delivery_promotion(stage=final_integration)` for necessary complete changes after engineering preparation | Original TaskCommit; integrated_pending_review is not a pass |
+| Committed Review | `delivery_task_impact_sync(stage=branch_review)` over fixed complete B..H under the same new independent reviewer | Original Review completes all Check/full_review duties once |
 | Delivery Review | `delivery_task_impact_sync(stage=publication)` | `guru-review-task-delivery` |
 | Completion/Finish | Actual Task `task_impact_sync(stage=acceptance_finish)` when no Delivery; selected Delivery uses `delivery_task_impact_sync` | `guru-review-task-completion` / `guru-finish-task` after Closure |
 
@@ -1084,7 +1052,7 @@ planning root. Task-only `bootstrap_foundation|repair` reruns the matching
 profiles instead use the sync-router phase2 projection and return only to the
 original promotion; `baseline_incomplete` uses that same bootstrap-router return. `source_profile=delivery_promotion|promotion` returns to
 the original Architecture owner for actual-write applicability, then original
-implementation rebinds the actual content before matching final Phase 2. The Architecture package owns when
+implementation prepares the exact local commit before committed review. The Architecture package owns when
 changed facts require another assessment. A promotion alone does not replay
 an earlier independent assessment or a completed full Review. A
 missing result stops that stage. `baseline_incomplete` enters bootstrap/repair;
@@ -1094,8 +1062,8 @@ A stale identity for the explicitly stage-applicable baseline, constitution,
 contribution or candidate returns `sync_required` to the Architecture owner.
 Unrelated overall CURRENT/version/ref advancement does not change that
 applicability. `sync_required(sync_kind=promotion_required)` enters the original
-promotion route at the final-integration boundary; before that boundary, a
-reviewed candidate proceeds only to candidate Check. Only a real affected
+promotion route at the precommit integration boundary. Its actual integrated
+content enters TaskCommit and the committed Review. Only a real affected
 dependency is reconsidered.
 Promotion's own expected-current write mismatch remains local to promotion.
 
@@ -1103,8 +1071,8 @@ Delivery Review rejects missing or stale Architecture evidence, every conflict,
 incomplete contract, fitness regression, and `promotion_state=reviewed_candidate`.
 Completion/Finish accepts a long-term Architecture change only as
 `reviewed_promoted`, or accepts a current `no_change` proof when shared current
-does not change. The final Check, Task Commit and independent committed full-diff
-Branch Review include the promoted files. Completion/Finish does not promote
+does not change. Engineering preparation, TaskCommit and the single independent
+committed full-diff Review include the promoted files. Completion/Finish does not promote
 an already accepted contribution again. This router establishes Architecture
 eligibility only; it does not absorb Delivery publication, whole-task Completion,
 or post-Completion Closure/Finish judgments from their owning packages.
@@ -1138,7 +1106,7 @@ current judgment. The workflow consumes the original declared exits only.
 | `planning_scenario_set` | planning acceptance, negative test, finding, or revision action | `guru-approve-task-plan` |
 | `implementation_discovery` | Phase 2 edits or tests for a planning-external discovered candidate | `guru-phase2-implementation-coordinator` |
 | `base_impact_candidate_set` | base-impact finding, validation obligation, or route | `guru-reconcile-task-base` |
-| `phase2_candidate_set` | Phase 2 severity, finding, planning-stale, or implementation route | `guru-check-task` |
+| `phase2_candidate_set` | Explicit pinned-old Check recovery only; not the active development graph | Original supported Check provider |
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
 | `publication_candidate_set` | Delivery Review finding, task-work return, or blocker | `guru-review-task-delivery` |
 

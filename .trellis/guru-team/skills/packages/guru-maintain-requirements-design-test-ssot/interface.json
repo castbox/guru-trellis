@@ -100,11 +100,11 @@
     },
     {
       "id": "public_input",
-      "path": "schemas/public-input-aggregate.schema.json"
+      "path": "schemas/public-input-aggregate-3.0.schema.json"
     },
     {
       "id": "ssot_current_output",
-      "path": "schemas/public-ssot-current-output.schema.json"
+      "path": "schemas/public-ssot-current-output-3.0.schema.json"
     },
     {
       "id": "sync_required_output",
@@ -124,7 +124,7 @@
     },
     {
       "id": "candidate_ready_output",
-      "path": "schemas/public-candidate-ready-output-2.0.schema.json"
+      "path": "schemas/public-candidate-ready-output-3.0.schema.json"
     }
   ],
   "validators": [
@@ -222,8 +222,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-requirements-design-test-ssot-input-aggregate-2.0",
-        "path": "schemas/public-input-aggregate.schema.json"
+        "schema_id": "guru-requirements-design-test-ssot-input-aggregate-3.0",
+        "path": "schemas/public-input-aggregate-3.0.schema.json"
       },
       "profiles": [
         {
@@ -244,8 +244,8 @@
         {
           "id": "task_impact_sync",
           "schema": {
-            "schema_id": "guru-requirements-design-test-ssot-input-impact-2.0",
-            "path": "schemas/public-input-impact-2.0.schema.json"
+            "schema_id": "guru-requirements-design-test-ssot-input-impact-3.0",
+            "path": "schemas/public-input-impact-3.0.schema.json"
           },
           "example": {
             "id": "impact_input",
@@ -259,8 +259,8 @@
         {
           "id": "promotion",
           "schema": {
-            "schema_id": "guru-requirements-design-test-ssot-input-promotion-2.0",
-            "path": "schemas/public-input-promotion-2.0.schema.json"
+            "schema_id": "guru-requirements-design-test-ssot-input-promotion-3.0",
+            "path": "schemas/public-input-promotion-3.0.schema.json"
           },
           "example": {
             "id": "promotion_input",
@@ -313,8 +313,8 @@
       {
         "exit_id": "ssot_current",
         "schema": {
-          "schema_id": "guru-requirements-design-test-ssot-output-current-1.0",
-          "path": "schemas/public-ssot-current-output.schema.json"
+          "schema_id": "guru-requirements-design-test-ssot-output-current-3.0",
+          "path": "schemas/public-ssot-current-output-3.0.schema.json"
         },
         "example": {
           "id": "current_output",
@@ -383,12 +383,12 @@
       {
         "exit_id": "candidate_ready",
         "schema": {
-          "schema_id": "guru-requirements-design-test-ssot-output-candidate-ready-2.0",
-          "path": "schemas/public-candidate-ready-output-2.0.schema.json"
+          "schema_id": "guru-requirements-design-test-ssot-output-candidate-ready-3.0",
+          "path": "schemas/public-candidate-ready-output-3.0.schema.json"
         },
         "example": {
           "id": "candidate_ready_output",
-          "path": "examples/public-output-candidate-ready-2.0.json"
+          "path": "examples/public-output-candidate-ready-3.0.json"
         },
         "consumer_use_ids": [
           "candidate_ready_projection"
@@ -405,8 +405,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "current_input",
-          "path": "consumers/workflow/current.schema.json"
+          "schema_id": "guru-requirements-design-test-ssot-consumer-current-3.0",
+          "path": "consumers/workflow/current-3.0.schema.json"
         }
       },
       {
@@ -492,8 +492,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-requirements-design-test-ssot-consumer-candidate-ready-2.0",
-          "path": "consumers/workflow/candidate-ready-2.0.schema.json"
+          "schema_id": "guru-requirements-design-test-ssot-consumer-candidate-ready-3.0",
+          "path": "consumers/workflow/candidate-ready-3.0.schema.json"
         }
       }
     ],

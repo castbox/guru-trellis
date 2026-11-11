@@ -33,15 +33,15 @@ class BranchAuthoringTests(unittest.TestCase):
                 protocol=json.loads(values[4].read_text());repo=Path(protocol['owner_repository'])
                 facts=json.loads((repo/branch_authoring.FACTS).read_text())
                 public=json.loads((repo/branch_authoring.PUBLIC_INPUT).read_text())
-                validate_json(public,PACKAGE/'schemas/public-delivery-branch-review-input-1.0.schema.json','input')
+                validate_json(public,PACKAGE/'schemas/public-delivery-branch-review-input-2.0.schema.json','input')
                 architecture=json.loads((repo/branch_authoring.ARCHITECTURE_INPUT).read_text())
-                validate_json(architecture,PACKAGE.parent/'guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-3.0.schema.json','input')
+                validate_json(architecture,PACKAGE.parent/'guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-4.0.schema.json','input')
                 self.assertEqual(public['branch_review_commit'],subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip())
                 self.assertNotEqual(public['base_ref'],public['branch_review_commit'])
                 diff=(repo/'.trellis/tasks/branch-evidence/committed.patch').read_text()
                 self.assertIn('diff --git a/interval.py',diff)
                 self.assertNotIn('diff --git a/range_filter.py',diff)
-                self.assertIn('not native Check',facts['prerequisite_boundary'])
+                self.assertIn('Check and full_review are empty',facts['prerequisite_boundary'])
                 self.assertIn('actual fixed base-to-HEAD',values[0])
                 self.assertIn('--upstream-architecture',protocol['architecture_context'])
                 self.assertFalse((repo/'.trellis/.runtime/guru-team/evals/owner-result.json').exists())
@@ -74,7 +74,7 @@ class BranchAuthoringTests(unittest.TestCase):
             return result.stdout.strip()
         for path in architecture_authoring.public_contract_reads(architecture_package,architecture):read(path)
         for path in facts['architecture_reads']:read(repository/path)
-        schema=json.loads((architecture_package/'schemas/semantic-result-delivery-3.0.schema.json').read_text())
+        schema=json.loads((architecture_package/'schemas/semantic-result-delivery-4.0.schema.json').read_text())
         props=schema['oneOf'][0]['properties']
         owner={key:value for key,value in architecture.items() if key in props}
         owner.update(input_sha256=hashlib.sha256(json.dumps(architecture,ensure_ascii=False,
@@ -130,8 +130,17 @@ class BranchAuthoringTests(unittest.TestCase):
                 'independent_delivery_conditions':['Actual native review remains required.'],
                 'validation_boundaries':['Original wrapper transport only.'],'current_slice_status':'failed',
                 'remaining_work_status':'disclosed','summary':'Transport does not establish semantic adequacy.'},
-            'verification_evidence':{'reviewer':'transport-only','review_source':'independent-agent',
-                'evidence':['Original wrappers executed; native semantics remain unverified.']}}})
+            'verification_evidence':{
+                'evidence':['Original wrappers executed; native semantics remain unverified.']},
+            'adequacy_review':{name:{'status':'failed' if name in ('design','implementation','tests','cross_layer') else 'passed',
+                'summary':'Objective transport fixture covers this responsibility; no native AI judgment is asserted.',
+                'evidence':['Supplied inclusive authority, half-open candidate and green assertions, with unchanged production caller.']}
+                for name in ('requirements','design','implementation','tests','docs_ssot','cross_layer',
+                    'compatibility','deployment_and_operations','verification_completeness')},
+            'gate_judgments':{
+                'check':{'outcome':'failed','summary':'Fixture authors an unmet inclusive behavior responsibility.'},
+                'full_review':{'outcome':'failed','summary':'Fixture authors the current complete-range open finding.'}},
+            'planning_revision':None}})
         trace=Path(protocol['trace_path'])
         events=json.loads(trace.read_text())['events']
         self.assertEqual(len([event for event in events if event['kind']=='invoke']),5)

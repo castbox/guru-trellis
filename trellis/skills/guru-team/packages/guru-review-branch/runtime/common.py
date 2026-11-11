@@ -420,11 +420,28 @@ def tree_identity(repo, commit, *, tree_memo=None):
     return value
 
 
+def review_input_schema(public):
+    schemas = {
+        "delivery_branch_review": "public-delivery-branch-review-input-2.0.schema.json",
+        "delivery_base_continuity": "public-delivery-base-continuity-input-2.0.schema.json",
+        "delivery_promotion_reference_alignment": "public-delivery-promotion-reference-alignment-input-2.0.schema.json",
+        "delivery_archived_review": "public-delivery-archived-review-input-1.0.schema.json",
+        # Preserve the independent read-only historical archive responsibility.
+        "archived_review": "public-archived-review-input.schema.json",
+    }
+    schema = schemas.get(public.get("profile"))
+    if schema is None:
+        raise CommandError("schema_mismatch", "input.profile", "Old normal Task review profiles are retired under MIGRATION-794. Use the current Delivery review input or the complete pinned original provider.")
+    return schema
+
+
 def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=None):
     archived = value.get("profile") == "archived_review"
     alignment = value.get("profile") == "promotion_reference_alignment"
+    if not archived and "delivery_key" not in value:
+        raise CommandError("stale_identity", "checkpoint", "Old normal Task review checkpoints are retired under MIGRATION-794. Run the current Delivery owner; never project an old pass.", 3)
     if (
-        value.get("schema_version") != ("alignment-1.0" if alignment else "archived-1.0" if archived else "7.0")
+        value.get("schema_version") != ("alignment-2.0" if alignment else "archived-1.0" if archived else "8.0")
         or value.get("reviewed_content_algorithm") != REVIEWED_CONTENT_ALGORITHM
     ):
         raise CommandError(
@@ -433,17 +450,13 @@ def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=No
             "Run a fresh Branch Review for the current reviewed-content contract.",
             3,
         )
-    schema = ("delivery-archived-review-gate-1.0.schema.json" if archived else "delivery-review-gate-1.0.schema.json") if "delivery_key" in value else "archived-review-gate-1.0.schema.json" if archived else "review-gate-7.0.schema.json"
+    schema = ("delivery-archived-review-gate-1.0.schema.json" if "delivery_key" in value else "archived-review-gate-1.0.schema.json") if archived else "delivery-review-gate-2.0.schema.json"
     if alignment:
-        schema = "delivery-alignment-gate-1.0.schema.json"
+        schema = "delivery-alignment-gate-2.0.schema.json"
     validate_json(value, package_root / "schemas" / schema, "gate")
     if alignment:
         from alignment import validate_facts
         validate_facts(package_root, repo, value)
-        from runtime.delivery_projection.adapter import DeliveryProjection
-        DeliveryProjection(repo, value["task_dir"]).require_current_check(
-            value["delivery_key"], value["check_result_id"],
-            head_ref=value["review_commit"], base_ref=value["base_head"])
     if archived:
         from archived import facts
         archived_input = {
@@ -456,6 +469,20 @@ def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=No
         current_facts = facts(package_root, repo, archived_input, fixed_base=value["base_head"])
         if any(value.get(key) != item for key, item in current_facts.items()):
             raise CommandError("stale_identity", "archived_review", "Run a fresh review for the current base and PR identity.", 3)
+    if "delivery_key" in value and not archived:
+        from runtime.delivery_projection.adapter import DeliveryProjection
+        from delivery_review import candidate, validate_review_binding
+        public = {"profile": "delivery_" + value["profile"], "task_ref": value["task_dir"],
+                  "delivery_key": value["delivery_key"], "base_ref": value["base_head"],
+                  "branch_review_commit": value["review_commit"]}
+        if value["profile"] == "base_continuity":
+            public["task_head"] = value["review_commit"]
+        projection = DeliveryProjection(repo, value["task_dir"])
+        validate_review_binding(projection, value)
+        phase = projection.resolve(value["delivery_key"])["phase"]
+        candidate(projection, public,
+                  recovery=value["typed_exit"] == "planning_stale" and phase == "planning",
+                  implementation_reentry=value["typed_exit"] == "implementation_required" and phase == "implementing")
     classifications = value.get("candidate_classifications")
     refs = [
         item.get("candidate_ref")
@@ -596,20 +623,9 @@ def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=No
 def validate_public_binding(package_root, repo, public, gate):
     original_profile = public.get("profile")
     profile = original_profile.removeprefix("delivery_")
-    schema = {
-        "branch_review": "public-branch-review-input.schema.json",
-        "base_continuity": "public-base-continuity-input-2.0.schema.json",
-        "archived_review": "public-archived-review-input.schema.json",
-        "promotion_reference_alignment": "public-delivery-promotion-reference-alignment-input-1.0.schema.json",
-    }.get(profile)
-    if schema is None:
-        raise CommandError(
-            "schema_mismatch", "input.profile", "Use one declared Branch Review profile."
-        )
-    if original_profile.startswith("delivery_"):
-        schema = "public-" + original_profile.replace("_", "-") + "-input-1.0.schema.json"
-        if gate.get("delivery_key") != public["delivery_key"] or (profile != "archived_review" and gate.get("check_result_id") != public["check_result_id"]):
-            raise CommandError("stale_identity", "delivery_key", "Use this exact Delivery and Check result.", 3)
+    schema = review_input_schema(public)
+    if original_profile.startswith("delivery_") and gate.get("delivery_key") != public["delivery_key"]:
+        raise CommandError("stale_identity", "delivery_key", "Use this exact Delivery.", 3)
     validate_json(public, package_root / "schemas" / schema, "input")
     expected = {
         "task_dir": public["task_ref"],

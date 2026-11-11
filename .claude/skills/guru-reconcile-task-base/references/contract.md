@@ -207,13 +207,13 @@ readiness; those owners run after implementation.
 ## Post-Implementation Conflict-Resolved Candidate
 
 The `delivery_resolved_candidate` profile is entered only from
-`guru-check-task:resolved_reconciliation_passed`. Its public input binds the
-fresh Phase 2 commit anchor, active `MERGE_HEAD`, selected new base, stage-0
+the original Reconcile owner's actual resolved-integration judgment. Its public input binds the
+actual committed candidate anchor, active `MERGE_HEAD`, selected new base, stage-0
 tree object, index-tree digest, exact parent order, branch, and commit message.
 It never consumes the ordinary Task Commit path.
 
 `execute-resolved-base-reconciliation` accepts only the exact branch-bound task
-worktree with `HEAD == phase2_commit_anchor`, one `MERGE_HEAD == new_base_head`,
+worktree with `HEAD == committed_candidate_anchor`, one `MERGE_HEAD == new_base_head`,
 zero unresolved entries, zero unstaged parent business or untracked paths, and no other Git
 sequencer. Only the exact current `task_ref/task.json`, already validated through
 the public Task/Delivery identity, may retain an unstaged regular-file metadata
@@ -228,20 +228,18 @@ If stdout is lost after that commit, the same request may recover only when
 current `HEAD` has the exact reviewed parents, tree, and message in a terminal
 Git state with only the same current-Task metadata exception. Recovery preserves
 its current bytes and index entry, returns the existing commit and never creates a
-second commit. Resolved Check records no public Check gate, and this executor
-does not advance the public Delivery phase. The Delivery remains in checking.
-Before Full Review, the original Check owner invokes public rework to
-implementation. The implementation owner retains content base B and binds the
-actual reconciled HEAD with `begin_check`; the Check owner reviews current
-applicability and records a fresh candidate-bound public Check.
-This preserves the Delivery identity, plan
-and existing reconciled commit; still-valid test evidence need not be rerun.
-`project-resolved-full-review` combines that checked result with explicit Branch
-Review authoring only after validating the actual current public Check owner,
-passed result, predecessor applicability, exact reconciled HEAD/base, live
-candidate bytes and scope/plan/evidence references. A token by itself is not
-sufficient. It emits the complete current `delivery_branch_review` input. This marker-free deterministic projection is not a
-Reconcile external exit; bounded base continuity is not used for this path.
+second commit. The executor records no public Check gate and does not advance the public
+Delivery phase. The original implementation owner retains fixed B, legally
+re-enters implementation when required and binds the actual reconciled HEAD
+with begin_check. It does not repeat an independent pre-review Check.
+`project-resolved-full-review` consumes the version2.0 resolved input/result,
+explicit Review authoring and actual candidate. It verifies checking phase,
+exact reconciled HEAD/base, complete fixed B, and current candidate content.
+It emits Review input2.0 without check_result_id. Conflict resolution, both
+parents, combined semantics and affected unchanged consumers remain in the
+single committed Review's complete scope. This projection is deterministic;
+it is not a Review pass or a Reconcile external exit. Old version1.0 inputs and
+Check-bound projections require the pinned complete provider in MIGRATION-794.
 
 ## Exits
 
