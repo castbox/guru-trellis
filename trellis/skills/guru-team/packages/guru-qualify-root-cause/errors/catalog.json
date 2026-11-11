@@ -35,7 +35,7 @@
       "trigger": "A current Git identity, target locator, candidate set, result digest, or consumer binding changed.",
       "exit_status": 3,
       "locator": "field_path",
-      "remediation": "Reread live evidence and rerun the complete qualification invocation."
+      "remediation": "Return to the original caller with live evidence, apply references/applicability.md, and bind current facts for any required new invocation; never patch or replay the stale envelope."
     },
     {
       "code": "unsafe_path",

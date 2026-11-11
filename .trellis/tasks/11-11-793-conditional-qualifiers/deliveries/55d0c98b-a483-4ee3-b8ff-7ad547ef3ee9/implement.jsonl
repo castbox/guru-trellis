@@ -1,0 +1,14 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整写作规范及恢复加载"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批规划正文与来源完整条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计深度与章节职责"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "执行验证Policy与Docs Plan"}
+{"file": "trellis/skills/guru-team/packages/guru-qualify-normal-scenario/references/contract.md", "reason": "原场景准入及拒绝consumer兼容"}
+{"file": "trellis/skills/guru-team/packages/guru-qualify-solution-mechanism/references/contract.md", "reason": "authority placement及原非通过出口"}
+{"file": "trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md", "reason": "root条件前置目标方法与采用刷新"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "十一边界协调器与原typed router"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value及最小验证范围"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "短reference公开声明与I/O迁移"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "完整五原则及真实必要性"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concern及晋升前后质量链"}
+{"file": ".trellis/tasks/11-11-793-conditional-qualifiers/deliveries/55d0c98b-a483-4ee3-b8ff-7ad547ef3ee9/architecture-contribution.md", "reason": "真实隔离贡献与拟晋升责任"}
+{"file": ".trellis/tasks/11-11-793-conditional-qualifiers/deliveries/55d0c98b-a483-4ee3-b8ff-7ad547ef3ee9/adr-conditional-qualification.md", "reason": "条件调用对旧前置的窄替代"}

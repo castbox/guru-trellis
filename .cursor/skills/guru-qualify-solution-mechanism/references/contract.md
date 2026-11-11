@@ -9,9 +9,14 @@ gates, or business evidence. `guru-qualify-normal-scenario` remains the separate
 owner of whether a scenario itself is in scope. Neither owner substitutes for
 the caller's planning, implementation, test, review, or publication judgment.
 
+[Applicability](applicability.md) owns the loading, adoption and refresh
+conditions. The original caller reads it before this full contract and judges
+whether dedicated mechanism admission is needed, without deciding suitability.
+
 ## Closed callers
 
-The supported profiles are the ten existing lifecycle profiles:
+The supported profiles are the existing lifecycle profiles below, plus the
+Author candidate profile defined at the end:
 `task_free_pre_write`, `task_free_evolution`, `requirements_scope_set`,
 `change_request_candidate_set`, `planning_scenario_set`,
 `implementation_discovery`, `base_impact_candidate_set`, `phase2_candidate_set`,
@@ -53,6 +58,14 @@ is not an automatic current obligation. Do not promote defaults/recommendations
 or diagnostic gaps into rejection of otherwise legal configuration; retain
 authority-defined ranges and protection invariants. Scope or authority changes
 return to their existing owner instead of being disguised as mechanism repair.
+
+OS locks (`flock`, `fcntl`, lock files, inode ownership), `/proc`, PID/PGID/SID
+or process trees, liveness scans, FD identity/inheritance, signals, `kill`,
+process-group control and equivalent kernel/process/descriptor wrappers are
+never business authority. Ordinary files and directories remain valid for
+state, artifacts, logs, caches, configuration and durable records when their
+existence, inode, FD or open state is not used as authority, fencing, leader
+election or a concurrency protocol.
 
 The prohibition is semantic, not lexical. A helper, test, framework, shared
 library, deployment utility, monitor, validator, recovery path, or evidence
@@ -116,9 +129,12 @@ Recorder/checker commands are stdin/stdout only. They may verify schema shape,
 fixed profile/caller identity, current Git and planning identities, safe
 locators, exact candidate coverage, digests, and consumer binding. They may not
 inspect mechanism meaning, select a route, persist authorization, or create a
-qualification report, persistent decision state, checkpoint, handoff, or result file. Any material
-authority, dependency graph, mechanism, candidate, diff, test, or target change
-requires a complete fresh invocation.
+qualification report, persistent decision state, checkpoint, handoff or result file.
+Adoption and material-change refresh follow [applicability](applicability.md).
+A stage/caller or unrelated byte change alone does not repeat semantic admission.
+Each new invocation still binds current facts and never replays an old envelope.
+A legitimately untriggered qualifier has no result to consume; missing or invalid
+results from an entered invocation retain their original fail-closed handling.
 
 ## Author candidate set
 

@@ -20,9 +20,10 @@ to task creation after their own fresh gates. It does not persist the private
 `issue-review.json`-shaped result under the task.
 
 Before any newly observed scenario participates in readiness, scope conclusion,
-finding, requested test, clarification, or blocking route, the owner forms a
-candidate-only set and invokes
-`guru-qualify-normal-scenario:change_request_candidate_set`. Candidate inputs
+finding, requested test, clarification, or blocking route, the owner follows
+[Qualification Applicability](../SKILL.md#qualification-applicability).
+When normal requires a current invocation, form its actual nonempty candidate-only
+set and invoke `guru-qualify-normal-scenario:change_request_candidate_set`. Candidate inputs
 contain no decision, scenario class, severity, route, or caller assertion of a
 normal path. `classified` returns to this owner;
 `scope_confirmation_required` routes to requirements clarification;

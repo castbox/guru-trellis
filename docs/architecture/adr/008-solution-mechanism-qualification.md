@@ -39,8 +39,8 @@ severity、implementation route 或 publication readiness。
 
 ## Consequences
 
-公共图谱新增一个 semantic owner，caller 需要提交 profile-specific
-candidate set；workflow、registry、preset 和三平台投影必须保持同一
+公共图谱保留该独立 semantic owner。原 caller 先读原包的短适用条件，
+触发且无仍适用结论时才提交实际适用非空 profile-specific candidate set；workflow、registry、preset 和三平台投影必须保持同一
 public identity。该变化走 `target_native`，不保留 legacy dual-read、
 compatibility adapter 或业务仓迁移。Architecture shared current 仍由
 现有 promotion owner 单写，task-owned contribution 在独立 committed

@@ -32,7 +32,7 @@ def _validate_locator(value: str, field: str) -> None:
 def _git(repo: Path, *args: str) -> str:
     proc = subprocess.run(["git", *args], cwd=repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if proc.returncode:
-        raise CommandError("stale_identity", "public_input.target", "Reread the current Git identity and rerun qualification.", 3)
+        raise CommandError("stale_identity", "public_input.target", "Return to the original caller, reread current Git facts and applicability, and construct any required fresh invocation without replaying this envelope.", 3)
     return proc.stdout.strip()
 
 
@@ -44,7 +44,7 @@ def verify_current_facts(public_input: dict, repo: Path) -> None:
         if key.endswith("_head") or key == "review_commit":
             _git(repo, "cat-file", "-e", f"{value}^{{commit}}")
             if key in current_fields and value != current_head:
-                raise CommandError("stale_identity", f"public_input.target.{key}", "Reread the current checkout HEAD and rerun qualification.", 3)
+                raise CommandError("stale_identity", f"public_input.target.{key}", "Return to the original caller, reread current HEAD and applicability, and construct any required fresh invocation without replaying this envelope.", 3)
         if key.endswith("_path"):
             _validate_repo_path(repo, value, f"public_input.target.{key}", must_exist=True)
         elif key.endswith("_paths"):
@@ -75,10 +75,10 @@ def verify_current_facts(public_input: dict, repo: Path) -> None:
                     raise CommandError('stale_identity', exc.field_path, exc.remediation, 3) from exc
             planning_paths = [(task_path / name).as_posix() for name in ("prd.md", "design.md", "implement.md")]
         if target["planning_identity"] != file_set_identity(repo, planning_paths):
-            raise CommandError("stale_identity", "public_input.target.planning_identity", "Reread the current planning files and rerun qualification.", 3)
+            raise CommandError("stale_identity", "public_input.target.planning_identity", "Return to the original caller, reread current planning and applicability, and construct any required fresh invocation without replaying this envelope.", 3)
     if "author_identity" in target:
         if target["author_identity"] != file_set_identity(repo, target["author_paths"]):
-            raise CommandError("stale_identity", "public_input.target.author_identity", "Reread the current source/candidate evidence and rerun Author qualification.", 3)
+            raise CommandError("stale_identity", "public_input.target.author_identity", "Return to Author, reread current source/candidate evidence and applicability, and construct any required fresh invocation without replaying this envelope.", 3)
     for row in public_input["candidate_locators"]:
         for locator in row["locators"]:
             if locator.startswith("path:"):
@@ -94,4 +94,4 @@ def _validate_repo_path(repo: Path, value: str, field: str, *, must_exist: bool)
         if current.exists() and current.is_symlink():
             raise CommandError("unsafe_path", field, "Do not read qualification evidence through a symlink.")
     if must_exist and not candidate.is_file():
-        raise CommandError("stale_identity", field, "Reread the current repository locator and rerun qualification.", 3)
+        raise CommandError("stale_identity", field, "Return to the original caller, reread the current locator and applicability, and construct any required fresh invocation without replaying this envelope.", 3)

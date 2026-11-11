@@ -21,6 +21,21 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Qualification Applicability
+
+At this Skill's candidate boundary, first read the original owners' short
+[normal](../guru-qualify-normal-scenario/references/applicability.md),
+[solution](../guru-qualify-solution-mechanism/references/applicability.md), and
+[root](../guru-qualify-root-cause/references/applicability.md) conditions before
+loading any qualifier in full. This owner judges each condition independently
+from current authority, actual candidates and material changes; it does not
+copy a qualifier's complete verdict. Adopt a still-applicable conclusion. Only
+when an owner's conditions require a current invocation, explicitly load that
+stable Skill and invoke it with its real applicable nonempty set and the
+profile below. If it does not trigger, load no qualifier body, assemble no
+input and emit no empty, classified or skipped result for it. The complete
+current-stage judgment and all applicable non-passing routes remain required.
+
 Enter this Skill for its declared stage/profile purpose under the workflow's
 review entry. An independent read-only request retains its selected range even
 with a bound Task/Delivery and enters `guru-review-change` in standalone mode.
@@ -86,9 +101,11 @@ feature, or a passing check. An empty set does not establish `passed`,
 Architecture, Docs, range, dimension, evidence, freshness and route condition
 still applies. Bounded continuity remains bounded and archived review read-only.
 
-When real candidates exist, invoke the existing normal-scenario and
-solution-mechanism owners, then root-cause qualification for eligible refs,
-using `branch_review_candidate_set`. Keep every actual terminal classification,
+When real candidates exist, apply Qualification Applicability independently
+for each owner, using `branch_review_candidate_set` only when its conditions
+require a current invocation. Root accepts this owner's current scenario and
+authority-placement judgments plus actual outcomes of upstream owners that
+triggered; no result is demanded from a correctly untriggered owner. Keep every actual terminal classification,
 witness and semantic disposition. Nonempty all-rejected candidates are distinct
 from no candidates. Every finding, proposal, observation, follow-up and rejected
 candidate still binds a classified ref; an empty set cannot carry such a row.
@@ -136,9 +153,11 @@ candidate qualification. A negative finding or impact conclusion cannot rely
 on a single-language zero result, and no query process enters the gate or DTO.
 
 Validate all eight entry preconditions in workflow or standalone mode. Perform one
-independent semantic review of the complete current range. When real candidates exist, form only candidate
-refs and live locators, then invoke `guru-qualify-normal-scenario` with
-`branch_review_candidate_set` before assigning severity.
+independent semantic review of the complete current range. When real candidates
+exist, apply Qualification Applicability. If normal requires a current
+invocation, form only its applicable candidate refs and live locators, then
+invoke `guru-qualify-normal-scenario` with `branch_review_candidate_set` before
+assigning that candidate severity.
 For delete, replace, merge, or compatibility-impacting ranges, apply
 `.trellis/spec/workflow/subtraction-first-compatibility.md`: independently
 recompute `code_subtraction` and `docs_ssot_subtraction`, verify deprecated-asset
@@ -168,7 +187,8 @@ review gate records only this owner's final classifications and direct-consumer
 witness, never a qualification artifact.
 
 For a real candidate, before a proposed review mechanism participates in severity, findings, scope,
-or blocker judgment, invoke `guru-qualify-solution-mechanism` with
+or blocker judgment, apply solution's conditions. When they require a current
+invocation, invoke `guru-qualify-solution-mechanism` with
 `branch_review_candidate_set`. A `mechanism_revision_required` result removes
 or replaces only that mechanism and returns to task work for fresh
 qualification; it never enters scope confirmation.
@@ -202,8 +222,8 @@ approved-plan work only. A planning-external observation must stop before any
 edit, added test, self-fix, severity, classification, or route and return only
 `candidate_ref`, `observed_behavior`, `locators`, and
 `minimal_reproduction_hint`. This owner rereads the live range and authority
-and completes fresh qualification before continuing the review or dispatching
-another worker for that candidate. Upstream-owned `trellis-*` agent files stay
+and applies Qualification Applicability, refreshing affected judgments before
+continuing the review or dispatching another worker for that candidate. Upstream-owned `trellis-*` agent files stay
 unchanged.
 
 Current-scope qualified findings return `implementation_required`; fixes must
@@ -273,19 +293,24 @@ integration HEAD/tree and never creates a new full Review result. Checkpoints
 are scoped by public Delivery UUID. Their legacy schemas serve historical
 inventory only, never a current development fallback.
 
-For a nonempty actual candidate set at this boundary, consume actual normal-scenario and solution-mechanism
-outcomes before loading `guru-qualify-root-cause` with `branch_review_candidate_set`. Supply only eligible
-refs. New or materially changed incident/protection mechanisms enter that owner;
-ordinary features receive its stable applicability disposition. Consume a
-still-applicable same-mechanism conclusion on later stages and independently
-review this stage's current work/evidence; caller change alone does not repeat
-qualification. Root `classified` continues this stage, retaining diagnosis or
-mitigation disposition without claiming repair. `mechanism_revision_required`
-removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
-the unsupported repair and continues bounded investigation of the returned
-gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
-symptom suppression into unrelated scope confirmation, cache qualifications,
-or use qualification as completion. Actual scope changes use existing routes.
+At this candidate boundary, apply the original
+[root conditions](../guru-qualify-root-cause/references/applicability.md).
+When they require a current invocation, explicitly load `guru-qualify-root-cause`
+with `branch_review_candidate_set` and supply only actual eligible refs. This caller uses its
+current scenario and authority-placement judgments and consumes actual normal
+or solution outcomes when those owners triggered. It never requires an outcome
+from an owner that correctly did not trigger. Adopt a still-applicable
+same-mechanism conclusion and independently review this stage's current
+work/evidence; stage or caller change alone does not repeat qualification.
+Material changes refresh only affected judgments; a lost necessary conclusion
+returns to its original owner for recovery or fresh judgment. Root `classified`
+continues this stage, retaining diagnosis or mitigation disposition without
+claiming repair. `mechanism_revision_required` removes/replaces that mechanism
+and reenters; `diagnosis_required` pauses only the unsupported repair and
+continues bounded investigation of the returned gaps through this owner, then
+resubmits. A concrete `blocked` stops. Do not turn symptom suppression into
+unrelated scope confirmation, cache qualifications, or use qualification as
+completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

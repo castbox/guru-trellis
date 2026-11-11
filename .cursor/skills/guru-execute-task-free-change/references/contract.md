@@ -95,13 +95,16 @@ interaction/stop rather than creating a Task to restore context. The Guru
 workflow caller, not this package or upstream code, owns consumption of
 `trellis-continue:no_current_task` into this route.
 
-The owner forms a candidate-only set before its pre-write decision and invokes
-`guru-qualify-normal-scenario:task_free_pre_write`. A candidate contains only a
+Before its pre-write decision, this owner follows
+[Qualification Applicability](../SKILL.md#qualification-applicability).
+When normal requires a current invocation, form its real nonempty candidate-only
+set and invoke `guru-qualify-normal-scenario:task_free_pre_write`.
+A candidate contains only a
 stable ref, observed behavior, current code/test locator, and the minimum live
 reread locator; it carries no scenario class, decision, severity, route, or
 authorization. Newly discovered behavior/scope/risk candidates use
-`task_free_evolution` before this owner decides whether bounded execution
-remains suitable. `classified` and `mechanism_revision_required` return to this
+`task_free_evolution` when the respective owner's conditions require a current
+invocation, before this owner decides whether bounded execution remains suitable. `classified` and `mechanism_revision_required` return to this
 owner, `scope_confirmation_required` routes to `guru-clarify-requirements`, and
 `blocked` stops. A rejected classification cannot cause a question, negative
 test, edit, or expansion route. This package writes and rereads no qualification

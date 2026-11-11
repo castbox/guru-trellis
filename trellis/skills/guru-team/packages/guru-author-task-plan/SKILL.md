@@ -12,6 +12,21 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Qualification Applicability
+
+At this Skill's candidate boundary, first read the original owners' short
+[normal](../guru-qualify-normal-scenario/references/applicability.md),
+[solution](../guru-qualify-solution-mechanism/references/applicability.md), and
+[root](../guru-qualify-root-cause/references/applicability.md) conditions before
+loading any qualifier in full. This owner judges each condition independently
+from current authority, actual candidates and material changes; it does not
+copy a qualifier's complete verdict. Adopt a still-applicable conclusion. Only
+when an owner's conditions require a current invocation, explicitly load that
+stable Skill and invoke it with its real applicable nonempty set and the
+profile below. If it does not trigger, load no qualifier body, assemble no
+input and emit no empty, classified or skipped result for it. The complete
+current-stage judgment and all applicable non-passing routes remain required.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
@@ -23,7 +38,8 @@ any planning write. Actually load the applicable templates through the
 do not treat their links or seed files as completed writing. Workflow and
 standalone modes use the same current
 TaskId/generation, source, checkout, upstream output and dependency checks.
-Before `author_candidate_set` qualification, load the shared public
+Only when a current `author_candidate_set` invocation is required after
+Qualification Applicability, load the shared public
 [file-set identity format and recipe](../guru-qualify-normal-scenario/references/contract.md#file-set-identity).
 
 For each Delivery profile, first check this receiving session's own public

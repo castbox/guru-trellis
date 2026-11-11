@@ -435,13 +435,19 @@ contract is preserved in `README.pre-434.md` for historical diagnosis only.
 
 ## 根因候选资格
 
-新增 semantic `guru-qualify-root-cause` 在现有十个 candidate profiles 中承接
-normal-scenario、solution-mechanism 的实际合格结果。根因未知的有界诊断可以
+三个原 qualifier 各自拥有 `references/applicability.md`；原 caller 在加载全文前
+读取条件，独立判断是否触发。触发且无仍适用结论时显式调用原 stable Skill；
+未触发不作空判定。十类 lifecycle profiles 及已有 Author profile 保留原 consumer。
+`guru-qualify-root-cause` 承接 caller 当前场景、authority-placement 判断与实际
+触发的上游结果，不要求正确未触发的 qualifier 产生结果。根因未知的有界诊断可以
 继续；有独立效果、风险、owner 和退出依据的缓解保留 `mitigation_only`。
 修复证据不足返回诊断，症状抑制只返回机制移除/替换。四出口为
 `classified`、`mechanism_revision_required`、`diagnosis_required`、`blocked`。
 同机制结论仍适用时由后续阶段消费；新/实质变化机制重新资格。阶段仍审当前
 实现和证据，qualification 不等于完成，#383 拥有共同完成语义。
+
+完整采用与在途接续见 [MIGRATION-793](./MIGRATION-793.md)。
+适用条件由各原包独占，README 不复制资格判据。
 
 完整 preset 安装后使用 public discovery 和 stdin wrapper：
 

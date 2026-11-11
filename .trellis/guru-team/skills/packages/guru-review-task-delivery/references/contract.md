@@ -126,9 +126,13 @@ not become no-defect candidates. An empty set does not establish `ready`:
 Architecture, Docs/RDT, complete Branch Review, Delivery policy, evidence,
 freshness, truthful Refs-only payload and every route condition still apply.
 
-For real candidates, use the existing normal-scenario and solution-mechanism
-owners with `publication_candidate_set`, then root-cause qualification for
-eligible refs. Preserve actual terminal classifications and witnesses,
+For real candidates, follow
+[Qualification Applicability](../SKILL.md#qualification-applicability)
+independently for each owner. Use `publication_candidate_set` only when that
+owner's conditions require a current invocation. Root consumes this owner's
+current scenario and authority-placement judgments and actual outcomes of
+upstream owners that triggered, without requiring outcomes from correctly
+untriggered owners. Preserve actual terminal classifications and witnesses,
 including nonempty all-rejected sets. Every finding and proposal still binds a
 classified candidate; neither can be attached to an empty set. The original
 planning, implementation, scope and blocked exits remain unchanged.

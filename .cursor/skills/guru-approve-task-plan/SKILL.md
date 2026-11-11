@@ -21,6 +21,21 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Qualification Applicability
+
+At this Skill's candidate boundary, first read the original owners' short
+[normal](../guru-qualify-normal-scenario/references/applicability.md),
+[solution](../guru-qualify-solution-mechanism/references/applicability.md), and
+[root](../guru-qualify-root-cause/references/applicability.md) conditions before
+loading any qualifier in full. This owner judges each condition independently
+from current authority, actual candidates and material changes; it does not
+copy a qualifier's complete verdict. Adopt a still-applicable conclusion. Only
+when an owner's conditions require a current invocation, explicitly load that
+stable Skill and invoke it with its real applicable nonempty set and the
+profile below. If it does not trigger, load no qualifier body, assemble no
+input and emit no empty, classified or skipped result for it. The complete
+current-stage judgment and all applicable non-passing routes remain required.
+
 Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
 within this Skill's existing entry and planning review. Load applicable
 specialist methods and same-source standards for the actual planned artifacts,
@@ -98,16 +113,19 @@ checklist. A current `no_architecture_impact` result creates no contribution or
 ADR burden.
 
 Before an acceptance scenario, negative test, behavior constraint, or planning
-finding participates in that review, form only the profile-specific candidate
+finding participates in that review, apply Qualification Applicability.
+When normal requires a current invocation, form only its applicable nonempty
 set and invoke `guru-qualify-normal-scenario` with `planning_scenario_set`.
-Assign no severity or revision action before `classified` returns. Rejected
+That candidate receives no severity or revision action before the actual
+`classified` outcome establishes eligibility. Rejected
 candidates cannot become scope clarification, acceptance, tests, or
 implementation work. Mechanism revision removes/replaces the task-introduced
 mechanism and reruns qualification; blocked stops. No qualification state is
 written to planning runtime or task files.
 
 Before a proposed mechanism participates in planning acceptance, tests,
-findings, or revision actions, invoke `guru-qualify-solution-mechanism` with
+findings, or revision actions, apply solution's conditions. When they require
+a current invocation, invoke `guru-qualify-solution-mechanism` with
 `planning_scenario_set`. A `mechanism_revision_required` result removes or
 replaces only the task-introduced mechanism and returns here for fresh
 qualification; it never becomes scope clarification.
@@ -135,19 +153,24 @@ closed. This package requires the complete compatible Guru Team preset runtime
 and is not self-contained or portable.
 
 
-At this candidate boundary, consume actual normal-scenario and solution-mechanism
-outcomes before loading `guru-qualify-root-cause` with `planning_scenario_set`. Supply only eligible
-refs. New or materially changed incident/protection mechanisms enter that owner;
-ordinary features receive its stable applicability disposition. Consume a
-still-applicable same-mechanism conclusion on later stages and independently
-review this stage's current work/evidence; caller change alone does not repeat
-qualification. Root `classified` continues this stage, retaining diagnosis or
-mitigation disposition without claiming repair. `mechanism_revision_required`
-removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
-the unsupported repair and continues bounded investigation of the returned
-gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
-symptom suppression into unrelated scope confirmation, cache qualifications,
-or use qualification as completion. Actual scope changes use existing routes.
+At this candidate boundary, apply the original
+[root conditions](../guru-qualify-root-cause/references/applicability.md).
+When they require a current invocation, explicitly load `guru-qualify-root-cause`
+with `planning_scenario_set` and supply only actual eligible refs. This caller uses its
+current scenario and authority-placement judgments and consumes actual normal
+or solution outcomes when those owners triggered. It never requires an outcome
+from an owner that correctly did not trigger. Adopt a still-applicable
+same-mechanism conclusion and independently review this stage's current
+work/evidence; stage or caller change alone does not repeat qualification.
+Material changes refresh only affected judgments; a lost necessary conclusion
+returns to its original owner for recovery or fresh judgment. Root `classified`
+continues this stage, retaining diagnosis or mitigation disposition without
+claiming repair. `mechanism_revision_required` removes/replaces that mechanism
+and reenters; `diagnosis_required` pauses only the unsupported repair and
+continues bounded investigation of the returned gaps through this owner, then
+resubmits. A concrete `blocked` stops. Do not turn symptom suppression into
+unrelated scope confirmation, cache qualifications, or use qualification as
+completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
