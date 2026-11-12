@@ -38,3 +38,31 @@ workflow/callers 和 #382 已晋升职责；窄替代范围见下文，其他职
 [DES-793](../../design/current/qualifier-applicability.md)，验证见
 [TST-793](../../test/current/qualifier-applicability.md)。实现、分发和目标业务效果
 不能互相代证，结果以原 Test 及公共 Gate/Git 事实为准。
+
+## explicit-task 完整身份（REQ-812）
+
+来源为 [#812](https://github.com/castbox/guru-trellis/issues/812)，适用前驱为 Git
+f16bb562e4ea844939786cebd5c6c20e686914b2。本节承接已接受目标，由原 RDT owner 在 #812 final_integration 整合；独立 committed Review 尚待执行。
+它补充 REQ-793，保留三个资格 owner 的适用条件、语义与原出口。
+
+- REQ-812-01：原 Identity/Ensure/Bind 确认官方 context key 不可得时，七类
+  Task/Delivery 资格入口承接调用方真实完整 DeliveryKey。资格事实须验证当前
+  Task/generation、C4/C5、唯一 registered checkout、公开 Delivery 关系、Planning
+  与候选。成功输出由原 caller 消费并继续该阶段，不能省略既有检查取得成功。
+- REQ-812-02：官方 context 存在时，必须校验其当前 Task/Delivery 选择与显式 key
+  一致。缺失、错误、terminal 或冲突仍由原 owner 处理，不进入无 context 分支。
+  正常 generation、checkout、Planning、候选变化造成的 stale/mismatch 继续拒绝。
+- REQ-812-03：normal/solution/root 采用同一共享事实入口。AI 仍独占资格判断，
+  classified、机制修订、诊断、范围选择、blocked 保留原唯一 consumer。同 caller
+  保留自己当前调用对象，不新增 session writer、选择 authority、资格账本或授权记录。
+- REQ-812-04：受影响公开输入采用显式版本迁移，旧发布 schema/id/示例字节保留为
+  历史验证资产。原 caller、Interface、示例、runtime selector 与受管投影成套采用；
+  旧在途操作通过固定完整原 provider 恢复，未执行的旧输入由原 caller 重装，不能猜 key。
+- REQ-812-05：真实原身份 owner、三个适用 qualifier 的公开 wrapper 和 caller 后续
+  动作共同证明合法显式路径；正式 context 使用真实官方来源。确定性测试、AI 行为、
+  安装投影与交付终态分别陈述，不能互相代证。普通错误在接受范围内，恶意伪造、
+  压力竞态、crash 加固及完整多平台 Release 矩阵不在本项范围内。
+
+上述要求对应 [DES-812](../../design/current/qualifier-applicability.md#explicit-task-对象传递des-812)
+与 [TST-812](../../test/current/qualifier-applicability.md#tst-812--显式身份与续接)。
+整体交付、Closure 和必要归档仍由 Task 原 owners 判断，不以 qualifier success 代替。

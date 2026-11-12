@@ -1,3 +1,8 @@
+"""Qualifier semantic/aggregation units; original identity owners are isolated.
+
+The shared public identity chain is covered by test_qualification_identity.py;
+these fixtures do not establish native Task/Delivery behavior.
+"""
 from __future__ import annotations
 
 import copy
@@ -41,6 +46,9 @@ class SolutionMechanismQualificationRuntimeTest(unittest.TestCase):
         subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
         subprocess.run(["git", "commit", "-qm", "fixture"], cwd=self.repo, check=True)
         self.head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, stdout=subprocess.PIPE).stdout.strip()
+        identity = mock.patch("runtime.qualification_facts._delivery_planning_directory", return_value=Path(".trellis/tasks/current"))
+        identity.start()
+        self.addCleanup(identity.stop)
         self.old_cwd = Path.cwd()
         os.chdir(self.repo)
 
@@ -71,6 +79,8 @@ class SolutionMechanismQualificationRuntimeTest(unittest.TestCase):
             "branch_review_candidate_set": {"repo_locator":".","task_ref":"current","base_head":self.head,"review_head":self.head,"review_commit":self.head,"range_locator":"HEAD...HEAD"},
             "publication_candidate_set": {"repo_locator":".","task_ref":"current","review_commit":self.head,"publication_payload_locator":"pull-request:draft","publication_payload_identity":"b"*64},
         }
+        if "task_ref" in targets[profile]:
+            targets[profile]["delivery_key"] = {"task_id": "current", "lifecycle_generation": 0, "delivery_id": "11111111-1111-4111-8111-111111111111"}
         return {"profile":profile,"mode":mode,"caller":callers[profile],"target_locator":".trellis/tasks/current","target":targets[profile],"candidate_refs":["candidate-1"],"candidate_locators":[{"candidate_ref":"candidate-1","locators":["path:AGENTS.md"]}]}
 
     def semantic(self, profile: str = "implementation_discovery", exit_id: str = "classified", decision: str = "qualified_current", mode: str = "workflow") -> dict:

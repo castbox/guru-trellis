@@ -1,0 +1,11 @@
+{"file": ".trellis/tasks/11-12-812-explicit-task-qualification/prd.md", "reason": "整体 accepted scope 与完成责任"}
+{"file": ".trellis/tasks/11-12-812-explicit-task-qualification/deliveries/b16230bb-e24c-4d8e-8709-764cc35c3538/prd.md", "reason": "本批完整要求和公开验收"}
+{"file": ".trellis/tasks/11-12-812-explicit-task-qualification/deliveries/b16230bb-e24c-4d8e-8709-764cc35c3538/design.md", "reason": "本批机制、接口和迁移"}
+{"file": ".trellis/tasks/11-12-812-explicit-task-qualification/deliveries/b16230bb-e24c-4d8e-8709-764cc35c3538/implement.md", "reason": "唯一 Policy、Docs Plan 和验证步骤"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实质输出前完整读取"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "正文完整性和来源合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批方案模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实施与证据模板"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证与证据层级"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进和旧资产边界"}

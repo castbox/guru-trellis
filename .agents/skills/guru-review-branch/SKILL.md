@@ -401,3 +401,15 @@ minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
 
 For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.
+
+## Qualification target identity
+
+For a required `branch_review_candidate_set` invocation, use input 2.0 and
+load the original qualifier's
+[explicit-target contract](../guru-qualify-normal-scenario/references/contract.md#explicit-taskdelivery-target).
+Supply this invocation's actual complete DeliveryKey as `target.delivery_key`,
+after the original Identity/Ensure/Bind/selection checks. Retain this caller's
+TaskRef/key/profile and purpose in memory while consuming the original result;
+resume this same stage and its remaining obligations. Do not infer identity
+from inventory or create qualification state. A present official context must
+match; only a truly absent key uses explicit-task validation.

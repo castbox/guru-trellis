@@ -137,3 +137,13 @@ The original result remains available only for this bounded same-owner
 recovery. The original owner retires it when its consumer finishes. Recovery proves planning handoff usability only; Author,
 Wording, Architecture, Approval and current independent Review retain their own entry and
 judgment. It establishes no Planning, Check, publication or Task Completion pass.
+
+## Qualification input compatibility
+
+Within this owner's existing supported pinned-old/recovery boundary only,
+`phase2_candidate_set` uses input 2.0 with the actual `target.delivery_key`.
+Load the original qualifier's
+[explicit-target contract](../../guru-qualify-normal-scenario/references/contract.md#explicit-taskdelivery-target).
+The original caller retains its invocation context and consumes its original
+result. This input evolution does not activate this retired current Check path;
+old in-flight operations still use their complete pinned provider.

@@ -36,8 +36,46 @@ def _git(repo: Path, *args: str) -> str:
     return proc.stdout.strip()
 
 
+def _delivery_planning_directory(repo: Path, target: dict) -> Path:
+    """Resolve the caller's object through the original identity and selection owners."""
+    from runtime.delivery_projection.adapter import DeliveryProjection
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    from runtime.task_lifecycle.branch_resolution import _control_state
+    from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+    from runtime.task_lifecycle.git_facts import inspect_repository
+    from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+
+    task_path = Path(target["task_ref"])
+    if task_path.parts[:2] != (".trellis", "tasks"):
+        task_path = Path(".trellis/tasks") / task_path
+    _validate_locator(task_path.as_posix(), "public_input.target.task_ref")
+    try:
+        projection = DeliveryProjection(repo, task_path.as_posix())
+        key = target["delivery_key"]
+        # Public parsing validates the opaque key before the shared checkout
+        # reader accesses its identity. Context selection is checked separately.
+        projection.resolve(key)
+        projection._require_explicit_task(key)
+        repository = inspect_repository(repo)
+        binding, ownership = _control_state(BranchBindingStore(repository), ResourceLedgerStore(repository),
+                                             TaskLifecycleKey(key["task_id"], key["lifecycle_generation"]))
+        if binding is None or ownership is None:
+            raise LifecycleContractError("branch_association_missing", "control_state",
+                                         "Return to the original Branch/Ensure owner for current C4/C5 facts.")
+        current = projection.current(key)
+        if current.get("kind") == "error":
+            raise LifecycleContractError(current["code"], "session", current["message"])
+        if current.get("kind") != "current" or current.get("key") != key:
+            raise CommandError("stale_identity", "public_input.target.delivery_key",
+                               "Return to the original identity/selection owner for this exact current Delivery; an available context cannot use explicit fallback.", 3)
+        return projection.planning_directory(key).relative_to(repo.resolve())
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+
+
 def verify_current_facts(public_input: dict, repo: Path) -> None:
     target = public_input["target"]
+    planning_directory = _delivery_planning_directory(repo, target) if "delivery_key" in target else None
     current_head = _git(repo, "rev-parse", "HEAD")
     current_fields = {"checkout_head", "task_head", "review_head", "review_commit"}
     for key, value in target.items():
@@ -51,29 +89,10 @@ def verify_current_facts(public_input: dict, repo: Path) -> None:
             for index, item in enumerate(value):
                 _validate_repo_path(repo, item, f"public_input.target.{key}.{index}", must_exist=False)
     if "planning_identity" in target:
-        if "planning_paths" in target:
-            planning_paths = target["planning_paths"]
-        else:
-            task_ref = target["task_ref"]
-            task_path = Path(task_ref)
-            if task_path.parts[:2] != (".trellis", "tasks"):
-                task_path = Path(".trellis/tasks") / task_path
-            metadata = repo / task_path / 'task.json'
-            if metadata.is_file() and json.loads(metadata.read_text()).get('schema_version') == '2.0':
-                from runtime.delivery_projection.adapter import DeliveryProjection
-                from runtime.task_lifecycle.errors import LifecycleContractError
-                try:
-                    projection = DeliveryProjection(repo, task_path.as_posix())
-                    current = projection.current()
-                    record = projection.read_record()
-                    key = current.get('key', {})
-                    if (current.get('kind') != 'current' or key.get('task_id') != record['id']
-                            or key.get('lifecycle_generation') != record['lifecycle_generation']):
-                        raise CommandError('stale_identity', 'public_input.target.task_ref', 'Select the exact current Delivery before qualifying its plan.', 3)
-                    task_path = projection.planning_directory(key).relative_to(repo.resolve())
-                except LifecycleContractError as exc:
-                    raise CommandError('stale_identity', exc.field_path, exc.remediation, 3) from exc
-            planning_paths = [(task_path / name).as_posix() for name in ("prd.md", "design.md", "implement.md")]
+        planning_paths = [(planning_directory / name).as_posix() for name in ("prd.md", "design.md", "implement.md")]
+        if "planning_paths" in target and set(target["planning_paths"]) != set(planning_paths):
+            raise CommandError("stale_identity", "public_input.target.planning_paths",
+                               "Use the exact three planning files belonging to the supplied DeliveryKey.", 3)
         if target["planning_identity"] != file_set_identity(repo, planning_paths):
             raise CommandError("stale_identity", "public_input.target.planning_identity", "Return to the original caller, reread current planning and applicability, and construct any required fresh invocation without replaying this envelope.", 3)
     if "author_identity" in target:

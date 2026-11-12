@@ -2142,7 +2142,24 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 cwd=owner,
                 check=True,
             )
+            from runtime.delivery_projection.tests.upstream_fixture import scripts_source
+            installed = owner / ".trellis/guru-team"
+            shutil.copytree(scripts_source(), owner / ".trellis/scripts")
+            (owner / ".trellis/workflow.md").write_bytes((SKILLS.parents[2] / "trellis/workflows/guru-team/workflow.md").read_bytes())
+            for name in ("runtime",):
+                shutil.copytree(SKILLS / name, installed / name)
+            for name in ("schemas", "contracts", "consumers", "packages"):
+                shutil.copytree(SKILLS / name, installed / "skills" / name)
+            subprocess.run([sys.executable, "-S", str(installed / "runtime/bootstrap.py"), "--repo", str(owner),
+                "--runtime-assets", str(installed / "runtime"), "--repair", "--python", sys.executable, "--json"], check=True, capture_output=True)
+            from runtime.bootstrap import active_pointer_path
+            selection = active_pointer_path(owner)
+            selection_before = selection.read_bytes()
             facts_path = eval_support.stage_qualification_public_authoring_fixture(owner)
+            self.assertEqual(selection.read_bytes(), selection_before)
+            self.assertEqual({path.relative_to(owner) for path in (owner / ".trellis/.runtime").rglob("*") if path.is_file()},
+                             {selection.relative_to(owner)})
+            self.assertEqual(eval_support.runtime_residue(owner), [])
             subprocess.run(["git", "add", "."], cwd=owner, check=True)
             subprocess.run(["git", "commit", "-q", "-m", "owner fixture"], cwd=owner, check=True)
             head = subprocess.run(
@@ -2156,11 +2173,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             self.assertEqual(set(facts), {"schema_version", "targets"})
             self.assertEqual(facts["schema_version"], "1.0")
             self.assertEqual(set(facts["targets"]), set(callers))
-            planning_paths = [
-                ".trellis/tasks/current/prd.md",
-                ".trellis/tasks/current/design.md",
-                ".trellis/tasks/current/implement.md",
-            ]
+            planning_paths = facts["targets"]["planning_scenario_set"]["target"]["planning_paths"]
             planning_rows = [
                 {
                     "path": path,
@@ -2224,7 +2237,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 schema_path = (
                     SKILLS
                     / "packages/guru-qualify-normal-scenario/schemas"
-                    / f"public-{profile.replace('_', '-')}-input.schema.json"
+                    / f"public-{profile.replace('_', '-')}-input{'-2.0' if 'delivery_key' in target else ''}.schema.json"
                 )
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
                 errors = list(Draft202012Validator(schema).iter_errors(public_input))

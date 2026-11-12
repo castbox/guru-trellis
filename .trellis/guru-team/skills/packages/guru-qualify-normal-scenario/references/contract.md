@@ -50,6 +50,46 @@ classification, scope clarification, or mechanism revision.
 
 Workflow and standalone modes use the same evidence and judgment. Each input is a closed profile contract containing its fixed profile and caller, one current target identity, a non-empty unique `candidate_refs` set, and the minimum locators needed for live reread. Do not accept severity, scenario class, a proposed decision or exit, authorization text, an earlier qualification result, a shared artifact locator, a raw worker report, a search transcript, or a caller assertion that a path is normal.
 
+## Explicit Task/Delivery target
+
+The seven Task/Delivery profiles (`author_candidate_set`, `planning_scenario_set`,
+`implementation_discovery`, `base_impact_candidate_set`, `phase2_candidate_set`,
+`branch_review_candidate_set`, `publication_candidate_set`) select input 2.0 through
+aggregate 3.0. Each requires opaque `target.delivery_key` from the original caller's
+actual Identity/Ensure/Bind/Delivery selection or current query. The key carries
+TaskId, current generation and Delivery identity. The installed public API owns
+its parsing; callers do not infer it from inventory, paths or digests.
+
+Before invocation, the caller retains its own TaskRef/key/profile and stage
+purpose in the current call. The original identity owners must agree on the
+current generation, branch binding, ownership and registered checkout. When the
+official resolver has no context key, `current(key)` validates that explicit
+object without writing a session. With an available context, its official current
+selection must match the complete key. Missing, stale, terminal, erroneous or
+conflicting context facts return to their original owner; explicit parameters
+never replace that selection.
+
+The shared factual checker resolves the selected key's real `planning_root`.
+For `planning_scenario_set`, `planning_paths` must equal its three planning files;
+for other planning-identity profiles those paths come from that same root.
+`author_candidate_set` checks only its existing `author_paths` and identity, not
+future design/implementation bodies. Existing HEAD, path, file-set and candidate
+checks continue. The four non-Delivery profiles retain their existing inputs.
+`phase2_candidate_set` retains its declared pinned-old/recovery boundary; this
+input evolution does not restore a retired current Check stage.
+
+Outputs and routers retain their existing shapes and meanings. The original
+caller consumes the returned profile and candidate disposition against its own
+current invocation, then continues its original stage. Root's profile-only
+return uses that same caller-owned context. No key is added to output and no
+qualification state, binding writer or second authority is introduced.
+
+Old published profile/aggregate schemas and public-input examples remain
+historical validation assets. Current invocation selects only the versioned
+inputs. Pending old inputs return to their original caller for fresh assembly;
+completed conclusions follow applicability. See the complete provider's
+`MIGRATION-812.md` for adoption, recovery and rollback boundaries.
+
 ## 3. Scope-First Review
 
 Reread the live requirement authority, current planning, actual caller and consumer, relevant code and diff or base range, applicable tests, and repository contracts. Do not substitute a worker summary, an existing implementation, an existing test, or a prior invocation.
