@@ -35,7 +35,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-input.schema.json"
+        "schemas/public-input-2.0.schema.json"
       ],
       "validator_id": "record_plan",
       "runtime_role": "invoke"
@@ -73,7 +73,7 @@
       ],
       "side_effect": "repo_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "create_task",
@@ -150,7 +150,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "recover_result",
@@ -189,7 +189,7 @@
       ],
       "side_effect": "repo_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "public_invocation",

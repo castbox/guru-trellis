@@ -72,7 +72,7 @@ class CompositionTests(unittest.TestCase):
             "accepted_scope_identity": "scope:reviewed",
             "delivery_target": {"repo_ref": "castbox/guru-trellis", "branch_ref": "main"},
             "selected_base_ref": "main",
-            "reviewed_base_head": self.head,
+            "reviewed_base_source": {"kind": "synced_branch", "selected_ref": "main", "commit": self.head},
         }
 
     def acquisition(self, route: str = "provision_linked_worktree", disposition: str = "new_branch", invocation: Path | None = None) -> CheckoutAcquisitionPlan:
@@ -297,10 +297,10 @@ class CompositionTests(unittest.TestCase):
                 with self.assertRaises(LifecycleContractError):
                     prepare_creation_inputs(self.repo, self.creation(), invalid)
         stale = self.creation()
-        stale["reviewed_base_head"] = "a" * 40
+        stale["reviewed_base_source"]["commit"] = "a" * 40
         with self.assertRaises(LifecycleContractError) as raised:
             prepare_creation_inputs(self.repo, stale, plan)
-        self.assertEqual(raised.exception.code, "creation_base_stale")
+        self.assertEqual(raised.exception.code, "creation_base_object_unavailable")
 
     def assert_created(self, route: str, disposition: str = "new_branch", invocation: Path | None = None) -> None:
         plan = self.acquisition(route, disposition, invocation)

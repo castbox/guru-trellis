@@ -1,0 +1,21 @@
+task_id: 813-fixed-git-baseline
+source: https://github.com/castbox/guru-trellis/issues/813
+status: integrated_pending_review
+strategy: delta_first
+unit_revision: fixed-git-task-creation-813
+authority_identity: guru-trellis-rdt
+source_revision: 5c6a4591db7165ece045e6b0eb789c21d06d7d38
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/runtime-location.md
+  - docs/design/current/runtime-location.md
+  - docs/test/current/runtime-location.md

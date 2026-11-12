@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-task-input-delivery-2.0",
+  "$ref": "public-delivery-task-creation-input-2.0.schema.json"
+}

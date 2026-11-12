@@ -39,7 +39,7 @@ class CreateDeliveryChainTests(unittest.TestCase):
             fixture.git('commit', '-qm', 'Current workflow fixture')
             head = fixture.git('rev-parse', 'HEAD')
             subprocess.run(['git', 'merge', '--ff-only', head], cwd=fixture.primary, check=True, capture_output=True)
-            fixture.payload['creation']['reviewed_base_head'] = head
+            fixture.payload['creation']['reviewed_base_source']['commit'] = head
             fixture.payload['acquisition']['decision_head'] = head
 
             def create(payload):

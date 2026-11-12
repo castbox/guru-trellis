@@ -11,7 +11,7 @@ from .branch_store import BranchBinding, BranchBindingStore, TaskLifecycleKey
 from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
-from .git_facts import TaskObjectReader, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_task_history_branch_refs, list_worktree_registrations, local_branch_head
+from .git_facts import TaskObjectReader, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_task_history_branch_refs, list_worktree_registrations, local_branch_head, run_common_git
 from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_identity_reservation, task_resource_state
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
@@ -182,14 +182,14 @@ def bind_created_session(
     )
 
 
-def prepare_creation_inputs(
+def normalize_creation_inputs(
     repo_root: Path | str,
     payload: dict[str, Any],
     acquisition: CheckoutAcquisitionPlan,
 ) -> CreationInputs:
-    """Check the reviewed create requirements before a package owns any mutation."""
+    """Validate the same source and acquisition for creation and result recovery."""
 
-    data = _input("task-creation-input.schema.json", payload)
+    data = _input("task-creation-input-3.0.schema.json", payload)
     task_id = normalize_task_id(data["task_id"])
     task_ref = normalize_task_ref(data["task_ref"])
     source = normalize_source(data["reviewed_source"])
@@ -199,9 +199,18 @@ def prepare_creation_inputs(
     if source["kind"] != expected_kind:
         raise LifecycleContractError("source_profile_mismatch", "reviewed_source", "Use the reviewed source profile.")
     repository = inspect_repository(repo_root)
-    if local_branch_head(repository, selected_base) != data["reviewed_base_head"]:
-        raise LifecycleContractError("creation_base_stale", "reviewed_base_head", "Refresh the reviewed base authority.")
-    if acquisition.decision_head != data["reviewed_base_head"]:
+    base = data["reviewed_base_source"]
+    if base["kind"] == "synced_branch" and canonical_head_ref(
+        base["selected_ref"], field_path="reviewed_base_source.selected_ref",
+    ) != selected_base:
+        raise LifecycleContractError("creation_base_source_mismatch", "reviewed_base_source.selected_ref", "Project the actual synchronized branch and its Task base branch.")
+    try:
+        object_type = run_common_git(repository, ["cat-file", "-t", base["commit"]]).stdout.strip()
+    except LifecycleContractError as exc:
+        raise LifecycleContractError("creation_base_object_unavailable", "reviewed_base_source.commit", "Obtain the exact reviewed commit in the selected repository through the original base owner.") from exc
+    if object_type != "commit":
+        raise LifecycleContractError("creation_base_object_unavailable", "reviewed_base_source.commit", "Use the exact commit object from the reviewed base source.")
+    if acquisition.decision_head != base["commit"]:
         raise LifecycleContractError("creation_acquisition_mismatch", "acquisition.decision_head", "Use the acquisition plan for the reviewed base head.")
     if inspect_repository(acquisition.repository_context).common_dir != repository.common_dir:
         raise LifecycleContractError("creation_repository_mismatch", "acquisition", "Use the selected repository.")
@@ -220,14 +229,36 @@ def prepare_creation_inputs(
     if acquisition.route == "adopt_invocation_checkout":
         if acquisition.invocation_checkout is None or acquisition.provision_disposition is not None:
             raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the exact invocation checkout.")
+        if inspect_repository(acquisition.invocation_checkout).common_dir != repository.common_dir:
+            raise LifecycleContractError("creation_repository_mismatch", "acquisition.invocation_checkout", "Select the reviewed checkout in the same Git common directory.")
+    elif acquisition.provision_disposition not in {"new_branch", "existing_branch", "existing_checkout"}:
+        raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the reviewed provision disposition.")
+    return CreationInputs(
+        task_id, task_ref, data["source_profile"], source, data["accepted_scope_identity"],
+        target, selected_base, base["commit"], acquisition,
+    )
+
+
+def prepare_creation_inputs(
+    repo_root: Path | str,
+    payload: dict[str, Any],
+    acquisition: CheckoutAcquisitionPlan,
+) -> CreationInputs:
+    """Check new-creation freshness and identity availability before mutation."""
+
+    inputs = normalize_creation_inputs(repo_root, payload, acquisition)
+    repository = inspect_repository(repo_root)
+    if acquisition.route == "adopt_invocation_checkout":
         invocation = inspect_repository(acquisition.invocation_checkout)
         if invocation.git_dir == invocation.common_dir:
             raise LifecycleContractError(
                 "primary_checkout_requires_isolation", "acquisition.invocation_checkout",
                 "Review a clean linked non-base checkout for adoption or provision a linked worktree before creating the task.",
             )
-    elif acquisition.provision_disposition not in {"new_branch", "existing_branch", "existing_checkout"}:
-        raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the reviewed provision disposition.")
+    if (payload["reviewed_base_source"]["kind"] == "synced_branch"
+            and local_branch_head(repository, inputs.selected_base_ref) != inputs.reviewed_base_head):
+        raise LifecycleContractError("creation_base_stale", "reviewed_base_source.commit", "Refresh the synchronized base through the original Sync owner.")
+    task_id, task_ref = inputs.task_id, inputs.task_ref
     for registration in list_worktree_registrations(repository):
         if registration.bare:
             continue
@@ -272,13 +303,10 @@ def prepare_creation_inputs(
                 "task_identity_already_exists", str(ResourceLedgerStore(repository).path_for(TaskLifecycleKey(ledger.task_id, ledger.lifecycle_generation))),
                 "Resolve the existing task resource ledger before reusing its TaskId.",
             )
-    return CreationInputs(
-        task_id, task_ref, data["source_profile"], source, data["accepted_scope_identity"],
-        target, selected_base, data["reviewed_base_head"], acquisition,
-    )
+    return inputs
 
 
 __all__ = [
     "CreationInputs", "bind_created_session", "establish_created_control_state",
-    "prepare_creation_inputs", "recover_created_control_state",
+    "normalize_creation_inputs", "prepare_creation_inputs", "recover_created_control_state",
 ]

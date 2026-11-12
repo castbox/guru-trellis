@@ -4,8 +4,7 @@
 
 Identity：`RDT-TST-RUNTIME-LOCATION`；状态：current。本单元定义[Requirement](../../requirements/current/runtime-location.md)与[Design](../../design/current/runtime-location.md)的验证责任；实际观察按明确候选与层次记录，不把知识接受或命令绿色当整体完成。
 
-本单元 RDT 定义修订：`worktree-config-path-760`。原 owner 在 #760 D1 candidate Check 后，
-以本Task固定来源与真实 current 重读整合并写回；该标识不表示软件版本或最终 Git HEAD。
+本单元 RDT 定义修订：`fixed-git-task-creation-813`。来源为[Issue #813](https://github.com/castbox/guru-trellis/issues/813)，适用 before 为 Git `5c6a4591db7165ece045e6b0eb789c21d06d7d38`。本次细化原 R718 固定来源贯通 Creation 的定义，保留稳定身份、#760/#769 条件和历史观察截止。该标识不是软件版本或最终 Git HEAD；独立 committed Review、Delivery 和 Completion 由其原 owner 建立。
 
 ## 测试策略与可观察结果
 
@@ -14,11 +13,11 @@ Identity：`RDT-TST-RUNTIME-LOCATION`；状态：current。本单元定义[Requi
 | T718-01 / S718-ARBITRARY | R718-01/02/06→D718-01/02 | 原bootstrap形成隔离有效cache；普通Git/外部预建linked、无自动pointer、无Task，运行实际installed wrapper。观察目标代码成功、相同需求同物理venv、无新增venv/Task；位置删除后环境仍可复用。 |
 | T718-02 / S718-STABLE | R718-02/04→D718-01/02 | 多合法cache、PATH改变、不同需求分支及切回、显式兼容类别；观察有效hint保持、显式失配拒绝、patch/path复用与不同类别并存；初始化默认PATH与显式--python分别执行。 |
 | T718-03 / S718-RECOVERY | R718-03/05→D718-03 | 由原安装/维护路径在owned cache形成缺失/损坏/旧hint；公开check/repair及原wrapper重试。观察具体诊断和最终目标结果；缺seed/锁来源准确拒绝，失败保留此前可用环境/选择。 |
-| T718-04 / S718-READ | R718-07/09/10→D718-04/05 | 外部worktree、无Task、有未提交/untracked草案，明确Git对象且base未检出或其位置dirty；经原read→Discovery→Clarify/Wording/Readiness公开链到声明结果。观察固定tree内容和候选分别绑定，无隐式ff/commit/push。底层git show或手写上游pass不能证明本链。 |
-| T718-05 / S718-REJECT | R718-08/10→D718-04/05 | 原Sync对dirty/不可ff目标、错误base、普通候选漂移；正式阶段缺Task/提交/远端事实。观察必要拒绝、原入口纠正/刷新；只读通过不产生正式gate。 |
+| T718-04 / S718-READ | R718-07/09/10→D718-04/05 | 外部 worktree、无 Task、有未提交草案；明确对象较 primary main 新且 primary 有 staged/unstaged 工作，经原 read→Discovery→Clarify→Wording→Readiness→Creation 公开链创建。核 exact HEAD、唯一 Task/generation/binding，前后比较 primary refs/index/workfiles；原 check/recover 返回同一结果且不增资源。底层 git show 或手写上游 pass 不能证明本链。 |
+| T718-05 / S718-REJECT | R718-08/10/11→D718-04/05 | 原 Sync dirty/不可 ff 拒绝保持；Creation 错对象、非 commit、source/acquisition/common-dir 普通装配失配均给字段诊断。synced 新建 stale 拒绝、原结果在 branch 正常前进后仍恢复；采用既有 Task/generation/binding/session 冲突和缺 context 回归。当前入口拒旧输入，旧 provider 恢复旧成功结果；正式阶段仍核 Task/提交/远端事实。 |
 | T718-06 / S718-MAINTAIN | R718-03/11→D718-03/06 | 旧目标dispatcher不可运行，matching source-loaded维护和原rollback；运行目标自身resolver/installed/native。观察工具与选择兼容、Task/session/用户内容/非目标工具和选择bytes保持，peer实际解析值保持。 |
-| T718-07 / S718-DISTRIBUTE | R718-01/11→D718-07 | 命中runtime/package/tests、代表性clean安装至多1个、同样本reapply、canonical/dogfood/installed/声明平台投影、mode、drift/sidecar。观察真实wrapper与机械一致性分别成立；不跑完整Release矩阵。 |
-| T718-08 / S718-AGENT | R718-07/09/10→D718-05/07 | 实际Agent读取新workflow/公开合同，使用真实草案和固定来源调用原consumer到声明结果。记录实际决策、入口和终点；文本/schema/分发测试不代替此观察。 |
+| T718-07 / S718-DISTRIBUTE | R718-01/11→D718-07 | 命中 runtime/package/tests、代表性 clean 安装至多 1 个、原 owner 对已安装目标 reapply、canonical/dogfood/installed/声明平台、mode、drift/sidecar。分别核真实 wrapper、原 Task/session/config 保持与机械一致性；记录样本是否保留，不以新样本冒充同样本复验，不跑完整 Release 矩阵。 |
+| T718-08 / S718-AGENT | R718-07/09/10→D718-05/07 | 实际 Agent 完整读取采用 provider 的公开合同，亲自完成原 owner 判断与 record/check/invoke，使用独立 draft 和固定来源走到 Creation 及原恢复结果。独立核 primary 保存、精确起点与身份/资源不重复；确定性 fixture、结构/分发与实际 Agent 观察分别报告。 |
 
 fixtures只建立受测边界之前的合法状态，外部GitHub provider可隔离；不得代生产者生成结果、补偿错误输出、手写Task/gate或发布产品Issue。逐项保留原失败和正确正向/必要拒绝，确认失败没有转移到下游。相同观察共享证据，不展开无独立缺陷检测价值的排列。
 
@@ -148,3 +147,23 @@ trellis/skills/guru-team/runtime` 选定受管 Python；需要 Fork 的 suite �
 主协调者本轮执行 canonical 三目录下 521 个 Python 文件内存 compile、两 scripts/bash 目录 45 个 Bash syntax 和 marketplace JSON 解析，均通过；分发后 git diff --check 退出0。采用实施 owner 的 source validator 原执行：43 active packages/128 commands passed，其后仅两处等义合同措辞修订，接口/runtime/schema未再改。
 
 以上仍为 local_candidate，formal_fork_source_lock 未验证。实际 #766 原 ref/action 的恢复仍待 D2 交付后执行；本表不预写现场、最终 Check/Review 或整体 Completion 成功。完整多平台安装/升级/Release 矩阵不在本项。
+
+## #813 固定来源创建的工程与实际 Agent 观察
+
+适用 before 为 `5c6a4591db7165ece045e6b0eb789c21d06d7d38`；本节观察对象为 #813 D1 本地未提交候选。来源为 Issue #813 与已接受 D1 规划。原 #718/#760/#769 的测试数量、失败、CI、安装和未知状态保持各自历史截止，本节不改写它们。
+
+| 观察 | 实际执行与独立结果 | 证据边界 |
+| --- | --- | --- |
+| T718-04/05 / 创建与恢复 | Creation `test_contract.py` 26/26（70.098s）、`test_delivery_chain.py` 2/2（24.583s）；shared `test_composition.py` 20/20（16.948s）；Sync `test_read_baseline_chain.py` 5/5（15.490s）；新增 `test_fixed_base.py` 最终 5/5（11.348s） | 共 58 项定向测试。完整 public producer 链到 Creation；primary 旧 main、staged/unstaged、refs/index/files 保持，原恢复不增 Task/branch/worktree。session 采用原同身份、缺 record attach、冲突/无效拒绝、缺 context 回归。外部 GitHub facts 隔离，不对生产写入。 |
+| T718-05 / 来源和兼容 | 新旧合同分别验证及交叉代入拒绝；exact 不可用对象/非 commit、acquisition 起点与 foreign common-dir 的创建/恢复拒绝给字段诊断。synced 新建 stale 拒绝，正常后续 main 前进后原结果恢复 | 仅普通错误装配和真实 Git 状态。历史 `test_495_migration_lifecycle.py` 保持原字节，不把旧协议改成 current。 |
+| T718-05 / 真实旧 provider | 从固定 B 的完整 trellis 资产提取旧 provider，原旧 wrapper 创建成功；当前 wrapper 拒绝该旧输入为 schema_mismatch；原旧 provider 恢复同一 created，Task bytes 保持 | 证明固定旧操作的原 owner 恢复边界，不在 current 增加旧 parser/fallback 或转换旧输入。 |
+| T718-07 / source | source validator 通过 43 active packages / 126 commands / 159 package test files；524 个 canonical Guru Python 内存 compile、Creation JSON parse 与 git diff --check 通过 | 结构与语法事实；不替代行为、安装或正式 Check/Review。历史各节 128 command 是其当时观察。 |
+| T718-07 / clean 安装 | Creation contract suite 中一个代表性 clean installer 样本通过 | 样本由原测试 cleanup 删除。没有再建第二个 clean installer 样本，也不能声称同一 clean 样本已 reapply。 |
+| T718-07 / 本 App 工具同步 | 原完整 source-loaded guru-upgrade-tools 返回 tools_upgraded，版本 0.7.0-guru.8。目标自身 resolver/installed validator 通过，43 active packages / 126 commands / 9502 managed files，conflicts=0、sidecars=0；get_context 保留原 Task/generation/Delivery、implementing 和适用 Planning；drift 退出 0，shared/Claude/Codex/Cursor、workflow/spec 与 canonical 一致 | 原 10 个 Task/config/AGENTS 路径 bytes/mode 保持。只更新本 App 工具；不动 source primary main 或 #808 停放工作。local_candidate 的 formal_fork_source_lock 仍 unverified。 |
+| T718-07 / 同目标 reapply | 在已更新 App checkout，通过原 tools-only install_assets 与实际已 applied public operation 的原 plan/ref 再应用；installed validator passed、conflict/sidecar=0，10 路径 bytes/mode 保持，drift 退出 0 | 这是同一已安装目标和同一 public operation 的 reapply 证据；与已删除的 clean 样本分开，不声称完整多平台 clean/update/Release 矩阵通过。 |
+| T718-08 / 实际 Agent | 本 Agent 读取 repaired installed provider 的 Sync、Discovery、Clarify、Wording、Readiness、Creation 合同，先分别完成语义判断，再沿公开 wrappers 获得 baseline_ready→context_ready→clear→pass→ready→created。固定树 `c2ec2a09aba8ec05342adb9a7bce3804176e9357`，primary main 为 `57668f6488186906d3e1dc14eb479d5479931d8c`；独立 configured checkout 的 HEAD 等于固定树。原 check、recover 及正式恢复均返回同一 Task/generation | 独立隔离 Git 样本未执行 clean preset install，调用本 App 实际 installed provider，Task API 来自 matching Fork。外部重复查询为隔离空返回。sample 文档、来源常量和验收说明不冒充业务实现或测试通过。 |
+| T718-08 / 保存和资源 | 实际 Agent 创建后与恢复后独立比较：Task bytes、C4 branch binding、C5 resources、官方隔离 session、refs、worktree 清单均不变；primary HEAD/main/index 及 staged notes、unstaged work 文件与原 capture 一致 | 同一 Task native-fixed-source / generation 0。没有重复 Task/branch/checkout，没有 GitHub 写入或 commit/push。实际 Agent 证据与自动 fixture 的门禁通过分开成立。 |
+
+首次新增 full-chain 测试在 Creation 前调用了不存在的 component shell wrapper，未到产品断言；修正为原 runtime/launch.sh dispatcher 后完整链通过。一次同时运行共享 resolver 的验证在进入 composition 测试前返回 runtime_dependency_missing；随后顺序执行通过。本轮实际 Agent 的首个 recorder transport 命令因 Python argv 装配错误未调用产品入口，随后完整原序列成功；Readiness 首个显示捕获额度不足，未把截断文本当 receipt，通过同源原 recorder 重取完整结果。这些设施问题保留，不能列为产品修复前对照或声称所有尝试一次通过。
+
+当前观察不预写正式 committed Check、Branch/Delivery Review、Publication、Merge、Completion 或 #813 Closure/Finish。完整多平台安装/升级/Release 与业务采用不在本项；本地安装仍有 formal_fork_source_lock 限制。后继结论消费原 owner 的真实公共结果，不追加第二完成台账。

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "执行自然语言、错误和文档写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "保留来源语义和规划正文引用"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共输入版本与薄projection、历史schema及受管分发"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "实际入口、独立行为断言和定向验证边界"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进和旧路径退出，不新增长期兼容"}
+{"file": "docs/architecture/contributions/813-fixed-git-baseline.md", "reason": "本批Architecture拟写、责任与晋升边界"}

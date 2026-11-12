@@ -1,0 +1,119 @@
+{
+  "schema_version": "2.0",
+  "id": "813-fixed-git-baseline",
+  "name": "813-fixed-git-baseline",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 813,
+    "disposition": "exact_source"
+  },
+  "title": "#813 解除固定 Git 基线 Task 创建对本地 main 同步的错误依赖",
+  "description": "区分固定 Git-object 审核起点与 delivery target，修复创建对本地 main 同步的错误依赖，保留原校验、恢复与兼容边界。",
+  "dev_type": null,
+  "scope": "完整交付 #813：固定对象创建、正常 mismatch 字段级恢复、原结果丢失恢复不重复创建、旧同步兼容迁移、定向链路验证与 canonical/dogfood/平台投影收敛。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-12",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/prd.md",
+    "revision": "sha256:ca664fbf14185d2508033277c7df9897efa44954528f30861cb58ba9b31089ca"
+  },
+  "deliveries": [
+    {
+      "id": "f65560ac-65fa-48b8-aae3-98f8ceaf8678",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/prd.md",
+          "revision": "sha256:ca664fbf14185d2508033277c7df9897efa44954528f30861cb58ba9b31089ca"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/f65560ac-65fa-48b8-aae3-98f8ceaf8678",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/deliveries/f65560ac-65fa-48b8-aae3-98f8ceaf8678/design.md",
+        "revision": "sha256:05dd5a7c6bfa2eb25a37dc41611b74f3dc77f0f8616b134c033cde0688cc13da"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:865208ed-55d7-4165-91d3-aed0bee08767",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/prd.md",
+              "revision": "sha256:ca664fbf14185d2508033277c7df9897efa44954528f30861cb58ba9b31089ca"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/deliveries/f65560ac-65fa-48b8-aae3-98f8ceaf8678/design.md",
+            "revision": "sha256:05dd5a7c6bfa2eb25a37dc41611b74f3dc77f0f8616b134c033cde0688cc13da"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/deliveries/f65560ac-65fa-48b8-aae3-98f8ceaf8678/prd.md",
+              "revision": "sha256:7c2ae736bf8aea0584aa050356f625f5e537e7ece59e315ae89fe7017f96770e"
+            },
+            {
+              "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/deliveries/f65560ac-65fa-48b8-aae3-98f8ceaf8678/design.md",
+              "revision": "sha256:05dd5a7c6bfa2eb25a37dc41611b74f3dc77f0f8616b134c033cde0688cc13da"
+            },
+            {
+              "locator": ".trellis/tasks/11-12-813-fixed-git-baseline/deliveries/f65560ac-65fa-48b8-aae3-98f8ceaf8678/implement.md",
+              "revision": "sha256:bd87295dc6dceb0cf6e2ab049c5cccf97f3f69f44db677ce319fe3259a387e48"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
