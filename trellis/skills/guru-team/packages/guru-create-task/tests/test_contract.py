@@ -74,7 +74,7 @@ class CreateTaskTests(unittest.TestCase):
                 "source_profile": "standalone_request", "reviewed_source": {"kind": "no_issue"},
                 "accepted_scope_identity": "scope:reviewed",
                 "delivery_target": {"repo_ref": "castbox/guru-trellis", "branch_ref": "main"},
-                "selected_base_ref": "main", "reviewed_base_head": self.head,
+                "selected_base_ref": "main", "reviewed_base_source": {"kind": "synced_branch", "selected_ref": "main", "commit": self.head},
             },
             "acquisition": {
                 "route": "adopt_invocation_checkout", "branch_ref": "codex/example-task",
@@ -116,8 +116,8 @@ class CreateTaskTests(unittest.TestCase):
         for name in ("public-create-input.json", "public-create-issue-input.json"):
             with self.subTest(example=name):
                 data = json.loads((PACKAGE / "examples" / name).read_text())
-                validate_json(data, PACKAGE / "schemas/public-input.schema.json", "input")
-                validate_json(data["creation"], PACKAGE.parents[1] / "contracts/task-lifecycle/task-creation-input.schema.json", "creation")
+                validate_json(data, PACKAGE / "schemas/public-input-2.0.schema.json", "input")
+                validate_json(data["creation"], PACKAGE.parents[1] / "contracts/task-lifecycle/task-creation-input-3.0.schema.json", "creation")
 
     def test_relation_mistake_is_diagnosed_before_task_or_checkout_mutation(self) -> None:
         request = json.loads(json.dumps(self.payload))
@@ -181,7 +181,7 @@ class CreateTaskTests(unittest.TestCase):
         self.git("commit", "-qm", "historical task")
         head = self.git("rev-parse", "HEAD")
         subprocess.run(["git", "merge", "--ff-only", head], cwd=self.primary, check=True, stdout=subprocess.DEVNULL)
-        self.payload["creation"]["reviewed_base_head"] = head
+        self.payload["creation"]["reviewed_base_source"]["commit"] = head
         self.payload["acquisition"]["decision_head"] = head
         result = self.invoke(self.payload)
         self.assertEqual(result["exit_id"], "created", result)
@@ -192,8 +192,8 @@ class CreateTaskTests(unittest.TestCase):
 
     def test_stale_base_and_invocation_head_are_distinct(self) -> None:
         stale = json.loads(json.dumps(self.payload))
-        stale["creation"]["reviewed_base_head"] = "a" * 40
-        self.assertEqual(self.invoke(stale)["exit_id"], "refresh_review")
+        stale["creation"]["reviewed_base_source"]["commit"] = "a" * 40
+        self.assertEqual(self.invoke(stale)["reason_code"], "creation_base_object_unavailable")
         mismatch = json.loads(json.dumps(self.payload))
         mismatch["acquisition"]["decision_head"] = "a" * 40
         self.assertEqual(self.invoke(mismatch)["exit_id"], "blocked")
@@ -544,7 +544,7 @@ class CreateTaskTests(unittest.TestCase):
         self.git("commit", "-qm", "install current preset")
         head = self.git("rev-parse", "HEAD")
         subprocess.run(["git", "merge", "--ff-only", head], cwd=self.primary, check=True, stdout=subprocess.DEVNULL)
-        self.payload["creation"]["reviewed_base_head"] = head
+        self.payload["creation"]["reviewed_base_source"]["commit"] = head
         self.payload["acquisition"]["decision_head"] = head
         path = self.mixed_sibling()
         before = (path.read_bytes(), path.stat().st_mode)

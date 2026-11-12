@@ -182,18 +182,20 @@ class ReadBaselineChainTests(unittest.TestCase):
         return self.invoke("guru-review-contract-wording", {"schema_version": "1.0", "public_input": public,
             "transition": clear["transition"], "owner_context": {}, "owner_result": recorded, "validation_receipt": checked["validation_receipt"]})
 
-    def readiness(self, wording):
+    def readiness(self, wording, *, target_kind="proposed_draft"):
         seed = json.loads((PACKAGES / "guru-review-change-request/examples/issue-review.json").read_text())
         owner = {key: seed[key] for key in ("generated_at", "semantic_review", "reason")}
         authority = {"kind": "draft", "repo": "example/guru-extension", "issue_number": None, "url": None, "state": "draft", "updated_at": None, "body_sha256": sha(self.body)}
         owner.update(mode="workflow", typed_exit="ready", consumer={"kind": "workflow", "id": "guru-task-intake-router"},
                      target={"kind": "proposed_draft", "repo": "example/guru-extension", "draft_id": self.draft_id, "source_request_sha256": digest(authority)})
+        if target_kind == "standalone_request":
+            owner["target"].update(kind=target_kind, request_id=owner["target"].pop("draft_id"), caller_locator="request:fixed-baseline")
         owner["affected_evidence"] = [{"ref": "transition.context_result_sha256", "sha256": wording["transition"]["context_result_sha256"], "summary": "Current fixed source."}]
         gate = owner["semantic_review"]["ai_review_gate"]
         owner["semantic_review"]["ai_review_gate"] = {key: gate[key] for key in ("status", "reviewer", "summary")}
         for row in owner["semantic_review"]["dimensions"]:
             row.update(evidence_refs=["transition.context_result_sha256"], affected_hashes=[wording["transition"]["context_result_sha256"]])
-        envelope = {"schema_version": "1.0", "public_input": {"profile": "proposed_draft", "source_exit": "pass", "mode": "workflow", "target_locator": self.draft_id, "continuation_id": "stage0-current"},
+        envelope = {"schema_version": "1.0", "public_input": {"profile": target_kind, "source_exit": "pass", "mode": "workflow", "target_locator": self.draft_id, "continuation_id": "stage0-current"},
                     "transition": wording["transition"], "owner_context": {"change_request": {"kind": "draft", "draft_id": self.draft_id, "title": self.title, "body": self.body}}, "owner_result": owner}
         envelope["owner_result"] = self.call("guru-review-change-request", "record-change-request-review.sh", envelope, ("--root", str(self.worktree), "--invocation", "-"))
         checked = self.call("guru-review-change-request", "check-change-request-review.sh", envelope, ("--root", str(self.worktree), "--invocation", "-"))

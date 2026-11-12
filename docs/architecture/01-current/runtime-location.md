@@ -26,13 +26,21 @@ worktree拥有文件和执行位置，branch拥有Git引用/历史，Task拥有a
 
 原guru-sync-base的operation=read以明确repo/ref/commit返回baseline_ready，固定Git tree来源与工作区候选分别绑定。对象可读时无需该分支检出或无关checkout干净；不fetch/ff、不隐式追ref变化。原operation=sync保留唯一目标、dirty/ff及HEAD/local/remote一致性，返回synced。只读成功不等于同步或正式gate。
 
-Discovery读固定tree的实际blob/history/archive证据，草案通过独立candidate_file字节绑定；current→history→语义审核仍由原owner执行。来源variant经原五阶段transition、Clarify回程、Wording、Readiness及实际Issue/Task创建consumer成套承接。无Task、外部worktree和正常未提交草案可以读审，不能借此冒充committed Review或远端发布。错基线、候选普通变化和缺正式身份均回原纠正/刷新/拒绝。
+Discovery读取固定tree的实际blob/history/archive证据，草案通过独立candidate_file字节绑定；current→history→语义审核继续由原owner执行。来源variant经原五阶段transition、Clarify回程、Wording、Readiness和实际Issue/Task创建consumer成套承接。无Task、外部worktree及正常未提交草案可以读审，不能冒充committed Review或远端发布。错基线、普通候选变化和缺正式身份回原纠正/刷新/拒绝。
+
+Task Creation的固定来源消费承接Issue #813，适用before为main `5c6a4591db7165ece045e6b0eb789c21d06d7d38`，落实既有ADR-RUNTIME-LOCATION。当前creation输入明确reviewed_base_source的kind/selected_ref/commit；git_object的固定commit决定审核起点，selected_ref只定位所采用来源，不以其当前指向或本地同名branch HEAD判定freshness。独立selected_base_ref保留Task基线branch及非base/target资格职责，delivery_target保留未来交付仓库/分支职责。原AI读取实际ready来源并完成薄projection；脚本只校验对象和关系，不选择来源语义或重建上游通过。
+
+原Creation/composition在record/create及check/recover共用来源归一化和commit/acquisition绑定。git_object验证同repository可用的精确commit对象及acquisition.decision_head一致；synced_branch从实际同步输出薄投影，新建前保留来源branch标准化一致及local HEAD相等检查。两者继续原exact source、common-dir、TaskId/generation、branch binding、注册位置和ownership/session约束。固定对象来源不要求移动或清理primary。真实对象/acquisition不一致给出字段级原owner恢复，不通过放宽身份条件制造成功。
+
+已完成创建的check/recover重读原结果和原control/session关系，不再执行precreation uniqueness，不重复创建Task、branch、worktree或C4/C5；原source.commit须与真实acquisition起点一致。恢复保留原session分流：同Task/generation/ref保持原绑定；session_record_missing仅由原session owner重新attach；不同或无效session阻塞；context_key_unavailable保留explicit-task模式。后来正常ref前进不把原结果改成缺失。当前输入版本和旧schema/API退出由MIGRATION-813单写：新版本成套迁移受控consumer，旧schema字节保留验证，旧成功操作由完整固定旧provider恢复，旧待执行输入以实际上游来源经当前原owner重审。不新增current旧parser、自动kind猜测、来源台账或第二恢复writer。
+
+代价限定为原创建合同的一个必要source值、共享归一化、原错误投影和直接consumer迁移。对象可读性与本地同步状态分别检查，减少无关primary同步等待；不增加协调阶段、锁或跨Task状态。只有来源语义、合法创建/恢复consumer、原Task基线或同步副作用合同变化时重评。RDT拥有完整需求/设计/验证，Architecture拥有本责任定义；实际链路、目标安装、Delivery和Task整体完成各由原owner以真实结果证明。
 
 ## 代价、替代与重新评估
 
 本机制只增加原owner必要的需求匹配/hint与局部来源variant，以及真实旧reader的格式切换。hint可重建，显式选择只在原checkout私有载体，不建立全局偏好或业务authority。没有时间排序、每位置venv、通用绑定器、第二恢复台账、上游patch或永久双writer。
 
-只有实际兼容类别、依赖/API/layout、受支持旧consumer或原副作用合同变化时重新评估。ADR-027单目标/peer隔离/source-target/data先校验、ADR-006实际Sync约束仍有效；仅其被用于环境启动/独立只读的组合解释由本单元和新ADR替代。Architecture/RDT先完整proposed，经candidate Check后原final_integration/readback，实际after重绑最终质量链。知识接受、实现、目标安装、Release与业务采用分开；实际观察仅由Test拥有，完整Release矩阵独立。
+只有实际兼容类别、依赖/API/layout、受支持旧consumer或原副作用合同变化时重新评估。ADR-027单目标/peer隔离/source-target/data先校验、ADR-006实际Sync约束仍有效；仅其被用于环境启动/独立只读的组合解释由本单元和新ADR替代。Architecture/RDT先准备完整proposed；批准Planning、实施与真实工程验证后，原维护owner在TaskCommit前执行final_integration/readback。TaskCommit纳入全部after；同一次提交后独立Review判断Architecture before/after与完整质量。历史candidate Check观察保留原截止，不作为当前整合前置。知识接受、实现、目标安装、Release与业务采用分开；实际观察仅由Test拥有，完整Release矩阵独立。
 
 ## 配置驱动的新建位置（#760）
 
@@ -52,7 +60,7 @@ Discovery读固定tree的实际blob/history/archive证据，草案通过独立ca
 
 原phase逐项续接；preset仍是pending，允许原installer同操作续接，不能从投影文件推断complete。complete只验证。rollback先核公共tools/data兼容，再原Guru preimages恢复。目标own resolver/installed/native与peer保持独立证明。frozen_recovery_required的原必需字段为同profile/action/ref；下节定义本次输入有退出位置字段时的加性透传。该出口回同owner，不能回旧同源resume；永久不匹配仍阻塞。工具成功不提供Task/Delivery gate。
 
-代价限定为原比较修正、一个明示兼容profile及直接retry consumer；复用原engine避免第二阶段机，不增加checkpoint字段、registry、锁或通用迁移平台。旧事务终态且原恢复保留责任结束后，通过明确迁移移除兼容入口；不自动扫描删除API。只有原资产/执行边界、阶段协议、实际旧consumer或隔离写集变化才重新评估。原Architecture/RDT的candidate Check、final_integration/readback和最终质量链保持；目标安装与完整Release分别成立。
+代价限定为原比较修正、一个明示兼容profile及直接retry consumer；复用原engine避免第二阶段机，不增加checkpoint字段、registry、锁或通用迁移平台。旧事务终态且原恢复保留责任结束后，通过明确迁移移除兼容入口；不自动扫描删除API。只有原资产/执行边界、阶段协议、实际旧consumer或隔离写集变化才重新评估。当前Architecture/RDT整合与独立审核采用上文“代价、替代与重新评估”的顺序；#769当时的candidate Check观察保留历史截止。目标安装与完整Release分别成立。
 
 ## 原 peer 正常退出的有限恢复（#769 D2）
 

@@ -167,11 +167,22 @@ The historical `prepare-task.base_freshness` and
 pinned-old complete installations. The fixed implementation baseline and
 current registry/commands no longer contain that executable consumer. Do not
 revive it as an Intake fallback or feed the new Git-object union into its old
-synchronized provenance contract. Current Task Creation projects the selected
-local branch ref and fixed reviewed commit into its existing
-`selected_base_ref` / `reviewed_base_head` contract. Its original source,
-branch/head, checkout suitability, Task and generation checks remain required.
-A commit-only read result does not supply a missing creation branch.
+synchronized provenance contract. Current Task Creation uses shared creation
+3.0, profile 2.0 and aggregate 2.0. It projects the actual Git-object base's
+kind/selected_ref/commit into reviewed_base_source; the source ref is not
+re-resolved and local main freshness is not a fixed-object precondition.
+The exact commit must be available in the same repository and match the
+acquisition decision_head. Actual synchronized sources use kind=synced_branch
+with normalized selected_base and decision_head; before new creation their
+source branch equals selected_base_ref and its local HEAD equals commit.
+selected_base_ref independently owns the Task base branch and non-base/target
+checkout eligibility; delivery_target owns future delivery. Original source,
+common-dir, checkout suitability, Task/generation, binding and ownership remain
+required. Recovery shares source/acquisition validation without precreation
+uniqueness or duplicate Task/resource creation; original session attach and
+conflict behavior remain. A read result does not choose a missing Task base
+branch. MIGRATION-813 owns old-input exit and fixed-provider recovery; published
+old schema paths, ids and bytes retain their historical validation meaning.
 
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.
