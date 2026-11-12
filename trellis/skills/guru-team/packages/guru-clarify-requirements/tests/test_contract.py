@@ -60,7 +60,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             consumer = next(row for row in contracts["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
             contract = consumer["contract"]
             if contract["kind"] == "json_schema":
-                validate_json(seed, self.package / contract["path"], "consumer")
+                validate_json(seed, self.package.parents[1] / contract["path"], "consumer")
             else:
                 authoring = json.loads((self.package / contract["authoring_example"]["path"]).read_text())
                 self.assertEqual(set(authoring), set(contract["authoring_fields"]))
@@ -125,7 +125,11 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_semantic_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-clarify-requirements")
-        self.assertEqual(self.interface["schema_version"], "1.8")
+        from runtime.schema import validate_json
+        registry = json.loads((self.package.parents[1] / "registry.json").read_text())
+        selected = next(row for row in registry["skills"] if row["id"] == self.interface["id"])
+        version = selected["interface_schema_id"].removeprefix("guru-team-skill-interface-")
+        validate_json(self.interface, self.package.parents[1] / "schemas" / f"skill-interface-{version}.schema.json", "selected_interface")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -462,7 +466,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertIn("normal_scenario_scope_confirmation", profiles)
         self.assertEqual(
             profiles["normal_scenario_scope_confirmation"]["schema"]["path"],
-            "schemas/public-normal-scenario-scope-confirmation-input.schema.json",
+            "schemas/public-normal-scenario-scope-confirmation-input-2.0.schema.json",
         )
         for field, value in (
             ("decisions", []),

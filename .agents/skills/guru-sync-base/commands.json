@@ -188,7 +188,7 @@
         "schemas/public-synced-output-2.0.schema.json",
         "schemas/public-skipped-output.schema.json",
         "schemas/public-blocked-output.schema.json",
-        "schemas/public-baseline-ready-output.schema.json"
+        "schemas/public-baseline-ready-output-2.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

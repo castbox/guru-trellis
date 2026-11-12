@@ -43,7 +43,11 @@ class BaseSyncPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-sync-base")
-        self.assertEqual(self.interface["schema_version"], "1.8")
+        from runtime.schema import validate_json
+        registry = json.loads((self.package.parents[1] / "registry.json").read_text())
+        selected = next(row for row in registry["skills"] if row["id"] == self.interface["id"])
+        version = selected["interface_schema_id"].removeprefix("guru-team-skill-interface-")
+        validate_json(self.interface, self.package.parents[1] / "schemas" / f"skill-interface-{version}.schema.json", "selected_interface")
         self.assertEqual(self.interface["judgment_mode"], "deterministic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]

@@ -16,6 +16,9 @@ def run(package_root, command, argv):
     try:a=p.parse_args(argv)
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
     data=read_json(a.invocation,"invocation"); public=data.get("public_input",data); mode=public.get("mode"); route=public.get("route","repo_change")
+    if "return_identity" in public:
+        validate_json(data, package_root.parents[1]/"consumers/workflow/stage0/invocations/deterministic-sync-2.0.schema.json", "invocation")
+        validate_json(public, package_root/"schemas/public-confirmation-refresh-read-input-1.0.schema.json", "public_input")
     if mode not in ("workflow","standalone"): raise CommandError("invalid_arguments","invocation.public_input.mode","Use workflow or standalone.")
     if route not in ("repo_change","original_request"): raise CommandError("invalid_arguments","invocation.public_input.route","Use repo_change or original_request.")
     if route=="original_request":
@@ -38,7 +41,9 @@ def run(package_root, command, argv):
         baseline=object_source(root, selected_ref, public.get("base_commit"), source)
         transition={"schema_version":"2.0", "transition_id":"base_current:"+baseline["identity_sha256"][:24], "stage":"base_current", "mode":mode, "repo_locator":str(root), "base":baseline}
         output={"exit_id":"baseline_ready", "handoff_profile":"pre_task", "handoff_mode":mode, "handoff_continuation_id":"stage0-current", "transition":transition}
-        validate_json(output,package_root/"schemas/public-baseline-ready-output.schema.json","stdout")
+        if "return_identity" in public:
+            output.update(handoff_profile="context_request", handoff_continuation_id=public["return_identity"]["continuation_id"], return_identity=public["return_identity"])
+        validate_json(output,package_root/"schemas/public-baseline-ready-output-2.0.schema.json","stdout")
         return output
     base_args=["--mode",mode,"--root",repo_locator]+(["--base",public["base_branch"]] if public.get("base_branch") else [])
     try:

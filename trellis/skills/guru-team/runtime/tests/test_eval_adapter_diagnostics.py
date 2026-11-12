@@ -1,6 +1,8 @@
 """Actual adapter subprocess failures keep their original diagnostic output."""
 from __future__ import annotations
 
+import argparse
+import subprocess
 import json
 from pathlib import Path
 import sys
@@ -33,6 +35,28 @@ class AdapterDiagnosticsTests(unittest.TestCase):
                 self.assertEqual(diagnostic['stdout'], stdout + '\n')
                 self.assertEqual(diagnostic['stderr'], 'original error detail\n')
                 self.assertEqual('validation_error' in diagnostic, returncode == 0)
+
+
+    def test_ordinary_interface_run_is_generated_and_consumed_by_current_reader(self):
+        skills = Path(__file__).resolve().parents[2]
+        repo = skills.parents[2]
+        with tempfile.TemporaryDirectory(prefix="guru-ordinary-run5-") as temporary:
+            run_root = Path(temporary)
+            wrapper = repo / "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh"
+            result = subprocess.run(["bash", str(wrapper), "--root", str(repo), "--mode", "source", "--skill", "guru-sync-base", "--adapter", "shared", "--case", "skipped-route", "--run-root", str(run_root), "--json"], text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            emitted = json.loads(result.stdout)
+            run_root = Path(emitted["evidence_path"]).parent
+            self.assertEqual((emitted["status"], emitted["cases"][0]["actual_exit"]), ("passed", "skipped"))
+            package, interface, row = eval_runner.package_context(skills, "guru-sync-base")
+            evals, _ = eval_runner.corpus(skills, package, interface)
+            cases = eval_runner.applicable_eval_cases(evals["evals"], "shared", "skipped-route")
+            args = argparse.Namespace(skill="guru-sync-base", adapter="shared")
+            consumed = eval_runner.grade_completed_run(skills, args, run_root, [("current", package)], cases,
+                ["skipped-route"], row, eval_runner.discover(skills, "guru-sync-base"), repo,
+                eval_runner.descriptors(skills)["shared"], {"results":[]})
+            self.assertEqual(consumed, emitted)
+            self.assertEqual(json.loads(Path(consumed["evidence_path"]).read_text()), emitted)
 
 
 if __name__ == '__main__':

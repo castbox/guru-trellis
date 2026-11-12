@@ -9,6 +9,7 @@ SKILLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILLS))
 from runtime.schema import validate_json
 from runtime.io import CommandError
+from runtime.discovery import call_local_public_input, select_authoring_profile
 from runtime.eval_runner import validate_instance
 REGISTRY = json.loads((SKILLS / "registry.json").read_text())
 PACKAGES = tuple(row["id"] for row in REGISTRY["skills"] if row["state"] == "active")
@@ -59,6 +60,11 @@ class DeliveryGraphTests(unittest.TestCase):
             if not schema_path.is_file():
                 schema_path = SKILLS / target["path"]
             validate_json(projected, schema_path, "workflow")
+        elif target["kind"] == "skill_call_local_input":
+            interface_path = SKILLS / target["interface_path"]
+            interface = json.loads(interface_path.read_text())
+            assets = call_local_public_input(interface_path.parent, interface)
+            validate_json(projected, assets["schema"], "consumer_call_local")
         elif target["kind"] == "skill_input":
             interface_path = SKILLS / target["interface_path"]
             if not interface_path.is_file():
@@ -79,6 +85,7 @@ class DeliveryGraphTests(unittest.TestCase):
                 validate_json(projected, interface_path.parent / inputs["aggregate_schema"]["path"], "aggregate_consumer")
         else:
             self.assertEqual(target["kind"], "skill_input_authoring_seed")
+            target = {**target, **select_authoring_profile(target, value)}
             self.assertEqual(set(projected), set(target["seed_fields"]))
             self.assertFalse(set(target["seed_fields"]) & set(target["authoring_fields"]))
             interface_path = SKILLS / target["interface_path"]

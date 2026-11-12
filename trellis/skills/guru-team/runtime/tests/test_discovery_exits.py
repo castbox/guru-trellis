@@ -16,6 +16,7 @@ RUNTIME = Path(__file__).resolve().parents[1]
 REPOSITORY = RUNTIME.parents[3]
 sys.path.insert(0, str(RUNTIME.parent))
 from runtime.schema import validate_json  # noqa: E402
+from runtime.discovery import select_authoring_profile  # noqa: E402
 
 
 class ExitDiscoveryTests(unittest.TestCase):
@@ -69,7 +70,10 @@ class ExitDiscoveryTests(unittest.TestCase):
         example = json.loads((package / output["example"]["path"]).read_text())
         validate_json(example, package / output["schema"]["path"], "output")
         self.assertEqual(result["projection"]["operation"], "rename")
-        self.assertEqual(result["consumer_input"]["contract"]["profile_id"], "pre_task")
+        selected = select_authoring_profile(result["consumer_input"]["contract"], example)
+        self.assertEqual(selected["profile_id"], "pre_task")
+        self.assertEqual(set(selected["authoring_fields"]), {"change_input", "clarify_profile"})
+        self.assertTrue(any("source_locators" in row["authoring_fields"] for row in selected["alternate_authoring"]))
         self.assertNotIn("private_artifacts", result)
 
     def test_conditional_router_is_returned_without_choosing_a_branch(self) -> None:

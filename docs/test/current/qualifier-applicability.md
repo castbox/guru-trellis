@@ -74,3 +74,31 @@ f16bb562e4ea844939786cebd5c6c20e686914b2。它增加以下必要验证，保 TST
 
 #812 的实际命令、结果与边界由[配对 Test](../../requirements-design-test-contributions/812-explicit-task-qualification/test.md)单写，必要证据充分后停止
 重复验证。设施未触达目标保具体缺口，既不算产品通过，也不虚构产品缺陷。
+
+
+## TST-811 / 资格确认context与刷新
+
+承接REQ-811-01..06与DES-811-01..06，适用前驱ca0b21f0dfc754a6979f919be14deee696719a4b。
+策略不表示已经执行；实际命令/结果由[配对Test](../../requirements-design-test-contributions/811-qualification-context-continuation/test.md)单写。
+
+1. TST-811-01：分别实际运行normal/solution qualifier，再将真实公开输出投影Clarify。
+   当前/缺失/正常来源更新过期三类路径经真实Sync/Discovery/Clarify到正式clear并由原caller消费。
+   断言原candidate/Task/key/target/mode/continuation/resume及实际source关系；fixture仅建boundary前状态，不预填被测出口。
+2. TST-811-02：实际Discovery生成authority_duplicate_snapshot，Clarify以其构造真实authority disposition；
+   两profile分别执行load_bearing source_actions，经refresh→Sync read→Discovery→新context/snapshot→clear。
+   观察authority snapshot/原duplicate/action一致、来源重读、身份不丢、不重复mutation。gh替身只证明声明的外部替代边界。
+3. TST-811-03：采用有效原四类/普通Sync覆盖，补命中consumer、source_locators、resume、no_issue与非Task边界；
+   正常来源/对象变化的stale/mismatch仍拒绝。旧发布字节按固定前驱验证，current不误选旧合同，不造篡改hash/state攻击负例。
+4. TST-811-04：原tools owner完成matching采用后，观察目标自己的resolver、installed package/graph、native/public入口、
+   mode/声明平台、reapply/drift和实际sidecar，保Task/session/peer。源码与目标采用分别报告，local_candidate保formal_fork_source_lock未验证。
+5. TST-811-05：在本项独立、受支持的正常Task/Delivery场景中，原入口建立合法对象，两个qualifier真实公开输出进入原context producer与Clarify正式clear，再由原caller实际消费；场景内同一工作身份保持。
+   fixture只提供声明边界前状态及显式语义输入，不预填被测producer结果，不捏造当前用户未决选择；不指定发布Task，不新增实际Agent/远端证明前置。证据充分性由原Check按当前验收判断。
+6. TST-811-06：工程完成后原RDT/Architecture提交前整合/readback，TaskCommit后一次独立committed Architecture/Check/full Review；
+   readiness、交付、整体Completion/Closure/Finish及main可达性各自消费原结果，不跨层代证。
+7. TST-811-07：source/installed discovery实际解析context4及Sync目标Interface拥有的call-local input。
+   从真实baseline_ready的两profile选择seed，补原AI字段后由Discovery schema校验，reviewed-plan保source_locators。
+   ordinary eval smoke执行一个Interface1.10包的原wrapper，生成并由run5 schema/reader消费实际receipt。
+   旧发布schema/example保字节，qualification专用协议及生产矩阵不变；文本版本比较不替代调用行为。
+
+必要证据充分后停止追加实验。设施未触达业务断言不记产品通过/失败，原失败保实际截止。
+实施、安装、实际Agent/远端和完整矩阵/生产边界分别陈述，未执行不预填通过。

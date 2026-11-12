@@ -66,3 +66,29 @@ f16bb562e4ea844939786cebd5c6c20e686914b2。本节承接已接受目标，由原 
 上述要求对应 [DES-812](../../design/current/qualifier-applicability.md#explicit-task-对象传递des-812)
 与 [TST-812](../../test/current/qualifier-applicability.md#tst-812--显式身份与续接)。
 整体交付、Closure 和必要归档仍由 Task 原 owners 判断，不以 qualifier success 代替。
+
+
+## 资格确认 context 接续（REQ-811）
+
+来源为[Issue #811](https://github.com/castbox/guru-trellis/issues/811)，适用前驱Git
+ca0b21f0dfc754a6979f919be14deee696719a4b。本节由原 RDT owner 在 #811 final_integration 整合并读回，状态为 integrated_pending_review；独立 committed Review 尚待执行。
+保REQ-793/812原职责，新增两类确认的真实context循环。
+
+- REQ-811-01：normal和solution各自真实scope_confirmation_required进入原Clarify；分别处理匹配当前、缺失和正常过期context，
+  经原producer完成后由正式clear回原caller。record/check、旧transition或示例不构成正式出口。
+- REQ-811-02：全过程保candidate_refs、Task/Delivery、mode、target、continuation和resume consumer。
+  Task目标与Task.source对应Issue authority分开；合法no_issue沿实际accepted_scope/draft/source，不能从inventory猜对象。
+  官方选择、generation/checkout/Planning及普通stale/mismatch检查保持。
+- REQ-811-03：缺失/普通过期context通过原Sync read、Clarify needs_context和Discovery获取；
+  load_bearing Issue选择完成原source_actions/live reread后必须refresh，并保身份重读已变authority，
+  核已生效选择而不重复mutation后再clear。accepted_scope改变仍回原whole-scope owner。
+- REQ-811-04：mutation disposition使用Discovery公开的真实authority_duplicate_snapshot，绑定实际Issue/draft而非Task；
+  原duplicate选择及payload/preimage/action校验保持。缺失/stale回原producer，不重做Discovery搜索、不跨读private或手填事实。
+- REQ-811-05：旧四类context返回保原current/pinned边界，Skill/exit ID及fail-closed保持。
+  公开I/O按明确matching版本成套迁移；旧发布字节仅验证保留，current无双reader、资格store或授权记录。
+- REQ-811-06：原tools owner同步canonical、受管dogfood及声明平台并验证。完整回归不预填被测producer输出。
+  使用本项独立、受支持的正常Task/Delivery场景验证同一工作接续，保持场景内真实身份；不指定发布Task、版本或发布时间，不为验收捏造未决范围选择。fixture语义输入与真实producer输出分开，原Check按当前验收判断充分性，不新增实际Agent/远端业务证明前置。
+
+对应[DES-811](../../design/current/qualifier-applicability.md#资格确认-context-接续des-811)与
+[TST-811](../../test/current/qualifier-applicability.md#tst-811--资格确认context与刷新)。
+#812其余输入/输出、分类算法和caller义务保持；整体交付终态仍归原lifecycle owners。

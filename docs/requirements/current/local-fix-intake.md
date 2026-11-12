@@ -31,3 +31,9 @@ AI 拥有 scope、风险、充分性和恢复判断；脚本只验证事实。ca
 沿正常开发、Check、独立 Review/readiness 和适用 reapply 验证；失败/SKIP/环境阻塞不作通过。业务 #372 仅为脱敏历史案例，业务代码、测试、数据、Task/会话只读；当时安装、路线、根因和净节省时间保持未知。不开专项 replay/A-B/native eval、额外安装或完整矩阵，不新增恶意篡改与并发加固范围。
 
 关系：[D692/CON692](../../design/current/local-fix-intake.md)、[T692/SC692](../../test/current/local-fix-intake.md)。精确 canonical 调用与数据定义由 [packages](../../../trellis/skills/guru-team/packages) 单写；来源/替代边界见 [追踪](../../requirements-design-test-contributions/692-local-fix-intake/traceability.md)。
+
+## #811 确认目标与来源关系
+
+原R692-03的context_request目标错配仍拒绝。#811新增确认profile的目标是原Task/候选对象，source authority是独立Issue/draft；二者不能互相替换。其真实context获取、mutation刷新和旧边界迁移由REQ-811完整定义；原诊断类别与live provider比较边界保持。
+
+完整定义见[REQ-811](qualifier-applicability.md)；本项由原 RDT owner 在 #811 final_integration 整合并读回，状态为 integrated_pending_review；独立 committed Review 尚待执行。其他R692/D692/T692行为、历史证据与未验证边界保持。

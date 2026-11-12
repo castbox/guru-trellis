@@ -202,7 +202,7 @@ Initial requests first complete the mandatory selector → Sync → Discovery
 graph and use actual `context_ready` as Clarify entry; loading a method alone
 does not permit a product question before that entry. Deferred writes or
 resource creation remain deferred throughout the graph.
-Its six profiles and context loop are package-owned; method loading does not
+Its declared profiles and context loop are package-owned; method loading does not
 create another Intake/Planning route. No-change active resume remains with its
 current phase rather than restarting Intake.
 
@@ -210,6 +210,10 @@ Discovery `context_ready` dynamically projects `handoff_profile` into Clarify's
 current profile input. Clarify `needs_context` enters Discovery `context_request`;
 the actual return preserves the original profile/target/continuation and
 required task or standalone identity. Every return freshly rebuilds input.
+Both qualification confirmation profiles use this same original context
+producer. Their actual authority-mutation refresh passes through original
+Sync read and returns to Discovery with the same confirmation identity.
+Only formal Clarify clear resumes the original caller; its stage duties remain.
 Unknown profiles or mismatched consumers fail closed.
 
 The clear router hands source_selection to current Wording/readiness and task

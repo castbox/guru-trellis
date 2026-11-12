@@ -57,7 +57,7 @@ freshness failures retain the contract's original routes.
 
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
-does not create a repository artifact. Pass the current Discovery `pre_task` 4.0 or `context_request` 2.0 input and
+does not create a repository artifact. Pass the current Discovery `pre_task` 4.0 or `context_request` 3.0 input and
 independent `base_current` transition to record, check, and invoke in one closed
 semantic-owner 1.0 envelope via `--invocation -`. Include `schema_version`,
 `public_input`, `transition`, `owner_context={}`, and `owner_result`; mode comes
@@ -111,6 +111,23 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 Use current pre_task or context_request input. The latter preserves the exact
 Clarify profile, target, continuation and its required caller identity; fresh
 context_ready returns there, never to a fixed initial profile.
+
+When Sync supplies a profile-selected seed, complete this owner's public input
+before invocation: pre_task requires AI-authored change_input/clarify_profile
+and reviewed-plan source_locators; context_request requires AI-authored
+change_input with the producer's unchanged return_identity. Validate that
+complete input under the selected consumer schema. The deterministic seed
+does not replace this owner's retrieval judgment.
+
+This includes both qualification confirmation profiles. Preserve their actual
+candidate refs, target, mode, continuation and resume consumer, plus the
+verified task_ref/DeliveryKey for a Task-bound return. Resolve the source from
+that Task's current source relation; its Issue authority is not the Task target.
+Current context_ready 6.0 also supplies authority_duplicate_snapshot from this
+owner's real duplicate search for Clarify's authority disposition. The same
+return accepts an actual confirmation-refresh baseline_ready from Sync read.
+Load the complete caller-aware contract; do not fill a producer output or
+reinterpret old Issue/stage0-current context as the new confirmation.
 
 For a Git-object baseline, use `scripts/read-change-context-source.sh
 --source-transition <base_current JSON> --path <repo-relative file>` to read

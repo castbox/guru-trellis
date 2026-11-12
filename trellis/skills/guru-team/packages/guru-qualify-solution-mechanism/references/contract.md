@@ -156,3 +156,31 @@ identity. That section owns only common facts, Planning paths and caller-held
 continuation context. This Skill retains its independent semantic method,
 original outcomes and unique consumers. The four non-Delivery profiles are
 unchanged; published older input bytes are historical validation assets.
+
+## Scope-confirmation context continuation
+
+Current `scope_confirmation_required` output 3.0 preserves its original
+profile, mode, target, candidate refs, continuation and resume consumer.
+For a verified Task-bound input it also projects the existing
+`target.task_ref` and complete `target.delivery_key` as `task_ref` and
+`delivery_key`; non-Task input has an independent branch without those fields.
+The original caller still retains its own invocation and current duties.
+Classified and mechanism-return outputs do not acquire these fields.
+
+Project only that actual output to original Clarify
+`solution_mechanism_scope_confirmation` input 2.0. Clarify obtains missing or
+normally stale context through real `needs_context` and Discovery
+`context_request` 3.0. Its actual authority mutation returns `refresh_context`
+through original Sync `read`, preserving the same confirmation identity for
+Discovery. Real `context_ready` returns to this confirmation profile, then
+formal `clear` returns to the exact original caller. Task target and source
+Issue authority remain distinct; no caller rewrites an old transition or
+imports a private owner result to complete the return.
+
+Clarify owns the real source/scope choice; the original caller rereads changed
+authority and refreshes affected qualification before continuing its stage.
+Current source, consumer and runtime switch together under `MIGRATION-811.md`.
+Old published schema/example bytes remain validation assets, not a current
+dual-reader. Pending old inputs return to their original caller; unfinished
+old operations retain their fixed complete provider. No new qualification
+state, binding writer, semantic owner or outcome is introduced.
