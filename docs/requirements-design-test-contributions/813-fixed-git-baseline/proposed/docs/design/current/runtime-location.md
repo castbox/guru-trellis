@@ -90,8 +90,9 @@ AI绝对值不反推用户选址。primary写入路径仍退役；既有其它�
 
 环境root从旧调用位置回退/原样配置值修正为项目解析绝对root，两个owner成套采用。
 旧安装使用matching版本；新能力经原tools-only owner更新完整投影，保留配置/Task/session/peer，
-按原冲突与sidecar处理并验drift，不手抄dogfood。RDT与Architecture依原候选Check和
-final_integration晋升；原最终Check/Review独立审实际after。完整Release矩阵仍归专门owner。
+按原冲突与sidecar处理并验drift，不手抄dogfood。当前RDT与Architecture整合及独立审核
+采用D718-07的提交前final_integration、TaskCommit、提交后同次独立Review顺序。
+#760当时的candidate Check观察保留历史截止，不作为当前整合前置。完整Release矩阵仍归专门owner。
 
 ## D769 / 原事务、原资产与修复执行器
 

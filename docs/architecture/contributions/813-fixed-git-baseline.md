@@ -6,7 +6,7 @@ Task `813-fixed-git-baseline`，generation 0，Delivery `f65560ac-65fa-48b8-aae3
 
 阶段适用baseline为 `guru-trellis-architecture`，constitution为 `guru-trellis-design-constitution-v1`，change contract为 `guru-trellis-architecture-change-contract-v1`。固定before为 `5c6a4591db7165ece045e6b0eb789c21d06d7d38`。原独立candidate_assessment选择architecture_impact / target_native，引用ADR-RUNTIME-LOCATION、ADR-028、ARCH-RUNTIME-LOCATION。
 
-唯一Architecture目标是 `docs/architecture/01-current/runtime-location.md` 的“明确Git对象与实际副作用”完整条款。完整拟写位于 `813-fixed-git-baseline/proposed/docs/architecture/01-current/runtime-location.md`。保留环境选择、位置、#760/#769、真实历史观察与原owner定义，不写共享root、index或另一份current。RDT runtime-location三层及canonical data-contracts的旧Creation断言由其原writer分别承接。
+唯一Architecture目标是 `docs/architecture/01-current/runtime-location.md` 的“明确Git对象与实际副作用”完整条款，并统一该完整单元中仍写为现行指令的整合/审核顺序。完整拟写位于 `813-fixed-git-baseline/proposed/docs/architecture/01-current/runtime-location.md`。保留环境选择、位置、#760/#769业务条件、真实历史观察与原owner定义，不写共享root、index或另一份current。RDT runtime-location三层及canonical data-contracts的旧Creation断言由其原writer分别承接。
 
 本次落实既有固定来源贯通直接consumer的决定，不改变constitution、owner或公共Task/Delivery模型，不因schema字段版本新增制造ADR。MIGRATION-813拥有本次新旧输入与完整旧provider恢复退出合同；若实现发现该边界实质改变，回原Architecture与Author，不在此候选追加例外。
 

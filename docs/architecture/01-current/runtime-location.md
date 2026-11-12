@@ -40,7 +40,7 @@ Task Creation的固定来源消费承接Issue #813，适用before为main `5c6a45
 
 本机制只增加原owner必要的需求匹配/hint与局部来源variant，以及真实旧reader的格式切换。hint可重建，显式选择只在原checkout私有载体，不建立全局偏好或业务authority。没有时间排序、每位置venv、通用绑定器、第二恢复台账、上游patch或永久双writer。
 
-只有实际兼容类别、依赖/API/layout、受支持旧consumer或原副作用合同变化时重新评估。ADR-027单目标/peer隔离/source-target/data先校验、ADR-006实际Sync约束仍有效；仅其被用于环境启动/独立只读的组合解释由本单元和新ADR替代。Architecture/RDT先完整proposed，经candidate Check后原final_integration/readback，实际after重绑最终质量链。知识接受、实现、目标安装、Release与业务采用分开；实际观察仅由Test拥有，完整Release矩阵独立。
+只有实际兼容类别、依赖/API/layout、受支持旧consumer或原副作用合同变化时重新评估。ADR-027单目标/peer隔离/source-target/data先校验、ADR-006实际Sync约束仍有效；仅其被用于环境启动/独立只读的组合解释由本单元和新ADR替代。Architecture/RDT先准备完整proposed；批准Planning、实施与真实工程验证后，原维护owner在TaskCommit前执行final_integration/readback。TaskCommit纳入全部after；同一次提交后独立Review判断Architecture before/after与完整质量。历史candidate Check观察保留原截止，不作为当前整合前置。知识接受、实现、目标安装、Release与业务采用分开；实际观察仅由Test拥有，完整Release矩阵独立。
 
 ## 配置驱动的新建位置（#760）
 
@@ -60,7 +60,7 @@ Task Creation的固定来源消费承接Issue #813，适用before为main `5c6a45
 
 原phase逐项续接；preset仍是pending，允许原installer同操作续接，不能从投影文件推断complete。complete只验证。rollback先核公共tools/data兼容，再原Guru preimages恢复。目标own resolver/installed/native与peer保持独立证明。frozen_recovery_required的原必需字段为同profile/action/ref；下节定义本次输入有退出位置字段时的加性透传。该出口回同owner，不能回旧同源resume；永久不匹配仍阻塞。工具成功不提供Task/Delivery gate。
 
-代价限定为原比较修正、一个明示兼容profile及直接retry consumer；复用原engine避免第二阶段机，不增加checkpoint字段、registry、锁或通用迁移平台。旧事务终态且原恢复保留责任结束后，通过明确迁移移除兼容入口；不自动扫描删除API。只有原资产/执行边界、阶段协议、实际旧consumer或隔离写集变化才重新评估。原Architecture/RDT的candidate Check、final_integration/readback和最终质量链保持；目标安装与完整Release分别成立。
+代价限定为原比较修正、一个明示兼容profile及直接retry consumer；复用原engine避免第二阶段机，不增加checkpoint字段、registry、锁或通用迁移平台。旧事务终态且原恢复保留责任结束后，通过明确迁移移除兼容入口；不自动扫描删除API。只有原资产/执行边界、阶段协议、实际旧consumer或隔离写集变化才重新评估。当前Architecture/RDT整合与独立审核采用上文“代价、替代与重新评估”的顺序；#769当时的candidate Check观察保留历史截止。目标安装与完整Release分别成立。
 
 ## 原 peer 正常退出的有限恢复（#769 D2）
 
