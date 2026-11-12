@@ -69,7 +69,7 @@ not run yet.
 ## Fixed Git Tree And Draft Candidate
 
 Accept actual `baseline_ready` stdout through the declared thin projection.
-The current pre-task input is 4.0; context-request is 2.0. Their optional
+The current pre-task input is 4.0; context-request is 3.0. Their optional
 `candidate_file` intentionally identifies a draft body file. For a file-backed
 draft, supply it so the runtime rereads its bytes and binds
 `live_change.body_sha256`. The recorder emits a separate candidate locator/body
@@ -352,20 +352,23 @@ Unknown, multiple, or unmapped exits fail closed. The package requires the
 complete compatible Guru Team preset and `run-skill-command`; it is not
 self-contained or portable.
 
-## Interface 1.8 Public Handoff
+## Interface 1.10 Public Handoff
 
 The public profiles are `pre_task` (schema 4.0) and `context_request` (schema
-2.0). After the owner loop,
+3.0). After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
 `base_current` transition, current live base observation, and checker-passed
 owner result, then derives the matching per-exit DTO without another duplicate
 search. Recorder and checker receive that same envelope via `--invocation -`;
 they do not accept a private Sync artifact.
-`context_ready` schema 5.0 contains route/profile/mode/target/continuation
+`context_ready` schema 6.0 contains route/profile/mode/target/continuation
 identity and the original `return_identity`. Standard and reviewed Intake also
 receive the minimal checker-bound `duplicate_snapshot`; Clarification consumes
 it without repeating duplicate search or candidate reads. Active and standalone
 returns preserve their original task or caller identity and resume consumer.
+Qualification confirmations additionally receive their exact candidate and
+Task-bound return object plus the authority-bound duplicate snapshot defined
+below. The Task target is not substituted for the source Issue or draft.
 No return receives an owner-result locator. A
 genuinely interrupted owner additionally supplies one recovery continuation and
 may lazily use one minimal ignored checkpoint, which the same owner deletes on
@@ -378,7 +381,7 @@ This is a direct command-input replacement. The recorder/checker flags
 removed. Existing scripts must migrate together with this package; old argv
 returns `invalid_arguments`, not an implicit compatibility path. At that
 migration, public input 2.0 and owner result 3.0 were retained. Public input and
-handoffs now follow the current Interface 1.8 contract above. Current
+handoffs now follow the current Interface 1.10 contract above. Current
 Git-object authoring uses owner result 4.0; owner result 3.0 remains current
 only for synchronized-source compatibility. The command envelope remains
 current. Previously incomplete invoke envelopes must also add the declared
@@ -399,7 +402,7 @@ All three commands use the existing shared closed schema
 
 The empty public/transition/owner objects above illustrate only the envelope
 shape, not a runnable valid call. Populate them with the current Discovery
-`pre_task` 4.0 or `context_request` 2.0 public input, the independent Sync
+`pre_task` 4.0 or `context_request` 3.0 public input, the independent Sync
 `base_current` transition, and the
 AI authoring fields described below. Record completes Git-object owner result
 4.0 or synchronized-source owner result 3.0; check and invoke consume that complete result. Discovery has no additional owner-context fields,
@@ -542,17 +545,81 @@ authority, source classification or user choices. The current initial order
 remains Sync → Discovery → Clarify. `pre_task` explicitly names
 `clarify_profile=standard_intake|reviewed_plan_intake`; reviewed Intake also
 supplies selected source locators. `context_request` consumes actual Clarify
-`needs_context` plus fresh caller-owned retrieval clues. Its four closed
-`return_identity` branches preserve the original profile, target, continuation,
-active TaskId/generation/interrupted consumer or standalone consumer. They
-contain no Clarify owner result or private checkpoint.
+`needs_context` plus fresh caller-owned retrieval clues. Its original four
+closed `return_identity` branches preserve their profile, target, continuation,
+active TaskId/generation/interrupted consumer or standalone consumer under the
+same current or pinned-old support boundary. Two qualification confirmation
+branches now preserve the objects described below. No branch contains a
+Clarify owner result or private checkpoint.
+
+For Sync baseline_ready, Interface1.10 selects the authoring seed using the
+actual producer_output.handoff_profile. pre_task receives the four projected
+source_exit/profile/mode/continuation_id fields; its caller supplies
+change_input and clarify_profile, and reviewed-plan also retains
+source_locators. context_request receives those four fields plus actual
+return_identity; its caller supplies change_input. The completed object must
+match this owner's selected public input. The seed is not a complete input,
+and neither Sync nor a projection authors these retrieval or source choices.
+Original synced retains its fixed pre_task authoring declaration.
 
 `context_ready` returns those exact values and current evidence to Clarify.
 Rebuild a legal current profile input from every actual return, including
 repeated and stale/repaired loops. Initial/reviewed inputs reuse the new checked
 duplicate snapshot; active and standalone inputs preserve their original
 identity/consumer. A changed target is stale, never a silent retarget. The two
-qualification confirmation profiles repair missing authority through their
-original qualifier rather than this context loop.
+qualification confirmation profiles obtain context through this same original
+producer loop; their original qualifier still owns the qualification judgment.
 
 See the Clarify package's MIGRATION-250.md for the synchronized schema migration.
+
+## Qualification confirmation context (#811)
+
+Current context-request 3.0 and context-ready 6.0 add the closed
+`normal_scenario_scope_confirmation` and
+`solution_mechanism_scope_confirmation` branches. Retain the actual
+`candidate_refs`, confirmation `target_locator`, `continuation_id` and
+`resume_target`; mode stays at the outer DTO and must match each transition.
+A Task-bound return also retains `task_ref` and the complete upstream
+`delivery_key`. Resolve them with the original public Task/Delivery facts,
+current generation and registered checkout; an available official selection
+must match, while confirmed no-context uses only the original explicit-object
+validation. Do not infer selection from inventory or create a binding here.
+
+For a Task-backed Issue source, read the actual source identified by current
+`Task.source.repo_ref + number`. Keep the Task as confirmation target and the
+canonical Issue URL as `transition.authority_locator`. For a legal no_issue
+Task, read its actual accepted_scope and draft/source relation without
+inventing an Issue. Non-Task callers retain their original Issue/draft source.
+The current context transition 4.0 binds the actual authority's body/content
+while preserving the original confirmation target. Missing or conflicting
+Task/source/Delivery facts return to the original identity or scope owner.
+
+The public output also projects `authority_duplicate_snapshot` from this
+Discovery's real `duplicate_search`. Its closed fields are `query`,
+`checked_at`, `target_locator`, `authority_content_sha256`, `candidates`, and
+`facts_sha256`. Candidate rows retain the existing repo/number/url/update/facts
+fields. Snapshot target is the actual Issue or draft authority, not the Task;
+its content token binds that source body. Clarify consumes this minimal
+snapshot for its AI target disposition and action checks without repeating
+Discovery search or reading this producer's private owner result. This
+snapshot carries no disposition, scope decision or authorization.
+
+The actual context-ready projection supplies the same confirmation input 2.0
+with this snapshot. Clarify separately compares its public confirmation target
+and its private authority review target. A missing or normally stale snapshot
+uses original needs_context and a fresh owner rerun; no caller repairs an old
+snapshot or transition. Load-bearing source actions remain Clarify-owned.
+
+After real authority mutation, consume original Sync's confirmation-refresh
+`baseline_ready`, with operation read and the same selected commit, through
+context-request 3.0. Preserve its exact return_identity, reread the updated
+authority and duplicate facts, then produce a new context and snapshot. Sync
+does not decide source or scope. The original caller consumes only Clarify's
+formal clear after this loop and retains all remaining stage duties.
+
+Stable Skill/exit ids, initial order and original four return meanings remain.
+Current packages, consumers, transitions and routing switch together under
+`MIGRATION-811.md`. Old published schema/example bytes remain validation
+assets; no current dual-reader, new recovery store or qualification ledger is
+introduced. This extension does not restore a retired active Task-status
+Clarify entry or turn recorder/checker success into context_ready.

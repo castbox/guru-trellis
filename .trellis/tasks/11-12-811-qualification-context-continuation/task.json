@@ -1,0 +1,127 @@
+{
+  "schema_version": "2.0",
+  "id": "811-qualification-context-continuation",
+  "name": "811-qualification-context-continuation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 811,
+    "disposition": "exact_source"
+  },
+  "title": "#811 修复资格确认 context 的正式接续路径",
+  "description": "补齐 normal/solution 两类资格确认从真实 context producer 到原 caller 的获取、刷新、确认与返回，保留旧四类返回与明确迁移。",
+  "dev_type": null,
+  "scope": "完整承接 live #811 的两类资格确认、独立正常 Task/Delivery 公共链接续验收、兼容与受管分发；不绑定发布对象、版本或发布时间。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-12",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/prd.md",
+    "revision": "sha256:d244135d4117070f697a4e7f342369f22dc6c868d379b80b9878ea8d31035cf9"
+  },
+  "deliveries": [
+    {
+      "id": "32f655a1-8b8e-4f02-94a0-7cf74fc39a6e",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/prd.md",
+          "revision": "sha256:d244135d4117070f697a4e7f342369f22dc6c868d379b80b9878ea8d31035cf9"
+        },
+        "anchors": [
+          "R811-01",
+          "R811-02",
+          "R811-03",
+          "R811-04",
+          "R811-05",
+          "R811-06",
+          "R811-07",
+          "AC811-01",
+          "AC811-02",
+          "AC811-03",
+          "AC811-04",
+          "AC811-05",
+          "AC811-06",
+          "AC811-07",
+          "AC811-08"
+        ]
+      },
+      "planning_root": "deliveries/32f655a1-8b8e-4f02-94a0-7cf74fc39a6e",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/deliveries/32f655a1-8b8e-4f02-94a0-7cf74fc39a6e/design.md",
+        "revision": "sha256:4c857b3301dc50cf268c385fd9954c524b855c56585fe96ed965c639b66a1537"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:8e49c08f-3db2-4494-915b-c751c60767e9",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/prd.md",
+              "revision": "sha256:d244135d4117070f697a4e7f342369f22dc6c868d379b80b9878ea8d31035cf9"
+            },
+            "anchors": [
+              "R811-01",
+              "R811-02",
+              "R811-03",
+              "R811-04",
+              "R811-05",
+              "R811-06",
+              "R811-07",
+              "AC811-01",
+              "AC811-02",
+              "AC811-03",
+              "AC811-04",
+              "AC811-05",
+              "AC811-06",
+              "AC811-07",
+              "AC811-08"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/deliveries/32f655a1-8b8e-4f02-94a0-7cf74fc39a6e/design.md",
+            "revision": "sha256:4c857b3301dc50cf268c385fd9954c524b855c56585fe96ed965c639b66a1537"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/deliveries/32f655a1-8b8e-4f02-94a0-7cf74fc39a6e/prd.md",
+              "revision": "sha256:a0c01eb54156389353cc6fab991f0bbade04c90c197f80e8a76e96db823b545d"
+            },
+            {
+              "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/deliveries/32f655a1-8b8e-4f02-94a0-7cf74fc39a6e/design.md",
+              "revision": "sha256:4c857b3301dc50cf268c385fd9954c524b855c56585fe96ed965c639b66a1537"
+            },
+            {
+              "locator": ".trellis/tasks/11-12-811-qualification-context-continuation/deliveries/32f655a1-8b8e-4f02-94a0-7cf74fc39a6e/implement.md",
+              "revision": "sha256:b1ad1dd32e589c3550ed4505b5fc12903f245303af4620d48d94997b6c21d207"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

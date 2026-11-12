@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.8.schema.json",
-  "schema_version": "1.8",
+  "$schema": "../../schemas/skill-interface-1.10.schema.json",
+  "schema_version": "1.10",
   "id": "guru-sync-base",
   "name": "guru-sync-base",
   "description": "Resolve a fixed Git baseline for read-only Intake, or safely synchronize a selected base checkout.",
@@ -101,6 +101,10 @@
     {
       "id": "public_output_baseline_ready_example",
       "path": "examples/public-baseline-ready-output.json"
+    },
+    {
+      "id": "current_public_baseline_ready_output_2_0_json",
+      "path": "examples/public-baseline-ready-output-2.0.json"
     }
   ],
   "schemas": [
@@ -131,6 +135,18 @@
     {
       "id": "public_output_baseline_ready",
       "path": "schemas/public-baseline-ready-output.schema.json"
+    },
+    {
+      "id": "current_public_baseline_ready_output_2_0_schema",
+      "path": "schemas/public-baseline-ready-output-2.0.schema.json"
+    },
+    {
+      "id": "current_public_confirmation_refresh_read_input_1_0_schema",
+      "path": "schemas/public-confirmation-refresh-read-input-1.0.schema.json"
+    },
+    {
+      "id": "current_public_input",
+      "path": "schemas/public-input-current-2.0.schema.json"
     }
   ],
   "validators": [
@@ -315,8 +331,18 @@
         "flag": "--invocation",
         "stdin": "-",
         "envelope": {
-          "schema_id": "guru-stage0-invocation-deterministic-sync-1.0",
-          "path": "consumers/workflow/stage0/invocations/deterministic-sync.schema.json"
+          "schema_id": "guru-stage0-invocation-deterministic-sync-2.0",
+          "path": "consumers/workflow/stage0/invocations/deterministic-sync-2.0.schema.json"
+        },
+        "public_input": {
+          "schema": {
+            "schema_id": "guru-stage0-sync-base-input-current-2.0",
+            "path": "schemas/public-input-current-2.0.schema.json"
+          },
+          "example": {
+            "id": "confirmation_refresh_read_input",
+            "path": "examples/public-confirmation-refresh-read-input-1.0.json"
+          }
         }
       },
       "example_argv": [
@@ -342,12 +368,12 @@
       {
         "exit_id": "baseline_ready",
         "schema": {
-          "schema_id": "guru-stage0-sync-base-output-baseline-ready-1.0",
-          "path": "schemas/public-baseline-ready-output.schema.json"
+          "schema_id": "guru-stage0-sync-base-output-baseline-ready-2.0",
+          "path": "schemas/public-baseline-ready-output-2.0.schema.json"
         },
         "example": {
-          "id": "baseline_ready_output",
-          "path": "examples/public-baseline-ready-output.json"
+          "id": "current_public_baseline_ready_output_2_0_json",
+          "path": "examples/public-baseline-ready-output-2.0.json"
         },
         "consumer_use_ids": [
           "project_baseline_ready"
@@ -463,32 +489,57 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "pre_task",
-          "seed_fields": [
-            "source_exit",
-            "profile",
-            "mode",
-            "continuation_id"
-          ],
-          "authoring_fields": [
-            "change_input",
-            "clarify_profile"
-          ],
-          "authoring_example": {
-            "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-4.0.json"
+          "profile_selector": {
+            "source": "producer_output",
+            "field": "handoff_profile"
           },
-          "alternate_authoring": [
+          "authoring_profiles": [
             {
-              "id": "reviewed_plan",
+              "profile_id": "pre_task",
+              "seed_fields": [
+                "source_exit",
+                "profile",
+                "mode",
+                "continuation_id"
+              ],
               "authoring_fields": [
                 "change_input",
-                "clarify_profile",
-                "source_locators"
+                "clarify_profile"
               ],
               "authoring_example": {
-                "id": "pre_task_reviewed_input",
-                "path": "examples/public-pre-task-reviewed-input.json"
+                "id": "baseline_pre_task_authoring",
+                "path": "examples/baseline-pre-task-authoring-1.0.json"
+              },
+              "alternate_authoring": [
+                {
+                  "id": "reviewed_plan",
+                  "authoring_fields": [
+                    "change_input",
+                    "clarify_profile",
+                    "source_locators"
+                  ],
+                  "authoring_example": {
+                    "id": "baseline_reviewed_authoring",
+                    "path": "examples/baseline-reviewed-authoring-1.0.json"
+                  }
+                }
+              ]
+            },
+            {
+              "profile_id": "context_request",
+              "seed_fields": [
+                "source_exit",
+                "profile",
+                "mode",
+                "continuation_id",
+                "return_identity"
+              ],
+              "authoring_fields": [
+                "change_input"
+              ],
+              "authoring_example": {
+                "id": "baseline_confirmation_authoring",
+                "path": "examples/baseline-confirmation-authoring-1.0.json"
               }
             }
           ]
@@ -560,6 +611,10 @@
           {
             "source": "handoff_continuation_id",
             "target": "continuation_id"
+          },
+          {
+            "source": "return_identity",
+            "target": "return_identity"
           }
         ]
       }

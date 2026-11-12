@@ -247,12 +247,16 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
         if isinstance(item, dict) and isinstance(item.get("path"), str)
         and item["path"] in invocation_examples
     )
+    local_example = interface.get("public_contracts", {}).get("invocation", {}).get("call_local", {}).get("public_input", {}).get("example", {}).get("path")
+    if isinstance(local_example, str):
+        public_example_paths.add(local_example)
     private_artifacts.difference_update(public_example_paths)
     public_authoring_paths = {
         str(variant["authoring_example"]["path"])
         for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
         if isinstance(item, dict) and isinstance(item.get("contract"), dict)
-        for variant in (item["contract"], *item["contract"].get("alternate_authoring", []))
+        for seed in (item["contract"], *item["contract"].get("authoring_profiles", []))
+        for variant in (seed, *seed.get("alternate_authoring", []))
         if isinstance(variant, dict)
         and isinstance(variant.get("authoring_example"), dict)
         and isinstance(variant["authoring_example"].get("path"), str)

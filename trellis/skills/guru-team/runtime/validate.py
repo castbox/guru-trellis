@@ -105,6 +105,8 @@ def validate_interface_contract(
     schema_path = skills / f"schemas/skill-interface-{version}.schema.json"
     validate_json(interface, schema_path, f"{row['id']}.interface")
 
+    validate_declared_handoffs(skills, package, interface)
+
     public_contracts = interface.get("public_contracts")
     invocation = public_contracts.get("invocation") if isinstance(public_contracts, dict) else None
     input_contract = public_contracts.get("input") if isinstance(public_contracts, dict) else None
@@ -209,6 +211,69 @@ def validate_interface_contract(
                 f"{row['id']}.{profile['id']}.aggregate_example",
                 "Repair the public example to match exactly one aggregate profile schema.",
             )
+
+
+def validate_declared_handoffs(skills: Path, package: Path, interface: dict[str, Any]) -> None:
+    """Validate fixed public declarations; AI still supplies authoring content."""
+    from .discovery import call_local_public_input, select_authoring_profile
+    contracts = interface.get("public_contracts", {})
+    if contracts.get("invocation", {}).get("call_local", {}).get("public_input"):
+        call_local_public_input(package, interface)
+    for consumer in contracts.get("consumer_inputs", []):
+        contract = consumer.get("contract", {})
+        if contract.get("kind") not in {"skill_call_local_input", "skill_input_authoring_seed"}:
+            continue
+        target_path = skills / contract["interface_path"]
+        target = read_json_file(target_path, "consumer.interface")
+        if contract["kind"] == "skill_call_local_input":
+            assets = call_local_public_input(target_path.parent, target)
+            for projection in contracts["projections"]:
+                if projection["consumer_input_id"] != consumer["id"]:
+                    continue
+                output = next(row for row in contracts["outputs"] if row["exit_id"] == projection["exit_id"])
+                example = read_json_file(package / output["example"]["path"], "producer.example")
+                projected = {row["target"]: example[row["source"]] for row in projection.get("mappings", []) if row["source"] in example}
+                validate_json(projected, assets["schema"], "consumer.call_local.public_input")
+            continue
+        if "authoring_profiles" not in contract:
+            continue
+        rows = contract["authoring_profiles"]
+        ids = [row["profile_id"] for row in rows]
+        if len(ids) != len(set(ids)):
+            raise CommandError("profile_binding_mismatch", "consumer.authoring_profiles", "Declare each target authoring profile exactly once.")
+        profiles = {row["id"]: row for row in target["public_contracts"]["input"]["profiles"]}
+        for row in rows:
+            if row["profile_id"] not in profiles:
+                raise CommandError("profile_binding_mismatch", "consumer.authoring_profiles", "Use an actual target-owned public input profile.")
+            seed = set(row["seed_fields"])
+            for variant in (row, *row.get("alternate_authoring", [])):
+                if seed & set(variant["authoring_fields"]):
+                    raise CommandError("profile_binding_mismatch", "consumer.authoring_fields", "Keep transported seed and AI authoring fields separate.")
+                relative = variant["authoring_example"]["path"]
+                path = package / relative
+                if not path.is_file():
+                    path = target_path.parent / relative
+                example = read_json_file(path, "consumer.authoring_example")
+                if not set(variant["authoring_fields"]).issubset(example):
+                    raise CommandError("profile_binding_mismatch", "consumer.authoring_example", "Provide every declared AI authoring field in the public example.")
+        for projection in contracts["projections"]:
+            if projection["consumer_input_id"] != consumer["id"]:
+                continue
+            output = next(row for row in contracts["outputs"] if row["exit_id"] == projection["exit_id"])
+            example = read_json_file(package / output["example"]["path"], "producer.example")
+            row = select_authoring_profile(contract, example)
+            projected = {item["target"]: example[item["source"]] for item in projection.get("mappings", []) if item["source"] in example}
+            if set(projected) != set(row["seed_fields"]):
+                raise CommandError("profile_binding_mismatch", "consumer.seed_fields", "Project exactly this handoff's declared seed fields.")
+            for variant in (row, *row.get("alternate_authoring", [])):
+                relative = variant["authoring_example"]["path"]
+                path = package / relative
+                if not path.is_file():
+                    path = target_path.parent / relative
+                authored = read_json_file(path, "consumer.authoring_example")
+                authored = {key: authored[key] for key in variant["authoring_fields"]}
+                profile = profiles[row["profile_id"]]
+                validate_json({**projected, **authored}, target_path.parent / profile["schema"]["path"], "consumer.authored_input")
 
 
 def validate_instruction_package(

@@ -1,0 +1,73 @@
+# ADR-QUALIFICATION-CONTEXT-CONTINUATION：资格确认的原context接续
+
+状态：planning_candidate。来源为[Issue #811](https://github.com/castbox/guru-trellis/issues/811)，
+Task 811-qualification-context-continuation/gen0、D1 32f655a1-8b8e-4f02-94a0-7cf74fc39a6e。
+固定before为ca0b21f0dfc754a6979f919be14deee696719a4b。此文件是隔离候选，没有写入共享authority。
+
+## 问题与约束
+
+历史上 #808 的真实 normal 确认在 Clarify invoke 缺 context 失败；旧 Issue/stage0-current context 与 Task/qualifier continuation 不匹配。
+该观察解释原问题，不构成本项当前验收依赖。
+当前两确认拒绝needs_context，Discovery只承接旧四类且把authority当target。
+load-bearing Issue选择又必须mutation后refresh，但refresh DTO和Sync输出不能回原确认。
+不能手填producer输出、改旧transition、放宽stale或用record/check代替正式出口。
+
+原Interface1.8又不能声明context4、Sync结构化call-local consumer或按profile选择authoring seed；
+改为普通skill_input selector会遗漏Discovery必填AI字段。1.9只供Codex instruction-only，不能借其名称承载普通执行。
+
+## 决定及原owner
+
+选择target_native，直接演进原五包和consumer。两qualifier确认output3仅在Task-bound分支带已验证task_ref/key，
+原caller自持对象义务不变。Clarify确认input2/needs4/refresh3和独立clear、Discovery request3/ready6/context4、
+Sync confirmation-refresh read及baseline_ready2成套切换。精确版本/字段/流程见所选Delivery design第5..7节。
+
+Task target与当前Task.source的Issue authority分离；合法no_issue依原accepted_scope/draft/source。
+Discovery确认context_ready向Clarify公开authority_duplicate_snapshot，复用原query/time/locator/content/candidates/facts字段。
+snapshot针对实际Issue/draft；Clarify在真实authority上按原snapshot作AI disposition并校action事实，Task确认对象独立。
+缺失/stale snapshot回needs_context，不允许手填事实、跨读private或重新执行Discovery搜索。
+缺失或普通过期context由原Sync真实read baseline引入原Discovery；实际context_ready回原确认。
+mutation保持原source_actions和live reread，正式refresh经Sync保原return_identity，再由Discovery重读authority。
+Clarify核已生效选择后不重复mutation，正式clear回原caller，caller仍负责后续scope/准入义务。
+Sync不选择scope或authority，只有确定性事实和投影。没有新Skill、exit、writer、session状态、ledger或授权持久化。
+
+普通Interface1.10只增加上述三个当前表达能力。Sync的call_local.public_input声明本包aggregate/schema/example；
+Clarify通过skill_call_local_input引用该目标声明，不自行指定schema，也不将return_identity当scalar。
+baseline_ready的authoring_profiles按真实handoff_profile唯一选择pre_task/context_request。
+pre_task保原change_input/clarify_profile及reviewed-plan source_locators；context_request的seed含真实return_identity，
+AI补change_input。补写后由真实consumer schema校验；原transition仍独立承接，原synced固定authoring不改。
+精确字段、版本与直接位置由Delivery design5.4定义。
+
+registry1.5、production manifest6/current alias、extension public_api、discovery/validate/installed、installer和
+ordinary eval-run5及直接receipt readers同批迁移。普通run5从run2有限演进只补1.10；qualification run3/4不改。
+两qualifier不需新增metadata时保1.8；1.9保持独立instruction-only，不进入ordinary执行集。
+旧schema/example保字节，无current双reader、任意schema选择或新增resolver框架。
+
+本决定只窄替代ADR-EXPLICIT-TASK-QUALIFICATION中两种scope_confirmation_required不带key的片段，
+因为新的Discovery/Clarify直接consumer必须取得对象。classified及其余output、三资格算法、条件调用和#812显式身份规则保持。
+
+## 替代、成本与维护
+
+旧Issue context重标记无法证明Task context，放宽freshness会接受错误接续；均不采用。
+只修needs_context会在真实Issue mutation后回Intake，不能完成原caller义务；因此刷新边必须同批补齐。
+删除transition descriptor或把context4标成3会隐藏实际合同缺口；原地修改1.8或复用1.9会破坏已发布职责。
+把seed标成完整skill_input不能承接AI字段。新普通版本及直接consumer迁移承担当前必要成本。
+新wrapper、通用continuation store或inventory推断会复制原职责并引入恢复成本，没有当前必要consumer。
+
+采用原graph与最小return identity，代价是五包/schema/Interface/投影/Markdown必须同版本同步，
+每轮仍需原owner判断与source读取。旧schema/example保字节作验证资产，current不双读；
+pending输入由原caller重装，旧未完操作用固定完整旧provider恢复，不重复mutation。
+MIGRATION-811由源码owner记录准确边界，原tools owner保Task/session/peer和业务dirty执行受管采用。
+
+## 验证、整合与重审
+
+V811-01..07覆盖两个真实qualifier、三context与mutation刷新、旧四类、正常错误、共享metadata与authoring、ordinary receipt、分发及本项独立正常Task/Delivery的同工作接续。
+场景通过原公开入口建立合法对象，真实 qualifier 输出经原 context producer、正式 clear 和原 caller 后续消费。
+fixture不能预填被测producer；其显式语义输入属于测试层，不新增实际Agent或远端业务证明前置。
+五包、共享metadata及本checkout的matching采用已有定向工程结果；整包初试失败与修正后定向通过分别保留，
+不称新的整包全绿。原Check仍须按最新验收判断证据充分性，完整质量与交付终态尚未完成。
+原Architecture最终规划判断后，实施期形成完整拟写/工程证据，原owner在提交前final_integration整合/readback，
+TaskCommit后独立committed Review审核真实before/after。候选准入不建立reviewed_promoted或发布结果。
+
+确认对象authority、原caller/consumer、source关系、Task模型或支持的恢复边界实质变化时回原owner重审。
+无关ref或阶段推进不单独使本决定失效；真实stale仍按原owner恢复。
+当前验收不指定发布Task、版本或时点，也不授权修改其他Task。

@@ -57,7 +57,7 @@ step-local/root前置；统一wrapper/问卷会复制职责和增加维护。新
   supplied planning_paths 必须等于该目录三文件集合；author 只要求实际已选来源/
   候选文件，不要求尚未写出的设计。原 HEAD、路径、file-set、candidate 校验保留。
 - DES-812-03（REQ-812-03）：三个 owner 自己完成语义、recorder/checker/invoke。
-  不扩大 output DTO；caller 在内存保留调用对象，以原出口/consumer 返回当前义务。
+  当时不扩大 output DTO；两确认输出的current窄替代见DES-811-01。caller在内存保留调用对象，以原出口/consumer返回当前义务。
   同机制既有结论只在仍适用条件下采用，新 invocation 仍校当前 facts。
 - DES-812-04（REQ-812-04）：每包七类 current profile 为输入 2.0、aggregate 为3.0，
   Interface/commands/runtime/examples/evals 同步选择新版本。旧公开 schema 与输入
@@ -75,3 +75,40 @@ resolver 会增加漂移。因此不采用这些替代。代价是三个包的�
 同步维护；无第二存储、fallback 或未来字段。原对象/API/consumer 或实际支持条件
 变化时，由原 owner 重审。Architecture 关系为 ARCH-DOM-QUALIFIER-APPLICABILITY /
 ADR-EXPLICIT-TASK-QUALIFICATION；验证见 TST-812。
+
+
+## 资格确认 context 接续（DES-811）
+
+承接[REQ-811](../../requirements/current/qualifier-applicability.md#资格确认-context-接续req-811)；
+来源Issue #811，适用前驱ca0b21f0dfc754a6979f919be14deee696719a4b。本节由原 RDT owner 在 #811 final_integration 整合并读回，状态为 integrated_pending_review；独立 committed Review 尚待执行。
+DES-812-03的output保持仅由本节窄替代两类scope_confirmation_required；其余分工保持。
+
+- DES-811-01（REQ-811-01/02/05）：两qualifier确认output3从已校验target投影最小task_ref/DeliveryKey，非Task独立分支不携Task对象。
+  Clarify确认input2、Discovery request3/ready6、context4和独立confirmation clear1，经原consumer薄投影保原候选/对象/continuation/resume。
+  精确字段由canonical Interface/schema单写，classified和root输出不扩张。
+- DES-811-02（REQ-811-02/04）：Discovery从Task当前source读Issue，transition保Task target且独立携authority_locator；
+  no_issue读实际accepted_scope/draft/source；accepted_scope locator定位authority，旧draft live identity仍保其body identity合同。
+  原duplicate_search公开最小authority_duplicate_snapshot，绑定实际authority的locator/content/candidates。
+  Clarify private5的invocation_context保确认对象，review_target/disposition指真实authority，使用公开snapshot作原AI选择与action校验。
+  缺失/stale回原producer；不重复搜索、不跨读private、不静默替换Task.source。
+- DES-811-03（REQ-811-01/03/04）：缺失/普通过期context取得真实Sync read base_current，Clarify原semantic record/check后正式needs_context4，
+  由Discovery完成原证据判断及invoke后回同确认。Mutation仍经source_actions/live reread后refresh3；
+  Sync confirmation-refresh read只读原选定commit并保return_identity，其实际baseline_ready2进入Discovery context_request，
+  重读authority/duplicate事实产生新context/snapshot。Clarify核已生效选择后clear，原caller重读来源并继续当前stage。
+- DES-811-04（REQ-811-03/05）：普通Sync read仍回pre_task/stage0-current，sync执行/事实合同不变。
+  非mutation确认clear不制造Intake disposition；mutation保真实authority disposition/action条件。
+  真实source/Task/scope冲突回原owner，不能改旧transition或放宽stale。原四类不恢复退休active入口。
+- DES-811-05（REQ-811-05/06）：五包及consumer/runtime/workflow/routing/spec/声明平台matching采用。
+  MIGRATION-811拥有版本、pending重装及固定旧provider恢复；旧公开资产保字节，current不双读。
+  原tools owner保Task/session/peer/业务dirty，处理sidecar，local_candidate不建立formal Fork lock或Release矩阵通过。
+- DES-811-06（REQ-811-05/06）：普通Interface1.10声明context4、目标consumer自有call_local.public_input和
+  profile-selected authoring seed。Clarify refresh只引用Sync目标Interface的结构化aggregate，Sync保原scalar入口。
+  baseline_ready按真实handoff_profile选择pre_task或context_request；前者AI补change_input/clarify_profile，
+  reviewed-plan还保source_locators；后者seed保真实return_identity，AI补change_input。seed不是完整input。
+  原discovery/validator、installed投影、installer及ordinary receipt readers成套采用registry1.5/manifest6/run5。
+  旧发布字节、qualification专用run3/4及instruction-only1.9职责保持；不新增独立resolver或任意schema通道。
+
+选择原graph直接演进，代价是五包、共享metadata及直接reader/installer/receipt consumers成套维护和每轮真实取证；
+wrapper、continuation store和inventory推断会复制职责，故不采用。
+Authority/consumer/source或合法恢复边界实质变化回原owner。Architecture关系为ARCH-DOM-QUALIFIER-APPLICABILITY、
+ARCH-CONTEXT-001及ADR-QUALIFICATION-CONTEXT-CONTINUATION；验证见TST-811。

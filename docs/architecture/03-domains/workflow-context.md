@@ -37,7 +37,7 @@ Interface 不一致时，停止依赖调用。正常新 runtime 为 reference-on
 不搜索备用路径，不以缓存、摘要或派生 digest 建立另一流程 authority。
 
 `installed.py` 的共用 reference reader 承接上述客观读取。它和 discovery 不解释
-Markdown 条件、不评估 scope/充分性、不选择 profile，不代替原 AI owner。
+Markdown 条件、不评估 scope/充分性、不作 profile 意图判断，不代替原 AI owner。
 
 ## 3. 出口查询的正常路径与错误
 
@@ -129,11 +129,46 @@ phase/step/continuation、legacy 合同可达、matching reader/preview/分发�
 [#792 唯一 Test](../../requirements-design-test-contributions/792-step-context/test.md)。
 本单元不预填当前 Check、Review、安装、生产、费用或 Release pass。
 
-本 DOMAIN、必要 ADR 和 Architecture 贡献先作为完整隔离候选供独立 Architecture 与
-candidate Check 读取。只有原 Check 合法回到 implementing 后，原 Architecture owner
-才在 final_integration 核 live expected-current、整合并读回；原 RDT owner同时承接
-对应完整 R/D/T。实际写入再进入 implementation candidate/begin_check、最终 Check 与
-完整 committed Review。晋升依据、Task 完成和环境采用是不同事实。
+#792当时的晋升记录采用候选Check后回implementing再整合的顺序；该观察保留历史含义。
+当前执行顺序由[ADR-POSTCOMMIT-INDEPENDENT-REVIEW](../adr/postcommit-independent-review.md)及项目change contract拥有：
+批准Planning、完整实施和工程验证后，原Architecture/RDT owners提交前核live expected-current、整合并readback，
+不要求candidate Check或提交前独立实施Architecture pass。TaskCommit包含全部after，再进入同次独立committed
+Architecture/Check/full Review。整合仅为integrated_pending_review；晋升、Task完成和环境采用分别判断。
 
 [MIGRATION-792](../../../trellis/presets/guru-team/MIGRATION-792.md)拥有具体 matching
 采用/普通恢复说明；旧完整 Git、ADR 与原始观察保持历史含义。本主题经上述原晋升合同形成当前完整定义。原隔离拟写保留为来源，不是第二 current；后续质量与交付状态仍从原公共结果读取。
+
+
+## 8. 资格确认共享合同与AI补写（#811）
+
+本节来源为[Issue #811](https://github.com/castbox/guru-trellis/issues/811)，before为
+ca0b21f0dfc754a6979f919be14deee696719a4b；本节由原 Architecture owner 在 #811 final_integration 整合并读回，
+状态为 integrated_pending_review；独立 committed Review 尚待执行。
+确认对象及scope/source职责由[ARCH-DOM-QUALIFIER-APPLICABILITY](qualifier-applicability.md#资格确认的原context接续811)拥有，
+本节只维护同一原graph的共享接口表达、AI字段与确定性读取职责。
+
+普通Interface1.10从普通1.8演进，承接context-current4的真实descriptor、consumer自有结构化call-local input和
+按真实handoff_profile选择的authoring seed。1.9仍为Codex instruction-only，旧发布schema/example保字节。
+Clarify refresh的skill_call_local_input只指向Sync注册Interface；原discovery从目标Interface的
+call_local.public_input声明取得本包schema/example，不让producer指定另一schema，也不把return_identity当scalar。
+Sync保原scalar CLI和deterministic语义；结构化确认输入通过其原call-local入口。
+
+Sync baseline_ready的skill_input_authoring_seed以producer_output.handoff_profile唯一选中authoring_profiles。
+pre_task seed为source_exit/profile/mode/continuation_id，原AI补change_input/clarify_profile，reviewed-plan另保source_locators；
+context_request另从真实输出保return_identity，原AI补change_input。原synced固定pre_task authoring不变。
+seed与AI字段不交叠，补写后的完整input经Discovery schema校验；base_current transition仍单独承接。
+缺失、未知或重复profile保原错误，不改选其他profile。普通pre_task不制造identity，confirmation identity不由AI重建。
+这是固定声明的客观解析；检索充分性、authority、scope和原typed route仍由原AI owner判断。
+
+registry1.5、production manifest6/current alias、extension public_api、discovery/validator、installed公开投影和installer
+shared schema inventory成套切换；公开投影包含call-local及selected authoring/alternate示例。
+ordinary eval run5从run2有限演进以消费普通1.10，直接runner/receipt reader同步，qualification专用run3/4保持。
+production submanifest不成为完整workflow selector。精确版本、旧pending重装、固定provider恢复与matching采用由
+[MIGRATION-811](../../../trellis/presets/guru-team/MIGRATION-811.md)拥有。
+
+原graph/projection tests和source/installed discovery分别验证context4、目标call-local声明及两profile的完整consumer输入；
+ordinary smoke须调用新Interface包原wrapper并消费实际receipt。只更新白名单或比较版本文本不证明这些行为。
+原tools owner核精确source/target/write set后采用并验证目标自身；source成功不等于installed或独立公共链接续成功。
+本项不以特定发布Task为验收依赖；独立合法Task/Delivery场景使用真实producer和正式出口，fixture语义输入与实际产物分层。
+原Check按当前验收判断充分性，不新增实际Agent或远端业务证明前置。
+本扩展无新resolver、wrapper Skill、通用表达式、状态或授权存储，未验证层保持其原边界。

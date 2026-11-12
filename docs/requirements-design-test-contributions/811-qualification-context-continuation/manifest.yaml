@@ -1,0 +1,12 @@
+identity: rdt-811-qualification-context-continuation
+status: integrated_pending_review
+authority: guru-trellis-rdt
+base: ca0b21f0dfc754a6979f919be14deee696719a4b
+source: https://github.com/castbox/guru-trellis/issues/811
+proposed_targets:
+  - docs/requirements/current/qualifier-applicability.md
+  - docs/requirements/current/local-fix-intake.md
+  - docs/design/current/qualifier-applicability.md
+  - docs/design/current/local-fix-intake.md
+  - docs/test/current/qualifier-applicability.md
+  - docs/test/current/local-fix-intake.md

@@ -48,7 +48,7 @@ CONSUMERS = {
 }
 OUTPUT_SCHEMAS = {
     "classified": "public-classified-output-2.0.schema.json",
-    "scope_confirmation_required": "public-scope-confirmation-required-output-2.0.schema.json",
+    "scope_confirmation_required": "public-scope-confirmation-required-output-3.0.schema.json",
     "mechanism_revision_required": "public-mechanism-revision-required-output-2.0.schema.json",
     "blocked": "public-blocked-output.schema.json",
 }
@@ -183,6 +183,8 @@ def typed_output(package_root: Path, recorded: dict) -> dict:
         output = {"exit_id": exit_id, "profile": public_input["profile"], "mode": public_input["mode"], "resume_target": RESUME_TARGETS[public_input["profile"]], "continuation_id": continuation_id, "candidate_results": copy.deepcopy(recorded["candidate_results"])}
     else:
         output = {"exit_id": "blocked"}
+    if exit_id == "scope_confirmation_required" and "delivery_key" in public_input["target"]:
+        output.update({key: copy.deepcopy(public_input["target"][key]) for key in ("task_ref", "delivery_key")})
     validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[exit_id], "stdout")
     return output
 

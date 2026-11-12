@@ -13,3 +13,9 @@ Identity：`RDT-TST-LOCAL-FIX-INTAKE`；T692/SC692；适用基线 `6a65ec8afe6d1
 | T692-05 / SC692-QUALITY；全部 R692→全部 D692 | 原 candidate/begin_check、独立 Architecture phase2、完整 candidate Check→原 RDT final_integration/readback→实际 after 重绑→final Check→独立 committed Review/readiness | candidate_ready/candidate_checked 不等最终通过；实际正文/关系/导航与未改 consumer 完整覆盖。后续 commit/publish/merge/Completion/Closure/Finish 各自保原责任；局部测试不代替整体终态。 |
 
 定向现有测试、正常开发和原质量 owner 足以证明本批字段/consumer 与合同改动；不增加专项 replay、A/B、native eval、固定数量、耗时测量、额外 clean installation 或完整多平台矩阵。failed/SKIP/环境缺失分别记录。业务现场、当时安装/原会话、运行时根因、实际净节省时间、外部采用与完整 Release 边界保留未知/未验证。前驱策略为 [生命周期](task-delivery-lifecycle.md)、[JSON 载体](json-input-carriers.md)、[知识方法](knowledge-maintenance.md)，其原责任与历史结果不由本项重写。
+
+## #811 确认目标与来源关系
+
+原T692-03的target mismatch观察继续适用于其原对象。新增两确认的Task/authority分离、snapshot与mutation返回由TST-811验证；T692-05的原#692阶段顺序保历史来源，当前#811的执行前提由TST-811-06及原lifecycle合同承接，不恢复退休Check。
+
+完整定义见[TST-811](qualifier-applicability.md)；本项由原 RDT owner 在 #811 final_integration 整合并读回，状态为 integrated_pending_review；独立 committed Review 尚待执行。其他R692/D692/T692行为、历史证据与未验证边界保持。

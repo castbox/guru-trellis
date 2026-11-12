@@ -235,6 +235,24 @@ class ReadBaselineChainTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return json.loads(result.stdout)["result"]
 
+    def test_real_baseline_authoring_keeps_reviewed_source_locators(self):
+        from runtime.discovery import select_authoring_profile
+        baseline = self.baseline()
+        contracts = json.loads((PACKAGES/"guru-sync-base/interface.json").read_text())["public_contracts"]
+        declaration = next(row["contract"] for row in contracts["consumer_inputs"] if row["id"] == "baseline_ready_pre_task_input")
+        selected = select_authoring_profile(declaration, baseline)
+        alternate = next(row for row in selected["alternate_authoring"] if "source_locators" in row["authoring_fields"])
+        seed = self.projection("guru-sync-base", baseline)
+        self.assertEqual(set(seed), set(selected["seed_fields"]))
+        self.assertFalse(set(seed) & set(alternate["authoring_fields"]))
+        locators = [{"locator":"docs/requirements.md", "section":"Scope"}]
+        context, _ = self.context(baseline, {**seed, "change_input":self.clues, "clarify_profile":"reviewed_plan_intake", "source_locators":locators})
+        self.assertEqual(context["handoff_profile"], "reviewed_plan_intake")
+        self.assertEqual(context["source_locators"], locators)
+        self.assertEqual(context["transition"]["source_locators"], locators)
+        clear = self.clarify(context)
+        self.assertEqual(clear["transition"]["source_locators"], locators)
+
     def test_ref_without_checkout_and_later_ref_advance_keep_adopted_commit(self):
         self.git("branch", "never-checked-out")
         baseline = self.baseline("refs/heads/never-checked-out", self.commit)

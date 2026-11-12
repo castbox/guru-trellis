@@ -196,6 +196,10 @@
     {
       "id": "public_input_3_0",
       "path": "schemas/public-input-3.0.schema.json"
+    },
+    {
+      "id": "current_public_scope_confirmation_required_output_3_0_schema",
+      "path": "schemas/public-scope-confirmation-required-output-3.0.schema.json"
     }
   ],
   "validators": [
@@ -511,12 +515,12 @@
       {
         "exit_id": "scope_confirmation_required",
         "schema": {
-          "schema_id": "guru-normal-scenario-output-scope-confirmation-required-2.0",
-          "path": "schemas/public-scope-confirmation-required-output-2.0.schema.json"
+          "schema_id": "guru-normal-scenario-output-scope-confirmation-required-3.0",
+          "path": "schemas/public-scope-confirmation-required-output-3.0.schema.json"
         },
         "example": {
-          "id": "scope_confirmation_required_output",
-          "path": "examples/public-scope-confirmation-required-output.json"
+          "id": "current_public_scope_confirmation_required_output_3_0_json",
+          "path": "examples/public-scope-confirmation-required-output-3.0.json"
         },
         "consumer_use_ids": [
           "project_scope_confirmation_required"
@@ -646,6 +650,14 @@
           {
             "source": "candidate_refs",
             "target": "candidate_refs"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
           }
         ]
       },

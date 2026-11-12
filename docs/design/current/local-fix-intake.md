@@ -29,3 +29,9 @@ record 保留原 CommandError。check 的失败 receipt 保留 status/typed_exit
 现有 canonical packages、commands/errors、README 定位与实际 consumers 同批演进，通过原完整 preset 同步 dogfood/选定平台。apply/reapply、source/installed、drift、mode 与 sidecar 证明本 checkout 的实际采用，外部安装和完整升级/Release 矩阵分别保留边界。无业务 API/数据/支付迁移，无新安装要求；Architecture 无影响时不造空 ADR。
 
 原 RDT owner 先准备隔离完整 proposal，经原 candidate Check 后 final_integration 写入与读回；实施重绑全部 actual after，最终 Architecture/Check、精确 TaskCommit 和独立完整 B..H Review/readiness 覆盖实际内容。测试策略与实际结果保持各自单一来源。来源见 [追踪](../../requirements-design-test-contributions/692-local-fix-intake/traceability.md)，精确参数/接口仍由 [canonical packages](../../../trellis/skills/guru-team/packages) 独占。
+
+## #811 确认目标与来源关系
+
+原D692-02的直接target mismatch仍保原错误；新增资格确认分别校确认target与实际authority，按DES-811通过真实producer返回。原#692质量时序保其历史观察；当前#811采用工程完成后提交前整合/readback、TaskCommit后一次独立完整Review，不以旧candidate Check作为新前置。
+
+完整定义见[DES-811](qualifier-applicability.md)；本项由原 RDT owner 在 #811 final_integration 整合并读回，状态为 integrated_pending_review；独立 committed Review 尚待执行。其他R692/D692/T692行为、历史证据与未验证边界保持。

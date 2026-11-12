@@ -58,7 +58,7 @@ and obtain it before the semantic loop; do not invent prerequisite outputs.
 For the first `standalone_review` (`source_exit=start`, `mode=standalone`),
 obtain the actual standalone Sync `base_current` transition. Review the missing
 context and record/check `needs_context`, then invoke with that unchanged base
-transition. Only this initial missing-context exit accepts the base transition;
+transition. This initial standalone missing-context exit accepts the base transition;
 it returns `context_request` to Discovery with the original standalone consumer.
 Use Discovery's actual returned context for the requirements review.
 An actual active-task scope change retains its existing owner/profile.
@@ -122,6 +122,18 @@ qualifier's minimal `scope_confirmation_required` projection and asks the exact
 authority choice before returning to the declared original owner. It does not
 repeat or reinterpret qualification and accepts no decision, reason, severity,
 authorization, result locator, or qualification artifact.
+
+Both qualification confirmation profiles use their current input 2.0. Keep
+the real qualifier's candidates, target, mode, continuation and resume, plus
+task_ref/DeliveryKey for a Task-bound call. Read the contract's
+Qualification Confirmation Context section before authoring private 5.0.
+Missing or normally stale context uses real Sync read base_current and formal
+needs_context, then original Discovery context_request. Its context_ready
+returns the same confirmation and authority_duplicate_snapshot for the real
+Issue/draft disposition. Task target and source authority remain distinct.
+After a real source mutation, preserve return_identity through refresh_context
+and Sync read to Discovery; use its fresh context/snapshot before formal clear.
+Neither a copied transition nor record/check receipt supplies that return.
 
 Before a proposed clarification mechanism can affect scope, questions, or an
 authority action, apply solution's conditions and invoke
@@ -191,8 +203,9 @@ Use `--mode standalone` for standalone recording. Feed the reviewed semantic
 owner JSON to record, its stdout result to check, and the complete invocation
 envelope to invoke. Keep these values in memory; do not create repository files.
 Before adapting an example, load the profile-selected semantic schema through
-the contract's `Minimal Recorder Authoring` section. It locates the non-active
-3.0 schema and distinguishes the public profile from the private
+the contract's `Minimal Recorder Authoring` section and the applicable
+Qualification Confirmation Context section. They locate ordinary non-active
+3.0 or confirmation 5.0 and distinguish the public profile from the private
 `invocation_context.kind`. That section lists required semantic fields and the
 exact omittable fields. The full checked-result example is at
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json`;
@@ -221,7 +234,7 @@ output from the checked `typed_exit` and declared transition. Callers cannot
 select the route or provide a separate `typed_output` field. Private
 clarification evidence is not a public input or output template.
 
-For `standard_intake`, use the [public invocation-envelope guidance](references/contract.md#interface-14-public-handoff)
+For `standard_intake`, use the [public invocation-envelope guidance](references/contract.md#interface-110-public-handoff)
 to assemble the existing outer envelope.
 
 

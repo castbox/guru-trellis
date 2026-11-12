@@ -78,11 +78,12 @@ checks continue. The four non-Delivery profiles retain their existing inputs.
 `phase2_candidate_set` retains its declared pinned-old/recovery boundary; this
 input evolution does not restore a retired current Check stage.
 
-Outputs and routers retain their existing shapes and meanings. The original
-caller consumes the returned profile and candidate disposition against its own
-current invocation, then continues its original stage. Root's profile-only
-return uses that same caller-owned context. No key is added to output and no
-qualification state, binding writer or second authority is introduced.
+Classified and mechanism-return outputs retain their existing shapes and
+meanings. The original caller consumes the returned profile and candidate
+disposition against its own current invocation, then continues its original
+stage. Root's profile-only return uses that same caller-owned context.
+Scope-confirmation output 3.0 has the necessary Task-bound projection described
+below. No qualification state, binding writer or second authority is introduced.
 
 Old published profile/aggregate schemas and public-input examples remain
 historical validation assets. Current invocation selects only the versioned
@@ -181,11 +182,38 @@ Before emitting an exit, review the complete candidate set and confirm that:
 Return exactly one exit:
 
 - `classified`: all candidates are qualified or rejected, with no unresolved scope choice, mechanism revision, or blocked decision. The classified router returns the decisions and witnesses to the fixed original Owner.
-- `scope_confirmation_required`: a real unresolved scope choice remains and no candidate is blocked. Project only candidate refs and current continuation identity to `guru-clarify-requirements:normal_scenario_scope_confirmation`; do not project decisions, reasons, severity, authorization, or a result locator.
+- `scope_confirmation_required`: a real unresolved scope choice remains and no candidate is blocked. Project candidate refs, current continuation identity and the Task-bound object described below to `guru-clarify-requirements:normal_scenario_scope_confirmation`; do not project decisions, reasons, severity, authorization, or a result locator.
 - `mechanism_revision_required`: at least one task-introduced mechanism must be removed or replaced and no candidate is blocked. The mechanism router returns the current decisions and witnesses to the fixed original Owner.
 - `blocked`: live evidence cannot support a reliable current judgment. Stop at `normal-scenario-qualification-blocked`.
 
 The deterministic runtime validates only closed shape, identities, freshness facts, enums, exact candidate coverage, the fixed cross-field aggregation of the AI-selected candidate decisions and typed exit, and the declared consumer binding. It must not author a candidate decision, judge scope or witness sufficiency, interpret severity, or choose a route.
+
+## Scope-confirmation context continuation
+
+Current `scope_confirmation_required` uses output 3.0. Preserve the original
+`handoff_profile`, `mode`, `target_locator`, `candidate_refs`,
+`continuation_id` and `resume_target`. For a verified Task-bound invocation,
+also project its existing `target.task_ref` and complete
+`target.delivery_key` as `task_ref` and `delivery_key`. These two fields are
+required together for that branch. A non-Task invocation uses its independent
+branch without them. Do not infer an object from inventory or write selection.
+
+Clarify owns confirmation input 2.0 and its source/scope judgment. Missing or
+normally stale context enters its actual `needs_context`, then original
+Discovery `context_request` 3.0. An authority mutation still returns
+`refresh_context`; original Sync `read` preserves the confirmation identity to
+Discovery. Only real Discovery `context_ready` and Clarify `clear` return to
+the exact original caller. Task target is distinct from its Issue authority.
+The qualifier does not generate context, change a transition or accept a
+record/check receipt as a public exit.
+
+The original caller retains its own stage and duties throughout the loop.
+After real clarification it rereads current authority and refreshes only the
+affected judgment under applicability. See complete matching
+`MIGRATION-811.md`; older published output bytes remain validation assets,
+pending old inputs return to their original caller, and unfinished old
+operations retain their fixed complete provider. This narrow output change
+does not change input aggregate 3.0 or the other qualification outcomes.
 
 ## 6. Process-Local Runtime
 

@@ -114,3 +114,27 @@ def _validate_repo_path(repo: Path, value: str, field: str, *, must_exist: bool)
             raise CommandError("unsafe_path", field, "Do not read qualification evidence through a symlink.")
     if must_exist and not candidate.is_file():
         raise CommandError("stale_identity", field, "Return to the original caller, reread the current locator and applicability, and construct any required fresh invocation without replaying this envelope.", 3)
+
+
+def confirmation_source(repo: Path, identity: dict) -> dict:
+    """Validate the explicit object, then read its separate source relation."""
+    if "delivery_key" not in identity:
+        return {"kind": None, "locator": identity["target_locator"]}
+    _delivery_planning_directory(repo, identity)
+    from runtime.delivery_projection.adapter import DeliveryProjection
+    task_ref = identity["task_ref"]
+    if Path(task_ref).parts[:2] != (".trellis", "tasks"):
+        task_ref = (Path(".trellis/tasks") / task_ref).as_posix()
+    record = DeliveryProjection(repo, task_ref).read_record()
+    source = record["source"]
+    if source["kind"] == "issue":
+        return {"kind": source["kind"], "locator": f"https://github.com/{source['repo_ref']}/issues/{source['number']}"}
+    accepted = record.get("accepted_scope")
+    if not accepted:
+        raise CommandError("stale_identity", "accepted_scope", "Return to the whole-scope owner for current no-Issue authority.", 3)
+    locator = accepted["locator"]
+    _validate_repo_path(repo, locator, "accepted_scope.locator", must_exist=True)
+    actual = "sha256:" + hashlib.sha256((repo / locator).read_bytes()).hexdigest()
+    if actual != accepted["revision"]:
+        raise CommandError("stale_identity", "accepted_scope", "Return to the scope owner for the changed whole requirements.", 3)
+    return {"kind": source["kind"], "locator": locator}

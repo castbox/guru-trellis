@@ -14,6 +14,10 @@ Codex 的 Guru Skill 使用共享 `.agents/skills/`；新安装/reapply 不再�
 再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
 并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](MIGRATION-718.md)。
 
+normal/solution资格确认的真实context循环按完整matching包、共享consumer、workflow/routing和声明平台投影采用。
+Task确认对象与来源authority分别保留；原工具owner负责已有checkout受管更新和目标验证。
+版本、旧在途恢复及证据边界见 [MIGRATION-811](MIGRATION-811.md)，各原Skill保语义门禁和内部行为。
+
 跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
 `guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
 DAG 可处理跨仓显式或动议正式绑定依赖图；Sequence 保持单仓严格串行。

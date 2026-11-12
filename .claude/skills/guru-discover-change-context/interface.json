@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.8.schema.json",
-  "schema_version": "1.8",
+  "$schema": "../../schemas/skill-interface-1.10.schema.json",
+  "schema_version": "1.10",
   "id": "guru-discover-change-context",
   "name": "guru-discover-change-context",
   "description": "Discover fresh current and archived change context, run the semantic evidence gate, and hand minimal current identity to Guru Team requirement clarification.",
@@ -119,6 +119,14 @@
     {
       "id": "context_request_artifacts",
       "path": "examples/public-context-request-input.json"
+    },
+    {
+      "id": "current_public_context_request_input_3_0_json",
+      "path": "examples/public-context-request-input-3.0.json"
+    },
+    {
+      "id": "current_public_context_ready_output_6_0_json",
+      "path": "examples/public-context-ready-output-6.0.json"
     }
   ],
   "schemas": [
@@ -193,6 +201,18 @@
     {
       "id": "owner_result_index",
       "path": "schemas/change-context-owner-result-index-1.0.schema.json"
+    },
+    {
+      "id": "current_public_context_ready_output_6_0_schema",
+      "path": "schemas/public-context-ready-output-6.0.schema.json"
+    },
+    {
+      "id": "current_public_context_request_input_3_0_schema",
+      "path": "schemas/public-context-request-input-3.0.schema.json"
+    },
+    {
+      "id": "current_public_input_5_0_schema",
+      "path": "schemas/public-input-5.0.schema.json"
     }
   ],
   "validators": [
@@ -260,7 +280,8 @@
   },
   "tests": [
     "tests/test_contract.py",
-    "tests/test_runtime.py"
+    "tests/test_runtime.py",
+    "tests/test_qualification_context_chain.py"
   ],
   "platform_destinations": [
     "shared",
@@ -291,8 +312,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-discover-change-context-input-aggregate-4.0",
-        "path": "schemas/public-input-4.0.schema.json"
+        "schema_id": "guru-stage0-discover-change-context-input-aggregate-5.0",
+        "path": "schemas/public-input-5.0.schema.json"
       },
       "profiles": [
         {
@@ -313,12 +334,12 @@
         {
           "id": "context_request",
           "schema": {
-            "schema_id": "guru-stage0-discover-change-context-input-context-request-2.0",
-            "path": "schemas/public-context-request-input-2.0.schema.json"
+            "schema_id": "guru-stage0-discover-change-context-input-context-request-3.0",
+            "path": "schemas/public-context-request-input-3.0.schema.json"
           },
           "example": {
-            "id": "context_request_input",
-            "path": "examples/public-context-request-input.json"
+            "id": "current_public_context_request_input_3_0_json",
+            "path": "examples/public-context-request-input-3.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -363,12 +384,12 @@
       {
         "exit_id": "context_ready",
         "schema": {
-          "schema_id": "guru-stage0-discover-change-context-output-context-ready-5.0",
-          "path": "schemas/public-context-ready-output-5.0.schema.json"
+          "schema_id": "guru-stage0-discover-change-context-output-context-ready-6.0",
+          "path": "schemas/public-context-ready-output-6.0.schema.json"
         },
         "example": {
-          "id": "context_ready_output_5_0",
-          "path": "examples/public-context-ready-output-5.0.json"
+          "id": "current_public_context_ready_output_6_0_json",
+          "path": "examples/public-context-ready-output-6.0.json"
         },
         "consumer_use_ids": [
           "project_context_ready"
@@ -423,8 +444,8 @@
         "transition": {
           "source_field": "transition",
           "stage": "context_current",
-          "schema_id": "guru-stage0-transition-context-current-3.0",
-          "path": "consumers/workflow/stage0/transitions/context-current-3.0.schema.json"
+          "schema_id": "guru-stage0-transition-context-current-4.0",
+          "path": "consumers/workflow/stage0/transitions/context-current-4.0.schema.json"
         }
       },
       {
@@ -499,6 +520,22 @@
           {
             "source": "handoff_resume_target",
             "target": "resume_target"
+          },
+          {
+            "source": "candidate_refs",
+            "target": "candidate_refs"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "authority_duplicate_snapshot",
+            "target": "authority_duplicate_snapshot"
           }
         ]
       },

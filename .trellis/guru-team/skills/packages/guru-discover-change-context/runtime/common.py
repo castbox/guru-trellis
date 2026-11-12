@@ -5,6 +5,14 @@ from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.base_selection import check_object_source, source_blob, source_ref
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
+from runtime.qualification_facts import confirmation_source
+
+CONFIRMATION_PROFILES = frozenset({"normal_scenario_scope_confirmation", "solution_mechanism_scope_confirmation"})
+
+def confirmation_identity(value):
+    return {key: value[key] for key in ("profile", "target_locator", "continuation_id", "resume_target", "candidate_refs", "task_ref", "delivery_key") if key in value}
+
+
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -83,7 +91,7 @@ def _worktree_branches(repo):
  return rows
 def validate_public_input(package_root,value):
  profile=value.get("profile")
- schemas={"pre_task":"public-pre-task-input-4.0.schema.json","context_request":"public-context-request-input-2.0.schema.json"}
+ schemas={"pre_task":"public-pre-task-input-4.0.schema.json","context_request":"public-context-request-input-3.0.schema.json"}
  if profile not in schemas:raise CommandError("schema_mismatch","public_input.profile","Use current pre_task or context_request input.")
  validate_json(value,package_root/"schemas"/schemas[profile],"public_input")
  if profile=="context_request" and value["return_identity"]["continuation_id"]!=value["continuation_id"]:
@@ -138,8 +146,21 @@ def validate_return_task(repo,public_input):
   except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
   if (task.task_id,task.lifecycle_generation)!=(returning["task_id"],returning["lifecycle_generation"]):
    raise CommandError("stale_identity","return_identity.task_id","Rebuild the current active-task context request.",3)
+def validate_confirmation_source(repo, public_input, owner):
+ returning=public_input.get("return_identity",{})
+ if returning.get("profile") not in CONFIRMATION_PROFILES:return
+ source=confirmation_source(repo,returning)
+ authority=source["locator"]
+ live=owner["live_change"]
+ if live["kind"]=="draft" and source["kind"]=="no_issue":
+  if hashlib.sha256((repo/authority).read_bytes()).hexdigest()!=live["body_sha256"]:
+   raise CommandError("stale_identity","live_change.body_sha256","Reread the current accepted no-Issue scope through its original owner.",3)
+ elif (live.get("url") or live.get("identity"))!=authority:
+  raise CommandError("stale_identity","return_identity.authority_locator","Read the actual source of this confirmation object; preserve its Task target.",3)
+
 def bind_owner_to_public(package_root,repo,public_input,transition,owner_result):
  validate_return_task(repo,public_input)
+ validate_confirmation_source(repo,public_input,owner_result)
  repository=owner_result.get("repository") if isinstance(owner_result.get("repository"),dict) else {}
  observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
  if observation["classification"]!="current":
@@ -162,6 +183,7 @@ def bind_owner_to_public(package_root,repo,public_input,transition,owner_result)
  value["canonical_query"]=canonical_query(value["change_input"]);value["history_preview"]=preview(observation["repo"],value["change_input"],value.get("history_preview",{}).get("limit",20),live.get("commit"));value["result_identity"]=identity(value);validate(package_root,value);return value
 def check_owner_binding(package_root,repo,public_input,transition,value):
  validate_return_task(repo,public_input)
+ validate_confirmation_source(repo,public_input,value)
  repository=value.get("repository") if isinstance(value.get("repository"),dict) else {}
  observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
  if observation["classification"]!="current":return observation

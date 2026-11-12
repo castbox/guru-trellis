@@ -75,6 +75,7 @@ SKILL_INTEGRATION_TEST_PATHS = (
 )
 CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "production-contract-manifest-5.0.schema.json",
+    "production-contract-manifest-6.0.schema.json",
     "production-contract-manifest-4.0.schema.json",
     "production-contract-manifest-3.0.schema.json",
     "production-contract-manifest-2.0.schema.json",
@@ -89,6 +90,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-eval-human-feedback.schema.json",
     "skill-eval-native-trace.schema.json",
     "skill-eval-run-4.0.schema.json",
+    "skill-eval-run-5.0.schema.json",
     "skill-eval-run-3.0.schema.json",
     "skill-eval-run-2.0.schema.json",
     "skill-eval-run.schema.json",
@@ -102,8 +104,10 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-interface-1.7.schema.json",
     "skill-interface-1.8.schema.json",
     "skill-interface-1.9.schema.json",
+    "skill-interface-1.10.schema.json",
     "skill-registry-1.3.schema.json",
     "skill-registry-1.4.schema.json",
+    "skill-registry-1.5.schema.json",
     "skill-registry.schema.json",
     "skill-commands.schema.json",
     "skill-commands-1.1.schema.json",
@@ -215,6 +219,10 @@ MANAGED_SOURCE_PATHS = (
     (
         Path("trellis/presets/guru-team/MIGRATION-812.md"),
         Path(".trellis/guru-team/MIGRATION-812.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/MIGRATION-811.md"),
+        Path(".trellis/guru-team/MIGRATION-811.md"),
     ),
 )
 MANAGED_ASSET_PATHS = [

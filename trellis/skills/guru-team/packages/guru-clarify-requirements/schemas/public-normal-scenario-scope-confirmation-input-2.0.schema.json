@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-input-normal-scenario-scope-confirmation-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "resume_target",
+    "continuation_id",
+    "candidate_refs"
+  ],
+  "properties": {
+    "profile": {
+      "const": "normal_scenario_scope_confirmation"
+    },
+    "source_exit": {
+      "enum": [
+        "scope_confirmation_required",
+        "context_ready"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resume_target": {
+      "enum": [
+        "guru-approve-task-plan",
+        "guru-author-task-plan",
+        "guru-check-task",
+        "guru-clarify-requirements",
+        "guru-execute-task-free-change",
+        "guru-reconcile-task-base",
+        "guru-resume-implementation",
+        "guru-review-branch",
+        "guru-review-change-request",
+        "guru-review-task-delivery"
+      ]
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey validated by its original public owner."
+    },
+    "authority_duplicate_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query",
+        "checked_at",
+        "target_locator",
+        "authority_content_sha256",
+        "candidates",
+        "facts_sha256"
+      ],
+      "properties": {
+        "query": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "target_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority_content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "facts_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo",
+              "number",
+              "url",
+              "updated_at",
+              "facts_sha256"
+            ],
+            "properties": {
+              "repo": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+              },
+              "number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "facts_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "required": [
+            "task_ref",
+            "delivery_key"
+          ]
+        },
+        {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "task_ref"
+                ]
+              },
+              {
+                "required": [
+                  "delivery_key"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "if": {
+        "properties": {
+          "source_exit": {
+            "const": "context_ready"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "authority_duplicate_snapshot"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "authority_duplicate_snapshot"
+          ]
+        }
+      }
+    }
+  ]
+}

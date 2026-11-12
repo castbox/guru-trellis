@@ -451,7 +451,7 @@ Enter the existing Scope Change Gate through `guru-clarify-requirements`.
 
 <!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
 
-Validate the selected scope_ready 2.0 closed shape. Pre-publication scope_ready without task_key projects mode/task_ref/source_selection/revision_refs into Author task_scope_requirements. Post-publication scope_ready with task_key consumes actual accepted scope and routes by current obligations to explicit Creation, affected Delivery rework/withdrawal, or Completion; it never repeats scope writing or creates an empty Delivery. For clear, resume the declared initial Intake, non-current interrupted phase or standalone caller.
+Validate the selected scope_ready 2.0 closed shape. Pre-publication scope_ready without task_key projects mode/task_ref/source_selection/revision_refs into Author task_scope_requirements. Post-publication scope_ready with task_key consumes actual accepted scope and routes by current obligations to explicit Creation, affected Delivery rework/withdrawal, or Completion; it never repeats scope writing or creates an empty Delivery. For generic clear, resume the declared initial Intake or standalone caller. The two qualification-confirmation clear outputs use their independent closed schemas and the shared clear3 consumer union. Preserve mode, target, candidates, Task/Delivery identity, continuation, resume target and source selection; return to that exact original caller. That caller rereads affected authority and refreshes affected admission or follows its original whole-scope revision route. Clear alone does not admit implementation.
 
 ### guru-full-task-intake-chain
 
@@ -1130,9 +1130,15 @@ applicability judgment is not an OS/kernel/process/descriptor keyword filter.
 `guru-clarify-requirements:normal_scenario_scope_confirmation`, while
 `guru-qualify-solution-mechanism:scope_confirmation_required` invokes
 `guru-clarify-requirements:solution_mechanism_scope_confirmation`. Each
-target-owned profile returns a real authority choice to the closed original
-owner; material changes refresh affected judgments under the original owner's
-conditions. Lost necessary conclusions return to their original owner for
+target-owned profile uses current input2 and returns a real authority choice to the closed original
+owner. Missing or ordinarily stale context follows Clarify needs_context4 to Discovery
+context_request3. Discovery context_ready6 separates the original confirmation target
+from actual authority and supplies its authority_duplicate_snapshot. Authority mutation
+returns Clarify refresh_context3 through the original Sync read on the adopted commit;
+actual baseline_ready2 preserves context_request and the original return_identity.
+Discovery supplies fresh context and snapshot before independent confirmation clear.
+Task target never replaces source Issue authority. Material changes refresh affected
+judgments under the original owner's conditions. Lost necessary conclusions return to their original owner for
 recovery or fresh judgment. Stage/caller change alone does not repeat the same
 qualification. Already rejected candidates never enter clarification. Unknown, empty, multiple,
 mismatched, or unmapped normal-scenario results stop at
