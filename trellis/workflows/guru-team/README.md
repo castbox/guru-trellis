@@ -429,6 +429,12 @@ upgrade/release matrix belongs to its dedicated Release Gate Issue.
 完整采用与在途接续见 [MIGRATION-793](../../presets/guru-team/MIGRATION-793.md)。
 适用条件由各原包独占，README 不复制资格判据。
 
+七类 Task/Delivery 资格输入现选 input 2.0 / aggregate 3.0，显式传递原完整
+DeliveryKey，并复用原身份和当前选择校验。原 caller 持有本次调用对象并消费
+原出口后继续当前阶段。旧发布输入保持历史字节；采用与在途恢复见
+[MIGRATION-812](../../presets/guru-team/MIGRATION-812.md)。已有 Task 的工具更新由原 `guru-upgrade-tools`
+执行，保留 Task/session；安装投影一致不代替实际 caller 验收。
+
 完整 preset 安装后使用 public discovery 和 stdin wrapper：
 
 ```bash

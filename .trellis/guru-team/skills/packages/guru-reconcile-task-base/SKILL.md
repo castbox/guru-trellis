@@ -146,3 +146,15 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 ## 公共 Delivery 迁移边界
 
 新 runtime 只接受 `delivery_*` profiles；旧 schema 是历史读取资产。每个输入显式携带 `delivery_key`，公共 upstream query 校验 Task/Delivery/generation 关系；不读 Task.status 或根 Planning。`delivery_post_plan` 返回 `delivery_activation`。局部 base pair 的 Git identity、candidate、AI impact 判断及 prior review continuity 保留；默认 pair guard 已退役；实际整合不能生成或代替 Planning、Check、Full Review、Readiness 的语义判断。owner checkpoint 以 Task generation 与 Delivery identity 隔离，消费后删除。candidate/base 改变由 consumer 按 upstream invalidation 合同重新确认受影响阶段。
+
+## Qualification target identity
+
+For a required `base_impact_candidate_set` invocation, use input 2.0 and
+load the original qualifier's
+[explicit-target contract](../guru-qualify-normal-scenario/references/contract.md#explicit-taskdelivery-target).
+Supply this invocation's actual complete DeliveryKey as `target.delivery_key`,
+after the original Identity/Ensure/Bind/selection checks. Retain this caller's
+TaskRef/key/profile and purpose in memory while consuming the original result;
+resume this same stage and its remaining obligations. Do not infer identity
+from inventory or create qualification state. A present official context must
+match; only a truly absent key uses explicit-task validation.

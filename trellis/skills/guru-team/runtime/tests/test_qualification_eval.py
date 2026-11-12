@@ -19,7 +19,8 @@ SKILLS = Path(__file__).resolve().parents[2]
 REPO = SKILLS.parents[2]
 sys.path.insert(0, str(SKILLS))
 
-from adapters.eval import eval_constants, native_adapter  # noqa: E402
+from adapters.eval import eval_constants, eval_support, native_adapter  # noqa: E402
+from runtime.bootstrap import active_pointer_path  # noqa: E402
 from runtime import eval_runner  # noqa: E402
 
 
@@ -1245,6 +1246,7 @@ print(json.dumps({"type": "turn.completed"}, separators=(",", ":")))
                     "argv": rendered,
                     "cwd": str(kwargs.get("cwd")),
                     "stdin": kwargs["input"],
+                    "runtime_pointer_before": active_pointer_path(Path(kwargs["cwd"])).read_bytes(),
                 })
             return real_subprocess_run(argv, *arguments, **kwargs)
 
@@ -1498,7 +1500,11 @@ print(json.dumps({"type": "turn.completed"}, separators=(",", ":")))
                     "-",
                 ],
             )
-            self.assertFalse((owner / ".trellis/.runtime").exists())
+            selection = active_pointer_path(owner)
+            self.assertEqual(selection.read_bytes(), wrapper_call["runtime_pointer_before"])
+            self.assertEqual({path.relative_to(owner) for path in (owner / ".trellis/.runtime").rglob("*") if path.is_file()},
+                             {selection.relative_to(owner)})
+            self.assertEqual(eval_support.runtime_residue(owner), [])
             self.assertEqual(
                 [
                     path.relative_to(owner).as_posix()

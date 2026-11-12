@@ -212,3 +212,14 @@ Before constructing that target, load the shared public
 It does not require future design/implement files. Original planning_scenario_set
 remains Approval-only and requires three current docs. Return classified and
 mechanism results to Author; scope/diagnosis/blocked retain original owners.
+
+## Explicit Task/Delivery target
+
+The current seven Task/Delivery profiles select input 2.0 and aggregate 3.0.
+Load the shared deterministic
+[explicit-target contract](../../guru-qualify-normal-scenario/references/contract.md#explicit-taskdelivery-target)
+before constructing `target.delivery_key` from the original caller's current
+identity. That section owns only common facts, Planning paths and caller-held
+continuation context. This Skill retains its independent semantic method,
+original outcomes and unique consumers. The four non-Delivery profiles are
+unchanged; published older input bytes are historical validation assets.

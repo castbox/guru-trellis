@@ -1110,6 +1110,15 @@ current judgment. The workflow consumes the original declared exits only.
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
 | `publication_candidate_set` | Delivery Review finding, task-work return, or blocker | `guru-review-task-delivery` |
 
+For the seven Task/Delivery rows, each current invocation supplies the original
+caller's complete `target.delivery_key` under input 2.0 / aggregate 3.0.
+Explicit identity, Planning paths and caller-held continuation follow the
+original normal qualifier's `references/contract.md#explicit-taskdelivery-target`.
+The implementation coordinator reads that same contract before assembling
+`implementation_discovery`; all callers keep their own current Task/key/profile
+and purpose while consuming the unchanged output. This does not add a
+qualification store or alter the pinned-old Check boundary.
+
 For every row, the caller separately applies normal, solution and root
 conditions. Normal's scenario admission does not replace solution's authority
 placement or root's causal admission, and none replaces the stage judgment.

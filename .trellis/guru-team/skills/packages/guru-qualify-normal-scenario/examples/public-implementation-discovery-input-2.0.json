@@ -1,0 +1,29 @@
+{
+  "profile": "implementation_discovery",
+  "mode": "workflow",
+  "caller": "guru-phase2-implementation-coordinator",
+  "target_locator": ".trellis/tasks/example-task",
+  "target": {
+    "repo_locator": ".",
+    "task_ref": ".trellis/tasks/example-task",
+    "planning_identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "checkout_head": "60a2e962b68a02d08061795cfe9fafcdff206e80",
+    "diff_locator": "origin/main...HEAD",
+    "delivery_key": {
+      "task_id": "example-task",
+      "lifecycle_generation": 0,
+      "delivery_id": "11111111-1111-4111-8111-111111111111"
+    }
+  },
+  "candidate_refs": [
+    "candidate-normal-scenario"
+  ],
+  "candidate_locators": [
+    {
+      "candidate_ref": "candidate-normal-scenario",
+      "locators": [
+        "path:AGENTS.md"
+      ]
+    }
+  ]
+}
