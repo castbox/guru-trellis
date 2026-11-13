@@ -178,9 +178,10 @@ scripts never turn missing evidence into an automatically chosen exit.
 
 For an Issue or proposed draft, actually read the shared Clarify-owned
 [Issue content specification](../../guru-clarify-requirements/references/issue-content.md),
-the installed writing specification, and necessary current sources. Apply it
-within the existing dimensions to the complete final title/body, requirement
-scope, delivery unit, and observable acceptance. A revision is not reviewed
+the installed writing specification, and necessary current sources. Apply its
+methods for necessity, review of complete rules and acceptance within the existing
+dimensions to the complete final title/body, requirement scope, delivery unit,
+and observable acceptance. A revision is not reviewed
 only as added paragraphs. Use its local-revision and outside-scope-gap rules;
 ordinary omissions return to the affected original owner through the existing
 exits. Technical elaboration alone is not a missing product requirement.

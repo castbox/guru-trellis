@@ -26,8 +26,9 @@ request when available. No additional approval is needed for that recovery.
 For `change_request`, read the same Clarify-owned
 [Issue content specification](../guru-clarify-requirements/references/issue-content.md)
 in full before review, together with the writing specification above and
-necessary current source context. Review clarity, terminology, and semantic
-preservation across the final complete title/body. Keep the fixed scanner
+necessary current source context. Apply its method for independent reading of
+the complete body and comparison with sources to clarity, terminology, and semantic preservation
+across the final complete title/body. Keep the fixed scanner
 scope and original rewrite/rescan/re-entry contract. Revision language checks
 cover this round's changed text and necessary context; content completeness
 still concerns the complete revised body. Report an outside-scope gap and its

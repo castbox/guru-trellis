@@ -1,0 +1,22 @@
+task_id: 818-issue-minimal-sufficiency
+source: https://github.com/castbox/guru-trellis/issues/818
+status: integrated_pending_review
+strategy: delta_first
+preimage: fd0ee32618433a92ae934e29afb5b72e7136b4f7
+authority:
+  locator: docs
+  identity: guru-trellis-rdt
+  version: fd0ee32618433a92ae934e29afb5b72e7136b4f7
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  requirements: docs/requirements/current/issue-content.md
+  design: docs/design/current/issue-content.md
+  test: docs/test/current/issue-content.md
