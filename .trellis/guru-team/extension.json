@@ -1198,11 +1198,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-12T14:03:18Z",
+  "installed_at": "2026-11-13T04:27:07Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ca0b21f0dfc754a6979f919be14deee696719a4b",
-    "commit": "ca0b21f0dfc754a6979f919be14deee696719a4b",
+    "ref": "30523e915d782f3c896c45788ca97f392c7f1c33",
+    "commit": "30523e915d782f3c896c45788ca97f392c7f1c33",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1295,7 +1295,7 @@
       ".trellis/spec/workflow/data-contracts.md": "06ce49bac71a15abe5e484f355763f59e211cc63e815f9a8c2cd11c4fedc0575",
       ".trellis/spec/workflow/companion-scripts.md": "a17bc8a53ed87c23c6f40171567229e74a30403c37ac00c67e953d94b7c5021d",
       ".trellis/spec/workflow/quality-guidelines.md": "13db64317e97852619d462ff67bdc62ce4ebdaf962b74cb5c5aa9ac7439948d6",
-      ".trellis/guru-team/trellis-source.json": "f216996e0950c288f7edd3e7c4e87c817c97c3558d11bfe52dd06954266190f9",
+      ".trellis/guru-team/trellis-source.json": "f5ea4e3b9ae66710aac760b9825c867770c509ec88cfabac0178dfcc4f3b8126",
       ".trellis/guru-team/MIGRATION-794.md": "11c48a8339cae40fd155ba5e4d412ab6c3da8ec3e37fc1190afe3421a2a86262",
       ".trellis/guru-team/MIGRATION-812.md": "917035990f3d5ed74b48069f8c4fe873a536a2ed7d6651a95ddd354bff7b5f0e",
       ".trellis/guru-team/MIGRATION-811.md": "56aef7e7be7e8c32c8ac4ca0c3bca1835daeb6f9d4c9f30a6802a7887c5794ab"

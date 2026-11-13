@@ -1,0 +1,6 @@
+{"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "读取原来源身份；本批仅更新精确Fork组合"}
+{"file": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md", "reason": "本批唯一来源设计处置、正式H顺序与验证设计"}
+{"file": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/implement.md", "reason": "本批执行顺序、唯一Delivery Policy及Docs Plan"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "完整来源配对、原prepare/invoke/recovery与目标保持合同"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本批新增说明和规划维护遵循完整写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "维护规划时保留正文职责及唯一来源处置"}
