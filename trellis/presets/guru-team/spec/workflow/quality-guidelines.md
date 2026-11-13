@@ -266,6 +266,104 @@ test against the old implementation, or another bounded check that establishes
 detection of the same defect. State the remaining question; without reach
 basis, do not claim test effectiveness.
 
+### Project behavior verification and maintenance
+
+Use this method when the accepted work establishes or maintains a repeatable
+way to verify project behavior. Planning selects the required behavior and
+evidence boundary, implementation runs the method, and the original review
+owner judges whether the observations support the claim. This method adds no
+Skill, lifecycle stage or mandatory device test.
+
+Read the project's actual launch commands, dependency and data setup, existing
+verification scripts, and user or caller entries before choosing a harness.
+Reuse an existing method when it reaches the required behavior. Fill an actual
+coverage gap in the project's existing documentation or local skill convention;
+do not build a second feature registry or prescribe a new folder for every
+project. A CLI, API or library uses its real caller entry without adding a UI.
+
+Make the selected method executable by the next agent. State the exact launch
+and teardown commands, required data or credentials by their safe configuration
+names, and the observation that proves the chosen journey is ready to use.
+A listening process or successful dependency health check alone does not prove
+that the journey's required initialization, data or authentication is ready.
+Name the real operation, input and independent expected result, including
+required file, persisted-state or external side effects. Reuse stable selectors
+or commands from the project instead of inventing a convenient internal entry.
+Keep direct-module, substitute and real-entry evidence at their actual layers.
+
+State what evidence to capture and where the next owner can read it. Follow the
+selected method through one applicable normal journey before treating the new
+or revised method as delivered. Capture the operation and its observed result;
+the existence of a method file, a final screenshot or an agent's summary does
+not establish execution. If setup or a required dependency is unavailable,
+report that gap and the unverified behavior rather than claiming success.
+Keep target-behavior failures distinct from setup failures and valid expected
+error results under Failure attribution and infrastructure limits below.
+
+Clean up only instances and temporary data created by this run. Identify them
+by their actual handles or paths, not a broad process name or a shared data
+directory. Tear down failed attempts too. Keep the method and its evidence
+outside disposable run data, then verify that the evidence remains readable
+after cleanup. Driving the project and observing side effects retain its
+existing permission and external-write boundaries; a verification request
+does not grant an otherwise missing side effect.
+
+The method identifies the behavior and code or command entry it covers.
+When that behavior or entry changes, compare the method with the new caller
+path, update the affected instructions, and rerun the affected journey. Keep
+still-applicable coverage and results. A different executor or stage alone
+does not require another run. Reviewers check the current method, real entry
+and retained observations together; an unexecuted update remains unverified.
+
+### Real Agent method comparison
+
+Use a comparison when the accepted work evaluates how a workflow or Skill
+change affects Agent behavior. The original owner states the concrete question
+and fixes the task material, evaluation criteria and actual method versions
+before execution. Choose a supported normal scenario that can expose the
+method difference. Keep both variants' project starting state and user request
+the same. Prefer the same model and execution settings, and report any
+environment or setting difference that limits the comparison. Do not introduce
+a model default or fixed run count through this method.
+
+Separate execution material from host evaluation material. Each executing Agent
+receives the ordinary task and its assigned method, but not the evaluation
+criteria, expected answer, the other output, or labels that identify a preferred
+variant. Use independent project copies and neutral directory and variant names
+so one execution does not consume the other execution's changes or results.
+The assigned method itself remains visible because applying it is the behavior
+under evaluation. Freeze the criteria instead of changing them after seeing
+which variant performs better.
+
+Reuse the existing native Agent entry, runner and fact collector when they can
+execute the selected material without exposing host expectations. Otherwise
+use the project's supported native execution and existing capture approach;
+do not expand a runner protocol merely to host this comparison. Tools execute
+the supplied inputs and retain actual outputs, tool records and exit facts.
+They do not infer semantic success from a phrase, score or Agent self-report.
+Retain the minimum material, method revision, execution settings and raw results
+that the original reviewer needs to reproduce or inspect the comparison.
+Keep secrets, private business data and authorization information out of those
+materials and results.
+
+The evaluator first reads the real outputs and tool records under neutral
+variant labels, without the mapping to current or candidate method. It judges
+them against the fixed criteria before the original owner reveals the mapping
+and explains the outcome. The original owner cross-checks that judgment against
+the task, actual actions and resulting artifacts. Report observed improvements,
+regressions and unverified behavior; agreement between Agents or a green tool
+exit alone cannot establish the conclusion.
+
+Preserve failed runs and distinguish unavailable setup, unexecuted behavior and
+an observed target-behavior failure. A corrected setup may start another run,
+but it does not replace the earlier failure or make the two environments equal.
+Stop when the evidence answers the stated question. Add an experiment only for
+a concrete remaining question that affects the decision, under Behavior,
+evidence and experiment selection above. A small comparison supports its
+observed cases, not a general claim of better quality, lower elapsed time or
+lower token cost. Neither comparison execution nor its result adds a gate to
+every task or replaces the original owner's formal review and delivery result.
+
 ### Failure attribution and infrastructure limits
 
 A failure used as a defect comparison must reach the declared behavior and fail

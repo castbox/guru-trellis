@@ -15,3 +15,11 @@ R735-03 → D735-03。命中 package contract/runtime、source/installed/实际�
 ## 结果定位与关系
 
 本批实际输入、动作、结论和证据边界唯一由 TaskId 735-behavior-causal-validation、generation0、DeliveryId 51cf3d42-d210-4938-a20a-da800f158795 的 validation 正文承担，Task 活动或归档路径由原身份解析；本单元不复制执行记录为第二结果authority，不预填最终pass或自身最终HEAD。需求R735位于 docs/requirements/current/behavior-validation-method.md，设计D735位于 docs/design/current/behavior-validation-method.md。正式 Check、Review、Delivery、Completion 仍读取原公共结果与实际 Git/PR事实。
+
+## T826-01..04 / SC826-PROJECT-COMPARE
+
+R826-01/02→D826-01。T826-01以可运行去敏CLI项目执行启动、可用就绪、真实读写、结果和副作用、清理后证据读取；T826-02改变覆盖入口或行为后更新并重跑受影响验证。T826-03事前固定同材料/host准则，用现行/候选方法各自实际Agent执行，独立评价者先匿名读完整输出与工具，原owner报告改善、退化及未证，不预设胜出。T826-04通过真实定向分发/reapply/drift/sidecar检查证明方法可读与状态保留；结构不证明行为。
+
+本批实际观察由TaskId 826-verification-experiment-methods、generation0、DeliveryId e74b8c49-7042-4896-a74f-61527e7050c0 的validation.md承担，未执行项保持未证，不推断完整平台矩阵、外部采用或统计改善。原735历史观察和结果定位保留原义。
+
+本单元的826增量由原RDT owner在本Task实施与真实Sol medium案例验证后完成整合及回读；正式提交后独立Review与Delivery/Completion仍待各原owner，不从本文推定最终通过。
