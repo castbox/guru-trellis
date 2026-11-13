@@ -1,5 +1,13 @@
 # Guru Team Preset
 
+受管 manifest 的正常 Git 冲突由原
+[Reconcile 冲突步骤](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)
+接续到 [tools owner](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)。
+已有安装须通过完整 matching tools 更新采用；开发 `local_candidate` 保留正式 source-lock 未验证边界。
+同 PR 后继操作的完成私有事务退役仍归原
+[Publication owner](../../skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action)。
+源码、安装投影和真实 Agent 接续是不同证据，不代表完整安装/升级或 Release 矩阵通过。
+
 当前出口查询复用 `discover-skill-contract` 的 `--skill <id> --exit <id>`。
 完整路由正文由 workflow 显式引用，preset 将 `references/routing.md` 和
 `references/legacy.md` 安装到 `.trellis/guru-team/references/`。

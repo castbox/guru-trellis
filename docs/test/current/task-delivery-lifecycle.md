@@ -204,3 +204,16 @@ T792-01/02/03是长期回归，T792-04/06是本项语义/实际行为观察。�
 | T794-07 / V7 → R794-06/07、D794-04/05 | 真实profile/schema/producer→consumer、原tools matching采用和受影响平台/reapply/drift/mode/sidecar | 当前图无重复Check/审核前发布边；原恢复/终态保留；source/installed/Agent/外部分层，保用户和Task/session，不扩完整Release矩阵。 |
 
 本轮实际命令、首次失败、修订、正式结果和未验证范围唯一在 [#794 Test](../../requirements-design-test-contributions/794-postcommit-review/test.md)。本单元仅定义行为与验证策略，不预填本候选pass/最终H/Delivery/Completion/安装或生产效果。
+
+
+## T815：真实 manifest 冲突与原 tools 接续
+
+| 场景 → requirement/design | 正常输入与入口 | 必须观察及边界 |
+| --- | --- | --- |
+| T815-01 → R815-01/02、D815-01/02 | 两个真实 canonical 分支，各自原 installer 输出，再实际 Git merge | manifest 冲突自然形成；固定完整旧 blob 原字节/provenance/hash 保持，未手造状态或修补输出。 |
+| T815-02 → R815-01/02/05、D815-01/02 | 执行 Agent 实际完整读修订合同，经原 tools preview/prepare/invoke 接续 | AI 逐路径判断后原 installer 生成两侧组合；目标自身 resolver/installed/native/drift、sidecar/mode 与最终候选均正确。driver 或正文相等不能证明 AI 行为。 |
+| T815-03 → R815-03、D815-03 | 原 resolved executor、同请求 stdout-loss recovery | 正确父序/最终 tree、零 unmerged、同 key/PR、自然 dirty 当前 task.json 与无关 Task/session/peer 保持；只观察本地 Git/provider fixture 层。 |
+| T815-04 → R815-04、D815-04 | 原 Publication 完成事务到后继 action、未完成/未知动作的同操作恢复 | 原 retire_completed 退役完成私有事务及 gate，公共 facts 不丢；未知动作不重复。受控 provider 不证明 live GitHub。 |
+| T815-05 → R815-05、D815-02/03 | 受影响 source/packages、原 tools 同步本 checkout、matching installed/平台/reapply/drift | 保 Task/session/peer，零未处理 sidecar，原 modes 保持；local_candidate 的 formal_fork_source_lock 边界保留，正式采用、完整矩阵、外部交付分别说明。 |
+
+本项实际命令、首失败、结果和观察截止唯一在 [#815 Test](../../requirements-design-test-contributions/815-manifest-conflict-recovery/test.md) 维护；前文历史观察保持。本策略不预填安装、Check、committed Review、正式采用或 Task 完成。

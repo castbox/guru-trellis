@@ -111,6 +111,13 @@ semantic result is `scope_confirmation_required`; never persist that
 confirmation. Missing, stale, ambiguous, or unmapped operation evidence fails closed. Pair
 ancestry applies only to this explicitly selected integration operation.
 
+When Git reports a conflict in the managed installation manifest, first read
+[Managed manifest conflict continuation](references/contract.md#managed-manifest-conflict-continuation).
+This existing conflict step fixes the complete prior installer blob as a temporary
+inventory preimage and returns to the original tools owner. Do not stage that
+preimage as the final manifest; final installation and resolved-candidate checks
+remain required.
+
 For the post-implementation `delivery_resolved_candidate` profile supplied by
 the Check owner, run the resolved executor. The original implementation owner
 retains B and binds actual committed HEAD; the Check owner judges applicable
