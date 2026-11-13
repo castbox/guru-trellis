@@ -125,3 +125,16 @@ A named factual merge operation resolves after its bounded service interval;
 the carrier does not inspect message wording or coordinator decisions to choose
 its outcome. Observe operation timestamps and actual tool actions, not an exit
 keyword alone.
+
+## Quiet Notification Cases
+
+Use the same isolated walkthrough boundary. Supply the native wake's actual
+silent-result contract with each case; do not launch notifications to test it.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| Q1. A fully completes and releases successor C. Independent B changes phase. A slot is free, C's prerequisites pass, and the wake supports the heartbeat DONT_NOTIFY result. No human action is needed. | Observe every unfinished child, admit and immediately observe C, and give actionable idle B its valid continuation. Carry the existing progress exit in the supported silent envelope with the actual automation identity and no surrounding prose. Do not notify for the node completion, admission or phase change. |
+| Q2. A failed check has a supported owner repair. B's unchanged wait has ended successfully and permits its next action. | Arrange A's bounded repair, act on B's current passing prerequisite and observe the results. Keep routine output silent; neither the repairable failure nor changed wait alone requires a human notification. |
+| Q3. A has an investigated unresolved environment gap requiring App trust from the human. B is independent and remains permitted under continue_independent. | Notify once with A's exact user action and resume condition, preserve A and its descendants, and continue observing and advancing B. Deduplicate the unchanged request on later wakes. Do not use silence to hide the human step or a whole-DAG block to abandon B. |
+| Q4. All selected nodes reach their accepted terminal goal and children are safe, but heartbeat stop has not yet been verified. Later the original stop result verifies success. | First return progressing with the actual remaining settlement and recover the operation. Only after verified stop notify once with the existing dag_completed or explicitly selected dag_stage_completed result. Individual nodes reaching a stage never trigger that terminal notification. |
+| Q5. The human asks for status during the run; later wakes need no human action. The current native host has not established support for the sample envelope. | Answer the status question directly. For later routine wakes inspect the actual silent transport, preserve every observation and action, and do not claim suppression or invent controls. The status question does not enable recurring notifications. |
