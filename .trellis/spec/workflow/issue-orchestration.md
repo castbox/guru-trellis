@@ -393,6 +393,51 @@ integration owner in conversation context. App-owned configuration carries only 
 replayable run inputs. No new persistent coordination or authorization store.
 After context loss, recover original identities and live facts before dispatch.
 
+### Heartbeat Recovery Inputs
+
+After admission, pending-to-formal binding, replacement of a chat carrier, or
+advancement of the current sequence position, reconcile any child identities
+and current-position hints carried by the existing heartbeat prompt. Remove
+superseded hints and retain unfinished parked owners and the selected run inputs.
+If those recovery inputs changed, update that same native heartbeat before
+yielding. Read back its prompt, target, interval and active status; an unchanged
+minimal prompt needs no rewrite. Do not create a second heartbeat or copy
+authorization, phase history or every cursor revision into its configuration.
+Conversation-held cursors remain the current observation inputs.
+
+At every resume, compare the saved recovery hints with the original conversation
+and live child facts. A stale prompt does not retake ownership, roll back the
+current position or permit duplicate creation. Correct the existing prompt
+through the native owner. A failed update retains its diagnostic and recovery;
+continue observing known children, but hold new admissions until the recovery
+inputs and scheduling configuration are verified.
+
+### Observation After An Interruption
+
+On each heartbeat and each human-requested continuation, first complete a
+fresh observation of every admitted unfinished child. Use the latest available
+per-child cursor; if it was lost, recover the same child and take a fresh
+snapshot. Read actual latest output for changed or idle children and act on
+each actionable idle result in this cycle under the existing gates. Do not
+wait for the next timer, a new child message or another human reminder.
+
+Compare the current observation time with the last actual observation available
+in this conversation or native history. If scheduled intervals passed without
+observations, retain that gap as unobserved time and inspect the current child
+and native heartbeat facts before describing monitoring as healthy. If the
+previous observation cannot be recovered, state that limit rather than inventing
+continuity. A late wake or an idle child alone does not establish a scheduler
+failure; distinguish missed coordinator observations from a demonstrated native
+scheduling fault. Fix a known configuration mismatch through its original owner;
+do not claim that a Markdown change guarantees timely native wakeups.
+
+Perform one current catch-up cycle, not one replay for every missed interval.
+Preserve active owners and unknown side-effect recovery; do not restart work,
+repeat a possibly delivered instruction or relax a gate to compensate for delay.
+Keep only the necessary observation context in this conversation, with no new
+ledger, watchdog, polling script or persistent checkpoint. Quiet Notifications
+still governs delivery after the actual observation and disposition.
+
 Every wake performs one complete observation cycle:
 
 1. Resolve pending creations and observe every formal unfinished child. For a

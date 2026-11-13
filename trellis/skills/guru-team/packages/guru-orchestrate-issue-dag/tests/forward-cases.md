@@ -155,3 +155,15 @@ private. These cases do not call a backend or prove real integration.
 | C6. Backend #21 becomes blocked on deployment, or is reopened for an implementation fix. Its current profile contract remains usable. Mobile #22 has only that contract prerequisite; Web #23 instead has a full-completion edge. | Continue Mobile #22's Mock work under continue_independent without treating it as a completion descendant. Hold Web #23 under the normal completion-edge rules. A stop_dispatch policy still preserves its existing all-new-admission stop behavior. |
 | C7. The contract is ready and frontend #22 is otherwise eligible, but max_parallel is 1 and backend #21 still occupies the slot. | Preserve the limit and backend owner; do not claim simultaneous work or mark backend completed to release a slot. Start frontend when an actual normal slot becomes free. If frontend already owns the occupied slot, continue its ready work there. |
 | C8. The contract provider is an external Issue not selected for execution. Its live contract is usable, it remains open, and the frontend has no completion edge. | Read and judge the contract directly; admit ready Mock work without adding a provider node, launching another child, requiring provider closure or consuming an unmerged implementation branch. |
+
+## Observation Recovery Cases
+
+These are supplied-fact semantic walkthroughs under the isolation boundary
+above. They do not change a native scheduler or prove its wakeup timing.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| O1. The saved heartbeat still names completed A. Conversation and fresh native facts bind unfinished B to one formal child. | Observe B and every other admitted unfinished owner, recover their latest real results, and reconcile the same heartbeat's recovery hints. Read back its prompt/target/interval/status; do not resume A, duplicate B or use the stale hint as authority. |
+| O2. A human asks to continue after several scheduled intervals without recorded observations. The child ended earlier with an actionable original-owner plan whose current gates pass. | Take a fresh snapshot and read the actual result now; send one valid continuation in this cycle. Retain the unobserved interval and distinguish it from a proven scheduler fault. Do not wait for another timer or claim that old ACTIVE status proved monitoring. |
+| O3. After a pause, the latest per-child cursor is unavailable. A send may already have succeeded and its result is unknown. | Recover the same binding and actual conversation, obtain a fresh snapshot and recover the uncertain send before retry. Do not replay one instruction per missed interval, restart the child or invent observation continuity. |
+| O4. A newly formal child is already observed. Updating the same heartbeat fails; known children still have permitted work. | Retain the failure, observe and advance known owners under their gates, and recover/read back the existing heartbeat. Hold further admissions until configuration is verified. Use the existing notification rules; do not create a replacement timer, ledger or watchdog. |
