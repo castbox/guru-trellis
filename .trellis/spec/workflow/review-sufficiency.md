@@ -54,6 +54,13 @@ Implementation and tests agreeing cannot establish complete requirements.
 Reading every file, complete chapter headings or filled dimension fields cannot
 replace behavior and relationship coverage.
 
+For Issue authoring and review, apply the original Clarify-owned Issue content
+specification within each owner's existing responsibility. Its complete body
+is `trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md`
+in source, or `.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`
+after installation, in the same provider. That body owns the Issue-specific
+method; this common review specification does not redefine it.
+
 Tailor units to the actual object and complexity. No universal table, coverage
 percentage, reading quota or unsupported input enumeration is required. Necessary
 unchanged consumers are evidence within the selected review, not automatic
