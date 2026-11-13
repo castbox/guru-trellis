@@ -17,3 +17,9 @@ Identity：RDT-DES-BEHAVIOR-VALIDATION；别名：D735/CON735。原语义 owner�
 ## 关系
 
 需求：docs/requirements/current/behavior-validation-method.md R735-01..03；测试：docs/test/current/behavior-validation-method.md T735-01..07。Architecture 当前 no impact 使用原独立结果，不制造贡献/ADR。quality/root/Author canonical 精确合同保持唯一来源。
+
+## D826-01 / CON826-METHOD
+
+承接R826-01/02。唯一生产正文仍为quality-guidelines Test And Validation Value下项目验证与维护、真实Agent对照方法；Author/实施/Review按原职责消费，同源引用不复制标准。项目本地说明服从已有约定，真实执行和维护证明可用。实验host持标准和映射，执行者只读自然任务与对应方法，匿名评价先于揭示映射；工具只运输事实，原owner判断。复用原生入口/采集及受管分发，不新增Skill、runtime、DTO、总控或评分器。规则变化只重验实际受影响范围。关系：R826-01/02，T826-01..04。
+
+本单元的826增量由原RDT owner在本Task实施与真实Sol medium案例验证后完成整合及回读；正式提交后独立Review与Delivery/Completion仍待各原owner，不从本文推定最终通过。

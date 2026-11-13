@@ -39,6 +39,8 @@
 
 验证方法由安装的 `.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value` 单写。Author 实际加载该节，在 design 和 implement 的现有验证章节关联条件、动作、结果与独立断言，采用仍适用的覆盖并补足实际缺口。按该方法选择足够层级、执行顺序，区分长期回归与临时诊断，写明适用停止条件；不从模板另造固定红绿、重复回退或每项测试的理由文件。必要验收和受影响回归仍按当前合同安排。
 
+当本批建立或维护项目验证入口时，应用同节 `Project behavior verification and maintenance`；当本批评价 workflow/Skill 方法变化时，应用 `Real Agent method comparison`。只在命中对应行为时选择其方法，不把两项方法变成所有 Task 的固定验证门禁。
+
 ## 4. Delivery 与来源设计
 
 全量 D1、部分、后续及同批返工都要写本批独立目标、覆盖项、排除项、起点、输入/依赖、边界、剩余责任和整体 Completion 关系。首次明确没有前序；后续实际读取前序交付结果，区分已交付事实和当前待实现要求。设计写清已有能力、目标状态、本轮差额、前后交付接口及适用兼容/集成。复制整体 PRD 或只列编号不能替代这些内容。

@@ -1198,11 +1198,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-13T08:45:18Z",
+  "installed_at": "2026-11-13T09:45:31Z",
   "source": {
-    "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
-    "commit": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+    "repo": "git@github.com:castbox/guru-trellis.git",
+    "ref": "dc74613a0c5b95c9ddcf1090685037f635989208",
+    "commit": "dc74613a0c5b95c9ddcf1090685037f635989208",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1294,7 +1294,7 @@
       ".trellis/spec/workflow/skill-package-contract.md": "f0f66e1615a77c4f522a78de98dc91f5f9020c344db679cb3d87d6f9a05a4da3",
       ".trellis/spec/workflow/data-contracts.md": "06ce49bac71a15abe5e484f355763f59e211cc63e815f9a8c2cd11c4fedc0575",
       ".trellis/spec/workflow/companion-scripts.md": "a17bc8a53ed87c23c6f40171567229e74a30403c37ac00c67e953d94b7c5021d",
-      ".trellis/spec/workflow/quality-guidelines.md": "13db64317e97852619d462ff67bdc62ce4ebdaf962b74cb5c5aa9ac7439948d6",
+      ".trellis/spec/workflow/quality-guidelines.md": "38de9ad70dcfaecbd021964ecf6272cc6bf8a5b28d870911e126a3c56a77bf23",
       ".trellis/guru-team/trellis-source.json": "f5ea4e3b9ae66710aac760b9825c867770c509ec88cfabac0178dfcc4f3b8126",
       ".trellis/guru-team/MIGRATION-794.md": "11c48a8339cae40fd155ba5e4d412ab6c3da8ec3e37fc1190afe3421a2a86262",
       ".trellis/guru-team/MIGRATION-812.md": "917035990f3d5ed74b48069f8c4fe873a536a2ed7d6651a95ddd354bff7b5f0e",
@@ -1374,7 +1374,7 @@
       {
         "id": "guru-author-task-plan",
         "interface_sha256": "a99a2cbc2f5d634d5c19eab714b45a29c40348007ca23563fcbde0c2c13b5a35",
-        "tree_sha256": "076687b57da1a27f5e17f0a58bbd0a0664176b148d5903e3d6ae370fcc3fef0e"
+        "tree_sha256": "3ea116a3934c069d1fbcd5403bd70e94641c821107fe8b05802be1fca6867550"
       },
       {
         "id": "guru-bind-task-session",
@@ -1529,7 +1529,7 @@
       {
         "id": "guru-review-change",
         "interface_sha256": "a26bf74b9427007d43601cda2ce0ed033afd217544f13b7284964d9dff26ad75",
-        "tree_sha256": "8caa7376fba350e76bea3a5b036431b515cf76e195c8c952397746c9f2afe976"
+        "tree_sha256": "445382c6111ee7395a2d235a9880ff1f461c170519444a005d8b0ea2ac687ec9"
       },
       {
         "id": "guru-review-change-request",
@@ -4353,7 +4353,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
-        "sha256": "ca118c69bea1d38c47600ec5bfca3ed3f752933d7fc9e86062126abfc424fcbb",
+        "sha256": "96478963b75feef0a9900bb4ce039d5f8b140cc2dc57677c4b2c3a2efb8d6715",
         "executable": false,
         "action": "installed"
       },
@@ -18640,7 +18640,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change/references/review-method.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/references/review-method.md",
-        "sha256": "b66af09f292833a413ad6de61c9098378a948cacf0b2e654ba8d6a7a88ed145b",
+        "sha256": "c7de5277060ee21c49288fa313e68279409e58ba80b10606a0500855f5144d9e",
         "executable": false,
         "action": "installed"
       },
@@ -25129,7 +25129,7 @@
       {
         "path": ".agents/skills/guru-author-task-plan/references/planning-body.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
-        "sha256": "ca118c69bea1d38c47600ec5bfca3ed3f752933d7fc9e86062126abfc424fcbb",
+        "sha256": "96478963b75feef0a9900bb4ce039d5f8b140cc2dc57677c4b2c3a2efb8d6715",
         "executable": false,
         "action": "installed"
       },
@@ -25710,7 +25710,7 @@
       {
         "path": ".claude/skills/guru-author-task-plan/references/planning-body.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
-        "sha256": "ca118c69bea1d38c47600ec5bfca3ed3f752933d7fc9e86062126abfc424fcbb",
+        "sha256": "96478963b75feef0a9900bb4ce039d5f8b140cc2dc57677c4b2c3a2efb8d6715",
         "executable": false,
         "action": "installed"
       },
@@ -26291,7 +26291,7 @@
       {
         "path": ".cursor/skills/guru-author-task-plan/references/planning-body.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
-        "sha256": "ca118c69bea1d38c47600ec5bfca3ed3f752933d7fc9e86062126abfc424fcbb",
+        "sha256": "96478963b75feef0a9900bb4ce039d5f8b140cc2dc57677c4b2c3a2efb8d6715",
         "executable": false,
         "action": "installed"
       },
@@ -61536,7 +61536,7 @@
       {
         "path": ".agents/skills/guru-review-change/references/review-method.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/references/review-method.md",
-        "sha256": "b66af09f292833a413ad6de61c9098378a948cacf0b2e654ba8d6a7a88ed145b",
+        "sha256": "c7de5277060ee21c49288fa313e68279409e58ba80b10606a0500855f5144d9e",
         "executable": false,
         "action": "installed"
       },
@@ -61669,7 +61669,7 @@
       {
         "path": ".claude/skills/guru-review-change/references/review-method.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/references/review-method.md",
-        "sha256": "b66af09f292833a413ad6de61c9098378a948cacf0b2e654ba8d6a7a88ed145b",
+        "sha256": "c7de5277060ee21c49288fa313e68279409e58ba80b10606a0500855f5144d9e",
         "executable": false,
         "action": "installed"
       },
@@ -61802,7 +61802,7 @@
       {
         "path": ".cursor/skills/guru-review-change/references/review-method.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/references/review-method.md",
-        "sha256": "b66af09f292833a413ad6de61c9098378a948cacf0b2e654ba8d6a7a88ed145b",
+        "sha256": "c7de5277060ee21c49288fa313e68279409e58ba80b10606a0500855f5144d9e",
         "executable": false,
         "action": "installed"
       },

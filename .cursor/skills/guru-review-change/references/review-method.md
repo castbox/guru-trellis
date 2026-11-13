@@ -177,6 +177,13 @@ engineering-fact rules in Candidate Applicability And Coverage when adopting
 prior executions. Keep engineering execution, adoption, static judgment,
 integration and external or production evidence distinct.
 
+When the selected work establishes or maintains project verification, apply
+`Project behavior verification and maintenance` in the same provider's Test And
+Validation Value. When it compares workflow or Skill methods, apply `Real Agent
+method comparison` there. Judge the actual entry, execution and comparison
+evidence within this review's scope; these methods add no fixed run or gate to
+unrelated work.
+
 ## Complete The Current Judgment
 
 Apply Review Sufficiency for the current review's completion, honest evidence

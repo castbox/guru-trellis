@@ -31,10 +31,11 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
         repo = fixture.repo
         platforms = {"claude", "codex", "cursor"}
         source_packages = fixture.guru_root / "trellis/skills/guru-team/packages"
+        # Current review owners only; guru-check-task retains historical recovery.
         consumers = (
             "guru-clarify-requirements", "guru-review-change-request",
             "guru-review-contract-wording", "guru-approve-task-plan",
-            "guru-review-change", "guru-check-task", "guru-review-branch",
+            "guru-review-change", "guru-review-branch",
             "guru-review-task-delivery", "guru-review-task-completion",
             "guru-maintain-architecture-baseline",
             "guru-maintain-requirements-design-test-ssot",
@@ -44,6 +45,9 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
         source_spec = fixture.guru_root / "trellis/presets/guru-team/spec/workflow/review-sufficiency.md"
         canonical = source_spec.read_bytes()
         target_spec = repo / spec_relative
+        method_relative = Path(".trellis/spec/workflow/quality-guidelines.md")
+        method_source = fixture.guru_root / "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        method_canonical = method_source.read_bytes()
         user_file = repo / "docs/project-notes.md"
         user_file.parent.mkdir(parents=True)
         user_bytes = b"# Existing project notes\r\nKeep these bytes.\r\n"
@@ -55,6 +59,11 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
             self.assertEqual(
                 manifest["install"]["managed_asset_hashes"][spec_relative.as_posix()],
                 hashlib.sha256(canonical).hexdigest(),
+            )
+            self.assertEqual((repo / method_relative).read_bytes(), method_canonical)
+            self.assertEqual(
+                manifest["install"]["managed_asset_hashes"][method_relative.as_posix()],
+                hashlib.sha256(method_canonical).hexdigest(),
             )
             roots = [
                 fixture.install_dst / "skills/packages",
@@ -70,9 +79,9 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
                         self.assertTrue(names, f"missing common-body loader: {entry}")
                         for name in names:
                             self.assertEqual((repo / ".trellis/spec/workflow" / name).read_bytes(), canonical)
-                method_relative = Path("guru-review-change/references/review-method.md")
-                method = root / method_relative
-                self.assertEqual(method.read_bytes(), (source_packages / method_relative).read_bytes())
+                review_relative = Path("guru-review-change/references/review-method.md")
+                method = root / review_relative
+                self.assertEqual(method.read_bytes(), (source_packages / review_relative).read_bytes())
                 links = re.findall(r"\]\(([^)]+)\)", method.read_text())
                 for link in links:
                     linked = (method.parent / link.split("#", 1)[0]).resolve()
