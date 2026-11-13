@@ -303,6 +303,8 @@ accept Delivery Planning or begin implementation.
 两个入口默认静默执行；通知条件与原生静默输出方式见共享规范的
 [Quiet Notifications](../../presets/guru-team/spec/workflow/issue-orchestration.md#quiet-notifications)。
 DAG 支持跨仓节点及各仓项目、基线和环境恢复，保留单仓简写；Sequence 仍单仓严格串行。
+Mobile/Web 的 [合同就绪条件](../../skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md#contract-readiness-and-mock-development)
+允许基于 Mock 与后端并行开发；`depends_on` 保留完整完成语义。
 它们协调多个 Issue，不加入本 workflow 的单 Issue mandatory phase。
 完整完成 Issue 是目标；显式选定基线贯穿启动、PR 和完成证明，无关分支不要求同步。
 分发、执行终点和个人安装迁移见

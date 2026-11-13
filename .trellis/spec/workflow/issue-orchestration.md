@@ -328,6 +328,13 @@ Do not copy human approval text/status/provenance or large historical evidence
 into the prompt. Child-local implementation/check delegation stays with its
 repository workflow. The coordinator never implements the Issue itself.
 
+Project prerequisites according to the selected package's dependency kinds.
+For a DAG contract-only prerequisite, include its provider, live contract
+locator, consuming work and any precise current hold; the DAG package owns
+readiness and Mock-development scheduling. Do not turn that input into a
+full-provider-completion wait. Sequence retains its strict complete-before-next
+rule; this projection adds no alternative scheduling mode to it.
+
 ## Heartbeat And Observation
 
 Apply [Quiet Notifications](#quiet-notifications) throughout the run, including
