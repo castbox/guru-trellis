@@ -1,5 +1,13 @@
 # Guru Team Workflow
 
+受管 manifest Git 冲突的有界接续由原
+[Reconcile 合同](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)
+和 [tools 合同](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)
+拥有，最终候选仍须完成原 resolved 校验。
+同 PR 后继 action 的完成事务退役见原
+[Publication 合同](../../skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action)。
+已有 checkout 经完整 matching tools 更新并验证目标后采用；开发同步不证明正式 source-lock 采用。
+
 ## 当前出口查询与按步骤加载
 
 正常会话先通过原 `get_context.py --mode phase` 或唯一 continuation 定位当前步骤，
