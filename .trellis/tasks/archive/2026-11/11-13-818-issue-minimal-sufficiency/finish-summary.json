@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-13T15:32:24Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-13-818-issue-minimal-sufficiency",
+    "title": "收敛 Issue 撰写与审核中的需求扩张，突出核心目标和最小验收",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-13-818-issue-minimal-sufficiency",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/818-issue-minimal-sufficiency",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "收敛 Issue 撰写与审核中的需求扩张，突出核心目标和最小验收",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency",
+          ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency/prd.md",
+          ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#818"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/818-issue-minimal-sufficiency"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency",
+        ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency/prd.md",
+        ".trellis/tasks/archive/2026-11/11-13-818-issue-minimal-sufficiency/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "收敛 Issue 撰写与审核中的需求扩张，突出核心目标和最小验收；#818；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
