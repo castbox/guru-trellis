@@ -406,8 +406,9 @@ def qualification_planning_identity(owner_repository: Path, planning_paths: list
 
 
 def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path:
-    task_root = owner_repository / ".trellis/tasks/current"
-    task_root.mkdir(parents=True, exist_ok=True)
+    owner_repository = owner_repository.resolve()
+    from adapters.eval.qualification_identity_fixture import stage_delivery
+    task_ref, delivery_key, task_root = stage_delivery(owner_repository)
     planning = {
         "prd.md": "# Qualification Eval PRD\n\nReview the declared candidate set.\n",
         "design.md": "# Qualification Eval Design\n\nUse the public qualification entry.\n",
@@ -445,9 +446,8 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
         (public_root / name).write_text(content, encoding="utf-8")
 
     planning_paths = [
-        ".trellis/tasks/current/prd.md",
-        ".trellis/tasks/current/design.md",
-        ".trellis/tasks/current/implement.md",
+        (task_root / name).relative_to(owner_repository).as_posix()
+        for name in ("prd.md", "design.md", "implement.md")
     ]
     planning_identity = qualification_planning_identity(owner_repository, planning_paths)
     request_path = "docs/qualification-eval/request.md"
@@ -456,7 +456,6 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
     content_sha256 = lambda relative: hashlib.sha256(
         (owner_repository / relative).read_bytes()
     ).hexdigest()
-    task_ref = ".trellis/tasks/current"
     targets = {
         "task_free_pre_write": {
             "target_locator": f"path:{request_path}",
@@ -557,6 +556,9 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
             "current_head_fields": ["review_commit"],
         },
     }
+    for row in targets.values():
+        if "task_ref" in row["target"]:
+            row["target"]["delivery_key"] = delivery_key
     facts_path = owner_repository / QUALIFICATION_PUBLIC_AUTHORING_FACTS
     facts_path.write_text(
         json.dumps(

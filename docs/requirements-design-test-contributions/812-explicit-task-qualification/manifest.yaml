@@ -1,0 +1,9 @@
+identity: rdt-812-explicit-task-qualification
+status: integrated_pending_review
+authority: guru-trellis-rdt
+base: f16bb562e4ea844939786cebd5c6c20e686914b2
+source: https://github.com/castbox/guru-trellis/issues/812
+proposed_targets:
+  - docs/requirements/current/qualifier-applicability.md
+  - docs/design/current/qualifier-applicability.md
+  - docs/test/current/qualifier-applicability.md

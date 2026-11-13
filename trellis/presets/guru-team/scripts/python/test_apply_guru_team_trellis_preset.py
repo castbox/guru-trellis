@@ -2212,7 +2212,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-task-workspace-result-3.0",
                 skill_contracts["artifact_schema_ids"],
             )
-        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.4")
+        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.5")
         self.assertEqual(
             set(public_api["skill_contracts"]),
             {

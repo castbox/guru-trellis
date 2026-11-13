@@ -500,9 +500,9 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             public_api["skill_contracts"]["contract_manifests"],
             [
                 {
-                    "id": "production-current-v5",
-                    "schema_id": "guru-team-production-contract-manifest-5.0",
-                    "path": "contracts/production-current-5.0.json",
+                    "id": "production-current-v6",
+                    "schema_id": "guru-team-production-contract-manifest-6.0",
+                    "path": "contracts/production-current-6.0.json",
                 }
             ],
         )
@@ -516,13 +516,16 @@ class SkillPackageIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_evals"]["run_schema_ids"][-1],
-            "guru-team-skill-eval-run-4.0",
+            "guru-team-skill-eval-run-5.0",
         )
         self.assertEqual(
             public_api["skill_evals"]["control_map_schema_id"],
             "guru-team-skill-eval-control-map-1.0",
         )
         schema_ids = {
+            "schemas/skill-interface-1.10.schema.json": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.10.json",
+            "schemas/skill-registry-1.5.schema.json": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.5.json",
+            "schemas/skill-eval-run-5.0.schema.json": "guru-team-skill-eval-run-5.0",
             "schemas/skill-interface-1.6.schema.json": (
                 "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.6.json"
             ),
@@ -536,8 +539,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "schemas/skill-eval-control-map-1.0.schema.json": (
                 "guru-team-skill-eval-control-map-1.0"
             ),
-            "schemas/production-contract-manifest-5.0.schema.json": (
-                "guru-team-production-contract-manifest-5.0"
+            "schemas/production-contract-manifest-6.0.schema.json": (
+                "guru-team-production-contract-manifest-6.0"
             ),
         }
         for relative, schema_id in schema_ids.items():
@@ -551,9 +554,9 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.7.json",
         )
         production_contract = json.loads(
-            (SKILLS / "contracts/production-current-5.0.json").read_text(encoding="utf-8")
+            (SKILLS / "contracts/production-current-6.0.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(production_contract["contract_id"], "production-current-v5")
+        self.assertEqual(production_contract["contract_id"], "production-current-v6")
         self.assertEqual(
             production_contract["production_eval_control"],
             {
@@ -609,6 +612,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 target / ".trellis/guru-team",
                 target,
                 {"codex", "cursor", "claude"},
+                python=sys.executable,
             )
             installed_root = target / ".trellis/guru-team/skills"
             for relative in (
@@ -616,8 +620,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 "schemas/skill-eval-adapter-response-3.0.schema.json",
                 "schemas/skill-eval-run-4.0.schema.json",
                 "schemas/skill-eval-control-map-1.0.schema.json",
-                "schemas/production-contract-manifest-5.0.schema.json",
-                "contracts/production-current-5.0.json",
+                "schemas/production-contract-manifest-6.0.schema.json",
+                "contracts/production-current-6.0.json",
                 "contracts/production-current.json",
                 "contracts/production-current-3.0.json",
                 "contracts/production-current-2.0.json",
@@ -630,17 +634,28 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 self.assertEqual(installed_schema["$id"], schema_id)
             self.assertEqual(
                 (installed_root / "contracts/production-current.json").read_bytes(),
-                (installed_root / "contracts/production-current-5.0.json").read_bytes(),
+                (installed_root / "contracts/production-current-6.0.json").read_bytes(),
             )
             self.assertEqual(
-                (installed_root / "contracts/production-current-5.0.json").read_bytes(),
-                (SKILLS / "contracts/production-current-5.0.json").read_bytes(),
+                (installed_root / "contracts/production-current-6.0.json").read_bytes(),
+                (SKILLS / "contracts/production-current-6.0.json").read_bytes(),
             )
-            for legacy in ("production-current-2.0.json", "production-current-3.0.json", "production-current-4.0.json"):
+            for legacy in ("production-current-2.0.json", "production-current-3.0.json", "production-current-4.0.json", "production-current-5.0.json"):
                 self.assertEqual(
                     (installed_root / "contracts" / legacy).read_bytes(),
                     (SKILLS / "contracts" / legacy).read_bytes(),
                 )
+            sync_interface = json.loads((SKILLS / "packages/guru-sync-base/interface.json").read_text())
+            local_example = sync_interface["public_contracts"]["invocation"]["call_local"]["public_input"]["example"]["path"]
+            authoring = next(row["contract"] for row in sync_interface["public_contracts"]["consumer_inputs"] if row["id"] == "baseline_ready_pre_task_input")
+            example_paths = {local_example}
+            for profile in authoring["authoring_profiles"]:
+                example_paths.add(profile["authoring_example"]["path"])
+                example_paths.update(row["authoring_example"]["path"] for row in profile.get("alternate_authoring", []))
+            for skill_root in (".agents/skills", ".claude/skills", ".cursor/skills"):
+                for relative in example_paths:
+                    self.assertEqual((target / skill_root / "guru-sync-base" / relative).read_bytes(),
+                                     (SKILLS / "packages/guru-sync-base" / relative).read_bytes())
 
     def test_installed_validator_rebuilds_global_command_ownership(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

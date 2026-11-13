@@ -32,15 +32,81 @@ qualification, `scope_confirmation_required` re-enters through the closed
 `normal_scenario_scope_confirmation` profile, and `blocked` stops. Rejected
 candidates cannot be escalated into dialogue or authority mutation.
 
-`normal_scenario_scope_confirmation` is a target-owned consumer input, not a
-second qualification route. It accepts exactly `profile`, `source_exit`,
-`mode`, `target_locator`, `resume_target`, `continuation_id`, and a non-empty
-unique `candidate_refs` set. It accepts no classification decisions, reasons,
-severity, authorization, result/checkpoint locator, or worker report. The
-qualifier output is projected directly into these fields. After the real scope
-choice, this owner updates live authority through its existing rules and returns
-to the exact closed `resume_target`; material changes to authority or candidates
-require the original owner to refresh affected judgments under those conditions.
+`normal_scenario_scope_confirmation` and
+`solution_mechanism_scope_confirmation` are target-owned consumer inputs, not
+second qualification routes. Current input 2.0 accepts the actual qualifier's
+profile/source_exit/mode/target/resume/continuation and non-empty unique
+candidate_refs, with the Task-bound object and actual context-return snapshot
+defined below. No classification decision, reason, severity, authorization,
+result/checkpoint locator or worker report enters that input. After a real
+scope choice this owner updates live authority through its existing rules and
+returns to the exact original resume consumer. The original owner refreshes
+judgments affected by material authority or candidate changes.
+
+## Qualification Confirmation Context (#811)
+
+Consume only actual scope_confirmation_required output 3.0 from the original
+normal or solution qualifier. Task-bound input carries task_ref and complete
+delivery_key together; the legal non-Task branch carries neither. Preserve
+the original target/candidates/mode/continuation/resume. Validate current Task
+generation, registered checkout and Delivery through the original facts; do
+not infer an object from inventory or override a different official selection.
+Resolve Issue authority from current Task.source, independently of the Task
+confirmation target. Legal no_issue uses actual accepted_scope and draft/source.
+
+With matching context_current and source evidence, perform the original
+semantic confirmation. For missing or normally stale context, obtain actual
+Sync read base_current for the selected commit, complete this owner's
+missing-context result and record/check/invoke needs_context 4.0. Its actual
+return_identity enters Discovery context-request 3.0. A base transition serves
+only that missing-context exit; it does not establish clear. Never rewrite old
+Issue/stage0-current context into Task/qualification context.
+
+Real Discovery context-ready 6.0 returns the original confirmation object and
+authority_duplicate_snapshot. Snapshot query/time/target/content/candidate/facts
+fields bind the actual Issue or draft authority; the context retains separate
+target_locator and authority_locator. Use these public facts for the original
+AI disposition, without repeating Discovery search or reading its private
+result. Compare snapshot locator/content, transition authority, real review
+target and disposition facts. Preserve original nonempty-candidate choice and
+action/mutation conditions. Missing or normally stale snapshot returns through
+needs_context for a fresh producer. Replacing Task.source remains with the
+original source/scope owner; this loop cannot silently rebind it.
+
+The two profiles use private owner schema
+`requirements-clarification-confirmation-5.0.schema.json`, schema_version 5.0,
+id `https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-confirmation-5.0.json`.
+Only their two invocation_context kinds are valid there. Preserve original
+caller/resume/task_locator and the actual confirmation
+target_locator/continuation_id/candidate_refs. Task-bound context also carries
+task_ref/delivery_key, with task_locator matching task_ref. Private review_target
+and target_disposition describe the real source Issue/draft, not the Task.
+All existing semantic/source/action fields still use the original recorder and
+checker. Ordinary 3.0 and pinned active 4.0 retain their separate contracts;
+5.0 is not a default-filled shortcut.
+
+A non-mutating confirmation clear may have no target_disposition under this
+specific profile. Mutation still needs the current real authority disposition
+and original source_actions/mutation_results. Load-bearing Issue comment/body
+actions return refresh_context 3.0, never clear; a draft uses its actual
+proposed_draft_update. Preserve original return_identity through Sync's
+confirmation-refresh read and real baseline_ready to Discovery. No old snapshot
+travels through Sync. Discovery rereads authority and duplicate facts; this
+owner checks the already-effective choice without repeating mutation, then
+invokes formal clear to the original caller.
+
+Independent confirmation clear carries only exit/profile/mode, original
+target/candidates/continuation/resume, Task-bound identity and source_selection.
+It omits Intake's clarity/disposition digest bundle. The caller still rereads
+authority and resumes its own duties; changed accepted scope uses whole-scope
+Author/acceptance and the actual Delivery owner's rework. Clear does not
+approve implementation.
+
+Original four context returns retain their support boundaries. Current
+schemas, consumers, projections and runtime switch together under
+MIGRATION-811.md. Old published bytes remain validation assets, pending inputs
+return to their original caller, and unfinished old operations retain their
+fixed complete provider. No new store, writer or authorization record is added.
 
 ## Current Executing Owner
 
@@ -242,7 +308,8 @@ In particular, initial `source_exit=context_ready` still requires a disposition
 matching its snapshot, including on blocked; null does not satisfy that public
 invocation. Do not drop the snapshot, change the source exit, or invent a target
 decision to bypass the binding. Handle genuine missing target evidence through
-the existing context/error route. Every progressing `clear`,
+the existing context/error route. Except for the non-mutating qualification
+confirmation clear defined above, every progressing `clear`,
 `refresh_context`, `retarget_context`, or `new_task` result requires one current
 disposition. In particular, an issue comment/body edit or proposed-draft update
 cannot use `target_disposition=null` while returning `refresh_context`.
@@ -493,7 +560,7 @@ new semantic decision: initial issue/draft uses `guru-review-contract-wording`
 classification uses the exact declared interrupted Phase 1/2/3/Branch Review
 target. Any kind/target mismatch fails closed.
 
-## Interface 1.4 Public Handoff
+## Interface 1.10 Public Handoff
 
 For the normal initial Issue path, copy Discovery's actual invoke stdout:
 `handoff_target_locator` becomes public `target_locator`, and `transition` and
@@ -515,9 +582,11 @@ For this profile, set `owner_context` to `{}`. Preserve the actual transition
 and the checked owner result unchanged. Use the shared schema for the complete
 envelope shape. This `owner_context` guidance applies only to `standard_intake`.
 
-The six current public profiles are `standard_intake`, `reviewed_plan_intake`,
+The original public profile families are `standard_intake`, `reviewed_plan_intake`,
 `active_task_scope_change`, `standalone_review`,
-`normal_scenario_scope_confirmation`, and `solution_mechanism_scope_confirmation`. After the owner loop,
+`normal_scenario_scope_confirmation`, and `solution_mechanism_scope_confirmation`.
+The confirmation inputs use 2.0 and private 5.0 above; current schema2 scope
+and pinned-old active retain their separate boundaries. After the owner loop,
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke.sh --invocation -`
 validates the closed call-local public input,
 `context_current` transition, and current owner result, reruns the existing
@@ -570,8 +639,10 @@ substitutes for fresh review. Both retain Discovery's checked duplicate snapshot
 consumer; `standalone_review` preserves its declared `resume_target`.
 The two qualification confirmation profiles are distinct: consume actual
 qualifier stdout, ask only its unresolved authority choice, and return to its
-original owner. Context repair returns to that qualification owner, rather than
-entering the four-profile Discovery loop.
+original owner. Context repair uses the original needs_context or
+refresh_context route through Discovery while preserving the qualification
+confirmation profile. Its formal clear then returns to the original qualifier
+caller; it does not retarget the confirmation to one of the four older profiles.
 
 When load-bearing context is missing in any of the four context-capable
 profiles, emit `needs_context` with `handoff_profile=context_request`. The

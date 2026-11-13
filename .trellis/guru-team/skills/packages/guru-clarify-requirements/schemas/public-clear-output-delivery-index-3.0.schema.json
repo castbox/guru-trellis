@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-output-clear-delivery-index-3.0",
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "$ref": "public-clear-output-4.0.schema.json"
+        },
+        {
+          "properties": {
+            "profile": {
+              "not": {
+                "enum": [
+                  "normal_scenario_scope_confirmation",
+                  "solution_mechanism_scope_confirmation"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "$ref": "public-normal-scenario-confirmation-clear-output-1.0.schema.json"
+    },
+    {
+      "$ref": "public-solution-mechanism-confirmation-clear-output-1.0.schema.json"
+    }
+  ]
+}

@@ -164,6 +164,42 @@
     {
       "id": "mechanism_revision_required_output_2",
       "path": "schemas/public-mechanism-revision-required-output-2.0.schema.json"
+    },
+    {
+      "id": "public_planning_scenario_set_input_2_0",
+      "path": "schemas/public-planning-scenario-set-input-2.0.schema.json"
+    },
+    {
+      "id": "public_author_candidate_set_input_2_0",
+      "path": "schemas/public-author-candidate-set-input-2.0.schema.json"
+    },
+    {
+      "id": "public_implementation_discovery_input_2_0",
+      "path": "schemas/public-implementation-discovery-input-2.0.schema.json"
+    },
+    {
+      "id": "public_base_impact_candidate_set_input_2_0",
+      "path": "schemas/public-base-impact-candidate-set-input-2.0.schema.json"
+    },
+    {
+      "id": "public_phase2_candidate_set_input_2_0",
+      "path": "schemas/public-phase2-candidate-set-input-2.0.schema.json"
+    },
+    {
+      "id": "public_branch_review_candidate_set_input_2_0",
+      "path": "schemas/public-branch-review-candidate-set-input-2.0.schema.json"
+    },
+    {
+      "id": "public_publication_candidate_set_input_2_0",
+      "path": "schemas/public-publication-candidate-set-input-2.0.schema.json"
+    },
+    {
+      "id": "public_input_3_0",
+      "path": "schemas/public-input-3.0.schema.json"
+    },
+    {
+      "id": "current_public_scope_confirmation_required_output_3_0_schema",
+      "path": "schemas/public-scope-confirmation-required-output-3.0.schema.json"
     }
   ],
   "validators": [
@@ -258,8 +294,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-solution-mechanism-input-aggregate-2.0",
-        "path": "schemas/public-input-2.0.schema.json"
+        "schema_id": "guru-solution-mechanism-input-aggregate-3.0",
+        "path": "schemas/public-input-3.0.schema.json"
       },
       "profiles": [
         {
@@ -325,12 +361,12 @@
         {
           "id": "planning_scenario_set",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-planning-scenario-set-1.0",
-            "path": "schemas/public-planning-scenario-set-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-planning-scenario-set-2.0",
+            "path": "schemas/public-planning-scenario-set-input-2.0.schema.json"
           },
           "example": {
-            "id": "planning_scenario_set_input",
-            "path": "examples/public-planning-scenario-set-input.json"
+            "id": "public_planning_scenario_set_input_2_0",
+            "path": "examples/public-planning-scenario-set-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -340,12 +376,12 @@
         {
           "id": "implementation_discovery",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-implementation-discovery-1.0",
-            "path": "schemas/public-implementation-discovery-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-implementation-discovery-2.0",
+            "path": "schemas/public-implementation-discovery-input-2.0.schema.json"
           },
           "example": {
-            "id": "implementation_discovery_input",
-            "path": "examples/public-implementation-discovery-input.json"
+            "id": "public_implementation_discovery_input_2_0",
+            "path": "examples/public-implementation-discovery-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -355,12 +391,12 @@
         {
           "id": "base_impact_candidate_set",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-base-impact-candidate-set-1.0",
-            "path": "schemas/public-base-impact-candidate-set-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-base-impact-candidate-set-2.0",
+            "path": "schemas/public-base-impact-candidate-set-input-2.0.schema.json"
           },
           "example": {
-            "id": "base_impact_candidate_set_input",
-            "path": "examples/public-base-impact-candidate-set-input.json"
+            "id": "public_base_impact_candidate_set_input_2_0",
+            "path": "examples/public-base-impact-candidate-set-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -370,12 +406,12 @@
         {
           "id": "phase2_candidate_set",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-phase2-candidate-set-1.0",
-            "path": "schemas/public-phase2-candidate-set-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-phase2-candidate-set-2.0",
+            "path": "schemas/public-phase2-candidate-set-input-2.0.schema.json"
           },
           "example": {
-            "id": "phase2_candidate_set_input",
-            "path": "examples/public-phase2-candidate-set-input.json"
+            "id": "public_phase2_candidate_set_input_2_0",
+            "path": "examples/public-phase2-candidate-set-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -385,12 +421,12 @@
         {
           "id": "branch_review_candidate_set",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-branch-review-candidate-set-1.0",
-            "path": "schemas/public-branch-review-candidate-set-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-branch-review-candidate-set-2.0",
+            "path": "schemas/public-branch-review-candidate-set-input-2.0.schema.json"
           },
           "example": {
-            "id": "branch_review_candidate_set_input",
-            "path": "examples/public-branch-review-candidate-set-input.json"
+            "id": "public_branch_review_candidate_set_input_2_0",
+            "path": "examples/public-branch-review-candidate-set-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -400,12 +436,12 @@
         {
           "id": "publication_candidate_set",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-publication-candidate-set-1.0",
-            "path": "schemas/public-publication-candidate-set-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-publication-candidate-set-2.0",
+            "path": "schemas/public-publication-candidate-set-input-2.0.schema.json"
           },
           "example": {
-            "id": "publication_candidate_set_input",
-            "path": "examples/public-publication-candidate-set-input.json"
+            "id": "public_publication_candidate_set_input_2_0",
+            "path": "examples/public-publication-candidate-set-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -415,12 +451,12 @@
         {
           "id": "author_candidate_set",
           "schema": {
-            "schema_id": "guru-solution-mechanism-input-author-candidate-set-1.0",
-            "path": "schemas/public-author-candidate-set-input.schema.json"
+            "schema_id": "guru-solution-mechanism-input-author-candidate-set-2.0",
+            "path": "schemas/public-author-candidate-set-input-2.0.schema.json"
           },
           "example": {
-            "id": "author_candidate_set_input",
-            "path": "examples/public-author-candidate-set-input.json"
+            "id": "public_author_candidate_set_input_2_0",
+            "path": "examples/public-author-candidate-set-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -479,12 +515,12 @@
       {
         "exit_id": "scope_confirmation_required",
         "schema": {
-          "schema_id": "guru-solution-mechanism-output-scope-confirmation-required-2.0",
-          "path": "schemas/public-scope-confirmation-required-output-2.0.schema.json"
+          "schema_id": "guru-solution-mechanism-output-scope-confirmation-required-3.0",
+          "path": "schemas/public-scope-confirmation-required-output-3.0.schema.json"
         },
         "example": {
-          "id": "scope_confirmation_required_output",
-          "path": "examples/public-scope-confirmation-required-output.json"
+          "id": "current_public_scope_confirmation_required_output_3_0_json",
+          "path": "examples/public-scope-confirmation-required-output-3.0.json"
         },
         "consumer_use_ids": [
           "project_scope_confirmation_required"
@@ -614,6 +650,14 @@
           {
             "source": "candidate_refs",
             "target": "candidate_refs"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
           }
         ]
       },

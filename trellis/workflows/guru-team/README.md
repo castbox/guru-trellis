@@ -43,6 +43,11 @@ Codex 的 Guru Skill 通过 `.agents/skills/` 公共投影发现，专属包仍�
 再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
 并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](../../presets/guru-team/MIGRATION-718.md)。
 
+normal/solution资格确认沿原Clarify、Discovery和Sync read取得或刷新真实context，再由正式clear返回原caller。
+Task确认目标与来源Issue authority分开，原Task/Delivery及continuation保持。
+两个确认profile、公共I/O和consumer须成套采用；具体边界见
+[MIGRATION-811](../../presets/guru-team/MIGRATION-811.md)。各原Skill拥有内部行为，不从旧transition或record/check制造正式出口。
+
 审核、审查、评审、复审和 review 先按对象与目的分流。代码、分支/PR、测试覆盖和
 需求实现情况的审核，再区分独立只读审核与正式阶段结果。上述独立审核
 无论有无 Task/Delivery，都显式调用 `guru-review-change`，由它完成指定范围的
@@ -428,6 +433,12 @@ upgrade/release matrix belongs to its dedicated Release Gate Issue.
 
 完整采用与在途接续见 [MIGRATION-793](../../presets/guru-team/MIGRATION-793.md)。
 适用条件由各原包独占，README 不复制资格判据。
+
+七类 Task/Delivery 资格输入现选 input 2.0 / aggregate 3.0，显式传递原完整
+DeliveryKey，并复用原身份和当前选择校验。原 caller 持有本次调用对象并消费
+原出口后继续当前阶段。旧发布输入保持历史字节；采用与在途恢复见
+[MIGRATION-812](../../presets/guru-team/MIGRATION-812.md)。已有 Task 的工具更新由原 `guru-upgrade-tools`
+执行，保留 Task/session；安装投影一致不代替实际 caller 验收。
 
 完整 preset 安装后使用 public discovery 和 stdin wrapper：
 

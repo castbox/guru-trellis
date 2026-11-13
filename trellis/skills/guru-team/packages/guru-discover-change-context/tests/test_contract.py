@@ -38,7 +38,11 @@ class ChangeContextPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_semantic_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-discover-change-context")
-        self.assertEqual(self.interface["schema_version"], "1.8")
+        from runtime.schema import validate_json
+        registry = json.loads((self.package.parents[1] / "registry.json").read_text())
+        selected = next(row for row in registry["skills"] if row["id"] == self.interface["id"])
+        version = selected["interface_schema_id"].removeprefix("guru-team-skill-interface-")
+        validate_json(self.interface, self.package.parents[1] / "schemas" / f"skill-interface-{version}.schema.json", "selected_interface")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -325,30 +329,35 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         self.assertNotIn("base_branch", schema["properties"])
         legacy = json.loads((self.package / "schemas/public-pre-task-input-3.0.schema.json").read_text())
         self.assertEqual(legacy["$id"], "guru-stage0-discover-change-context-input-pre-task-3.0")
+        from runtime.discovery import select_authoring_profile
+        from runtime.schema import validate_json
         for producer in ("guru-sync-base", "guru-clarify-requirements"):
-            interface = json.loads((self.package.parent / producer / "interface.json").read_text())
-            consumers = [
-                item for item in interface["public_contracts"]["consumer_inputs"]
-                if item["consumer"] == {"kind": "skill", "id": "guru-discover-change-context"}
-            ]
+            package = self.package.parent / producer
+            interface = json.loads((package / "interface.json").read_text())
+            contracts = interface["public_contracts"]
+            consumers = [row for row in contracts["consumer_inputs"]
+                         if row["consumer"] == {"kind":"skill", "id":"guru-discover-change-context"}]
             self.assertTrue(consumers)
-            expected_example = (
-                "examples/public-pre-task-input-4.0.json"
-                if producer == "guru-sync-base"
-                else "examples/public-context-request-input.json"
-            )
             for consumer in consumers:
-                self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
-                self.assertEqual(consumer["contract"]["authoring_example"]["path"], expected_example)
-                self.assertEqual(consumer["contract"]["authoring_fields"], ["change_input", "clarify_profile"] if producer == "guru-sync-base" else ["change_input"])
-                projection = next(
-                    item for item in interface["public_contracts"]["projections"]
-                    if item["consumer_input_id"] == consumer["id"]
-                )
-                self.assertEqual(
-                    {item["target"] for item in projection["mappings"]},
-                    {"source_exit", "profile", "mode", "continuation_id"} | ({"return_identity"} if producer == "guru-clarify-requirements" else set()),
-                )
+                contract = consumer["contract"]
+                self.assertEqual(contract["kind"], "skill_input_authoring_seed")
+                for row in contract.get("authoring_profiles", [contract]):
+                    self.assertFalse(set(row["seed_fields"]) & set(row["authoring_fields"]))
+                    self.assertIn("change_input", row["authoring_fields"])
+                projection = next(row for row in contracts["projections"] if row["consumer_input_id"] == consumer["id"])
+                output = next(row for row in contracts["outputs"] if row["exit_id"] == projection["exit_id"])
+                actual = json.loads((package / output["example"]["path"]).read_text())
+                selected = select_authoring_profile(contract, actual)
+                seed = {row["target"]:actual[row["source"]] for row in projection["mappings"] if row["source"] in actual}
+                self.assertEqual(set(seed), set(selected["seed_fields"]))
+                profile = next(row for row in self.interface["public_contracts"]["input"]["profiles"] if row["id"] == selected["profile_id"])
+                for variant in (selected, *selected.get("alternate_authoring", [])):
+                    path = package / variant["authoring_example"]["path"]
+                    if not path.is_file():path = self.package / variant["authoring_example"]["path"]
+                    example = json.loads(path.read_text())
+                    authored = {key:example[key] for key in variant["authoring_fields"]}
+                    self.assertFalse(set(seed) & set(authored))
+                    validate_json({**seed, **authored}, self.package / profile["schema"]["path"], "actual_consumer")
 
     def test_current_interface_navigation_matches_git_object_and_minimal_examples(self) -> None:
         artifacts = {item["id"]: item["path"] for item in self.interface["artifacts"]}
@@ -364,14 +373,12 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             },
         )
         self.assertEqual(profiles["pre_task"]["example"]["path"], "examples/public-pre-task-input-4.0.json")
-        self.assertEqual(
-            outputs["context_ready"]["schema"],
-            {
-                "schema_id": "guru-stage0-discover-change-context-output-context-ready-5.0",
-                "path": "schemas/public-context-ready-output-5.0.schema.json",
-            },
-        )
-        self.assertEqual(outputs["context_ready"]["example"]["path"], "examples/public-context-ready-output-5.0.json")
+        from runtime.schema import validate_json
+        current_output = outputs["context_ready"]
+        output_schema = json.loads((self.package / current_output["schema"]["path"]).read_text())
+        self.assertEqual(output_schema["$id"], current_output["schema"]["schema_id"])
+        output_example = json.loads((self.package / current_output["example"]["path"]).read_text())
+        validate_json(output_example, self.package / current_output["schema"]["path"], "selected_output")
         self.assertEqual(artifacts["change_context_owner_result_example"], "examples/change-context-owner-result-4.0.json")
         self.assertEqual(artifacts["public_input_pre_task_example"], "examples/public-pre-task-input-4.0.json")
         self.assertEqual(artifacts["public_output_context_ready_example_5_0"], "examples/public-context-ready-output-5.0.json")

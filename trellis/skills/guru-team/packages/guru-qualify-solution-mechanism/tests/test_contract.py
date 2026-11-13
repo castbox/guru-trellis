@@ -270,5 +270,23 @@ class SolutionMechanismQualificationContractTest(unittest.TestCase):
         self.assertIn("references/contract.md", skill)
 
 
+    def test_versioned_delivery_inputs_reject_cross_version_substitution(self) -> None:
+        interface = self.load(PACKAGE / "interface.json")
+        for row in interface["public_contracts"]["input"]["profiles"]:
+            profile = row["id"]
+            if profile in {"task_free_pre_write", "task_free_evolution", "requirements_scope_set", "change_request_candidate_set"}:
+                continue
+            with self.subTest(profile=profile):
+                token = profile.replace("_", "-")
+                old_schema = self.load(PACKAGE / f"schemas/public-{token}-input.schema.json")
+                old_input = self.load(PACKAGE / f"examples/public-{token}-input.json")
+                current_schema = self.load(PACKAGE / row["schema"]["path"])
+                current_input = self.load(PACKAGE / row["example"]["path"])
+                self.assert_valid(old_input, old_schema)
+                self.assert_valid(current_input, current_schema)
+                self.assert_invalid(old_input, current_schema)
+                self.assert_invalid(current_input, old_schema)
+
+
 if __name__ == "__main__":
     unittest.main()

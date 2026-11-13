@@ -1,9 +1,9 @@
 {
-  "$schema": "../schemas/production-contract-manifest-5.0.schema.json",
-  "schema_id": "guru-team-production-contract-manifest-5.0",
-  "schema_version": "5.0",
-  "contract_id": "production-current-v5",
-  "registry_schema_id": "guru-team-skill-registry-1.4",
+  "$schema": "../schemas/production-contract-manifest-6.0.schema.json",
+  "schema_id": "guru-team-production-contract-manifest-6.0",
+  "schema_version": "6.0",
+  "contract_id": "production-current-v6",
+  "registry_schema_id": "guru-team-skill-registry-1.5",
   "activation_policy": "preset_transaction",
   "production_eval_control": {
     "adapter_request_schema_id": "guru-team-skill-eval-adapter-request-3.0",
@@ -398,7 +398,7 @@
     },
     {
       "id": "guru-qualify-normal-scenario",
-      "interface_schema_id": "guru-team-skill-interface-1.6",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "eval_schema_id": "guru-team-skill-evals-2.0",
       "input_kind": "structured_json",
       "input_profile_ids": [
@@ -647,8 +647,8 @@
         },
         {
           "exit_id": "scope_confirmation_required",
-          "output_schema_id": "guru-normal-scenario-output-scope-confirmation-required-2.0",
-          "output_example_id": "scope_confirmation_required_output",
+          "output_schema_id": "guru-normal-scenario-output-scope-confirmation-required-3.0",
+          "output_example_id": "current_public_scope_confirmation_required_output_3_0_json",
           "consumer_input_id": "scope_confirmation_requirements_input",
           "projection_id": "project_scope_confirmation_required",
           "eval_case_selector": {
@@ -698,7 +698,8 @@
     "guru-team-skill-interface-1.4",
     "guru-team-skill-interface-1.6",
     "guru-team-skill-interface-1.7",
-    "guru-team-skill-interface-1.8"
+    "guru-team-skill-interface-1.8",
+    "guru-team-skill-interface-1.10"
   ],
   "eval_schema_ids": [
     "guru-team-skill-evals-1.0",

@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "审核本批改动和解释的语义清晰度"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "核公共DTO最小consumer、版本切换与旧资产退出"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "实际public测试边界、独立断言与最小验证集"}
+{"file": "docs/architecture/contributions/811-qualification-context-continuation/contribution.md", "reason": "核本批Architecture隔离责任、原owner与before/after"}
+{"file": "docs/architecture/contributions/811-qualification-context-continuation/qualification-context-continuation.md", "reason": "核对两确认output的窄替代与迁移决定"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "原Author共享正文合同及规划承接条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "所选Delivery需求正文的原结构与完整性边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "所选Delivery设计的原结构与来源处置边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "所选Delivery实施与验证的原Policy/Docs Plan边界"}
+{"file": "trellis/skills/guru-team/tests/test_skill_packages.py", "reason": "核新声明经实际graph和consumer输入补写校验，防止seed充当完整input"}
+{"file": "trellis/skills/guru-team/runtime/eval_runner.py", "reason": "核ordinary run5生成与消费，保qualification专用run3/4"}
