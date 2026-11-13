@@ -69,3 +69,15 @@ silent-result contract with each case; do not launch notifications to test it.
 | Q4. All Issue proof passes, but native heartbeat stop fails and same-owner recovery is available. A later recovery verifies stopped heartbeat and safe settlement. | First retain progressing with the actual incomplete stop and recover it; do not announce chain_completed. After verified recovery, notify once with the existing terminal result. If recovery establishes a human-action gap, report that concrete gap under the shared contract. |
 | Q5. The human explicitly asks for status while A is running; the next scheduled wake finds healthy progress. | Answer the question directly with current facts. Resume silent routine wake output afterward; the question does not enable recurring updates. |
 | Q6. A wake provides no evidence that the example heartbeat envelope is supported. All children have been observed. | Inspect the current native transport contract and retain the actual progress judgment. Do not claim notification suppression or invent controls from the example; do not skip continued supervision. |
+
+## Observation Recovery Cases
+
+These are supplied-fact semantic walkthroughs under the isolation boundary
+above. They do not change a native scheduler or prove its wakeup timing.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| O1. The saved heartbeat still names completed A. Conversation and fresh native facts bind unfinished B to one formal child. | Observe B and every other admitted unfinished owner, recover their latest real results, and reconcile the same heartbeat's recovery hints. Read back its prompt/target/interval/status; do not resume A, duplicate B or use the stale hint as authority. |
+| O2. A human asks to continue after several scheduled intervals without recorded observations. The child ended earlier with an actionable original-owner plan whose current gates pass. | Take a fresh snapshot and read the actual result now; send one valid continuation in this cycle. Retain the unobserved interval and distinguish it from a proven scheduler fault. Do not wait for another timer or claim that old ACTIVE status proved monitoring. |
+| O3. After a pause, the latest per-child cursor is unavailable. A send may already have succeeded and its result is unknown. | Recover the same binding and actual conversation, obtain a fresh snapshot and recover the uncertain send before retry. Do not replay one instruction per missed interval, restart the child or invent observation continuity. |
+| O4. A newly formal child is already observed. Updating the same heartbeat fails; known children still have permitted work. | Retain the failure, observe and advance known owners under their gates, and recover/read back the existing heartbeat. Hold further admissions until configuration is verified. Use the existing notification rules; do not create a replacement timer, ledger or watchdog. |
