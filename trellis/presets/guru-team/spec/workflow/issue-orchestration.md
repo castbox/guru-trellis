@@ -6,7 +6,7 @@ serial advancement, and typed exits. This method owns selected-base continuity,
 endpoint interpretation,
 current-dialogue authority, overall completion responsibility, active unblocking,
 native child operation, progress decisions, merge proof, completion proof,
-heartbeat supervision, and supported recovery.
+heartbeat supervision, quiet notifications, and supported recovery.
 
 ## Provider And Scope
 
@@ -330,6 +330,10 @@ repository workflow. The coordinator never implements the Issue itself.
 
 ## Heartbeat And Observation
 
+Apply [Quiet Notifications](#quiet-notifications) throughout the run, including
+startup, every wake, child continuation and settlement. It controls delivery to
+the human, while the observation and progress duties below remain mandatory.
+
 Use one native thread heartbeat attached to the current coordinator. Inspect
 existing automations and reuse the matching heartbeat on resume. **The default
 heartbeat interval is two minutes.** Apply another current human-selected
@@ -370,8 +374,9 @@ the endpoint one useful continuation in this cycle. Use 确认继续, 按建议�
 or 合并PR only when their current conditions pass. Recheck actual external wait
 conditions even without new child text; reassess ended, expired or unowned waits.
 Deduplicate notifications, not progress judgment. Apply this Skill's scheduling
-and advancement rules. Stay quiet after verifying unchanged working progress
-or a still-valid handled wait. Stop the heartbeat only after verified settlement.
+and advancement rules and the shared Quiet Notifications contract. Keep routine
+progress silent, including phase changes and individual Issue completion.
+Stop the heartbeat only after verified settlement.
 ```
 
 Qualify each node, pending reservation, child/host/cursor, Task/Delivery and PR
@@ -402,7 +407,64 @@ idle incomplete child. `ACTIVE` configuration alone proves no observation.
 An unknown send result requires reading the child's actual conversation before
 retry; do not duplicate a possibly delivered instruction. Notification deduplication
 does not skip observation or renewed judgment. Stay quiet only after successful
-observation verifies running work or a handled wait that remains valid.
+observation verifies running work or a handled wait that remains valid. An
+observation error retains its actual diagnostic and retry; quiet delivery must
+never turn that error into a claim of healthy monitoring.
+
+## Quiet Notifications
+
+**Both orchestrators operate quietly by default.** The coordinator does not
+send routine progress commentary or notifications to the human in this chat.
+This applies even when work changes phase, a child needs a valid continuation,
+a PR is published or merged, one Issue completes, the next eligible Issue
+starts, a supported retry runs, or an owned external wait remains valid.
+Complete the required observation, semantic judgment and original-owner action
+first. Keep the existing child messages, cursors and continuation duties.
+
+Notify the human only when:
+
+- a real choice, missing action permission or expressly direct-human step is
+  required, with the exact decision or action and its affected work;
+- active unblocking establishes an unresolved condition that needs human
+  action, with the concrete gap, responsible party and resume condition;
+- the whole selected run reaches its verified terminal result, including an
+  explicitly requested earlier-stage segment, under the existing settlement
+  and heartbeat-stop rules.
+
+Show the initial precise prospective effects and any necessary setup choices
+under the existing preflight contract. Answer an explicit human status question
+directly. These interactions do not enable routine notifications for later
+wakes. A child phase ending, a repairable failure or an individual node's
+completion alone is not a notification condition. Deduplicate an unchanged
+human-action request without suppressing a material change to its facts.
+
+Use the current native wake's supported silent-result transport. When that
+transport accepts a `heartbeat` result with `DONT_NOTIFY`, return only this
+envelope for a routine wake, with the actual automation identity and the
+selected existing typed exit's concise factual result in `message`:
+
+```xml
+<heartbeat>
+  <automation_id>actual-automation-id</automation_id>
+  <decision>DONT_NOTIFY</decision>
+  <message>progressing: actual remaining work and next observation condition</message>
+</heartbeat>
+```
+
+Do not add commentary, a second final message or prose outside the silent
+envelope on that wake. `DONT_NOTIFY` controls notification delivery; it is not
+a Skill exit, a new DTO, a completion claim or a replacement for the one
+package-declared primary exit. That exit keeps its original meaning and sole
+consumer. Required native created-chat directives retain their native contract.
+For a notification condition, use the current surface's supported notifying
+response and report only the actual choice, gap or verified terminal result.
+
+Verify the current transport from its native instructions or observed same-run
+behavior; the example does not establish support on every host. If support is
+unclear, inspect the current native contract. Do not invent a notification API,
+filter script, scheduler, persistent flag or coordinator store, and do not claim
+notification suppression without evidence. A transport limit does not remove
+required human interactions, observation, progress judgment or safe settlement.
 
 ## Progress Decision
 

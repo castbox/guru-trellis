@@ -156,7 +156,8 @@ descendants. Descendants cannot start. Already completed siblings stay complete
 unless current evidence invalidates their own completion.
 
 - `continue_independent`: continue admitted siblings and admit eligible nodes
-  outside the blocked subgraph. Report the block once, then meaningful changes.
+  outside the blocked subgraph. Apply the shared Quiet Notifications conditions
+  when reporting a block or a material change.
 - `stop_dispatch`: stop all new admissions on the first genuine block. Let
   existing independent children reach a safe boundary under existing authority,
   then hold them; do not force-cancel or delete their work. Monitor until every
@@ -232,6 +233,9 @@ earlier-stage goal.
 
 Return exactly one primary exit. Outputs stay in the current conversation;
 they are concise action/results for their named consumer, not audit artifacts.
+Apply the same-provider shared method's `Quiet Notifications` section to
+delivery of these results. Routine `auto_started` and `progressing` results use
+its supported silent transport; the primary exit and its consumer stay intact.
 
 | Exit | Minimal output and sole consumer |
 | --- | --- |
