@@ -133,6 +133,9 @@ starts merely because the heartbeat was restarted.
 Return exactly one primary exit, directly in the current conversation. These
 outputs are action/results for their sole consumer, not persistent artifacts.
 The stage exit is additive; `chain_completed` retains full-completion meaning.
+Apply the same-provider shared method's `Quiet Notifications` section to
+delivery of these results. Routine `auto_started` and `progressing` results use
+its supported silent transport; the primary exit and its consumer stay intact.
 
 | Exit | Minimal output and sole consumer |
 | --- | --- |
