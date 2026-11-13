@@ -188,7 +188,7 @@
     ".cursor/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".agents/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".codex/hooks/inject-subagent-context.py": "3157e47d70d6b4fcd2c5605f373494f20dd4c64bddf5f516ba57788af558a237",
-    ".trellis/scripts/common/session_storage.py": "07e0b45aff78a42217dedfecd5ea3af952b0b1b35797af539c64d0b04b26077b",
+    ".trellis/scripts/common/session_storage.py": "382a9e7cd2076f2fc38fca9c32e3e204f79bc185b754f590d181211bb48e5ecf",
     ".trellis/scripts/common/continuation_contract.py": "82f37aff6c43e7803b99c88b1837c88e8509f366ee5afc3b9291c6626a05cf8d",
     ".trellis/scripts/common/path_boundary.py": "bc34711a2d18fa199a270b00bb50a2746dc82b0a093e3fb34ae314549796d08c",
     ".trellis/scripts/common/maintenance.py": "07345928fd631825ac79a5fb949b4cad2b22ea0d198a5b674a02dd1f643d62e2",

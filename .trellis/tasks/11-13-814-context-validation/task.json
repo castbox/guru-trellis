@@ -1,0 +1,119 @@
+{
+  "schema_version": "2.0",
+  "id": "814-context-validation",
+  "name": "814-context-validation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 814,
+    "disposition": "exact_source"
+  },
+  "title": "修复工具升级原生 context 校验的正常工作区开销与超时失配",
+  "description": "消费已合入 Fork e379 的 context 性能前置修复，经原 source-lock/tools owner 完成 Guru 定向安装、恢复与身份保持验收。",
+  "dev_type": null,
+  "scope": "仅 castbox/guru-trellis#814 当前完整正文及其明确 Fork 来源；不包括 Release、manifest 冲突能力或历史 Task 转换。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-13",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+    "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+  },
+  "deliveries": [
+    {
+      "id": "fca8647f-14d0-436d-8298-1b561036f8e4",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+          "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/fca8647f-14d0-436d-8298-1b561036f8e4",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+        "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:a00607d8-de40-4166-b9d2-fe6b33d6b22b",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+              "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+            "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/prd.md",
+              "revision": "sha256:e8dac57c05209ccb6373a99c7e4de8cdcd783ded48bc544aef30f253157d370d"
+            },
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+              "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+            },
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/implement.md",
+              "revision": "sha256:06ba05da0848a5a191313f72f03dcee2e630283d34192d0c1428ba0ff7943f3e"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

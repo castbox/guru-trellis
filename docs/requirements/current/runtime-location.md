@@ -60,3 +60,14 @@ R760-01—05 的设计与测试关系由对应完整单元 D760/T760 单写。�
 ## R769-D2 / 已核正常退出对象
 
 来源仍为 Issue #769 原事务恢复责任，before 为 D1 delivered head `aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff`。R769-04：原 owner 正常退出的位置不再作为存续 peer 改值处理；AI 必须先读原退出结果，缺失本身不证明正常退出。R769-05：只有 frozen 恢复的显式有限位置建立该例外；存续 peer、common/gitdir、原 source/owned 保持和 #759 精确 prunable 边界继续成立。省略/空数组及同源调用保持原义。R769-06：同 ref/action/source/public operation/plan/preimages/snapshot 续接，无重 prepare 或第二状态；retry 保持实际字段存在性和值，完整 matching I/O 配套。D769-D2/T769-D2 单写设计和验证；实际 #766 恢复仍是整体 AC3，工具成功不建立 Task 完成。
+
+## 原生 context 的正常规模行为（#814）
+
+本单元追加定义修订：`context-adoption-814`。来源为 [Issue #814](https://github.com/castbox/guru-trellis/issues/814)，适用 before 为 Git `ce4644392d1ed9815d59071388b9bff9978d1cee`。原 `fixed-git-task-creation-813` 修订及此前条款保持。本节补充原生 context 正常规模行为；设计由对应单元 D814 承接，验证由 T814 承接。
+
+| Identity / Behavior | 完整行为与条件 |
+| --- | --- |
+| R814-01 / BEH814-CONTEXT | 实际安装的原生 context 入口在正常小规模及约169个合法注册 worktree 下，解析当前会话或显式 Task，返回正确 owner、Task/generation 和唯一 checkout。消除同一次解析内无关重复 Git 开销时，仍须校验全部 eligible peers，保留原 prunable 例外、选中分支独立查询，以及必要 stale/conflict/非唯一拒绝；不能以跳过校验、借用其他会话或只改 PATH 替代修复。 |
+| R814-02 / BEH814-PROBES | 公开 tools 的真实 runtime-contract/context probes 保持两个10000ms预算。验证分别记录实际入口、拓扑、Git调用来源与耗时；单次样本不是所有机器或所有 native 命令的延迟保证。外层等待结束先核原 executor，未知终态继续跟随原执行；需要恢复时仍由原 tools owner 使用同一 operation/ref/candidate/plan/preimages。安全诊断、原失败与未自然复现边界须保留。 |
+
+来源代码与目标自身成功仍遵循 R718-03/11；原事务与 peer/common 保持仍遵循 R769。上述条款不改变公开身份格式、Task/Delivery/session writer 或恢复 authority。正式来源采用和实际工程结果分别成立；完整 Release 矩阵及 Task 整体完成继续由原 owner 独立判断。
