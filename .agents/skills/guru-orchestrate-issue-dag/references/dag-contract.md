@@ -8,6 +8,8 @@ different nodes; neither the coordinator directory nor Skill provider selects
 a node’s repository. `depends_on: [A, B]` means that both A and B must satisfy
 their complete completion contracts before this node can start. An edge is a
 completion dependency, not permission to start from an unmerged branch.
+Contract-only prerequisites use the separate readiness rule below; they do not
+change the meaning of an existing `depends_on` edge.
 
 Normalize graph input in the conversation. Require unique repository-qualified
 node identities, included predecessor identities, no self-edge, and no directed cycle. Repeated edges
@@ -17,13 +19,16 @@ implicit dependency. A serial list must explicitly become adjacent edges.
 
 Read live Issue bodies, accepted maintainer comments, linked PRs, and repository
 workflow. Classify referenced predecessors as hard, delivery-order preference,
-informational, or superseded. Only accepted hard dependencies constrain
-eligibility. The user's explicit graph may add an ordering preference; it may
-not remove a live hard prerequisite. Do not revive superseded references.
+informational, or superseded. Only accepted hard completion prerequisites
+require full predecessor completion for eligibility. Required contract inputs
+constrain only their consuming work under the readiness rule below. The user's
+explicit graph may add an ordering preference; it may not remove a live hard
+prerequisite. Do not revive superseded references.
 
-If an included hard predecessor is missing an edge, show the required edge and
-resolve the graph discrepancy before launch. If a hard prerequisite is outside
-the selected nodes, verify its completion directly and recheck it before the
+If an included hard full-completion predecessor is missing an edge, show the
+required edge and resolve the graph discrepancy before launch. If a hard
+full-completion prerequisite is outside the selected nodes, verify its
+completion directly and recheck it before the
 dependent node starts. An incomplete external prerequisite blocks that node;
 do not silently add another Issue, remove the prerequisite, or widen the run.
 If it is already incomplete at initial preflight, return `dry_run_blocked`.
@@ -31,6 +36,69 @@ If it becomes unsatisfied after launch, apply the runtime failure policy.
 
 Conflicting product or architecture authority needs a human decision. A stale
 child summary is a discovery hint, not a change to accepted Issue scope.
+
+## Contract Readiness And Mock Development
+
+For Mobile/Web work that needs an API contract, distinguish a usable contract
+from its provider Issue's complete implementation. When current authority
+requires only the contract to start, normalize that prerequisite separately
+from `depends_on`. Do not infer a full-completion edge from an API reference.
+Do not silently reinterpret an explicit completion edge or a live requirement
+to wait for backend completion; resolve that real discrepancy before affected
+admission.
+
+A node may declare `contract_dependencies`, a list of objects containing:
+
+- `provider`: the repository-qualified Issue supplying the contract;
+- `contract`: its live document/section locator, or the clearly identified
+  expected contract location while its production is pending;
+- `work`: the frontend work that consumes this contract.
+
+Equivalent natural-language input or an unambiguous live contract-only
+requirement may be normalized into that same form. Resolve the provider,
+contract and consuming work before dispatch; a related link alone adds no gate.
+The provider may be outside the selected nodes. Read its contract directly
+without adding that Issue to the run or requiring its full completion. These
+inputs identify ordinary prerequisites, not a readiness assertion or new state
+artifact. Omitting the field preserves existing explicit completion edges.
+
+At preflight, before affected dispatch and on every heartbeat or recovery,
+read the current contract and relevant accepted clarifications. The coordinator
+AI judges whether it describes the consuming work's request/response shape,
+field meaning, errors, authentication and state behavior where applicable well
+enough to implement against Mock data. A document's existence, a child saying
+"contract ready", or the provider Issue's status alone is insufficient. Do not
+require unrelated API details or deployment evidence for that judgment.
+
+When the contract is usable, promptly instruct the Mobile/Web owner to build
+Mock interface data from it and advance the supported work in parallel with
+backend implementation, subject to slots and actual exclusions. Include the
+contract locator, consuming work and current gaps in that child's operational
+prerequisites or continuation. Do not wait for the backend Issue to close,
+merge, deploy or go live merely to begin this work. Reading an available
+provider-owned contract does not authorize consuming its unmerged implementation
+or changing the frontend's selected base.
+
+A partial contract gap holds only the work that needs the missing detail.
+Admit or continue the same frontend owner for independently supported work,
+with a precise hold on the affected part. If no permitted work can proceed,
+leave an unadmitted node waiting, or safely block an admitted owner under the
+normal slot rules. Request the concrete missing contract detail from its
+existing provider owner within current delegation; do not create another owner
+or widen the run. Pending contract production by a selected eligible provider
+is a schedulable wait, not by itself an invalid graph or a whole-run block.
+A dry-run states the first ready set, pending contract work and recheck
+condition. If no supported producer or ready work can advance, use the existing
+preflight or runtime blocked route with the exact missing condition.
+
+If a contract changes or becomes unavailable, revalidate only the work that
+uses the changed or missing part. Preserve completed work and keep unaffected
+work moving under the failure policy. Provider implementation failure, reopening
+or an incomplete deployment does not invalidate an independently usable
+contract. Conversely, provider completion does not prove contract sufficiency.
+Contract readiness and Mock progress never release a completion edge or prove
+Issue completion. This start condition adds no acceptance, integration-test or
+control-Issue responsibility; those remain with current authority.
 
 ## Membership And Repository Bindings
 
@@ -49,8 +117,8 @@ does not also require final product-Issue completion. Do not manufacture a cycle
 by conflating those two obligations. A genuinely contradictory authority returns
 to its original scope owner rather than being silently reordered.
 
-Normalize every node, edge, exclusion and completion override before graph
-validation. Canonical Issue URLs and equivalent graph notation may become
+Normalize every node, completion edge, contract prerequisite, exclusion and
+completion override before graph validation. Canonical Issue URLs and equivalent graph notation may become
 `owner/repo#N`. An unqualified integer is usable only with one unambiguous
 repository context. Resolve conflicting repository/project/base choices before
 affected admission; never guess from the current checkout or a same-number node.
@@ -68,7 +136,8 @@ resource constraint.
 ## Preflight And Endpoint Compatibility
 
 Apply the same-provider `issue-orchestration.md` shared preflight and AI Gate.
-Additionally verify graph membership/acyclicity, feasible positive-integer
+Additionally verify completion-graph membership/acyclicity, each contract's
+provider, consuming work and current readiness, feasible positive-integer
 concurrency, independent child branches/worktrees and Task/session evidence,
 and explicit shared-resource exclusions where required. Apply shared environment
 readiness per repository. An initial environment gap holds its nodes and
@@ -102,16 +171,26 @@ Calculate eligibility from live proof:
 
 ```text
 eligible(v) = v has no existing admitted owner
-              AND every predecessor is verified completed
+              AND every depends_on predecessor is verified completed
               AND external prerequisites pass
+              AND some permitted work has all of its contract inputs usable
               AND the node’s repository environment is verified ready
-              AND v is not blocked or descended from a blocked node
+              AND v is not blocked or a completion descendant of a blocked node
               AND failure policy allows admission
               AND no occupied node shares an exclusive group with v
 
 occupied = creating + running
 free = max_parallel - count(occupied)
 ```
+
+For work without contract inputs, the contract condition is satisfied. A partial
+contract hold remains work-scoped rather than marking an otherwise actionable
+node blocked. Contract providers do not count as completion predecessors unless
+there is also a completion edge. Readiness does not reserve or free a slot:
+with `max_parallel: 1`, a running backend still occupies the one slot. Do not
+claim simultaneous execution, exceed the limit or manufacture backend completion
+to admit the frontend; use the next normally available slot. An already admitted
+frontend can resume its ready work within its existing occupied slot.
 
 Admit the earliest eligible nodes until no slot or eligible node remains. Count
 a creation attempt before making its tool call. If `free < 0` after recovery,
@@ -152,7 +231,10 @@ a node's block. A failed step or missing recommendation does not by itself
 establish a node block or a terminal DAG result.
 
 For a genuine block, identify the node, failed requirement, and transitive
-descendants. Descendants cannot start. Already completed siblings stay complete
+completion descendants. Those descendants cannot start. Apply contract failures
+only to their consuming work under Contract Readiness And Mock Development;
+a blocked provider does not poison a consumer whose contract remains usable.
+Already completed siblings stay complete
 unless current evidence invalidates their own completion.
 
 - `continue_independent`: continue admitted siblings and admit eligible nodes
@@ -175,7 +257,9 @@ owners decide what needs rework. Do not auto-rollback unrelated results.
 ## Endpoint Verification And Settlement
 
 Use the shared method's original-owner stage proof or full Issue completion
-proof. Only full completion releases dependency edges. Use stage proof solely
+proof. Only full completion releases `depends_on` edges. Contract prerequisites
+use their own readiness rule and do not establish a stage or completion result.
+Use stage proof solely
 for the safe slot release above and `dag_stage_completed` below when the human
 explicitly limited execution. This existing exit retains its segment-only
 meaning; no phase result or authority gap implicitly selects it. Resume the
@@ -207,7 +291,8 @@ The conversation accepts an ordered nonempty `nodes` set, or an explicit
 For multi-repository selection, provide `repositories`, keyed by canonical
 `owner/repo`; each value may provide `project_path` and `base_branch`. Resolve
 omitted paths from actual saved projects and omitted bases from that repository’s
-live default. Nodes contain `repository`, positive `issue`, and `depends_on`.
+live default. Nodes contain `repository`, positive `issue`, and `depends_on`,
+and may add the work-scoped `contract_dependencies` defined above.
 Dependencies, `exclusive_groups` and per-node `completion_overrides` use
 `owner/repo#N` (or equivalent canonical Issue URLs). All graph references must
 resolve unambiguously. Included predecessors refer to selected identities;
