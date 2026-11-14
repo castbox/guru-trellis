@@ -66,7 +66,7 @@ if args[:2]==['issue','list']:
 elif args[:2]==['api','repos/castbox/guru-trellis/issues/811/comments'] and '--method' in args and args[args.index('--method')+1]=='POST':
  payload=json.load(sys.stdin);state.update(comment_body=payload['body'],updated_at='2026-01-03T00:00:00Z',writes=state['writes']+1);p.write_text(json.dumps(state));print(json.dumps(dict(body=state['comment_body'],url='https://github.com/castbox/guru-trellis/issues/811#issuecomment-1',updated_at=state['updated_at'])))
 elif args[:2]==['api','repos/castbox/guru-trellis/issues/comments/1']:
- print(json.dumps(dict(body=state['comment_body'],url='https://github.com/castbox/guru-trellis/issues/811#issuecomment-1',updated_at=state['updated_at'])))
+ print(json.dumps(dict(id=1,issue_url='https://api.github.com/repos/castbox/guru-trellis/issues/811',body=state['comment_body'],url='https://github.com/castbox/guru-trellis/issues/811#issuecomment-1',updated_at=state['updated_at'])))
 elif args[:2]==['api','repos/castbox/guru-trellis/issues/811']:
  if '--method' in args and args[args.index('--method')+1]=='PATCH':
   payload=json.load(sys.stdin);state.update(body=payload['body'],updated_at='2026-01-02T00:00:00Z',writes=state['writes']+1);p.write_text(json.dumps(state))
