@@ -298,8 +298,8 @@ tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前修复源码的 extension 与 maintenance target 仍为 `0.7.0-guru.8`，但其内容与
-已发布 `.8` tag 分开识别。本次不重发 tag、Release 或同版本 npm 包。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.9`，处于未发布的
+完整来源准备阶段。稳定安装继续使用已发布 `.8` 的原始配对来源。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](source/trellis-source.json)。
 本页不另存当前 SHA/CI 对照表；按[构建所选 Fork](#构建所选-fork)核验实际构建。
@@ -317,7 +317,8 @@ Guru 消费公共家族/key 及目标 native 前驱关系；AI 仍审核原安�
 `defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
 authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
-CLI/Core 与 package-manager 版本采用同一 source lock 声明的值。
+本次 Guru 目标更新保持 CLI/Core `0.7.0-castbox.6` 与原 source lock 不变。
+package-manager 版本采用所选 checkout 自身 source lock 声明的值。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
 不证明当前 lock 的匹配构建。使用干净 source workspace 的正常 CLI/Core 依赖布局，
@@ -327,6 +328,11 @@ CLI/Core 与 package-manager 版本采用同一 source lock 声明的值。
 Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包含本次修复，
 不能用该 tag 或相同 extension/CLI 版本号代替所选修复 SHA。
 当前源码、投影及代表性安装各保留其真实来源和验证边界，不证明新 Release 通过。
+当前准备先交付完整 canonical 来源，再由后继 Delivery 从真实已交付的干净来源
+加载 `guru-upgrade-tools`，经 `source_locked` 实际采用并验证完整受管投影及保留行为。
+本地来源样本只验证来源自身安装可用性，不证明远端 `.9` marketplace、正式
+`source_locked` 或真实 dogfood `.9` 安装。各 Delivery 保留完整质量与交付责任；
+只有全部准备业务及实际采用完成，才可能通过 Task Completion 并进入终态收尾。
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。

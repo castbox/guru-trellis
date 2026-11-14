@@ -54,88 +54,128 @@ invocation context, not another release input or a durable workspace mapping.
 
 ### Stage 1: Preparation Task And PR
 
-Route preparation through standard intake and the existing global workflow:
+Route preparation through standard intake and the existing global workflow.
+Original requirements and Planning owners define the whole preparation Task,
+the current Delivery slice, its independent completion conditions and remaining
+work. Use each actual Delivery's public key and planning_root; a source commit,
+one merged slice or a local installation does not establish whole-Task completion.
 
-1. Planning records stable `prd.md`, `design.md`, `implement.md`, and the Docs
-   SSOT plan.
-2. Phase 2 changes the pre-promotion delivery content, aligns the repository's
-   actual dogfood installation with the target extension revision through the
-   original tools owner below, and performs the scoped semantic check. Include
-   its changed managed scripts, schemas, projections and installation manifest
-   in the current candidate; they are not covered by a throwaway result.
-3. `guru-create-task-commit` exclusively owns the pre-promotion task commit
-   preview, confirmation, and commit mutation.
-4. Invoke `guru-review-branch` for one independent full
-   `origin/<base>...HEAD` review of the committed pre-promotion delivery.
-5. Only a fresh passed pre-promotion Branch Review with zero open P0-P3 findings
-   may enter the serialized Architecture and RDT promotion owners. Promotion
-   binds the expected current identity and changes shared delivery content.
-6. The promotion-created diff returns through fresh Phase 2 and
-   `guru-create-task-commit`; that commit preview, confirmation, and mutation
-   remain exclusively owned by `guru-create-task-commit`.
-7. Invoke `guru-review-branch` again for one independent full
-   `origin/<base>...HEAD` review of the complete post-promotion delivery.
-8. Only the fresh passed post-promotion Branch Review enters the current
-   Architecture publication check and `guru-review-task-delivery`. Review the
-   preparation slice, remaining release work, exact diff, validation and
-   reviewed-content identity, then author a truthful Chinese Refs-only PR
-   title/body. Only its checked `ready` enters `guru-publish-task-delivery`.
-9. Publish owns its reviewed push, PR binding and Ready transaction. Only its
+For every actual preparation Delivery, execute this current owner chain:
+
+1. The original Author completes the slice's stable `prd.md`, `design.md`,
+   `implement.md`, Delivery Policy and Docs SSOT Plan. Wording, independent
+   Architecture candidate/final assessments, Approval and Activation retain
+   their original order and conditions.
+2. Phase 2 implements the complete selected slice and its necessary engineering
+   checks. Original RDT and Architecture owners integrate every necessary
+   complete target and perform readback before the local task commit.
+   `integrated_pending_review` records integration only, never quality pass.
+3. `guru-create-task-commit` exclusively owns the exact local task commit
+   preview, confirmation and mutation after complete slice implementation,
+   engineering validation and necessary knowledge integration. Its actual
+   `pre_review_committed` enters only the original implementation router.
+4. The original constructor and public `begin_check` fix the complete committed
+   `B..H` Candidate. A new independent `guru-review-branch` reviewer, uninvolved
+   in implementation, performs Architecture before/after, all applicable Check
+   responsibilities and full Branch Review in the same complete review.
+   Actual passing judgments are recorded as `check` then `full_review`;
+   either missing result prevents a complete `passed`.
+5. Only current complete Review with zero open P0-P3 findings enters the
+   Architecture publication eligibility check and `guru-review-task-delivery`.
+   Delivery Review judges the slice, remaining preparation and release work,
+   exact diff, real validation and reviewed-content identity, and authors the
+   truthful Chinese Refs-only PR title/body. Only its checked `ready` enters
+   `guru-publish-task-delivery`.
+6. Publish owns its reviewed push, PR binding and Ready transaction. Only its
    checked `ready_for_merge` enters `guru-merge-task-delivery`, which owns the
    independently confirmed expected-head merge. Only its checked `delivered`
-   enters `guru-review-task-completion`; output loss returns to the original
-   Publish or Merge owner against the same PR and HEAD.
-10. Completion reviews the *whole preparation task* against its accepted
-    preparation scope and all Delivery/evidence facts. A merged PR alone does
-    not complete the task. If that scope still includes post-merge release
-    actions or any other remaining work, follow Completion's incomplete route
-    and do not Finish; clarify the preparation boundary through its owner.
-    Only `completed` enters `guru-complete-task-closure`. The release Issue is
-    `reference_only`, so Closure must return `no_mutation`, never close it.
-11. After the acceptance-finish Architecture check, `guru-finish-task` owns
-    archive and a separately reviewed, confirmed bookkeeping commit, PR and
-    expected-head merge. Only its checked `success` enters
-    `guru-cleanup-task-resources`, whose exact resource deletion needs its own
-    review and confirmation. Finish bookkeeping is not another business
-    Delivery or a release-status commit.
+   enters `guru-review-task-completion`. Output loss returns to the original
+   TaskCommit, Review, Publish or Merge owner for the same operation, key,
+   fixed base and actual commit/PR facts; it does not repeat completed effects.
 
-The Stage 1 preparation PR is reference-only because the release Issue still
-owns the post-merge exact-candidate, tag, smoke, and GitHub Release work. Its
-Delivery Review payload uses `Refs #<issue>` with no closing keyword. The
-preparation task's source disposition is `reference_only` and its Completion
-can cover only accepted preparation scope; Closure has no Issue mutation.
-Release Issue closure remains the independent Stage 2 boundary after those
-requirements are complete.
-
-Each `guru-create-task-commit` invocation exclusively owns its exact task commit
-preview, confirmation, and commit mutation. The first review cannot be reused
-for promotion-created bytes, and the second review cannot run before promotion.
-
-The honest path is exactly:
+The per-Delivery honest path is:
 
 ```text
-stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> pre_promotion_commit -> guru-review-branch_pre_promotion -> serialized_architecture_rdt_promotion -> fresh_phase2 -> guru-create-task-commit -> post_promotion_commit -> guru-review-branch_post_promotion -> guru-review-task-delivery -> guru-publish-task-delivery -> guru-merge-task-delivery -> guru-review-task-completion -> guru-complete-task-closure:no_mutation -> guru-finish-task -> guru-cleanup-task-resources
+stable_plan -> implementation_and_engineering_checks -> necessary_rdt_architecture_integration_and_readback -> guru-create-task-commit -> constructor/begin_check -> guru-review-branch -> publication_architecture_eligibility -> guru-review-task-delivery -> guru-publish-task-delivery -> guru-merge-task-delivery -> guru-review-task-completion
 ```
 
-Owner-private lifecycle metadata does not prove reviewed delivery identity and
-MUST NOT create a release-status commit or self-reference loop. Finish's
-terminal bookkeeping is separately reviewed after Completion/Closure, never a
-substitute for Delivery Review or an additional business Branch Review. Any
-non-allowlisted tracked delivery change returns to task work. Architecture/RDT
-promotion is an intentional reviewed-content mutation, not lifecycle metadata,
-and therefore requires the explicit fresh Phase 2, commit, and post-promotion
-Branch Review above.
+There is no separate candidate/final Check, fixed pre/post-promotion second
+review, early Draft publication or source-only TaskCommit profile. Real
+successor content changes still return to the original writer, then TaskCommit
+and affected independent review. The original reviewer judges retained
+coverage, the complete delta and combined effects; “one review” never exempts
+changed content or a necessary unchanged consumer. Keep the original fixed
+base and actual history, and adopt engineering facts only when applicable.
+
+#### Complete Source Before Actual Adoption
 
 The preparation installation uses the original `guru-upgrade-tools` contract
-with `dependency_mode=source_locked`. If it needs a clean committed preparation
-source first, use the existing reviewed early-commit/source-acquisition route.
-Any resulting installed-content change returns through the affected original
-Check, TaskCommit and complete Review owners before Finish and candidate freeze.
-Both required independent full Reviews remain mandatory. Do not treat an
-ordinary self-reapply blocked by historical Tasks as permission to leave the
-candidate installation behind; use the tools-only owner without converting
-those Tasks. Preview, preparation, invocation and preservation remain owned by
-that original Skill.
+with `dependency_mode=source_locked`. When actual adoption requires a new clean
+committed preparation source, original scope and Planning owners allocate
+ordered independently deliverable slices within the same Task:
+
+- D1 delivers the complete distributable canonical source, version producers
+  and direct consumers, private release contracts and real regressions, and
+  necessary public documentation and knowledge. D1 must validate its own
+  source, interfaces, dependencies, installation and complete selected-platform
+  projections before its full commit/review/readiness/Delivery. A temporary
+  installation may prove those source behaviors at its declared layer, but
+  never actual checkout adoption or formal `source_locked`.
+- Only after D1 is actually `delivered`, original Completion returns
+  `additional_delivery_required` for the unimplemented adoption. Its original
+  planning router invokes Creation to establish D2. D2 receives its own Planning
+  and Activation.
+  D2 reads the real D1 Delivery result and complete clean matching source,
+  then the original tools owner previews, prepares, invokes and verifies actual
+  `source_locked` adoption. D2 includes all installed-content after in its own
+  complete engineering, TaskCommit, Review, readiness and Delivery chain.
+
+Do not create D2 early or route TaskCommit success to tools. D1's own completeness
+cannot depend on D2 already being complete. D1 source defects or required
+validation failures cannot be deferred to obtain a pass. If D1 itself needs
+prior target adoption, return to original scope/Planning before proceeding.
+A dirty source, an undelivered commit, planned failed Review or rewritten
+historical pass cannot supply the formal adoption source.
+
+The tools owner must validate the actual target extension, complete managed
+package/platform/workflow projections, source provenance, CLI and source lock,
+target resolver and native entry, ownership, executable modes, sidecars,
+preservation, parity and drift. Preserve Task/archive/workspace/session/user
+configuration, peer tools and common runtime pointers. Current old installation,
+schema-projection differences and drift failures retain their actual meaning
+until the adoption slice establishes its results. Do not treat ordinary
+self-reapply blocked by historical Tasks as permission to leave adoption
+unfinished, convert those Tasks, use ordinary apply or hand-edit managed files.
+
+#### Whole Preparation Completion And Reference-Only Closure
+
+Completion reviews the *whole preparation task* against accepted scope and all
+Delivery/evidence facts. Unimplemented adoption follows
+`additional_delivery_required`, not `evidence_pending`; other real gaps retain
+their original owner routes. Do not Finish while preparation business work
+remains. Only `completed` enters `guru-complete-task-closure`. The release Issue
+is `reference_only`, so Closure must return `no_mutation`, never close it.
+
+After the acceptance-finish Architecture check, `guru-finish-task` owns archive
+and a separately reviewed, confirmed bookkeeping commit, PR and expected-head
+merge. Only its checked `success` enters `guru-cleanup-task-resources`, whose
+exact resource deletion needs its own review and confirmation. Finish
+bookkeeping is not another business Delivery, release-status commit or a
+substitute for independent business Review. Preserve caller-owned resources.
+
+Every preparation PR uses `Refs #<issue>` with no closing keyword. The release
+Issue still owns the post-merge exact candidate, tag, smoke, GitHub Release,
+selected local convergence and separate Issue-closure boundary. Stage 1
+reference-only Closure never substitutes for that Stage 2 decision.
+
+Keep #794's supported in-flight recovery with its matching complete original
+provider. Recover already executed commit, PR, metadata and binding facts
+without repeating them; pending new remote effects require current independent
+Review and readiness. A partially recorded Review resumes the same key/B/H and
+original judgment through its owner; the first slot cannot invent the second.
+Owner-private metadata and integration facts do not prove reviewed content,
+convert old pass results or create a release-status commit or self-reference
+loop.
 
 ### Stage 2: Post-Merge Exact Candidate
 

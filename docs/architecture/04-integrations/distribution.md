@@ -39,12 +39,34 @@
   current source record 同时绑定精确 commit 与成功的上游 CI run；CI 证据不替代本地 build marker
   和实际模板/CLI 校验。full 历史验证需独立 predecessor checkout/SHA；focused 只证明当前 candidate 场景。
 
-- `ARCH-INT-015`：#392 Stage 1 的 repository-private release orchestration 按唯一顺序连接
-  pre-promotion fresh Phase 2 / Task Commit / `origin/main...HEAD` Branch Review -> expected `.47`
-  serialized Architecture/RDT promotion -> post-promotion fresh Phase 2 / Task Commit /完整 Branch Review。
-  第二次 review 通过后才可进入 Publication。preparation merge 后所有 Stage 1 gate identity 失效，
-  Stage 2 只接受 fresh `origin/main` exact commit/tree；完整 Release Gate、annotated tag、tag-pinned smoke、
-  GitHub Release、Issue close 与 cleanup 各自由其 live owner 独立处理。
+- `ARCH-INT-015`：repository-private release orchestration 的每个实际准备 Delivery 采用当前原链：
+  stable Planning/Activation -> 实现与工程自检 -> 必要 Architecture/RDT 完整整合及 readback -> 原 TaskCommit
+  -> 原 constructor/begin_check 固定完整 B..H -> 同次新独立 Review 的 Architecture、九维及完整范围判断
+  -> 真实 check/full_review 两槽 -> publication Architecture eligibility/Delivery Review readiness
+  -> Publication -> expected-head Merge -> Completion。知识整合仅 integrated_pending_review；实际提交后
+  独立 before/after 通过才是 reviewed_promoted。真实后继内容仍须提交并补足受影响独立覆盖。
+  不建立独立 candidate/final Check、固定晋升前后第二轮或 early Draft/source-only TaskCommit 路线。
+
+  若正式 source_locked 实际采用需要先有完整干净来源，由原 Clarify/Author 在同 Task 分配顺序切片。
+  D1 完整交付来源、自身安装/消费者/分发验证及必要知识；真实 delivered 后，Completion 对未实施采用
+  返回 additional_delivery_required，原 Creation 才建 D2 并进入独立 Planning/Activation。原 tools 从真实
+  delivered 的完整干净匹配来源更新实际目标，D2 将全部安装 after 和必要文档纳入自己的完整质量交付链。
+  D1 自身缺陷或必需验证失败不能留给 D2；未交付提交、dirty 来源或临时安装不代替正式采用。
+  原 source lock、CLI/Core 配对、preservation、managed bytes/mode、native、sidecar 与 drift 责任保持。
+
+  全部准备业务满足后才由原 Completion、reference-only Closure no_mutation、Finish 终态归档及
+  bookkeeping、精确 Cleanup 收口。Stage 2 在准备交付和终态归档合入后，重新读取 main 的真实 lineage，
+  冻结唯一 exact commit/tree；此前准备候选和 gates 不作发布 pass。完整前驱 diff、定向安装/前驱升级、
+  actual dogfood、scanner、独立候选判断及 annotated tag、tag-pinned smoke、正式 Release、选定本地收敛、
+  最终 Issue close 仍由原发布合同和 live Issue 的精确边界承担，不能因分切片而减少。
+
+  本条现行关系由 #808 私有消费者采用 #794 后承接；有效依据为当前 ARCH-DOM-053、ARCH-GOV-008/009、
+  change-contract 与 MIGRATION-794。#392 的 pre/post 两轮和 expected `.47` 是其历史完整 provider 的流程，
+  不再作为当前唯一顺序；旧合法在途操作仍按 MIGRATION-794 的完整 matching provider 恢复，不转换旧 pass。
+  仍为 proposed 的 ADR-POSTCOMMIT-INDEPENDENT-REVIEW 不被本条改状态，也不单独证明已接受。
+  取舍是复用原 owner、公共阶段和 staged Delivery 以去除来源/采用循环；代价为每个真实切片完整验证和审查。
+  上游改变来源锁定、Delivery 完成定义或 TaskCommit consumer 时，由原范围/Architecture owner 重评。
+  具体入口及恢复只由私有 release 合同与各原公共 Skill 单写，本单元不复制 schema、增加公共协议或发布账本。
 
 - `ARCH-INT-016`：framework generation owner 为 canonical source record 指定的 fixed Fork official CLI；Guru canonical
   owner 直接迁移 workflow/Skill/runtime/installer/spec/platform consumers，并经 preset 投影到 dogfood 与

@@ -1595,11 +1595,7 @@ def _install_workflow(
             "push an exact ref or set TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and "
             "report the unpublished local-sample boundary"
         )
-    workflow_arguments = (
-        ("--workflow", "native")
-        if local_sample
-        else ("--workflow", "guru-team", "--workflow-source", workflow_source)
-    )
+    workflow_arguments = ("--workflow", "guru-team", "--workflow-source", workflow_source)
     _run(
         (
             *binary,
