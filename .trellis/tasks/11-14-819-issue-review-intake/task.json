@@ -25,7 +25,7 @@
   "meta": {},
   "accepted_scope": {
     "locator": ".trellis/tasks/11-14-819-issue-review-intake/prd.md",
-    "revision": "sha256:6ef8d4ba97be878afad8539c03db604f195400b2127c25bcb5f042d31a2a4f20"
+    "revision": "sha256:2296aa2e616bcbd925bb4fecfab9b1d10602fceff0fd40b81fd481200b81f7e9"
   },
   "deliveries": [
     {
@@ -34,7 +34,7 @@
       "scope_ref": {
         "authority": {
           "locator": ".trellis/tasks/11-14-819-issue-review-intake/prd.md",
-          "revision": "sha256:6ef8d4ba97be878afad8539c03db604f195400b2127c25bcb5f042d31a2a4f20"
+          "revision": "sha256:2296aa2e616bcbd925bb4fecfab9b1d10602fceff0fd40b81fd481200b81f7e9"
         },
         "anchors": [
           "R1",
@@ -56,12 +56,12 @@
       "phase": "implementing",
       "plan_ref": {
         "locator": ".trellis/tasks/11-14-819-issue-review-intake/deliveries/f108d161-d60d-4c89-91bf-d96004ef86a6/design.md",
-        "revision": "sha256:97f63cd57ef95dfaf35acb19ea6cdf4ba3c1fa94c1d3087ebc2e48db380d6944"
+        "revision": "sha256:c8b3f9b0214721973f9783b3d7e70e9b2f0fdebe41419c37a5aaefaef9d70b31"
       },
       "candidate": {
         "base_ref": "4f2adef1f7b099f78bb8429e8b8facd66dce3bfc",
-        "content_ref": "sha256:c82891b78386302840cfd197d87e41a3f683e072ca7e7636ff401ce99db9b354",
-        "head_ref": "793f34306cd8988d26c84cb872c2d503c6d0907e",
+        "content_ref": "sha256:e818ae8f6da9237385919dd255e4b7b975017d89baf2866a1fa79a66a872e008",
+        "head_ref": "439afa33d8624ebb6491a9a47935d630f9bf025c",
         "kind": "git",
         "paths": [
           ".agents/skills/guru-clarify-requirements/SKILL.md",
@@ -584,14 +584,14 @@
       },
       "results": {
         "planning": {
-          "result_id": "planning-accepted:e8412d31-e550-4b5d-aee1-06d54cdb8e24",
+          "result_id": "planning-accepted:defc3256-8a64-4cd2-a0b4-85db56e4886d",
           "owner_role": "planning",
           "owner_id": "guru-activate-delivery",
           "outcome": "accepted",
           "scope_ref": {
             "authority": {
               "locator": ".trellis/tasks/11-14-819-issue-review-intake/prd.md",
-              "revision": "sha256:6ef8d4ba97be878afad8539c03db604f195400b2127c25bcb5f042d31a2a4f20"
+              "revision": "sha256:2296aa2e616bcbd925bb4fecfab9b1d10602fceff0fd40b81fd481200b81f7e9"
             },
             "anchors": [
               "R1",
@@ -610,7 +610,7 @@
           },
           "plan_ref": {
             "locator": ".trellis/tasks/11-14-819-issue-review-intake/deliveries/f108d161-d60d-4c89-91bf-d96004ef86a6/design.md",
-            "revision": "sha256:97f63cd57ef95dfaf35acb19ea6cdf4ba3c1fa94c1d3087ebc2e48db380d6944"
+            "revision": "sha256:c8b3f9b0214721973f9783b3d7e70e9b2f0fdebe41419c37a5aaefaef9d70b31"
           },
           "candidate": null,
           "predecessor_result_id": null,
@@ -618,15 +618,15 @@
           "evidence": [
             {
               "locator": ".trellis/tasks/11-14-819-issue-review-intake/deliveries/f108d161-d60d-4c89-91bf-d96004ef86a6/prd.md",
-              "revision": "sha256:88501441e94d335944088b25022d4a2ad84afadc1a3f401f486d5595ae3cdbd7"
+              "revision": "sha256:4b3282e3b4e1b7c3d2c333d520a42315776ce877f01074b186a458c7a6ce2b28"
             },
             {
               "locator": ".trellis/tasks/11-14-819-issue-review-intake/deliveries/f108d161-d60d-4c89-91bf-d96004ef86a6/design.md",
-              "revision": "sha256:97f63cd57ef95dfaf35acb19ea6cdf4ba3c1fa94c1d3087ebc2e48db380d6944"
+              "revision": "sha256:c8b3f9b0214721973f9783b3d7e70e9b2f0fdebe41419c37a5aaefaef9d70b31"
             },
             {
               "locator": ".trellis/tasks/11-14-819-issue-review-intake/deliveries/f108d161-d60d-4c89-91bf-d96004ef86a6/implement.md",
-              "revision": "sha256:aeca545d3f9769c537cb92bea243ef16c61ac381298c33554330603aed6395c6"
+              "revision": "sha256:0489c5ee8d47a2400f8771a2a47cd5186d77c2ebc74cc413b74709b8e5f7dbed"
             }
           ]
         },

@@ -2,15 +2,15 @@
 
 ## 1. 整体来源与术语
 
-整体 authority 是 ../../prd.md 的 R1–R7、SC01–12、AC1–5；accepted_scope revision 为 sha256:6ef8d4ba97be878afad8539c03db604f195400b2127c25bcb5f042d31a2a4f20。公共 DeliveryKey 为 819-issue-review-intake/gen0/f108d161-d60d-4c89-91bf-d96004ef86a6。当前 planning_root 即本目录。
+整体 authority 是 ../../prd.md 的 R1–R7、SC01–12、AC1–5；accepted_scope revision 为 sha256:2296aa2e616bcbd925bb4fecfab9b1d10602fceff0fd40b81fd481200b81f7e9。公共 DeliveryKey 为 819-issue-review-intake/gen0/f108d161-d60d-4c89-91bf-d96004ef86a6。当前 planning_root 即本目录。
 
-唯一 Direct Source 是 https://github.com/castbox/guru-trellis/issues/819 的完整当前正文。整体 PRD 第5节保留完整内容；本批实际读取它及 live Issue。原 workflow 和五个原审核/创建 package 是现状证据；#692 归档和 current/local-fix-intake 是事实复用与旧完整链来源。没有额外引入来源；评论是 AI 复核证据，不能提供自动放行 authority。
+唯一 Direct Source 是 https://github.com/castbox/guru-trellis/issues/819 的完整当前正文。整体 PRD 第5节保留原文功能承诺，第7节定义本 Task 当前验证范围：采用既有观察和必要定向工程检查，不再追加 live 或实际 Agent 验收，未观察部分保持未验证。本批实际读取整体 PRD、当前完整 Issue 及这些适用条件。原 workflow 和五个原审核/创建 package 是现状证据；#692 归档和 current/local-fix-intake 是事实复用与旧完整链来源。没有额外引入来源；评论是 AI 复核证据，不能提供自动放行 authority。
 
 ## 2. 整体与本批目标、非目标
 
-D1 共同交付最小审核评论生产与已有 Issue 的前置 Readiness，并使三类局部补审合法返回原判断点。它覆盖整体全部 R1–R7 和 AC1–4 的实现/验证责任，保留 AC5 的原完整交付收尾。只有评论或只有分流都不能独立满足本项，故本批采用 full。
+D1 共同交付最小审核评论生产与已有 Issue 的前置 Readiness，并使三类局部补审合法返回原判断点。它覆盖整体全部 R1–R7 和当前 AC1–4 的实现/定向验证责任，保留 AC5 的原完整交付收尾。只有评论或只有分流都不能独立满足本项，故本批采用 full。
 
-不新增复核 Skill、第二审核节点、固定评论模板/资格/label/有效期、hash 链、账本、评测系统或额外安装矩阵。不批量补旧 Issue。不涉及 #822、发布版本、业务后端/数据库/支付。当前仅规划，不实施或外部写入。
+不新增复核 Skill、第二审核节点、固定评论模板/资格/label/有效期、hash 链、账本、评测系统或额外安装矩阵。不批量补旧 Issue。不涉及 #822、发布版本、业务后端/数据库/支付。功能与机制保持原设计；本次范围修订只收敛新增验收义务，不写外部 Issue/评论。
 
 ## 3. 本批起点、前序结果、依赖与剩余责任
 
@@ -18,7 +18,7 @@ D1 共同交付最小审核评论生产与已有 Issue 的前置 Readiness，并
 
 现状：selector→Sync→Discovery→Clarify→Wording→Readiness；Create Issue created 亦回 Sync。Readiness 公共输入要求实际当前前序 transition；Discovery/Clarify/Wording 的正向出口没有面向本次已有 Issue Readiness 的独立局部返回合同。Create executor 已有同对象标记与找回，Clarify 已有受控 source_actions/GitHub 读回；需要在原职责内适配。
 
-本批后仍须实际实现、工程检查、原 RDT/Architecture 整合/readback、TaskCommit 后一次独立完整 Review、Delivery readiness/发布/合并、整体 Completion/Closure/Finish。本轮不把规划通过描述为任何一项工程或整体完成。
+本批保留完整功能实施、必要工程检查、原知识整合、TaskCommit 后独立完整 Review、Delivery readiness/发布/合并和整体 Completion/Closure/Finish 的责任。已完成工作按原实际证据和当前适用性采用；修订规划不代表代码质量或整体完成。
 
 Create Task的现有consumer采用当前profile2.0和共享creation3.0：审核来源与Task集成branch分开，完整来源身份按原合同承接。D1-R6/R7的公共合同适配必须保留这项已存在能力；具体投影、例子及条件由design第3、5、7节单写，不改Task/gen0/D1、固定B或整体范围。
 
@@ -48,13 +48,13 @@ Create Task的现有consumer采用当前profile2.0和共享creation3.0：审核�
 
 | ID | 对应 | 入口、输入和预期观察 |
 | --- | --- | --- |
-| D1-AC1 | R1；SC01–02 | 原实际 Create/Clarify 发布/更新及 live readback；范围准确，未知结果恢复原评论而非重复，纯只读不写。 |
-| D1-AC2 | R2–4；SC03–05 | 从实际已有 Issue 开工入口观察六类分叉、各局部返回、多缺口顺序、完整链和必要阻塞恢复；原 Task 门禁保持。 |
-| D1-AC3 | R5；SC06–07 | 实际讨论→创建→开工及各终点；no_issue 原完整链。 |
+| D1-AC1 | R1；SC01–02 | 核完整评论生产/只读/恢复实现，采用既有 executor 回归和已取得 live 观察；未观察的 PATCH/unknown 恢复仍未验证，不再新增外部验收。 |
+| D1-AC2 | R2–4；SC03–05 | 核完整六类分叉、各局部返回、多缺口顺序、完整链和阻塞恢复，采用既有 Agent 观察及生产 wrapper/consumer 定向检查；原 Task 门禁保持，不再追加 Agent 验收。 |
+| D1-AC3 | R5；SC06–07 | 核讨论→创建→开工及各终点、no_issue 实现，采用既有观察及当前 Creation 桥接检查；创建后 live 正向 Task 写前、完整 start/selector 和其他平台 Agent 保持未验证，不新增对象补验收。 |
 | D1-AC4 | R6–7 | 生产 public wrappers/graph/consumer、受影响包和现有真实分发/reapply；确认 canonical/installed/platform、mode、sidecar 和状态保留。 |
 | D1-AC5 | 整体 AC5 | 原完整 Review/readiness、所有 satisfying Delivery 和 Task 整体收尾；本轮不执行。 |
 
-没有未解决产品选择。机制细节必须在 design/implement 可编码粒度完成后才可 plan_ready。上述真实 Agent/外部验收尚未执行；本轮不能以机械检查或样例替代。
+没有未解决产品选择。机制细节必须在 design/implement 可编码粒度完成后才可 plan_ready。既有观察及其截止由原 Test 报告定位；定向工程、实际 Agent、安装和 live 结果分别采用。未观察场景不改称通过，也不再作为新增验收或后继任务义务。
 
 ## 7. Canonical 引用与本轮差额
 

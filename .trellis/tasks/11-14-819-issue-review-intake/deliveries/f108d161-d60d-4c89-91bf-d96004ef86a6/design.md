@@ -30,6 +30,7 @@
 | #818 issue-content完整内容方法 | retain；两生产者与各审核owner继续读原正文 | 新评论规则独立于完整Issue内容方法，不重复或削弱其正文要求。 |
 | Architecture change contract / subtraction-first | retain；§7及隔离贡献 | 原owner、九concerns、单写、直接迁移与一次提交后独立Review保持。不需要额外需求选择。 |
 | 当前Create Task SKILL、public-delivery-task-creation-input-2.0、共享task-creation-input-3.0及MIGRATION-813 | retain；§5.1、§5.3、§7及V819-01/02/06 | 新路径须承接真实来源类型、精确commit、独立集成目标及原创建/恢复条件。旧1.0 schema仅为历史验证资产，不作为本批consumer依据；不重做#813的实现。 |
+| 当前整体 PRD 第7节的验证范围 | change 原新增 live/Agent 验收义务；§8及implement §3/5 | 完整功能和兼容保持，采用既有分层观察与必要定向工程检查；未观察保持未验证，不新增验收对象、后继验收任务或通过声明。 |
 
 ## 4. 模块、职责与设计取舍
 
@@ -156,19 +157,21 @@ Create Task当前aggregate2.0→profile2.0→共享creation3.0的选择由其Int
 
 ## 8. 验证设计
 
+当前验证义务以整体 PRD 第7节和本批 PRD 第6节为准。功能行为、正常分支和兼容实现均保留；采用既有观察和仍适用工程结果，针对实际修复执行必要定向检查，不再追加 live 或实际 Agent 验收。原失败及观察截止保持，不把机械结果升级为未观察层级的通过。
+
 | ID / 对应 | 层、入口和输入 | 独立观察与边界 |
 | --- | --- | --- |
-| V819-01 / AC2、R2–4 | 生产public wrappers及workflow消费者；真实baseline输出→existing_issue_intake→ready→当前Create Task；采用充分、事实缺口、需求缺口、措辞缺口、依据不足、必要阻塞场景 | 路线来自实际AI判断；确定性fixture验证真实kind/selected_ref/commit经新投影可被原Creation2.0/3.0消费，固定对象与集成目标独立、acquisition匹配；实际同步路径保原branch/新建HEAD条件，不要求旧前序transition。只做schema不能证明AI覆盖判断。 |
-| V819-02 / AC2、R3–4 | 各原局部profile公开入口；实际局部结果回同Readiness；含事实不变、需求改变影响措辞、多缺口、阻塞解除、真实基线失效 | 观察每次回判及仅必要owner被调用；三类局部、Clarify事实往返与刷新均保真实source kind和精确对象；最终ready仍进入当前Creation。必要全链使用真实Sync transition，不以fixture构造supplemented或反拼transition取代producer。 |
-| V819-03 / AC1、R1/R7 | 原Create invoke及repo-bound gh测试边界；草稿完整审核输出、正式readback、评论POST/GET及原recover | 断言动作顺序和created终点；普通评论失败、已成功输出丢失恢复同Issue/comment，原无评论时不重复Issue。隔离HTTP替身仅证明executor，不证明live写入。 |
-| V819-04 / AC1、R1 | 原Clarify主动review/source_actions与readback；完整/局部/只读及更新对象 | 实际AI评论语义范围准确；只读无mutation；POST/PATCH及GET对象一致；未知结果找回原动作。不机械比较固定模板。 |
-| V819-05 / AC3、R5–6 | 实际Agent从讨论→草稿→创建→开工；讨论/草稿/仅创建终点及原no_issue | 正式Issue入口读实际评论；无重复产品问答/完整链；原Task/acquisition和后续门禁保留。真实外部动作需原owner的精确对象与payload，未执行则AC1/AC3外部部分仍未验证。 |
-| V819-06 / AC4、R7 | 受影响package/runtime、public examples/graph/Interface、真实installed消费者；原tools更新及定向reapply | canonical/installed/声明平台投影一致、无未知出口；preserve Task/session及用户内容，mode/sidecar正确，drift脚本通过。分发事实不代替行为验收。 |
-| V819-07 / AC5、全部 | 原知识整合/readback→TaskCommit→独立committed Review→Delivery/Task原收尾 | 真实after覆盖完整要求。当前只规划，未执行任何后续结果。 |
+| V819-01 / AC2、R2–4 | 真实 Sync read/sync stdout→Interface 声明的 direct consumer→workflow 薄投影→Readiness→当前 Creation 2.0/3.0 | 原生产者结果不得改写。校验真实来源 kind/selected_ref/commit、独立集成目标、精确 commit/acquisition；实际 sync 保 branch/新建 HEAD 条件。确定性 fixture 不证明 AI 判断或 live 全链。 |
+| V819-02 / AC2、R3–4 | 原局部 profiles、Clarify 事实往返及来源刷新；采用现有实际观察和定向 wrappers | 每次保同 Issue/source/continuation 并回原 Readiness；只补最早必要项。必要全链保真实 Sync transition，不从三字段反拼，不直接造被测 supplemented。 |
+| V819-03 / AC1、R1/R7 | 原 Create 生产 executor、现有 gh 替身回归及已取得 live 创建/读回 | 断言创建→正式内容读回→评论→评论读回→created及同对象恢复。fixture 只证明执行层；真实未知响应、输出丢失或缺失评论补发未观察时仍未验证，无需另造 live 场景。 |
+| V819-04 / AC1、R1 | 原 Clarify source_actions、现有回归及已有评论观察 | 审核覆盖准确、只读无 mutation，POST/PATCH 与 GET 对象一致；采用已取得的层级，未观察 live PATCH/unknown 不改称通过，不机械要求固定模板。 |
+| V819-05 / AC3、R5–6 | 完整实现与既有讨论、局部、no_issue及创建观察，当前 Creation 桥接检查 | 代码保正式 Issue/评论汇合、各终点和 Task 门禁。创建后 live ready→原 Task 写前正向、完整 start/selector和其他平台实际 Agent保持未验证；不再追加对象或 Agent 验收，不产生后继验收义务。 |
+| V819-06 / AC4、R7 | 受影响 package/runtime、public graph/examples与原 matching tools 结果 | canonical/installed/声明平台一致，mode/sidecar、Task/session/用户保留及 native/drift 按原证据判断。只有真实分发差额才刷新安装；规划正文变化不重跑不变安装。分发不证明 Agent 行为或正式 release adoption。 |
+| V819-07 / AC5、全部 | 原知识整合、当前 TaskCommit、独立完整 Review、Delivery及整体收尾 | 各 owner 亲自判断当前要求和已验证层级。旧结果、文档存在或合并不能自行证明整体完成；未验证边界在实际 PR/Completion结论中保留。 |
 
-采用已有test_intake_profile_integration的完整链、source_selection和qualification返回；其对新先行入口/局部返回没有覆盖，补生产wrapper集成用例。采用test_issue_content_distribution的正文共享分发/reapply，扩展新评论正文引用与实际安装；它不能证明评论语义或外部写入。Create本次无评论旧测试保持草稿/Issue基线价值，新评论终点另补。长期测试只覆盖不同可观察分支；临时Agent观察或外部回读按实际入口报告，不为固定案例数或计时造系统。
+现有生产 wrapper、评论 executor 和 installed/reapply 回归按其原输入、依赖、环境和断言判断适用性。原始 stdout 不可取得的早期结果只按 Test 报告层采用，不补造命令或重跑全集。必要新检查只解决当前修复、缺失或不确定的具体工程结论；本批两个 Sync 刷新回归验证生产者与声明 consumer 后再薄投影，避免绕过直接 consumer。
 
-先做profile/路由确定性检查，再做实际Agent分流/评论内容与真实外部动作观察，最后必要安装采用验证及原质量链。该顺序让普通接口错误先被低成本检查发现；没有惯例红绿/回退要求。行为条件、动作和结果为断言来源，不把实现常量或自己生成fixture当预期。证据充分后停止；新增实验仅解决具体未决缺口。完整多平台Throwaway、release、生产效果不在本项验证范围。
+行为条件、动作和结果是断言来源，不以实现常量自证。证据足以支持当前层级且没有新差额时停止追加检查。完整多平台 Throwaway、官方 upgrade/update/Release、formal Fork source-lock、其他业务仓采用和生产效果不在本 Task 验证范围，未建立的事实保持未验证。
 
 ## 9. Canonical 引用、本轮差额与实际未决项
 
@@ -176,5 +179,5 @@ Create Task当前aggregate2.0→profile2.0→共享creation3.0的选择由其Int
 
 Architecture隔离贡献位于 docs/architecture/contributions/819-issue-review-intake/contribution.md，必要ADR候选为同目录issue-review-intake.md，decision identity=ADR-ISSUE-REVIEW-INTAKE。拟共享target为03-domains/issue-review-intake.md和adr/issue-review-intake.md；Planning只写隔离候选，不向root/system/ownership/ADR index登记。project descriptor/check/result继续原change-contract的既有identity。九concerns由贡献逐项展开并交原独立final_plan判断。
 
-没有未解决产品选择或必须新增兼容例外。具体public版本号在实施时按当前registry/Interface合法successor分配，但本节规定的形状、consumer和直接迁移为本批设计责任，不能省略。真实Agent、评论外部动作、工具采用和工程验证尚未执行；后续缺少精确外部验收对象时由原owner展示，不把fixture成功当作live验收。最终Approval只判规划可实施，当前停止在Activation/实施之前。
+没有未解决产品选择或必须新增兼容例外。公开版本和实际 consumers 以当前 registry/Interface 及 MIGRATION-819 为准；本设计的形状、来源和直接迁移保持。已有工程、Agent、外部和安装观察按原层级采用；未观察部分仍未验证，不再要求新增验收。当前规划修订只改变本 Task 证明责任，不改变机制、ADR 或共享知识定义；原质量与交付门禁保持。
 

@@ -8,7 +8,7 @@
 | BASE819 | trellis/workflows/guru-team/workflow.md；原 Create/Clarify/Discovery/Wording/Readiness packages | 当前行为与原 owner 事实，固定 Git 4f2adef1f7b099f78bb8429e8b8facd66dce3bfc。 |
 | HIST692 | .trellis/tasks/archive/2026-10/10-31-692-intake-reuse-diagnostics/prd.md；docs/{requirements,design,test}/current/local-fix-intake.md | 原事实复用与诊断边界；不重复交付其已完成部分。 |
 | CONTENT818 | docs/{requirements,design,test}/current/issue-content.md | 最小充分内容与原审核职责；不重复交付内容规范。 |
-| RUN819 | 当前任务请求：创建后完成可审阅规划，停在实施前 | 当前执行边界；后续 merge 前停交协调会话，文档不记录授权过程。 |
+| RUN819 | 本 Task 当前验证与交付范围；本节及第7节 | 完整代码交付、必要定向工程检查及原质量/收尾门禁；不再追加 live 或实际 Agent 验收。未观察部分保持未验证。 |
 
 Readiness 是原 guru-review-change-request；Discovery、Clarify、Wording 是原调查、澄清与措辞审核。评论是供 AI 复核的依据，不是放行凭证。Task 承担整体 accepted scope；Delivery 是其中的交付切片。
 
@@ -22,7 +22,7 @@ Readiness 是原 guru-review-change-request；Discovery、Clarify、Wording 是�
 
 不新增复核 Skill、第二审核步骤、资格/label/有效期体系、hash 链、长期账本或评测系统。不批量补标旧 Issue，不增加固定案例数、计时指标或完整发布矩阵。不关联发布版本，不进入 #822 或其他事项。只处理受支持正常协作、普通 stale/mismatch 和原恢复，不扩张到恶意伪造、并发压力、TOCTOU、锁或非常规 crash 加固。
 
-本轮仅完成 Task 和规划，不实施、不 commit/push/PR/merge、不发布或修改 Issue/评论。后续实际外部验收义务保留。
+本次承担完整功能的代码交付、必要定向工程检查和原独立 Review、Delivery、Completion、Closure、Finish。既有观察按其真实层级采用，不再追加 live 或实际 Agent 验收，不为补证创建新的 Issue/Task。未观察部分保持未验证，不作为通过证据，也不转成后继验收任务。Git/GitHub 各副作用边界仍由原 owner 执行。
 
 ## 4. 真实调用方、场景与流程
 
@@ -43,7 +43,7 @@ Readiness 是原 guru-review-change-request；Discovery、Clarify、Wording 是�
 
 ## 5. 行为要求
 
-R1 对应下文“行为一”的共享评论与两个生产入口；R2 对应已有 Issue 的入口与直接 ready；R3 对应事实/需求/措辞补审及多缺口依赖；R4 对应完整链、阻塞及真实刷新；R5 对应讨论/创建/开工及终点；R6 对应 no_issue 与 Task 后续门禁；R7 对应公开合同、恢复与受管分发。以下保留 SRC819 的完整正文与规范性承诺，作为这些要求的整体定义；章节上移一级以置于本节，不改写语义。
+R1 对应下文“行为一”的共享评论与两个生产入口；R2 对应已有 Issue 的入口与直接 ready；R3 对应事实/需求/措辞补审及多缺口依赖；R4 对应完整链、阻塞及真实刷新；R5 对应讨论/创建/开工及终点；R6 对应 no_issue 与 Task 后续门禁；R7 对应公开合同、恢复与受管分发。以下保留 SRC819 的完整原文，功能行为、正常路径和兼容承诺继续有效；本 Task 当前验证义务由第7节界定，原文的验收表述不再单独要求新增 live 或实际 Agent 观察。章节上移一级以置于本节，不改写原文。
 
 ### 背景：已经审过的 Issue，开工时仍要重走完整审核链
 
@@ -154,14 +154,14 @@ Requirements/Design/Test authority 由 docs/{requirements,design,test}/README.md
 
 | ID | 要求/场景 | 入口、输入与预期结果 |
 | --- | --- | --- |
-| AC1 | R1/R7；SC01–02 | 从实际创建及获准复审入口观察评论发布/更新、live readback、覆盖准确及同对象恢复；只读分支不写。 |
-| AC2 | R2–4；SC03–09 | 实际原入口证明直接 ready、三类补审返回、多缺口顺序、必要完整链及阻塞恢复；不伪造前序结果。 |
-| AC3 | R5–6；SC10–12 | 实际讨论→按需创建→开工及各终点、no_issue 完整链；评论不能替代 Task 和后续门禁。 |
+| AC1 | R1/R7；SC01–02 | 审查完整评论生产、只读及同对象恢复实现，采用现有原入口、定向 executor 回归和已取得 live 观察；区分真实写入、fixture 与未观察恢复。无需新增 live 发布、PATCH 或未知响应验收。 |
+| AC2 | R2–4；SC03–09 | 审查完整路由、三类补审返回、多缺口顺序、必要完整链及阻塞恢复；采用已有实际 Agent 观察与生产 wrapper/consumer 定向检查，不伪造前序或把 fixture 升级为 live 全链。无需追加 Agent 分流验收。 |
+| AC3 | R5–6；SC10–12 | 审查讨论→创建→开工及各终点、no_issue 的完整实现和原 Task 门禁；采用已有原入口观察与当前 Creation 桥接检查。创建后 live ready→Task 写前正向、完整 start/selector 和其他平台 Agent 仍未验证；不再要求新增对象补验收。 |
 | AC4 | R7；全部 | 原公开 wrapper/consumer/graph 和定向 package/runtime；原安装 owner 同步及 reapply，核 installed/声明平台、drift、mode、sidecar、用户内容与 Task/session 保留。 |
 | AC5 | 全部 | 原独立 committed Review、Delivery readiness/交付、整体 Completion、Closure、Finish 覆盖完整范围；合并不自行证明 Task 完成。 |
 
-实际 Agent、确定性检查、安装与 GitHub 外部回读分别提供证据。本表是验收要求，不是已执行结果。不要求完整发布矩阵、计时或固定样本数。
+既有实际 Agent、确定性检查、安装与 GitHub 外部回读按原层级分别提供证据；其原报告、失败和观察截止保持。必要修复仍须定向工程检查及独立 Review。本表不把未观察场景写成通过；这些边界不再构成本 Task 的追加验收或后继任务义务。不要求完整发布矩阵、计时或固定样本数。
 
 ## 8. 实际未决项
 
-没有阻塞整体需求的产品选择。公开 profile/最小 DTO、局部返回、同对象评论恢复与迁移细节由 Delivery Author/Architecture 完成。真实外部写入验收尚未执行；本轮停止不豁免 AC1/AC3，后续需由原 owner 展示精确对象与 payload。
+没有阻塞整体需求的产品选择。功能、公共合同及兼容实现责任保持，所需质量与收尾由原 owners 完成。当前不再追加外部或实际 Agent 验收；未验证范围按第7节及现有 Test 观察截止保留，不能宣称其已验证。后续发布和 Closure 分别判断实际交付及来源处置。
