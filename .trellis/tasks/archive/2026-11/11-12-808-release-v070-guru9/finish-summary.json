@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-14T19:11:15Z",
+  "generated_at": "2026-11-14T22:57:41Z",
   "generator": "guru-team.finalize-task",
   "task": {
     "slug": "11-12-808-release-v070-guru9",
@@ -11,7 +11,7 @@
   },
   "git": {
     "base_branch": "main",
-    "branch": "codex/808-release-v070-guru9-g1",
+    "branch": "codex/808-release-v070-guru9-g2",
     "commits": [],
     "changed_paths": []
   },
@@ -47,7 +47,7 @@
       ],
       "pr_refs": [],
       "branches": [
-        "codex/808-release-v070-guru9-g1"
+        "codex/808-release-v070-guru9-g2"
       ],
       "paths": [
         ".trellis/tasks/archive/2026-11/11-12-808-release-v070-guru9",
