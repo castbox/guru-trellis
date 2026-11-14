@@ -323,10 +323,12 @@ tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前修复源码的 extension 与 maintenance target 仍为 `0.7.0-guru.8`，但其内容与
-已发布 `.8` tag 分开识别。本次不重发 tag、Release 或同版本 npm 包。
-正式 Fork lock 固定到 `b4f1665143bd4ecf3a290d426ad62293fc13ea42`，
-tree `9ba2f6c8a32f63fe9a6ca36ccc90f12b50d9cb67`，成功 main CI `42440325190`。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.9`，处于未发布的
+完整来源准备阶段。稳定安装继续使用已发布 `.8` 的原始配对来源。
+Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
+统一读取所选 Guru checkout 自身的 [source lock](../../presets/guru-team/source/trellis-source.json)。
+按 preset 的[构建所选 Fork](../../presets/guru-team/README.md#构建所选-fork)核验实际构建；
+本页不另存当前 Fork SHA/CI 对照表。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
@@ -338,7 +340,7 @@ Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可�
 `defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
 authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
-CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
+本次 Guru 目标更新保持 CLI/Core `0.7.0-castbox.6` 与原 source lock 不变。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
 不证明当前 lock 的匹配构建。使用干净 source workspace 的正常 CLI/Core 依赖布局，
@@ -348,6 +350,10 @@ CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包含本次修复，
 不能用该 tag 或相同 extension/CLI 版本号代替所选修复 SHA。
 当前源码、投影及代表性安装各保留其真实来源和验证边界，不证明新 Release 通过。
+当前准备先交付完整 canonical 来源，再由后继 Delivery 经
+`guru-upgrade-tools` 的 `source_locked` 实际采用并验证完整受管投影。
+来源或临时安装样本通过，不表示真实 dogfood 已采用 `.9`。
+各 Delivery 仍须完成自己的质量与交付链。只有全部准备业务完成，才可能通过 Task Completion 并进入终态收尾。
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
@@ -387,9 +393,10 @@ predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对�
 `docs/requirements/README.md`、`docs/design/README.md`、`docs/test/README.md`
 与 `docs/architecture/README.md` 读取完整适用单元及 Git revision，与软件版本分开。
 
-For current-source validation, use the source-locked Trellis Fork checkout
-(`castbox/Trellis@b4f1665143bd4ecf3a290d426ad62293fc13ea42`, successful main CI
-`42440325190`) and that same reviewed Guru source. Stable `.8` installation
+For current-source validation, read the selected Guru checkout's own
+[source lock](../../presets/guru-team/source/trellis-source.json) and follow the
+[Fork build recipe](../../presets/guru-team/README.md#构建所选-fork).
+Use that exact build with the same reviewed Guru source. Stable `.8` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
 it. For a target meeting the ordinary current-only installation prerequisites,
@@ -559,7 +566,7 @@ workflow/Skill 混入旧安装 graph。
 仍由 Reactivate 承接；未完成收尾返回原事务。恢复保留原归档并消费公共返回的
 活动身份，目标 native 和下一实际 Guru owner 必须实际验证。
 #577 当时未修改正式 source lock，本地 matching candidate 只用于隔离开发。
-当前正式来源以本页来源记录为准；历史兼容边界详见
+当前正式来源以所选 Guru checkout 自身的 [source lock](../../presets/guru-team/source/trellis-source.json) 为准；历史兼容边界详见
 [兼容与依赖边界](../../presets/guru-team/MIGRATION-577.md)。
 
 ## 已有实现分支恢复（#669）

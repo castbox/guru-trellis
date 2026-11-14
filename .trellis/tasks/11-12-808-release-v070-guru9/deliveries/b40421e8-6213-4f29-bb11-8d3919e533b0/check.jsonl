@@ -1,0 +1,14 @@
+{"file": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/b40421e8-6213-4f29-bb11-8d3919e533b0/design.md", "reason": "核本批全部selected承诺、唯一来源设计处置及未解决source依赖，不从文档存在推导可实施。"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "T794/T636/T638的真实producer/consumer、恢复及证明层次。"}
+{"file": ".agents/skills/release-guru-trellis-version/tests/test_contract.py", "reason": "检验私有迁移真实调用/fixture边界、未审发布及版本/来源消费者，不以旧文案自证。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "公开README职责、候选/稳定版本、同源安装和历史证据边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围、独立断言/实际入口与安装/Agent/外部证明边界。"}
+{"file": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/b40421e8-6213-4f29-bb11-8d3919e533b0/prd.md", "reason": "当前D1已选AC-01/02/03/05/06、完整来源自身验证与后继D2实际采用责任，不能按旧单Delivery边界执行。"}
+{"file": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/b40421e8-6213-4f29-bb11-8d3919e533b0/implement.md", "reason": "当前D1步骤、来源样本及完整平台验证、staged Policy与delta_first Docs Plan；替代旧GAP待解执行安排。"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "四类正文责任、引用加载、唯一来源处置及Policy/Docs Plan完整性；必要条件须实际读取。"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "当前D1九节方案的职责和完成边界，核来源自身、前后Delivery接口与实际验证。"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前D1六节执行、验证、停止条件、staged Policy与Docs Plan的原结构合同。"}
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "原local_sample生产入口的legacy selector修复；保bootstrap/guard，验证真实init→preset/update/reapply/native。"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json", "reason": "active输出样本与当前.9 producer/consumer成套；历史样本不改，原source validator继续消费。"}
+{"file": "docs/architecture/contributions/808-release-v070-guru9.md", "reason": "本D1真实target_native贡献、两个完整proposed targets与原final_integration/readback边界。"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py", "reason": "真实custom workflow init和本地样本字节行为；删除本批无consumer的native hash特例，核bootstrap/guard未改。"}

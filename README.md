@@ -79,8 +79,8 @@ AI 应先说明拟写入 `.trellis/spec/` 的内容，再确认现在执行或�
 <a id="发布身份边界"></a>
 
 正式业务使用优先选择已发布 tag。当前已发布稳定版本为 `v0.7.0-guru.8`。
-源码中的 extension revision 即使仍为 `0.7.0-guru.8`，也可能已包含 tag 之后的
-未发布修改。相同版本号不代表相同源码或构建。
+当前 canonical extension 与维护目标为 `0.7.0-guru.9`，处于未发布的完整来源准备阶段。
+快速安装继续使用已发布 `.8`；源码版本更新不证明 `.9` 已发布或真实 dogfood 已采用。
 
 - **稳定安装**：workflow marketplace 与 preset checkout 使用同一个正式 Guru tag。
 - **候选试用**：两者使用同一个真实、远端可寻址的完整 Guru commit SHA。
@@ -98,6 +98,8 @@ Guru tag、extension revision、Fork commit/CLI 版本是不同的版本轴。
 本页不另存 Fork SHA/CI 对照表。source lock 和 CI 成功只说明各自绑定的来源与结果，
 不证明本地 build、业务安装、实际 Agent 行为或 Release 已验证。
 已发布 tag 也不自动包含当前源码中的修复。
+当前准备先交付完整来源，再由后继 Delivery 经原升级 owner 实际采用。
+来源验证和临时安装样本不替代实际采用、Task Completion 或正式发布门禁。
 
 ## 升级已有仓库
 

@@ -730,7 +730,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 self.assertEqual(command[:4], ("node", "trellis.js", "init", "-y"))
                 self.assertTrue({"--user", "--creator", "--assignee"}.isdisjoint(command))
 
-    def test_install_workflow_uses_native_init_for_unpublished_local_sample(self) -> None:
+    def test_install_workflow_uses_custom_init_and_local_candidate_only_with_sample_permission(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             target = root / "target"
@@ -740,10 +740,26 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             candidate.write_text("# Local candidate\n", encoding="utf-8")
             installed = target / ".trellis/workflow.md"
             installed.parent.mkdir()
-            installed.write_text("# Native\n", encoding="utf-8")
+            installed.write_text("# Before init\n", encoding="utf-8")
+            def custom_init(command, **kwargs):
+                self.assertEqual(command, (
+                    "node", "trellis.js", "init", "-y", "--codex",
+                    "--workflow", "guru-team", "--workflow-source",
+                    "gh:castbox/guru-trellis/trellis#main",
+                ))
+                self.assertEqual(kwargs["cwd"], target)
+                installed.write_text("# Public marketplace workflow\n", encoding="utf-8")
             with mock.patch.object(
                 self.matrix, "_workflow_source_requires_local_sample", return_value=True
-            ), mock.patch.object(self.matrix, "_run") as runner:
+            ), mock.patch.object(self.matrix, "_run", side_effect=custom_init) as runner:
+                with self.assertRaisesRegex(self.matrix.MatrixError, "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE"):
+                    self.matrix._install_workflow(
+                        target, ("node", "trellis.js"), {}, "codex",
+                        "gh:castbox/guru-trellis/trellis#main", root, False,
+                        "fixture", root / "init.log",
+                    )
+                runner.assert_not_called()
+                self.assertEqual(installed.read_text(), "# Before init\n")
                 local_sample = self.matrix._install_workflow(
                     target,
                     ("node", "trellis.js"),
@@ -755,10 +771,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     "0.6.17",
                     root / "init.log",
                 )
-            command = runner.call_args.args[0]
             self.assertTrue(local_sample)
-            self.assertEqual(command[command.index("--workflow") + 1], "native")
-            self.assertNotIn("--workflow-source", command)
+            runner.assert_called_once()
             self.assertEqual(installed.read_text(encoding="utf-8"), "# Local candidate\n")
 
     def test_local_sample_workflow_switch_uses_exact_local_candidate(self) -> None:
