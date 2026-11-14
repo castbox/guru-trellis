@@ -16,9 +16,9 @@ def run(package_root, command, argv):
     try:a=p.parse_args(argv)
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
     data=read_json(a.invocation,"invocation"); public=data.get("public_input",data); mode=public.get("mode"); route=public.get("route","repo_change")
-    validate_json(data, package_root.parents[1]/"consumers/workflow/stage0/invocations/deterministic-sync-3.0.schema.json", "invocation")
-    validate_json(public, package_root/"schemas/public-input-current-3.0.schema.json", "public_input")
     if "return_identity" in public:
+        validate_json(data, package_root.parents[1]/"consumers/workflow/stage0/invocations/deterministic-sync-3.0.schema.json", "invocation")
+        validate_json(public, package_root/"schemas/public-input-current-3.0.schema.json", "public_input")
         if public["return_identity"].get("profile")=="existing_issue_intake":
             validate_json(public, package_root/"schemas/public-issue-review-refresh-input-1.0.schema.json", "public_input")
         else:
