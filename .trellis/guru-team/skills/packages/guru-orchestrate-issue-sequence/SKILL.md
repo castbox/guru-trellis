@@ -39,6 +39,8 @@ advancement, earlier-stage disposition and this Skill's public I/O.
 Operate quietly by default under the shared method's `Quiet Notifications`
 section. Its native silent-result transport carries routine progress without
 changing this Skill's declared exits or its duty to observe and continue work.
+Apply the shared `Heartbeat Recovery Inputs` and `Observation After An
+Interruption` sections when bindings change and whenever supervision resumes.
 
 ## Execute The Sequence
 

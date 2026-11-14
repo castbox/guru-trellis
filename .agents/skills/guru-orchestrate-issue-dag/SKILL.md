@@ -39,13 +39,17 @@ failure propagation, stage settlement and this Skill's public I/O.
 Operate quietly by default under the shared method's `Quiet Notifications`
 section. Its native silent-result transport carries routine progress without
 changing this Skill's declared exits or its duty to observe and continue work.
+Apply the shared `Heartbeat Recovery Inputs` and `Observation After An
+Interruption` sections when bindings change and whenever supervision resumes.
 
 ## Execute The DAG
 
 1. Resolve explicit nodes or the initiative’s formally bound members under the
    local contract. Normalize repository-qualified identities and each repository’s
    project/base binding into one graph. Preserve single-repository shorthand.
-   Normalize equivalent edge notation; `A -> B` means B waits for A's full completion. Input order
+   Normalize equivalent edge notation; `A -> B` means B waits for A's full completion.
+   Keep contract-only prerequisites separate under the local contract's
+   `Contract Readiness And Mock Development` section. Input order
    breaks ties among eligible nodes, never creates implicit edges. Clarify only
    actual ambiguous dependencies or choices before affected admission.
 2. Perform the shared read-only preflight and AI Gate for the entire graph.
@@ -62,11 +66,15 @@ changing this Skill's declared exits or its duty to observe and continue work.
    Fill available slots without creating blocked descendants or duplicate owners.
 4. Apply the shared progress and active-unblocking method each cycle, following
    owner actions to their actual results and rechecking real wait conditions.
+   Recheck contract readiness for waiting and admitted consumers. When a usable
+   contract permits work, dispatch or continue its frontend owner with Mock
+   development as soon as slots permit, without waiting for backend completion.
    Observe every admitted unfinished node; use the local failure policy for
    affected nodes while keeping other permitted work moving. One busy child,
    merge or repair cannot starve other observations.
-5. Verify full completion before releasing any dependency. A join waits for all
-   predecessors. Refill a free slot immediately when an eligible node exists;
+5. Verify full completion before releasing any `depends_on` edge. A completion
+   join waits for all predecessors; contract prerequisites use their own readiness
+   condition. Refill a free slot immediately when an eligible node exists;
    do not impose a wave barrier. An earlier requested stage frees only the
    execution slot under local rules, never a hard dependency edge.
 6. Recheck current live facts and semantic sufficiency, settle under the local
