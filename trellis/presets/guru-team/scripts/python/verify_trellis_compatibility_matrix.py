@@ -2324,7 +2324,10 @@ def _upgrade_bootstrap_fixture(
         result = _upgrade_native_bootstrap_tools(
             repo_root, target, fork_source, source_ref, installed, cell_root, env)
         for name, original in task["artifacts"].items():
-            if raw(target / name) != original:
+            actual = raw(target / name)
+            if actual is not None:
+                actual = {key: actual[key] for key in ("sha256", "mode")}
+            if actual != original:
                 raise MatrixError("bootstrap fixture bytes or modes changed during tools maintenance")
         return result
     if native.get("schema_version", "1.0") != "1.0":
@@ -2374,7 +2377,10 @@ def _upgrade_bootstrap_fixture(
     if result.get("exit_id") != "upgraded" or result.get("unverified"):
         raise MatrixError("original installation owner did not complete the source-locked fixture upgrade")
     for name, original in task["artifacts"].items():
-        if raw(target / name) != original:
+        actual = raw(target / name)
+        if actual is not None:
+            actual = {key: actual[key] for key in ("sha256", "mode")}
+        if actual != original:
             raise MatrixError("bootstrap fixture bytes or modes changed during upgrade")
     return result
 
