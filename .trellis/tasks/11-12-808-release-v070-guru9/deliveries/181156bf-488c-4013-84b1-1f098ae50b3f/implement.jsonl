@@ -1,0 +1,10 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批三份正文及来源、前序、临时限制与验证承接合同。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核本批完整需求及实际前序/剩余责任。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核规范性来源唯一处置及本批实际设计。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核本批执行/验证/唯一Policy与Docs Plan。"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md", "reason": "加载完整clean来源的原tools owner，禁止旧target dispatcher或手工同步。"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "真实source_locked、原preview/单次prepare/invoke、native/preservation和恢复合同。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "本批最小可靠验证集、适用工程事实、实际target与source/fixture证据边界。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "三个README职责、Release条件、版本轴、anchors/links/shell验证。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "原Phase2委托、实际candidate/B、公共操作和stage continuation。"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实施与子Agent在首次实质输出前完整加载同一清晰技术写作规范。"}
