@@ -1,5 +1,7 @@
 # Issue 内容的需求责任
 
+#819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
+
 Identity：`RDT-REQ-ISSUE-CONTENT`；状态：`current`。导航别名：`R153`、`BEH153`、`R153-01..05`、`BEH153-01..05`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 需求来源](../../requirements-design-test-contributions/153-issue-content-ssot/requirements.md)与 [#818](https://github.com/castbox/guru-trellis/issues/818) R1–R4。
 
 本单元由原 RDT owner 在 #818 批准 Planning、实际实现及工程结果完成后，于 `codex/818-issue-minimal-sufficiency` 的 final_integration 实际整合。整合前重读真实目标、适用来源及必要关系，写后逐项 readback；整合状态为 `integrated_pending_review`，尚待 TaskCommit 与独立 committed Review。该事实不产生 Check/Review pass 或 Task Completion。原基线为 Git `fd0ee32618433a92ae934e29afb5b72e7136b4f7`；本次来源及精确替代范围见 [#818 贡献](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)，普通当前读取无需拼接提案。
@@ -57,3 +59,11 @@ Issue 验收按唯一正文第3节优先证明主要结果，并覆盖与实际�
 设计责任为 `docs/design/current/issue-content.md` 的 D153-01..03 / CON153-01..03、D818-01..03 / CON818-01..03；测试责任为 `docs/test/current/issue-content.md` 的 T153-01..05、T818-01..04。[#818 双向追踪](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)定位本次来源与实际目标。
 
 共同审核充分性的职责保持在 [R717](../../requirements/current/review-sufficiency.md)，其规范只定位原 Issue 方法，不取得第二内容 authority。Architecture 继承 `docs/architecture/README.md / guru-trellis-architecture / active`；原独立 final_plan 为 no_architecture_impact/no_change，不产生空 Architecture contribution。没有新增 Skill、公共字段、状态或外仓运行依赖；#819 路由与完整安装/Release 矩阵不进入本能力差额。
+
+## R819-01 / BEH819-COMMENT：最小审核评论
+
+原Create Issue保完整草稿审核；创建并读回正式标题/正文与已审内容一致后，发布本次实际审核结论并读回，才完成创建。原Clarify在主动复审且本次发布/修订范围明确时发布或更新准确结论；局部审核不写成完整开工pass，纯只读不写评论。
+
+两入口共用Clarify-owned一份评论正文规则。评论说明实际对象/覆盖、结论和影响开工的未决/前置，代码基线只在影响判断时说明；不要求固定模板、label、身份资格、期限、hash链或长期ledger。结果不确定时沿原owner找回同一已成功Issue/comment，不重复创建或发布。完整内容方法继续由原issue-content正文拥有，评论规则不替代它。
+
+评论仅供原Readiness复核，当前适用性和分流由R819-02/03/04及其原owner拥有，不自动放行Task。对应D819-01、T819-01/02；#818内容方法与本次入口/评论差额分开，不追溯润色旧Issue或历史验证。

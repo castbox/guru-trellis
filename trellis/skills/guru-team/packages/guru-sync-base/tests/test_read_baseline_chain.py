@@ -104,6 +104,9 @@ class ReadBaselineChainTests(unittest.TestCase):
         interface = json.loads((PACKAGES / skill / "interface.json").read_text())
         contract = interface["public_contracts"]
         projection = next(row for row in contract["projections"] if row["exit_id"] == output["exit_id"])
+        if skill=="guru-sync-base" and projection["operation"]=="direct":
+            # Explicit retained full-chain test caller after the base router.
+            return {"source_exit":output["exit_id"],"profile":output["handoff_profile"],"mode":output["handoff_mode"],"continuation_id":output["handoff_continuation_id"],**({"return_identity":output["return_identity"]} if "return_identity" in output else {})}
         self.assertEqual(projection["operation"], "rename")
         return {row["target"]: copy.deepcopy(output[row["source"]]) for row in projection["mappings"] if row["source"] in output}
 

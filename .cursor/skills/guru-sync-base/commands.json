@@ -153,7 +153,8 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/base-sync-result.schema.json"
+        "schemas/base-sync-result.schema.json",
+        "schemas/public-issue-review-refresh-input-1.0.schema.json"
       ],
       "runtime_role": "check"
     },
@@ -188,7 +189,8 @@
         "schemas/public-synced-output-2.0.schema.json",
         "schemas/public-skipped-output.schema.json",
         "schemas/public-blocked-output.schema.json",
-        "schemas/public-baseline-ready-output-2.0.schema.json"
+        "schemas/public-baseline-ready-output-2.0.schema.json",
+        "schemas/public-issue-review-refresh-input-1.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

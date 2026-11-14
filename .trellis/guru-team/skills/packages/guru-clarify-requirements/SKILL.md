@@ -324,3 +324,20 @@ writing. Scope_action is route intent; the current Delivery stage owner alone
 performs legal rework or full withdrawal stop/release. No current Delivery is
 required for whole-scope acceptance. Public operation retries recover the same
 accepted authority; they do not create new Task, Delivery, or current gate pass.
+
+## Issue Readiness supplement
+
+Use `issue_readiness_supplement` only for the actual original Readiness gap.
+Read [the local return contract](references/issue-readiness-supplement.md).
+Execute this owner's complete applicable semantic method, original gate and
+necessary interactions. Applicable coverage and current facts satisfy local
+preconditions; do not manufacture full-chain receipts. Complete this local call
+back to the same Issue/source/continuation Readiness, without running the default
+remaining Intake chain. Read-only scope performs no mutation.
+
+## Review comment publication
+
+For a user-requested Issue rereview whose action scope includes publishing or
+updating the conclusion, read [the shared review comment rule](references/issue-review-comment.md)
+before the original source_actions loop. State the actual local or complete
+coverage accurately. Read-only review returns its conclusion without a comment.

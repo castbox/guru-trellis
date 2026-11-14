@@ -116,7 +116,12 @@
         "git_failed"
       ],
       "side_effect": "runtime_write",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-context-ready-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "owner_result_recorder",
       "runtime_role": "record"
     },
@@ -179,7 +184,12 @@
         "git_failed"
       ],
       "side_effect": "git_read",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-context-ready-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "owner_result_validator",
       "runtime_role": "check"
     },
@@ -234,7 +244,12 @@
         "git_failed"
       ],
       "side_effect": "runtime_write",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-context-ready-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
     },
@@ -273,7 +288,12 @@
         "git_failed"
       ],
       "side_effect": "git_read",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-context-ready-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "source_reader",
       "runtime_role": "check"
     }

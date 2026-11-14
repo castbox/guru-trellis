@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-discovery-issue-context-request-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "issue",
+    "base_source",
+    "continuation_id",
+    "gap",
+    "return_identity"
+  ],
+  "properties": {
+    "profile": {
+      "const": "context_request"
+    },
+    "source_exit": {
+      "const": "needs_context"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "issue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-issue-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "number"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "base_source": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-base-source-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "selected_ref",
+        "commit"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "git_object",
+            "synced_branch"
+          ]
+        },
+        "selected_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gap": {
+      "type": "string",
+      "minLength": 1
+    },
+    "return_identity": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-local-context-return-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "mode",
+        "issue",
+        "base_source",
+        "continuation_id",
+        "gap",
+        "mode"
+      ],
+      "properties": {
+        "profile": {
+          "const": "issue_readiness_supplement"
+        },
+        "mode": {
+          "enum": [
+            "workflow",
+            "standalone"
+          ]
+        },
+        "issue": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-issue-review-issue-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repo_ref",
+            "number"
+          ],
+          "properties": {
+            "repo_ref": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+            },
+            "number": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "base_source": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-issue-review-base-source-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "selected_ref",
+            "commit"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "git_object",
+                "synced_branch"
+              ]
+            },
+            "selected_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        },
+        "continuation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gap": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

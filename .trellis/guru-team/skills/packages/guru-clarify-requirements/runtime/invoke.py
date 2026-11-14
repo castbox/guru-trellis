@@ -183,6 +183,9 @@ def run(package_root,command,argv):
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
     envelope=read_json(a.invocation,"invocation")
     public=envelope.get("public_input",{})
+    if public.get("profile")=="issue_readiness_supplement":
+        from issue_review import execute
+        return execute(package_root,envelope,"invoke")
     if public.get("profile") in {"delivery_active_task_scope_change", "delivery_task_scope_revision", "task_scope_requirements_acceptance"}:
         from delivery_scope import invoke
         return invoke(package_root, Path.cwd(), public, envelope.get("owner_result", {}))

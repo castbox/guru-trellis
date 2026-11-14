@@ -168,3 +168,13 @@ contracts. The old planning_artifacts activity profile is retired; no Task
 status fallback is supported. Pass carries its continuation; content_changed carries actual change_refs, key and task_ref to
 their selected router. Recorder/checker envelope carries key/task_ref and the
 same scope; the public DTO never carries the scan or private digest bundle.
+
+## Issue Readiness supplement
+
+Use `issue_readiness_supplement` only for the actual original Readiness gap.
+Read [the local return contract](references/issue-readiness-supplement.md).
+Execute this owner's complete applicable semantic method, original gate and
+necessary interactions. Applicable coverage and current facts satisfy local
+preconditions; do not manufacture full-chain receipts. Complete this local call
+back to the same Issue/source/continuation Readiness, without running the default
+remaining Intake chain. Read-only scope performs no mutation.

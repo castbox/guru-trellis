@@ -1,0 +1,657 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-sync-base-output-baseline-ready-3.0-router",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "handoff_profile",
+    "handoff_mode",
+    "handoff_continuation_id",
+    "transition"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "baseline_ready"
+    },
+    "handoff_profile": {
+      "enum": [
+        "pre_task",
+        "context_request",
+        "existing_issue_intake"
+      ]
+    },
+    "handoff_mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "handoff_continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transition": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "transition_id",
+        "stage",
+        "mode",
+        "repo_locator",
+        "base"
+      ],
+      "properties": {
+        "schema_version": {
+          "enum": [
+            "1.0",
+            "2.0"
+          ]
+        },
+        "transition_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._:-]+$"
+        },
+        "stage": {
+          "const": "base_current"
+        },
+        "mode": {
+          "enum": [
+            "workflow",
+            "standalone"
+          ]
+        },
+        "repo_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base": {
+          "$ref": "#/$defs/base"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "base": {
+                "properties": {
+                  "kind": {
+                    "const": "git_object"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "schema_version": {
+                "const": "2.0"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "schema_version": {
+                "const": "1.0"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "return_identity": {
+      "oneOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "profile",
+                "target_locator",
+                "resume_target",
+                "continuation_id",
+                "candidate_refs"
+              ],
+              "properties": {
+                "profile": {
+                  "const": "normal_scenario_scope_confirmation"
+                },
+                "target_locator": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "resume_target": {
+                  "enum": [
+                    "guru-approve-task-plan",
+                    "guru-author-task-plan",
+                    "guru-check-task",
+                    "guru-clarify-requirements",
+                    "guru-execute-task-free-change",
+                    "guru-reconcile-task-base",
+                    "guru-resume-implementation",
+                    "guru-review-branch",
+                    "guru-review-change-request",
+                    "guru-review-task-delivery"
+                  ]
+                },
+                "continuation_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "candidate_refs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "task_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "delivery_key": {
+                  "type": "object",
+                  "description": "Opaque upstream DeliveryKey validated by its original public owner."
+                }
+              },
+              "allOf": [
+                {
+                  "oneOf": [
+                    {
+                      "required": [
+                        "task_ref",
+                        "delivery_key"
+                      ]
+                    },
+                    {
+                      "not": {
+                        "anyOf": [
+                          {
+                            "required": [
+                              "task_ref"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "delivery_key"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "profile",
+                "target_locator",
+                "resume_target",
+                "continuation_id",
+                "candidate_refs"
+              ],
+              "properties": {
+                "profile": {
+                  "const": "solution_mechanism_scope_confirmation"
+                },
+                "target_locator": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "resume_target": {
+                  "enum": [
+                    "guru-approve-task-plan",
+                    "guru-author-task-plan",
+                    "guru-check-task",
+                    "guru-clarify-requirements",
+                    "guru-execute-task-free-change",
+                    "guru-reconcile-task-base",
+                    "guru-resume-implementation",
+                    "guru-review-branch",
+                    "guru-review-change-request",
+                    "guru-review-task-delivery"
+                  ]
+                },
+                "continuation_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "candidate_refs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "task_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "delivery_key": {
+                  "type": "object",
+                  "description": "Opaque upstream DeliveryKey validated by its original public owner."
+                }
+              },
+              "allOf": [
+                {
+                  "oneOf": [
+                    {
+                      "required": [
+                        "task_ref",
+                        "delivery_key"
+                      ]
+                    },
+                    {
+                      "not": {
+                        "anyOf": [
+                          {
+                            "required": [
+                              "task_ref"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "delivery_key"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-issue-baseline-return-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile",
+            "issue",
+            "continuation_id"
+          ],
+          "properties": {
+            "profile": {
+              "const": "existing_issue_intake"
+            },
+            "issue": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "guru-issue-review-issue-1.0",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "repo_ref",
+                "number"
+              ],
+              "properties": {
+                "repo_ref": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                },
+                "number": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "continuation_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha40": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "base": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "selected_base",
+            "remote",
+            "ordered_candidates",
+            "decision_head",
+            "local_base_head",
+            "remote_base_head",
+            "post_sync_resolution_sha256"
+          ],
+          "properties": {
+            "source": {
+              "enum": [
+                "explicit",
+                "config",
+                "config-candidate",
+                "remote-default"
+              ]
+            },
+            "selected_base": {
+              "type": "string",
+              "minLength": 1
+            },
+            "remote": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ordered_candidates": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "decision_head": {
+              "$ref": "#/$defs/sha40"
+            },
+            "local_base_head": {
+              "$ref": "#/$defs/sha40"
+            },
+            "remote_base_head": {
+              "$ref": "#/$defs/sha40"
+            },
+            "post_sync_resolution_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "source",
+            "selected_ref",
+            "commit",
+            "identity_sha256"
+          ],
+          "properties": {
+            "kind": {
+              "const": "git_object"
+            },
+            "source": {
+              "enum": [
+                "explicit",
+                "config",
+                "config-candidate",
+                "remote-default"
+              ]
+            },
+            "selected_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "identity_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "handoff_profile": {
+            "const": "existing_issue_intake"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "return_identity"
+        ],
+        "properties": {
+          "return_identity": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "guru-issue-baseline-return-1.0",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profile",
+              "issue",
+              "continuation_id"
+            ],
+            "properties": {
+              "profile": {
+                "const": "existing_issue_intake"
+              },
+              "issue": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "guru-issue-review-issue-1.0",
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "repo_ref",
+                  "number"
+                ],
+                "properties": {
+                  "repo_ref": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              },
+              "continuation_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "return_identity": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "profile",
+                  "target_locator",
+                  "resume_target",
+                  "continuation_id",
+                  "candidate_refs"
+                ],
+                "properties": {
+                  "profile": {
+                    "const": "normal_scenario_scope_confirmation"
+                  },
+                  "target_locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "resume_target": {
+                    "enum": [
+                      "guru-approve-task-plan",
+                      "guru-author-task-plan",
+                      "guru-check-task",
+                      "guru-clarify-requirements",
+                      "guru-execute-task-free-change",
+                      "guru-reconcile-task-base",
+                      "guru-resume-implementation",
+                      "guru-review-branch",
+                      "guru-review-change-request",
+                      "guru-review-task-delivery"
+                    ]
+                  },
+                  "continuation_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "candidate_refs": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "task_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "delivery_key": {
+                    "type": "object",
+                    "description": "Opaque upstream DeliveryKey validated by its original public owner."
+                  }
+                },
+                "allOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "required": [
+                          "task_ref",
+                          "delivery_key"
+                        ]
+                      },
+                      {
+                        "not": {
+                          "anyOf": [
+                            {
+                              "required": [
+                                "task_ref"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "delivery_key"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "profile",
+                  "target_locator",
+                  "resume_target",
+                  "continuation_id",
+                  "candidate_refs"
+                ],
+                "properties": {
+                  "profile": {
+                    "const": "solution_mechanism_scope_confirmation"
+                  },
+                  "target_locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "resume_target": {
+                    "enum": [
+                      "guru-approve-task-plan",
+                      "guru-author-task-plan",
+                      "guru-check-task",
+                      "guru-clarify-requirements",
+                      "guru-execute-task-free-change",
+                      "guru-reconcile-task-base",
+                      "guru-resume-implementation",
+                      "guru-review-branch",
+                      "guru-review-change-request",
+                      "guru-review-task-delivery"
+                    ]
+                  },
+                  "continuation_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "candidate_refs": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "task_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "delivery_key": {
+                    "type": "object",
+                    "description": "Opaque upstream DeliveryKey validated by its original public owner."
+                  }
+                },
+                "allOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "required": [
+                          "task_ref",
+                          "delivery_key"
+                        ]
+                      },
+                      {
+                        "not": {
+                          "anyOf": [
+                            {
+                              "required": [
+                                "task_ref"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "delivery_key"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "profile": "issue_review_return",
+  "mode": "workflow",
+  "issue": {
+    "repo_ref": "example/repo",
+    "number": 27
+  },
+  "base_source": {
+    "kind": "git_object",
+    "selected_ref": "origin/main",
+    "commit": "1111111111111111111111111111111111111111"
+  },
+  "continuation_id": "issue-review-27",
+  "source_exit": "supplemented",
+  "source_refs": [],
+  "context_result": "The requested behavior is unchanged at the selected source."
+}

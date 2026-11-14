@@ -1,5 +1,7 @@
 # Issue 内容的测试策略与观察
 
+#819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
+
 Identity：`RDT-TST-ISSUE-CONTENT`；状态：`current`。导航别名：`T153`、`T153-01..05`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 历史 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md)与 #818 的实际 old/new、正常返修、分发及目标采用观察。
 
 本单元由原 RDT owner 在 #818 批准 Planning、实际实现及工程结果完成后，于 `codex/818-issue-minimal-sufficiency` 的 final_integration 实际整合。整合前重读真实目标、适用来源及必要关系，写后逐项 readback；整合状态为 `integrated_pending_review`，尚待 TaskCommit 与独立 committed Review。该事实不产生 Check/Review pass 或 Task Completion。原基线为 Git `fd0ee32618433a92ae934e29afb5b72e7136b4f7`；本次来源及精确替代范围见 [#818 贡献](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)，普通当前读取无需拼接提案。
@@ -62,3 +64,13 @@ reapply 后再次比较3,345个 Task/session/AGENTS/配置文件，differences={
 本轮观察绑定 TaskId=`818-issue-minimal-sufficiency`、generation=`0`、DeliveryId=`8d34df6b-a0f0-4066-9dfd-c1e2fb7d354b` 和 Git 基线 `fd0ee32618433a92ae934e29afb5b72e7136b4f7`。观察截止于本次 final_integration 前已完成的原安装/reapply及新行为正常返修。真实结果由执行者回报，本 owner 已核对旧首轮/修订报告、新首轮及后继完整稿/报告/正式出口/写前核对、两项分发终态及最终 reapply/source/installed/drift/continuation/Delivery current。临时原始日志保持其原观察，不把运行目录或逐轮 scan 搬入长期证明账本。
 
 本轮分别提供 #818 AC1 的实际写作/审核/正常返修证据和 AC2 的分发/本目标采用证据。主协调器完整复核最终正文后确认 engineering_ready；该事实不是 Check/Review pass。现有证据足以进入本次原文档整合，不追加没有具体问题的实验。未执行正式 GitHub 创建/正文修订及其 live readback、其他平台实际 Agent、完整多平台升级/Release 矩阵、formal Fork source-lock、正式发布或业务仓采用。原创建 executor 本轮无差额，不为补证据制造外部对象。TaskCommit 与独立 committed Review 尚未发生，文档整合不证明 Task Completion。
+
+## T819-01 / SC819-COMMENT：评论生产与读回
+
+从原Create/Clarify入口验证实际评论内容与本次覆盖/结论/未决一致。Create的完整草稿审核、正式内容一致读回、评论发布/读回和created终点顺序必须被实际executor测试观察；Clarify局部覆盖不冒充全审，POST/PATCH对象和readback一致。隔离gh替身只证明执行层，不宣称live成功。对应R819-01、D819-01。
+
+## T819-02 / SC819-RECOVERY：只读与同对象恢复
+
+纯只读Clarify零comment mutation；本次发布/更新结果不明时先沿原owner找回唯一已成功对象，不重复Issue或评论。Create部分完成/输出丢失与Clarify原source_action恢复分别观察，不借人工改hash/state构造排除场景。实际GitHub创建/评论的目标和payload先明确，live readback与mock分开；没有外部执行就保持未验证。原Readiness消费及三补审/来源/安装证据见local-fix-intake的T819-03/04/05。
+
+本次实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)单写。#153/#818的旧案例、失败、未验证边界保原截止；本提案不把新评论或分流机制宣称为既有已验证能力。

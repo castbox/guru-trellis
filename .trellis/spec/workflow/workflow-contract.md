@@ -251,9 +251,13 @@ external exits; `guru-verify-extension-installation` and
 counts are checks against the live registry and workflow markers, not an
 alternative routing authority.
 
-The production spine is `guru-sync-base` -> context/clarification/wording/
-change-request review -> `guru-create-issue` for a proposed draft (then fresh
-Intake) or `guru-create-task` for an existing Issue/standalone request ->
+The production spine starts at `guru-sync-base` and the object-specific base
+router. Existing Issues enter the original Readiness owner first, with local
+supplements returning there. Discussion/draft/standalone requests and necessary
+full Intake retain context/clarification/wording/change-request review.
+`guru-create-issue` completes a proposed draft and its review comment; an
+Issue-only request ends there, while requested work uses the formal Issue at
+fresh Sync/Readiness. `guru-create-task` for a ready Issue/standalone request ->
 identity/binding/checkout/session resolution -> Task scope -> `guru-create-delivery`
 -> per-Delivery Planning and `guru-activate-delivery` -> Phase 2 check -> Task Commit -> independent Branch Review -> Delivery Review
 -> Delivery Publish -> Delivery Merge -> whole-task Completion -> source Issue
@@ -428,9 +432,10 @@ feature design and planning with deferred writes/resources. Method loading
 does not replace the actual selection or Clarify entry from current Discovery. An Issue-backed or task-like request that only asks
 for information, such as checking an Issue's current status, remains a
 information-only direct answer. The selector's `standard_intake` exit enters
-`guru-sync-base`, then automatically follows the public graph through current
-context discovery, requirements clarification, wording review, change-request
-review, and the `guru-task-intake-router`. Its `task_free` exit enters only the
+`guru-sync-base`, then the explicit object-specific router. Existing Issues
+enter Readiness's current-applicability profile; its declared local/full/refresh/
+blocked exits preserve original owner responsibility. Other objects retain the
+complete applicable chain and the `guru-task-intake-router`. Its `task_free` exit enters only the
 bounded task-free edit owner, which determines linked non-base execution before the first write.
 
 `guru-sync-base` public invocation is the only authoritative synchronization
@@ -440,7 +445,7 @@ deterministic components inside the public Skill and focused diagnostics/tests.
 Each refresh edge starts one new complete public sync invocation and discards
 the stale transition; it does not maintain a parallel evidence track.
 
-The standard Intake route carries a workflow-owned closed transition:
+The retained full Intake route carries a workflow-owned closed transition:
 
 ```text
 base_current -> guru-discover-change-context
@@ -450,9 +455,11 @@ wording_current -> guru-review-change-request
 readiness_current -> guru-task-intake-router
 ```
 
-The router uses `ready.transition.target.kind`: `proposed_draft` invokes
-`guru-create-issue` with its own confirmation and then restarts fresh Sync and
-Intake for the new Issue; `existing_issue` and `standalone_request` invoke
+The router accepts the independent existing-Issue ready result under
+MIGRATION-819, preserving its source and the original Create Task gate. For
+retained full-chain results, it uses `ready.transition.target.kind`: `proposed_draft` invokes
+`guru-create-issue` with its own exact Issue/comment action boundary. Only a
+request to start work continues through Sync and existing-Issue Readiness; `existing_issue` and `standalone_request` invoke
 `guru-create-task`. Only that checked created result enters a newly created
 Task's first whole-scope Author step; an existing active Task follows its
 current identity/binding/checkout and actual continuation owner.

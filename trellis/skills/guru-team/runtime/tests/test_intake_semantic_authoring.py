@@ -13,7 +13,7 @@ import unittest
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from adapters.eval import native_adapter
+from adapters.eval import native_adapter, eval_support
 from adapters.eval.intake_authoring import COMMANDS, FACTS_PATH, INTAKE_SKILLS, IntakeCommands, command_arguments, next_intake_owner, standard_intake
 from jsonschema import Draft202012Validator
 from runtime.io import project_intermediate_receipt
@@ -171,7 +171,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
             protocol = json.loads(protocol_path.read_text())
             try:
                 owner = Path(protocol["owner_repository"])
-                self.assertFalse((owner / ".trellis/.runtime").exists())
+                self.assertEqual([], eval_support.runtime_residue(owner))
                 facts = json.loads((owner / FACTS_PATH).read_text())
                 self.assertNotIn("owner_result", facts)
                 model_request = json.loads(native_request.read_text())
@@ -238,7 +238,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
                 transport = (transport.replace("<skill>", INTAKE_SKILLS[0]).replace("<command>", "invoke")
                     .replace("<original stdin arguments>", "--invocation -")
                     .replace("<current-command-input-json>", json.dumps({"schema_version": "1.0",
-                        "public_input": {"mode": "workflow", "repo_root": ".", "base_branch": "main"}})))
+                        "public_input": {"source_exit": "start", "mode": "workflow", "repo_root": ".", "base_branch": "main"}})))
                 forwarded = subprocess.run(["bash", "-c", transport],
                     text=True, capture_output=True, timeout=30)
                 self.assertEqual(forwarded.returncode, 0, forwarded.stderr)

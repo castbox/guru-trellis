@@ -135,6 +135,11 @@ def command_arguments(skill: str, command: str, arguments: list[str]) -> None:
 def next_intake_owner(skill: str, output: dict[str, Any], interface: dict[str, Any]) -> str | None:
     consumer = next(row["consumer"] for row in interface["external_exits"] if row["id"] == output["exit_id"])
     target = consumer["id"]
+    if target == "guru-issue-intake-base-router":
+        # This eval flow exercises the retained complete-chain profile. Initial
+        # existing-Issue selection is tested separately; the adapter is not the
+        # workflow owner and makes no sufficiency or initial-route judgment.
+        target = INTAKE_SKILLS[1]
     if target == "guru-requirements-clear-router":
         # scope_ready leaves this Intake-only adapter for the original Author.
         target = "guru-author-task-plan" if output["exit_id"] == "scope_ready" else output["resume_target"]
