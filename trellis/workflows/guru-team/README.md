@@ -1,5 +1,19 @@
 # Guru Team Workflow
 
+已有 Issue 在实际 Sync 后先由原 Readiness 复核当前审核覆盖，再按缺口调用必要原 owner；
+局部补审返回同次 Readiness。Create Issue 的完成结果包括准确的最小审核评论及读回；
+只读审核不发布评论。讨论、仅创建、创建并开工和 no_issue 保持各自终点。
+当前公开合同、来源投影与旧操作恢复见 [MIGRATION-819](../../presets/guru-team/MIGRATION-819.md)。
+源码/fixture 验证不代替 live 评论或实际安装采用证据。
+
+受管 manifest Git 冲突的有界接续由原
+[Reconcile 合同](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)
+和 [tools 合同](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)
+拥有，最终候选仍须完成原 resolved 校验。
+同 PR 后继 action 的完成事务退役见原
+[Publication 合同](../../skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action)。
+已有 checkout 经完整 matching tools 更新并验证目标后采用；开发同步不证明正式 source-lock 采用。
+
 ## 当前出口查询与按步骤加载
 
 正常会话先通过原 `get_context.py --mode phase` 或唯一 continuation 定位当前步骤，
@@ -42,6 +56,11 @@ Codex 的 Guru Skill 通过 `.agents/skills/` 公共投影发现，专属包仍�
 只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
 再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
 并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](../../presets/guru-team/MIGRATION-718.md)。
+
+normal/solution资格确认沿原Clarify、Discovery和Sync read取得或刷新真实context，再由正式clear返回原caller。
+Task确认目标与来源Issue authority分开，原Task/Delivery及continuation保持。
+两个确认profile、公共I/O和consumer须成套采用；具体边界见
+[MIGRATION-811](../../presets/guru-team/MIGRATION-811.md)。各原Skill拥有内部行为，不从旧transition或record/check制造正式出口。
 
 审核、审查、评审、复审和 review 先按对象与目的分流。代码、分支/PR、测试覆盖和
 需求实现情况的审核，再区分独立只读审核与正式阶段结果。上述独立审核
@@ -287,7 +306,11 @@ accept Delivery Planning or begin implementation.
 
 当前源码支持 Codex 独立显式调用受管的 `guru-orchestrate-issue-dag` 和
 `guru-orchestrate-issue-sequence`，协调器 heartbeat 默认为 2 分钟。
+两个入口默认静默执行；通知条件与原生静默输出方式见共享规范的
+[Quiet Notifications](../../presets/guru-team/spec/workflow/issue-orchestration.md#quiet-notifications)。
 DAG 支持跨仓节点及各仓项目、基线和环境恢复，保留单仓简写；Sequence 仍单仓严格串行。
+Mobile/Web 的 [合同就绪条件](../../skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md#contract-readiness-and-mock-development)
+允许基于 Mock 与后端并行开发；`depends_on` 保留完整完成语义。
 它们协调多个 Issue，不加入本 workflow 的单 Issue mandatory phase。
 完整完成 Issue 是目标；显式选定基线贯穿启动、PR 和完成证明，无关分支不要求同步。
 分发、执行终点和个人安装迁移见
@@ -429,6 +452,12 @@ upgrade/release matrix belongs to its dedicated Release Gate Issue.
 完整采用与在途接续见 [MIGRATION-793](../../presets/guru-team/MIGRATION-793.md)。
 适用条件由各原包独占，README 不复制资格判据。
 
+七类 Task/Delivery 资格输入现选 input 2.0 / aggregate 3.0，显式传递原完整
+DeliveryKey，并复用原身份和当前选择校验。原 caller 持有本次调用对象并消费
+原出口后继续当前阶段。旧发布输入保持历史字节；采用与在途恢复见
+[MIGRATION-812](../../presets/guru-team/MIGRATION-812.md)。已有 Task 的工具更新由原 `guru-upgrade-tools`
+执行，保留 Task/session；安装投影一致不代替实际 caller 验收。
+
 完整 preset 安装后使用 public discovery 和 stdin wrapper：
 
 ```bash
@@ -443,8 +472,9 @@ upgrade/release matrix belongs to its dedicated Release Gate Issue.
 
 ## Current Intake migration (#250)
 
-The initial route remains Sync → Discovery → Clarify. Clarify owns six profiles
-and selected requirement/design source authority; context requests preserve
+Existing Issues now enter Readiness after Sync under #819. Discussion, draft
+and necessary full Intake retain Sync → Discovery → Clarify. Clarify owns
+selected requirement/design source authority; context requests preserve
 the original caller. Install/reapply the complete current preset and controlled
 callers together; see the canonical Clarify
 [API migration](../../skills/guru-team/packages/guru-clarify-requirements/references/MIGRATION-250.md).

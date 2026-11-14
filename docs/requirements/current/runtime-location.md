@@ -4,8 +4,7 @@
 
 Identity：`RDT-REQ-RUNTIME-LOCATION`；状态：current。来源为[Issue #718](https://github.com/castbox/guru-trellis/issues/718)的完整行为与验收，适用前驱为Git `610a810d45bb30173906d55c77709389adf1cf31`。本单元只拥有本能力；设计由[对应Design](../../design/current/runtime-location.md)单写，验证由[对应Test](../../test/current/runtime-location.md)单写。知识定义与实际安装/交付/Release结果分别成立。
 
-本单元 RDT 定义修订：`worktree-config-path-760`。原 owner 在 #760 D1 candidate Check 后，
-以本Task固定来源与真实 current 重读整合并写回；该标识不表示软件版本或最终 Git HEAD。
+本单元 RDT 定义修订：`fixed-git-task-creation-813`。来源为[Issue #813](https://github.com/castbox/guru-trellis/issues/813)，适用 before 为 Git `5c6a4591db7165ece045e6b0eb789c21d06d7d38`。本次细化原 R718 固定来源贯通 Creation 的定义，保留稳定身份、#760/#769 条件和历史观察截止。该标识不是软件版本或最终 Git HEAD；独立 committed Review、Delivery 和 Completion 由其原 owner 建立。
 
 ## 概念与适用边界
 
@@ -21,11 +20,11 @@ worktree承载文件和执行位置，branch承载Git历史，Task承载accepted
 | R718-04 / BEH718-SELECTION | 真实显式选择优先，类别不兼容或不可用时准确拒绝并指向恢复，不能静默换类别。无显式选择时使用公开稳定规则复用兼容cache；有效选择不因新增cache、PATH或无关分支变化而改变。初始化/apply/reapply未传解释器使用当时PATH python3；显式--python优先且失效不回退。日常不随PATH重建、不用global site-packages。 |
 | R718-05 / BEH718-RECOVERY | 缺cache、损坏、旧自动hint失效及依赖失配须有独立公开check/resolve/repair和准确诊断。维护需要真实CPython3/锁来源时报告具体缺口；不以Task迁移或完整工具重装为前置。日常不安装，维护失败保留旧可用环境和合法选择。 |
 | R718-06 / BEH718-LIFECYCLE | worktree/branch/Task创建、采用、切换、结束和位置删除不直接创建、迁移或删除共享环境。依赖需求变化才重新解析，确实缺环境时经独立维护构建。cache清理保留原独立边界，无GC或资源调度。 |
-| R718-07 / BEH718-BASELINE | 只读基线明确repo/ref/固定commit，Git对象可读时不要求分支检出或其checkout干净。刷新时明确远端ref、采用提交和适用性。未提交/未跟踪内容单独作为候选；不得冒充已提交或已发布authority。 |
-| R718-08 / BEH718-OPERATION | 基线读取、候选审核、实际Sync和发布各用自身前置。真实同步仍核目标checkout、dirty、可ff历史和identity。正式Branch Review要求已提交范围，发布要求真实远端候选，Task阶段要求保留原义；只读成功不制造任何正式gate。 |
-| R718-09 / BEH718-DRAFT | 外部或已有worktree、无Task和正常草案组合可经实际公开入口读审。结果准确绑定来源与候选，普通变化刷新受影响结果；不能为入口资格要求草案先commit/push或隐式移动其他checkout分支。通用Issue创建仍核目标、最终正文、重复判断、当前审核和真实副作用。 |
-| R718-10 / BEH718-CONSUMER | 错选基线提供准确诊断和原入口纠正，不因此取消所有门禁。Sync/Discovery至实际创建consumer成套承接相同来源语义，失败不能只移动到下一步。 |
-| R718-11 / BEH718-MIGRATION | 现行指针、公开I/O、维护与rollback给出适用版本、原owner、切换和退出条件。单checkout工具更新不写peer工具/Task/session/用户配置/显式状态，增加cache不改变peer合法实际选择。旧格式来源未知时保留有效兼容选择、公开处理失效hint，不编造历史用户意图；真实显式类别可通过公开入口重表达。 |
+| R718-07 / BEH718-BASELINE | 只读基线明确 repo/ref/固定 commit，对象可读时不要求分支检出或其 checkout 干净。Creation 将固定来源 `{kind,selected_ref,commit}` 与 Task 的 `selected_base_ref`、未来 `delivery_target` 分开；固定对象不与本地同名 branch HEAD 比较，也不随后来 ref 前进改变。刷新时明确采用提交与适用性。未提交/未跟踪内容单独作为候选，不冒充已提交或已发布 authority。 |
+| R718-08 / BEH718-OPERATION | 基线读取、候选审核、实际 Sync、Task 新建/恢复和发布各用自身前置。真实同步仍核目标 checkout、dirty、可 ff 历史和 identity；同步型 Creation 新建保留所选本地 base 与审核提交相等。正式 Branch Review 要求已提交范围，发布要求真实远端候选，Task 阶段要求保持原义；只读成功不制造正式 gate。 |
+| R718-09 / BEH718-DRAFT | 外部或已有 worktree、无 Task 和正常草案组合可经实际公开入口读审。Creation 按已审核对象与合法 acquisition 建立或采用独立 linked checkout，不采用 primary；primary 的旧 main、index 与无关 staged/unstaged 文件保持，不移动、reset、stash 或代提交。结果绑定来源与候选，普通变化刷新受影响判断；通用 Issue 创建仍核目标、最终正文、重复判断、当前审核和真实副作用。 |
+| R718-10 / BEH718-CONSUMER | Sync/Discovery 至实际创建、检查和恢复 consumer 成套承接同一来源。exact commit 必须存在且与 acquisition 起点一致；仓库/common-dir、TaskId/generation、branch binding、位置与 ownership 原校验保持。真实 mismatch 继续拒绝并定位失败字段，错选来源回原 owner 纠正。已完成结果恢复读取原 Task/资源，不重复创建或扫描新建唯一性；同 Task session 保持，缺 record 由原 owner attach，不同或无效 session 阻塞，缺 context 为 explicit-task。 |
+| R718-11 / BEH718-MIGRATION | 现行指针、公开 I/O、维护与 rollback 给出适用版本、原 owner、切换和退出条件。Creation 当前调用方成套采用新版闭合来源合同，旧 schema/path/id/bytes 保留为历史验证；旧成功操作由固定完整旧 provider 恢复，旧待执行输入回原 Sync/Intake 重新审核，不猜来源或新增 current legacy reader/台账。单 checkout 工具更新保留 peer 工具、Task/session、用户配置与合法实际选择；旧 runtime 选择来源未知时不编造历史意图，真实显式类别经公开入口表达。 |
 
 ## 验收与责任
 
@@ -61,3 +60,14 @@ R760-01—05 的设计与测试关系由对应完整单元 D760/T760 单写。�
 ## R769-D2 / 已核正常退出对象
 
 来源仍为 Issue #769 原事务恢复责任，before 为 D1 delivered head `aaf7f939e83c5a5230ecbb9d9f0827fd5c2e97ff`。R769-04：原 owner 正常退出的位置不再作为存续 peer 改值处理；AI 必须先读原退出结果，缺失本身不证明正常退出。R769-05：只有 frozen 恢复的显式有限位置建立该例外；存续 peer、common/gitdir、原 source/owned 保持和 #759 精确 prunable 边界继续成立。省略/空数组及同源调用保持原义。R769-06：同 ref/action/source/public operation/plan/preimages/snapshot 续接，无重 prepare 或第二状态；retry 保持实际字段存在性和值，完整 matching I/O 配套。D769-D2/T769-D2 单写设计和验证；实际 #766 恢复仍是整体 AC3，工具成功不建立 Task 完成。
+
+## 原生 context 的正常规模行为（#814）
+
+本单元追加定义修订：`context-adoption-814`。来源为 [Issue #814](https://github.com/castbox/guru-trellis/issues/814)，适用 before 为 Git `ce4644392d1ed9815d59071388b9bff9978d1cee`。原 `fixed-git-task-creation-813` 修订及此前条款保持。本节补充原生 context 正常规模行为；设计由对应单元 D814 承接，验证由 T814 承接。
+
+| Identity / Behavior | 完整行为与条件 |
+| --- | --- |
+| R814-01 / BEH814-CONTEXT | 实际安装的原生 context 入口在正常小规模及约169个合法注册 worktree 下，解析当前会话或显式 Task，返回正确 owner、Task/generation 和唯一 checkout。消除同一次解析内无关重复 Git 开销时，仍须校验全部 eligible peers，保留原 prunable 例外、选中分支独立查询，以及必要 stale/conflict/非唯一拒绝；不能以跳过校验、借用其他会话或只改 PATH 替代修复。 |
+| R814-02 / BEH814-PROBES | 公开 tools 的真实 runtime-contract/context probes 保持两个10000ms预算。验证分别记录实际入口、拓扑、Git调用来源与耗时；单次样本不是所有机器或所有 native 命令的延迟保证。外层等待结束先核原 executor，未知终态继续跟随原执行；需要恢复时仍由原 tools owner 使用同一 operation/ref/candidate/plan/preimages。安全诊断、原失败与未自然复现边界须保留。 |
+
+来源代码与目标自身成功仍遵循 R718-03/11；原事务与 peer/common 保持仍遵循 R769。上述条款不改变公开身份格式、Task/Delivery/session writer 或恢复 authority。正式来源采用和实际工程结果分别成立；完整 Release 矩阵及 Task 整体完成继续由原 owner 独立判断。

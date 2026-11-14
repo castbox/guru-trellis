@@ -214,3 +214,16 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 - **R794-07 / BEH794-ADOPTION**：canonical、packages/runtime/schema、spec、workflow/routing及实际受影响平台沿原owner成套采用，保Task/session/用户内容和sidecar；定向验证分清组件、实际Agent、安装及外部效果，不扩完整Release矩阵。
 
 R531/R530/R600/R636/R637/R638/R710/R711/R713 的未替代条件、source身份、固定B、原single-writer、完整结果消费/恢复和历史观察保持。当前精确输入/出口/命令与薄投影由原canonical packages独占，迁移由MIGRATION-794定位；设计D794、测试T794在对应完整单元承接。
+
+
+## R815：受管 manifest 冲突恢复
+
+来源为 [Issue #815](https://github.com/castbox/guru-trellis/issues/815)，完整前驱为 Git `cb8b4ce349b54cd832ff5b8f72602c5a721ce875` 的本单元。
+
+- **R815-01 / BEH815-PREIMAGE**：正常两分支 canonical 及各自 installer 输出发生 managed manifest 冲突时，原 Reconcile/Git 冲突步骤固定 prior H 中已生成的完整旧 manifest blob，临时恢复工作文件供原 tools inventory 读取。原 provenance/hash 保持，临时前像不得作为最终候选。
+- **R815-02 / BEH815-COMBINATION**：原 tools owner 对组合 canonical 的实际受管差异逐路径 preserve/replace，由原 installer 生成最终 manifest 和投影；经目标 installed/native/drift、sidecar/mode 验证后，原 resolved 路径核最终树、父序及零 unmerged。
+- **R815-03 / BEH815-CONTINUITY**：保持同 Task/Delivery、branch、checkout、PR，以及原 resolved 的当前 Task 自然 dirty metadata 例外。保留无关 Task/session/peer；失败和未知 mutation 沿原输入、frozen plan 与事务恢复，不重放。
+- **R815-04 / BEH815-RETIREMENT**：同 PR 后继 action 通过原 Publication `retire_completed` 核验并退役已完成私有事务，公共发布事实保持。未知或未完成动作先恢复原操作，不手删事务或构造新的 pass。
+- **R815-05 / BEH815-ADOPTION**：原 public I/O、语义门禁和 owner 不变，完整 matching source 经原工具 owner 同步并验证实际目标。开发 local_candidate 保留正式 source-lock 未验证边界；clean committed H 的正式 source_locked 采用是后继原操作。本项独立交付及 Task 终态责任保持，不绑定发布版本。
+
+精确接续步骤归原 canonical packages；职责 D815、场景 T815 位于同名完整单元。证据及窄增加范围见 [#815 追踪](../../requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md)。本节不引入通用恢复框架、授权存储、审计 ledger 或完整矩阵；前文未替代条件保持。

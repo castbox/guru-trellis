@@ -15,6 +15,12 @@ not the old target dispatcher. Read [the contract](references/contract.md) and
 the selected public profile in `interface.json`. The source runtime executes;
 `--root` is invocation context only. Discovery copies are not self-contained.
 
+For a managed manifest Git conflict, first consume the original Reconcile
+conflict step's complete fixed installer blob and read
+[Managed manifest preimage](references/contract.md#managed-manifest-preimage).
+That temporary working preimage enables inventory; this owner still reviews
+managed differences and invokes the original installer for the final state.
+
 Use `scripts/preview.sh` for facts, `scripts/prepare.sh` once to freeze the
 reviewed public tools plan, and `scripts/invoke.sh` for execution or same-owner
 recovery. Follow forward behavior → AI Review Gate → conditional dialogue

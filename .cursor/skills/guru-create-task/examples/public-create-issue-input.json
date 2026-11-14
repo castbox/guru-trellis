@@ -17,7 +17,11 @@
       "branch_ref": "main"
     },
     "selected_base_ref": "main",
-    "reviewed_base_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "reviewed_base_source": {
+      "kind": "git_object",
+      "selected_ref": "origin/main",
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
   },
   "acquisition": {
     "route": "adopt_invocation_checkout",

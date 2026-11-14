@@ -153,6 +153,46 @@ selected exit, minimal consumer fields, and local digest. It is deleted after a
 successful same-owner public invocation; stale state is removed before a fresh
 review rather than chained.
 
+## Managed manifest conflict continuation
+
+This is part of the existing Git conflict resolution, before either resolved
+candidate entry. It applies when two normal canonical changes and their
+installer outputs conflict at `.trellis/guru-team/extension.json`, so the tools
+inventory cannot parse the working file. It adds no public profile or exit.
+
+1. Read the actual Task/Delivery, branch, checkout and any existing PR identity.
+   Fix the prior task HEAD `H`, selected integration target and active
+   `MERGE_HEAD`. Read `H:.trellis/guru-team/extension.json` with ordinary
+   `git show`, and its mode with `git ls-tree`. Establish that this is the
+   complete old installer-generated manifest for the prior installation.
+2. Restore only that complete blob and mode to the manifest's working file.
+   Keep its original source/provenance and every managed hash. Preserve the
+   merge operation, index conflict stages and unrelated work. The working file
+   now supplies an old inventory preimage; it is not the combined installation
+   or a final stage-0 candidate.
+3. Resolve the actual canonical conflicts under their original owners. Load
+   [the original tools owner](../../guru-upgrade-tools/SKILL.md) from the
+   complete combined canonical source and follow its
+   [manifest preimage contract](../../guru-upgrade-tools/references/contract.md#managed-manifest-preimage).
+   The AI reviews each affected managed path; the original installer produces
+   the final manifest and projections from that combined source.
+4. Read the actual final installation results, both sides' retained behavior,
+   target resolver, installed/native/drift checks, sidecars and modes. Only
+   then stage the final generated manifest and resolved paths under the
+   existing resolution procedure. Verify zero unmerged entries and construct
+   the reviewed final tree/index digest. Compare the generated inventory and
+   installed bytes, not just `installed_at`, to establish that the temporary
+   preimage is no longer the candidate.
+
+If `H` has no complete usable manifest, provenance is unclear, or a relevant
+unfinished operation overlaps, stop at the original source/tools/transaction
+owner. Do not splice JSON, fill old hashes with successor hashes, relax the
+parser, or reconstruct a manifest. Unknown mutation resumes the original
+operation before another prepare. No preimage ledger or new recovery state is
+written. This step preserves the same Task/Delivery, branch, checkout and PR;
+the existing resolved executor alone owns parent/tree checks and its exact
+current-Task dirty metadata exception.
+
 ## Pre-Implementation Resolved Baseline
 
 The two private candidate/reconciliation requests add the closed optional

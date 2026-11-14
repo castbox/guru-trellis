@@ -59,7 +59,11 @@
       "side_effect": "none",
       "schema_bindings": [
         "schemas/requirements-clarification.schema.json",
-        "schemas/requirements-clarification-active-task-4.0.schema.json"
+        "schemas/requirements-clarification-active-task-4.0.schema.json",
+        "schemas/requirements-clarification-confirmation-5.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-needs-context-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
       ],
       "runtime_role": "record"
     },
@@ -116,7 +120,11 @@
       "side_effect": "none",
       "schema_bindings": [
         "schemas/requirements-clarification.schema.json",
-        "schemas/requirements-clarification-active-task-4.0.schema.json"
+        "schemas/requirements-clarification-active-task-4.0.schema.json",
+        "schemas/requirements-clarification-confirmation-5.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-needs-context-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
       ],
       "runtime_role": "check"
     },
@@ -148,7 +156,7 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/public-input-delivery-index-2.0.schema.json",
+        "schemas/public-input-delivery-index-3.0.schema.json",
         "schemas/semantic-scope-continuation-2.0.schema.json",
         "schemas/public-clear-output-delivery-index.schema.json",
         "schemas/public-needs-context-output.schema.json",
@@ -156,7 +164,10 @@
         "schemas/public-retarget-context-output.schema.json",
         "schemas/public-new-task-output.schema.json",
         "schemas/public-blocked-output.schema.json",
-        "schemas/public-scope-ready-output-2.0.schema.json"
+        "schemas/public-scope-ready-output-2.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-needs-context-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

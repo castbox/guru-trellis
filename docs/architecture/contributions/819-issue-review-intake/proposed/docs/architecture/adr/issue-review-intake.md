@@ -1,0 +1,34 @@
+# ADR-ISSUE-REVIEW-INTAKE：已有 Issue 先行复核与局部返回
+
+状态：integrated_pending_review；来源为 [Issue #819](https://github.com/castbox/guru-trellis/issues/819) 与其 accepted scope。原 `guru-maintain-architecture-baseline` owner 已在完整实施和真实工程结果后写入并读回本 ADR，尚待 TaskCommit 与独立 committed Review。对应完整单元见 [Issue 审核、评论与开工复核](../03-domains/issue-review-intake.md)。
+
+## 背景与约束
+
+原Readiness位于完整Discovery→Clarify→Wording后，且要求本轮receipts。已有Issue即便已充分审核仍无法直接开工；局部原owner也没有返回当前Readiness的合法入口。Create创建后没有统一可读结论，Clarify的实际局部覆盖也难被下一会话采用。
+
+本项要求最小评论和先行复核共同完成。评论不能自动放行，历史清楚评论不能因格式、身份、期限或marker被排除。AI保覆盖/适用性/路线判断，脚本保确定性读取、执行及对象一致性。无Issue草稿、no_issue和Task后续门禁仍有效。
+
+## 决定
+
+采用target_native，在原workflow Sync后按明确对象薄路由。已有Issue进入原guru-review-change-request的existing_issue_intake；其issue_review_return承接原Discovery/Clarify/Wording的issue_readiness_supplement真实结果。逐出口最小DTO带Issue、固定base和同次continuation，局部结果只带必要摘要/来源；不携带全量历史或digest authority。真实完整链仍服务草稿、standalone及必要全审，不能用伪造旧receipt进入新路。
+
+原Clarify单写评论正文规则，Create在创建及正式内容读回后发布评论并读回，之后才created；Clarify在实际复审且本次写范围明确时发布/更新，只读不写。评论只表达实际对象、范围、结论及开工未决条件。Create原单次attempt定位恢复同一Issue/comment；Clarify保原source_action/readback与未知结果恢复。Readiness独立读live内容，不消费定位marker作为pass。
+
+完整公共字段、顺序和失败路由由 canonical packages 及 workflow 的当前合同拥有。七包、workflow、graph/Interface/registry/manifest、examples、Task intake投影与matching安装同批直接迁移。MIGRATION-819保固定旧provider恢复边界，不新增长期dual-reader。
+
+原Create Task的来源与集成分支职责保持#813当前合同。新profile完整运输真实来源三字段，Creation只接reviewed_base_source；selected_base_ref独立选Task集成branch，delivery_target保未来交付。局部/刷新不能丢来源kind或反拼旧transition，固定对象不因本地main前进被重解，实际同步和成功结果恢复各保原条件。当前消费profile2.0/共享creation3.0，旧schema1.0只保历史验证；该修订不产生新Task模型或新的兼容路径。
+
+## 替代与成本
+
+不选新复核Skill：它会重复原Readiness职责，增加另一套覆盖判断。只加评论不能改变强制全链，只移动原入口而保receipts仍无法合法直接ready。长期coverage ledger新增共享写和状态维护，当前live材料与调用期结果已足够。把三个局部步骤接回默认后续链也不能满足只补缺口。
+
+必要新增成本是显式profiles/出口与consumer适配、Readiness实际复核，以及一次创建评论写/读。原attempt恢复是本项“不重复已成功对象”的最小对象定位，范围只到该操作，不扩成评论资格体系、并发锁或全流程账本。
+
+## 退出、复审与证据
+
+切换后旧快速路径不存在，current消费者同批理解新接口。历史schema及固定旧执行结果保真实含义；未发生动作进入新owner判断，不把旧pass升级。原完整链因不同受支持场景继续存在，不作为新profile的fallback。
+
+真实来源/范围、owner边界、接口consumer、评论恢复机制或必要外部条件改变时，回原Author/Architecture并刷新受影响判断；无关HEAD、时间或Agent更换不自行使已读依据失效。原closed GAP006/008及single-writer约束不变。
+
+实际验收V819-01–07及未验证边界由Delivery design/implement和配对Test拥有。本 ADR 已完成共享整合/readback；工程、live 评论、安装与交付状态以配对 Test 的实际观察为准。共享晋升须实施后原final_integration/readback→TaskCommit→一次独立committed Review；只有该真实结果能建立reviewed_promoted。
+

@@ -43,8 +43,9 @@ For Issue or draft authoring, revision, and requirements review, read the shared
 applicable writing or semantic gate, together with the writing specification
 above and current necessary sources. The full installed content body is
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
-Use it for complete-body organization and self-review within this owner's
-existing responsibility. Preserve review-only scope and the original source
+Use its methods for necessity, body organization, acceptance and complete review
+within this owner's existing writing and requirements review responsibility.
+Preserve review-only scope and the original source
 actions, refresh, and typed exits; a content gap does not authorize a write.
 
 ## Intent Entry
@@ -58,7 +59,7 @@ and obtain it before the semantic loop; do not invent prerequisite outputs.
 For the first `standalone_review` (`source_exit=start`, `mode=standalone`),
 obtain the actual standalone Sync `base_current` transition. Review the missing
 context and record/check `needs_context`, then invoke with that unchanged base
-transition. Only this initial missing-context exit accepts the base transition;
+transition. This initial standalone missing-context exit accepts the base transition;
 it returns `context_request` to Discovery with the original standalone consumer.
 Use Discovery's actual returned context for the requirements review.
 An actual active-task scope change retains its existing owner/profile.
@@ -122,6 +123,18 @@ qualifier's minimal `scope_confirmation_required` projection and asks the exact
 authority choice before returning to the declared original owner. It does not
 repeat or reinterpret qualification and accepts no decision, reason, severity,
 authorization, result locator, or qualification artifact.
+
+Both qualification confirmation profiles use their current input 2.0. Keep
+the real qualifier's candidates, target, mode, continuation and resume, plus
+task_ref/DeliveryKey for a Task-bound call. Read the contract's
+Qualification Confirmation Context section before authoring private 5.0.
+Missing or normally stale context uses real Sync read base_current and formal
+needs_context, then original Discovery context_request. Its context_ready
+returns the same confirmation and authority_duplicate_snapshot for the real
+Issue/draft disposition. Task target and source authority remain distinct.
+After a real source mutation, preserve return_identity through refresh_context
+and Sync read to Discovery; use its fresh context/snapshot before formal clear.
+Neither a copied transition nor record/check receipt supplies that return.
 
 Before a proposed clarification mechanism can affect scope, questions, or an
 authority action, apply solution's conditions and invoke
@@ -191,8 +204,9 @@ Use `--mode standalone` for standalone recording. Feed the reviewed semantic
 owner JSON to record, its stdout result to check, and the complete invocation
 envelope to invoke. Keep these values in memory; do not create repository files.
 Before adapting an example, load the profile-selected semantic schema through
-the contract's `Minimal Recorder Authoring` section. It locates the non-active
-3.0 schema and distinguishes the public profile from the private
+the contract's `Minimal Recorder Authoring` section and the applicable
+Qualification Confirmation Context section. They locate ordinary non-active
+3.0 or confirmation 5.0 and distinguish the public profile from the private
 `invocation_context.kind`. That section lists required semantic fields and the
 exact omittable fields. The full checked-result example is at
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json`;
@@ -221,7 +235,7 @@ output from the checked `typed_exit` and declared transition. Callers cannot
 select the route or provide a separate `typed_output` field. Private
 clarification evidence is not a public input or output template.
 
-For `standard_intake`, use the [public invocation-envelope guidance](references/contract.md#interface-14-public-handoff)
+For `standard_intake`, use the [public invocation-envelope guidance](references/contract.md#interface-110-public-handoff)
 to assemble the existing outer envelope.
 
 
@@ -310,3 +324,20 @@ writing. Scope_action is route intent; the current Delivery stage owner alone
 performs legal rework or full withdrawal stop/release. No current Delivery is
 required for whole-scope acceptance. Public operation retries recover the same
 accepted authority; they do not create new Task, Delivery, or current gate pass.
+
+## Issue Readiness supplement
+
+Use `issue_readiness_supplement` only for the actual original Readiness gap.
+Read [the local return contract](references/issue-readiness-supplement.md).
+Execute this owner's complete applicable semantic method, original gate and
+necessary interactions. Applicable coverage and current facts satisfy local
+preconditions; do not manufacture full-chain receipts. Complete this local call
+back to the same Issue/source/continuation Readiness, without running the default
+remaining Intake chain. Read-only scope performs no mutation.
+
+## Review comment publication
+
+For a user-requested Issue rereview whose action scope includes publishing or
+updating the conclusion, read [the shared review comment rule](references/issue-review-comment.md)
+before the original source_actions loop. State the actual local or complete
+coverage accurately. Read-only review returns its conclusion without a comment.

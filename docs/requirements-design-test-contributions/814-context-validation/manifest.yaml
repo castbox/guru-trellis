@@ -1,0 +1,23 @@
+task_id: 814-context-validation
+source: https://github.com/castbox/guru-trellis/issues/814
+status: integrated_pending_review
+strategy: delta_first
+unit_revision: context-adoption-814
+authority_identity: guru-trellis-rdt
+source_revision: ce4644392d1ed9815d59071388b9bff9978d1cee
+architecture:
+  locator: docs/architecture/README.md
+  version: ce4644392d1ed9815d59071388b9bff9978d1cee
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  - target: docs/requirements/current/runtime-location.md
+    complete_addition: requirements.md
+  - target: docs/design/current/runtime-location.md
+    complete_addition: design.md
+  - target: docs/test/current/runtime-location.md
+    complete_addition: test.md

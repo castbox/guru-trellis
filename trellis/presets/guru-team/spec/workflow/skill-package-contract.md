@@ -102,8 +102,8 @@ configurator and installs active packages after validating the canonical source.
 
 ## Registry Lifecycle
 
-`trellis/skills/guru-team/registry.json` is validated by
-`schemas/skill-registry.schema.json` and has two states:
+`trellis/skills/guru-team/registry.json` is validated by its exact selected
+versioned registry schema and has two states:
 
 - `planned` claims a future stable consumer id only. It has no package,
   interface, invoke marker, exit marker, or platform destination and must never
@@ -530,6 +530,40 @@ profile-id/discriminator equality, the same `const` in every closed profile
 schema, and every example to validate against both its profile schema and the
 aggregate `oneOf`.
 
+Ordinary Interface1.10 extends the ordinary1.8 execution contract for the
+current qualification-context consumers. It admits context-current4's exact
+transition id/path, a target-owned structured call-local input declaration,
+and profile-selected authoring seeds. Instruction-only1.9 keeps its separate
+Codex standalone contract; ordinary1.10 does not inherit that execution kind.
+Old published schemas/examples remain byte-stable.
+
+`invocation.call_local.public_input` declares `{schema,example}` within the
+target package. A `skill_call_local_input` consumer declares the registered
+target interface_path and input_kind=structured_json; its reader resolves
+that target's call-local public_input declaration. The producer cannot supply
+an arbitrary schema. This permits Sync's actual structured confirmation input
+while preserving its ordinary scalar CLI declaration and deterministic role.
+
+The additional `skill_input_authoring_seed` variant fixes
+`profile_selector={source:producer_output,field:handoff_profile}` and declares
+closed `authoring_profiles`. Each item reuses profile_id, seed_fields,
+authoring_fields, authoring_example and alternate_authoring. The actual output
+selects exactly one item; missing, unknown or duplicate profiles do not select
+a default. The selected seed and AI-authored fields retain the disjoint,
+complete-consumer-input validation below. No new projection operation or
+semantic script is introduced. The current Sync baseline_ready/synced outputs enter the object-specific
+workflow base router under MIGRATION-819. It preserves original pre_task and
+context_request uses while selecting existing-Issue Readiness explicitly.
+The package-owned profiles and routing reference own those exact projections. Original fixed-profile authoring declarations remain.
+
+The matching current graph adopts registry1.5, production manifest6 and its
+current alias, ordinary eval run5, and the direct discovery/validator,
+installed projection, installer and receipt readers together. Only packages
+using the new metadata select1.10. Qualification-specific run3/4 and
+instruction-only1.9 retain their original independent boundaries. See
+`trellis/presets/guru-team/MIGRATION-811.md` for exact versions, pending-input
+reassembly, fixed-provider recovery and target-adoption verification.
+
 All ids and locators are unique, package paths are regular non-symlink files,
 and public output schema ids and paths are each independently disjoint from
 private artifact schema ids and paths. Projection source fields come only from
@@ -817,9 +851,10 @@ or lifecycle writer belongs to this boundary.
 ### Four-Package Manifest And Versioned Migration
 
 The retained `production-current-v1` through `production-current-v5` submanifests
-and their versioned files describe their original experiment snapshots. The v5
-alias `contracts/production-current.json` retains that snapshot's identity for
-its existing experiment facts. Its Check/Commit profiles and authoring edges
+and their versioned files describe their original experiment snapshots.
+Version6 and `contracts/production-current.json` carry the #811 successor
+metadata and ordinary-reader binding. This remains a bounded submanifest,
+not the active workflow selector. Its predecessor Check/Commit profiles and authoring edges
 are predecessor contracts, not current workflow authority. They cannot execute
 retired profiles using the current runtime. Supported old operations use the
 complete fixed provider under MIGRATION-794.
@@ -877,8 +912,15 @@ locators. It returns exactly one of `classified`,
 The first and third exits project only to the profile's original owner through
 their fixed workflow routers. Scope confirmation projects to the closed
 `guru-clarify-requirements:normal_scenario_scope_confirmation` input, whose
-fields are `profile`, fixed `source_exit`, `mode`, `target_locator`,
+fields include `profile`, fixed `source_exit`, `mode`, `target_locator`,
 `resume_target`, `continuation_id`, and non-empty unique `candidate_refs`.
+Current confirmation input 2.0 also receives the verified Task-bound
+task_ref/DeliveryKey from scope-confirmation output 3.0; non-Task has its
+independent branch. Actual context returns supply only the authority snapshot
+needed by Clarify's disposition. Both normal and solution use their original
+owner-specific confirmation input. Their packages own this loop and the
+matching migration in `MIGRATION-811.md`; classified and mechanism-return
+outputs do not grow a Task or audit envelope.
 Blocked has only the dedicated stop consumer.
 
 Semantic decisions, candidate mapping, and the typed result are
@@ -1134,7 +1176,7 @@ synthesize semantic pass.
 The prior pre-task input 1.0 and owner-result 2.0 schema/example bytes remain
 immutable legacy inventory outside the active Interface. Current runtime,
 examples, evals, and installation select pre-task input 4.0, context-request
-input 2.0, Git-object owner-result 4.0, and context-ready output 5.0 for the
+input 3.0, Git-object owner-result 4.0, and context-ready output 6.0 for the
 current path. Pre-task input 3.0 plus owner-result 3.0 remain the
 synchronized-source compatibility activation.
 
@@ -2158,13 +2200,18 @@ private recovery state 与 focused tests。#434 candidate 已选择 current regi
 ## #250 direct Intake I/O successor
 
 The Clarify package MIGRATION-250.md owns the explicit current replacement
-contract. Aggregate input 3.0 selects six profiles; standard/reviewed inputs
-are independent. Discovery context_request has four discriminated return
-identities. Current Git-object context_ready is 5.0; context_ready 4.0 remains
+contract. The original aggregate selected six profile families;
+standard/reviewed inputs remain independent. Current Clarify delivery-index
+input/clear aggregates use 3.0, including the two confirmation input 2.0 and
+independent clear contracts. Discovery context_request 3.0 preserves the
+original four discriminated returns and adds the two qualification
+confirmation identities. Current Git-object context_ready is 6.0; context_ready 4.0 remains
 the #718 compatibility asset. Interface 1.8 adds only a structured skill_input
 profile_selector reading producer handoff_profile; it selects an independently
 owned input schema, without route judgment or an expression language. Current
-context/clarity/wording/readiness transitions use successor 2.0 identities.
+context/clarity/wording/readiness transitions retain their source-specific
+identities; current context schema 4.0 also separates confirmation target and
+source authority. The original base-current contract is unchanged.
 Minimal selected source locators/sections and normative/advisory role pass only
 to the clear router and current Planning via thin Wording/readiness relay.
 Create Task created remains identity-only. No source matrix, final disposition,

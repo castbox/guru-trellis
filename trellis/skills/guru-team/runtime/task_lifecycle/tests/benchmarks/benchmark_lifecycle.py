@@ -86,7 +86,7 @@ def prepare():
         git(case.primary, 'commit', '-qm', 'existing official Task fixture records')
         git(case.root, 'merge', '--ff-only', 'main')
         head = git(case.root, 'rev-parse', 'HEAD')
-        case.payload['creation']['reviewed_base_head'] = head
+        case.payload['creation']['reviewed_base_source']['commit'] = head
         case.payload['acquisition']['decision_head'] = head
         chain = [('guru-create-task', case.payload, 'created'), ('guru-ensure-task-checkout', {'profile': 'delivery_active_task', 'mode': 'workflow', 'task_id': 'example-task', 'lifecycle_generation': 0}, 'checkout_resolved')]
         recovery = ('guru-create-task', {**case.payload, 'action': 'recover_created_task_result'}, 'created')
@@ -119,7 +119,7 @@ def prepare():
         head = git(case.root, 'rev-parse', 'HEAD')
         if a.entry == 'create':
             git(case.primary, 'merge', '--ff-only', head)
-            case.payload['creation']['reviewed_base_head'] = head
+            case.payload['creation']['reviewed_base_source']['commit'] = head
             case.payload['acquisition']['decision_head'] = head
         else:
             recovery[1]['recovery']['expected_head'] = head

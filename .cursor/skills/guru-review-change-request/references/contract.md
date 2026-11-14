@@ -1,5 +1,13 @@
 # Change Request Readiness Review Contract
 
+## Current existing-Issue profiles
+
+After actual Sync or a local return, load [Issue intake](issue-intake.md).
+That independent contract owns existing_issue_intake/issue_review_return inputs
+and local outputs. The linked-prerequisite provisions below apply to retained
+full-chain current_issue/proposed_draft/standalone_request profiles. No comment
+or local summary is converted into those prior receipts.
+
 ## Ownership And Boundary
 
 `guru-review-change-request` is the only semantic owner of pre-task change
@@ -178,9 +186,10 @@ scripts never turn missing evidence into an automatically chosen exit.
 
 For an Issue or proposed draft, actually read the shared Clarify-owned
 [Issue content specification](../../guru-clarify-requirements/references/issue-content.md),
-the installed writing specification, and necessary current sources. Apply it
-within the existing dimensions to the complete final title/body, requirement
-scope, delivery unit, and observable acceptance. A revision is not reviewed
+the installed writing specification, and necessary current sources. Apply its
+methods for necessity, review of complete rules and acceptance within the existing
+dimensions to the complete final title/body, requirement scope, delivery unit,
+and observable acceptance. A revision is not reviewed
 only as added paragraphs. Use its local-revision and outside-scope-gap rules;
 ordinary omissions return to the affected original owner through the existing
 exits. Technical elaboration alone is not a missing product requirement.

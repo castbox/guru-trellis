@@ -33,9 +33,9 @@
     },
     {
       "id": "reviewed_base",
-      "evidence": "selected base ref and current decision HEAD",
+      "evidence": "explicit reviewed Git-object or synchronized-branch source and independent Task base branch",
       "binding": "one repository and delivery target",
-      "freshness": "reread before mutation"
+      "freshness": "validate the fixed commit/acquisition; compare synchronized branch HEAD only before new creation"
     },
     {
       "id": "acquisition",
@@ -125,6 +125,14 @@
     {
       "id": "delivery_task_creation_input",
       "path": "schemas/public-delivery-task-creation-input.schema.json"
+    },
+    {
+      "id": "public_input_v2",
+      "path": "schemas/public-input-2.0.schema.json"
+    },
+    {
+      "id": "delivery_task_creation_input_v2",
+      "path": "schemas/public-delivery-task-creation-input-2.0.schema.json"
     }
   ],
   "validators": [
@@ -156,7 +164,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-create-task",
-      "objective_scope": "Check reviewed acquisition, exact official task identity, initial control state and read-only recovery."
+      "objective_scope": "Check exact reviewed source/acquisition, official task identity, initial control state and original session recovery."
     }
   ],
   "external_exits": [
@@ -200,7 +208,8 @@
   },
   "tests": [
     "tests/test_contract.py",
-    "tests/test_delivery_chain.py"
+    "tests/test_delivery_chain.py",
+    "tests/test_fixed_base.py"
   ],
   "platform_destinations": [
     "shared",
@@ -231,15 +240,15 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-create-task-input-delivery-1.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-create-task-input-delivery-2.0",
+        "path": "schemas/public-input-2.0.schema.json"
       },
       "profiles": [
         {
           "id": "delivery_task_creation",
           "schema": {
-            "schema_id": "guru-create-task-input-delivery-task-creation-1.0",
-            "path": "schemas/public-delivery-task-creation-input.schema.json"
+            "schema_id": "guru-create-task-input-delivery-task-creation-2.0",
+            "path": "schemas/public-delivery-task-creation-input-2.0.schema.json"
           },
           "example": {
             "id": "create_input",

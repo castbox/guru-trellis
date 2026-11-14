@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.8.schema.json",
-  "schema_version": "1.8",
+  "$schema": "../../schemas/skill-interface-1.10.schema.json",
+  "schema_version": "1.10",
   "id": "guru-sync-base",
   "name": "guru-sync-base",
   "description": "Resolve a fixed Git baseline for read-only Intake, or safely synchronize a selected base checkout.",
@@ -101,6 +101,10 @@
     {
       "id": "public_output_baseline_ready_example",
       "path": "examples/public-baseline-ready-output.json"
+    },
+    {
+      "id": "current_public_baseline_ready_output_2_0_json",
+      "path": "examples/public-baseline-ready-output-2.0.json"
     }
   ],
   "schemas": [
@@ -131,6 +135,18 @@
     {
       "id": "public_output_baseline_ready",
       "path": "schemas/public-baseline-ready-output.schema.json"
+    },
+    {
+      "id": "current_public_baseline_ready_output_2_0_schema",
+      "path": "schemas/public-baseline-ready-output-2.0.schema.json"
+    },
+    {
+      "id": "current_public_confirmation_refresh_read_input_1_0_schema",
+      "path": "schemas/public-confirmation-refresh-read-input-1.0.schema.json"
+    },
+    {
+      "id": "current_public_input",
+      "path": "schemas/public-input-current-2.0.schema.json"
     }
   ],
   "validators": [
@@ -158,16 +174,16 @@
       "id": "synced",
       "evidence": "validator-passed fresh stdout result facts carrying the post-sync resolution digest",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-discover-change-context"
+        "kind": "workflow",
+        "id": "guru-issue-intake-base-router"
       }
     },
     {
       "id": "baseline_ready",
       "evidence": "available fixed Git commit with source-preserving selection; no checkout synchronization",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-discover-change-context"
+        "kind": "workflow",
+        "id": "guru-issue-intake-base-router"
       }
     },
     {
@@ -315,8 +331,18 @@
         "flag": "--invocation",
         "stdin": "-",
         "envelope": {
-          "schema_id": "guru-stage0-invocation-deterministic-sync-1.0",
-          "path": "consumers/workflow/stage0/invocations/deterministic-sync.schema.json"
+          "schema_id": "guru-stage0-invocation-deterministic-sync-3.0",
+          "path": "consumers/workflow/stage0/invocations/deterministic-sync-3.0.schema.json"
+        },
+        "public_input": {
+          "schema": {
+            "schema_id": "guru-stage0-sync-base-input-current-3.0",
+            "path": "schemas/public-input-current-3.0.schema.json"
+          },
+          "example": {
+            "id": "confirmation_refresh_read_input",
+            "path": "examples/public-confirmation-refresh-read-input-1.0.json"
+          }
         }
       },
       "example_argv": [
@@ -328,8 +354,8 @@
       {
         "exit_id": "synced",
         "schema": {
-          "schema_id": "guru-stage0-sync-base-output-synced-2.0",
-          "path": "schemas/public-synced-output-2.0.schema.json"
+          "schema_id": "guru-stage0-sync-base-output-synced-3.0",
+          "path": "schemas/public-synced-output-3.0.schema.json"
         },
         "example": {
           "id": "synced_output",
@@ -342,12 +368,12 @@
       {
         "exit_id": "baseline_ready",
         "schema": {
-          "schema_id": "guru-stage0-sync-base-output-baseline-ready-1.0",
-          "path": "schemas/public-baseline-ready-output.schema.json"
+          "schema_id": "guru-stage0-sync-base-output-baseline-ready-3.0",
+          "path": "schemas/public-baseline-ready-output-3.0.schema.json"
         },
         "example": {
-          "id": "baseline_ready_output",
-          "path": "examples/public-baseline-ready-output.json"
+          "id": "current_public_baseline_ready_output_2_0_json",
+          "path": "examples/public-baseline-ready-output-2.0.json"
         },
         "consumer_use_ids": [
           "project_baseline_ready"
@@ -386,49 +412,14 @@
       {
         "id": "synced_pre_task_input",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-discover-change-context"
+          "kind": "workflow",
+          "id": "guru-issue-intake-base-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-discover-change-context/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "pre_task",
-          "seed_fields": [
-            "source_exit",
-            "profile",
-            "mode",
-            "continuation_id"
-          ],
-          "authoring_fields": [
-            "change_input",
-            "clarify_profile"
-          ],
-          "authoring_example": {
-            "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-4.0.json"
-          },
-          "alternate_authoring": [
-            {
-              "id": "reviewed_plan",
-              "authoring_fields": [
-                "change_input",
-                "clarify_profile",
-                "source_locators"
-              ],
-              "authoring_example": {
-                "id": "pre_task_reviewed_input",
-                "path": "examples/public-pre-task-reviewed-input.json"
-              }
-            }
-          ]
-        },
-        "transition": {
-          "source_field": "transition",
-          "stage": "base_current",
-          "schema_id": "guru-stage0-transition-base-current-2.0",
-          "path": "consumers/workflow/stage0/transitions/base-current-2.0.schema.json"
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-sync-base-output-synced-3.0-router",
+          "path": "consumers/workflow/stage0/sync-synced-router-3.0.schema.json"
         }
       },
       {
@@ -455,49 +446,14 @@
       {
         "id": "baseline_ready_pre_task_input",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-discover-change-context"
+          "kind": "workflow",
+          "id": "guru-issue-intake-base-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-discover-change-context/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "pre_task",
-          "seed_fields": [
-            "source_exit",
-            "profile",
-            "mode",
-            "continuation_id"
-          ],
-          "authoring_fields": [
-            "change_input",
-            "clarify_profile"
-          ],
-          "authoring_example": {
-            "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-4.0.json"
-          },
-          "alternate_authoring": [
-            {
-              "id": "reviewed_plan",
-              "authoring_fields": [
-                "change_input",
-                "clarify_profile",
-                "source_locators"
-              ],
-              "authoring_example": {
-                "id": "pre_task_reviewed_input",
-                "path": "examples/public-pre-task-reviewed-input.json"
-              }
-            }
-          ]
-        },
-        "transition": {
-          "source_field": "transition",
-          "stage": "base_current",
-          "schema_id": "guru-stage0-transition-base-current-2.0",
-          "path": "consumers/workflow/stage0/transitions/base-current-2.0.schema.json"
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-sync-base-output-baseline-ready-3.0-router",
+          "path": "consumers/workflow/stage0/sync-baseline_ready-router-3.0.schema.json"
         }
       }
     ],
@@ -506,25 +462,7 @@
         "id": "project_synced",
         "exit_id": "synced",
         "consumer_input_id": "synced_pre_task_input",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "handoff_profile",
-            "target": "profile"
-          },
-          {
-            "source": "handoff_mode",
-            "target": "mode"
-          },
-          {
-            "source": "handoff_continuation_id",
-            "target": "continuation_id"
-          }
-        ]
+        "operation": "direct"
       },
       {
         "id": "project_skipped",
@@ -543,25 +481,7 @@
         "id": "project_baseline_ready",
         "exit_id": "baseline_ready",
         "consumer_input_id": "baseline_ready_pre_task_input",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "handoff_profile",
-            "target": "profile"
-          },
-          {
-            "source": "handoff_mode",
-            "target": "mode"
-          },
-          {
-            "source": "handoff_continuation_id",
-            "target": "continuation_id"
-          }
-        ]
+        "operation": "direct"
       }
     ],
     "private_artifacts": [

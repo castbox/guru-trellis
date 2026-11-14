@@ -125,3 +125,45 @@ A named factual merge operation resolves after its bounded service interval;
 the carrier does not inspect message wording or coordinator decisions to choose
 its outcome. Observe operation timestamps and actual tool actions, not an exit
 keyword alone.
+
+## Quiet Notification Cases
+
+Use the same isolated walkthrough boundary. Supply the native wake's actual
+silent-result contract with each case; do not launch notifications to test it.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| Q1. A fully completes and releases successor C. Independent B changes phase. A slot is free, C's prerequisites pass, and the wake supports the heartbeat DONT_NOTIFY result. No human action is needed. | Observe every unfinished child, admit and immediately observe C, and give actionable idle B its valid continuation. Carry the existing progress exit in the supported silent envelope with the actual automation identity and no surrounding prose. Do not notify for the node completion, admission or phase change. |
+| Q2. A failed check has a supported owner repair. B's unchanged wait has ended successfully and permits its next action. | Arrange A's bounded repair, act on B's current passing prerequisite and observe the results. Keep routine output silent; neither the repairable failure nor changed wait alone requires a human notification. |
+| Q3. A has an investigated unresolved environment gap requiring App trust from the human. B is independent and remains permitted under continue_independent. | Notify once with A's exact user action and resume condition, preserve A and its descendants, and continue observing and advancing B. Deduplicate the unchanged request on later wakes. Do not use silence to hide the human step or a whole-DAG block to abandon B. |
+| Q4. All selected nodes reach their accepted terminal goal and children are safe, but heartbeat stop has not yet been verified. Later the original stop result verifies success. | First return progressing with the actual remaining settlement and recover the operation. Only after verified stop notify once with the existing dag_completed or explicitly selected dag_stage_completed result. Individual nodes reaching a stage never trigger that terminal notification. |
+| Q5. The human asks for status during the run; later wakes need no human action. The current native host has not established support for the sample envelope. | Answer the status question directly. For later routine wakes inspect the actual silent transport, preserve every observation and action, and do not claim suppression or invent controls. The status question does not enable recurring notifications. |
+
+## API Contract And Mock Development Cases
+
+Use the same isolated walkthrough boundary. Supply the actual contract text and
+current Issue prerequisites to the reviewer, keeping the expected decisions
+private. These cases do not call a backend or prove real integration.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| C1. Backend #21 is implementing. Mobile #22 and Web #23 require only its profile API contract, have no completion edges, and have free execution slots. Current provider-owned contract describes all fields, request/response semantics and applicable errors/authentication/state behavior needed by those screens. No service is deployed. | Judge the actual contract usable, admit the ready frontend nodes and immediately observe them. Give their owners contract locators and Mock-development instructions; do not wait for backend merge, closure or deployment, or call contract readiness backend completion. |
+| C2. C1 applies, but the contract only has a title and two example fields; required update request and error semantics are absent. Backend contract production is a permitted action of the selected existing owner. An independent frontend layout portion can proceed. | Do not claim the contract sufficient from its existence or a ready label. Request the exact missing detail from the provider owner and let the same frontend owner advance independent layout work while holding only the affected interface work. Keep a concrete recheck condition. |
+| C3. At preflight, none of Mobile #22's work can proceed until the profile contract is produced. Backend #21 is included, eligible and can produce it. On a later heartbeat, its contract becomes sufficient while backend implementation continues and a slot is free. | Report the pending contract and producer route without inventing an invalid graph or full-completion edge. Start the backend within the covered run. Reread the contract on the later wake even without new frontend text, admit Mobile #22 with Mock instructions, and preserve backend's remaining obligations. |
+| C4. Web #23 declares both the contract prerequisite and depends_on backend #21. The contract is usable but backend #21 is incomplete. | Keep the explicit full-completion edge. Do not admit Web #23 merely from contract readiness. If the human's stated contract-only intent conflicts with that edge, resolve the exact discrepancy before affected dispatch. |
+| C5. Mobile #22 already uses Mock for a usable read contract; a later provider revision changes only update-error semantics. Read work and an unrelated frontend portion remain valid. | Reread current contract and ask the existing frontend owner to reconcile only work affected by the update change, holding that portion if its semantics are unresolved. Keep supported read and unrelated work moving; no replacement child, whole-node rollback or backend-completion assertion. |
+| C6. Backend #21 becomes blocked on deployment, or is reopened for an implementation fix. Its current profile contract remains usable. Mobile #22 has only that contract prerequisite; Web #23 instead has a full-completion edge. | Continue Mobile #22's Mock work under continue_independent without treating it as a completion descendant. Hold Web #23 under the normal completion-edge rules. A stop_dispatch policy still preserves its existing all-new-admission stop behavior. |
+| C7. The contract is ready and frontend #22 is otherwise eligible, but max_parallel is 1 and backend #21 still occupies the slot. | Preserve the limit and backend owner; do not claim simultaneous work or mark backend completed to release a slot. Start frontend when an actual normal slot becomes free. If frontend already owns the occupied slot, continue its ready work there. |
+| C8. The contract provider is an external Issue not selected for execution. Its live contract is usable, it remains open, and the frontend has no completion edge. | Read and judge the contract directly; admit ready Mock work without adding a provider node, launching another child, requiring provider closure or consuming an unmerged implementation branch. |
+
+## Observation Recovery Cases
+
+These are supplied-fact semantic walkthroughs under the isolation boundary
+above. They do not change a native scheduler or prove its wakeup timing.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| O1. The saved heartbeat still names completed A. Conversation and fresh native facts bind unfinished B to one formal child. | Observe B and every other admitted unfinished owner, recover their latest real results, and reconcile the same heartbeat's recovery hints. Read back its prompt/target/interval/status; do not resume A, duplicate B or use the stale hint as authority. |
+| O2. A human asks to continue after several scheduled intervals without recorded observations. The child ended earlier with an actionable original-owner plan whose current gates pass. | Take a fresh snapshot and read the actual result now; send one valid continuation in this cycle. Retain the unobserved interval and distinguish it from a proven scheduler fault. Do not wait for another timer or claim that old ACTIVE status proved monitoring. |
+| O3. After a pause, the latest per-child cursor is unavailable. A send may already have succeeded and its result is unknown. | Recover the same binding and actual conversation, obtain a fresh snapshot and recover the uncertain send before retry. Do not replay one instruction per missed interval, restart the child or invent observation continuity. |
+| O4. A newly formal child is already observed. Updating the same heartbeat fails; known children still have permitted work. | Retain the failure, observe and advance known owners under their gates, and recover/read back the existing heartbeat. Hold further admissions until configuration is verified. Use the existing notification rules; do not create a replacement timer, ledger or watchdog. |

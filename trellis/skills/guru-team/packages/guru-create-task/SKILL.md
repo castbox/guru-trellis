@@ -17,8 +17,8 @@ any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
 
 `judgment_mode=semantic`. Consume only `guru-review-change-request:ready`
-with `target.kind=existing_issue | standalone_request`, after the current
-Intake and Sync decision. Never create or select a GitHub Issue here. For an
+with a current complete-chain `target.kind=existing_issue | standalone_request`
+or the independent existing-Issue ready result, after actual Sync and Readiness. Never create or select a GitHub Issue here. For an
 existing Issue, reread its live identity and accepted scope; for a standalone
 request preserve `source.kind=no_issue` without invented closure semantics.
 Issue creation input accepts `exact_source | reference_only` and preserves the
@@ -26,10 +26,10 @@ reviewed disposition through official creation and result recovery.
 `reference_only` does not grant source-Issue closure; `follow_up | parent` remain
 unsupported creation inputs.
 
-The current input is `schemas/public-delivery-task-creation-input.schema.json`.
+The current input is `schemas/public-delivery-task-creation-input-2.0.schema.json`.
 Before authoring `creation`, read both installed contracts from the repository root:
-`.trellis/guru-team/skills/packages/guru-create-task/schemas/public-delivery-task-creation-input.schema.json`
-and `.trellis/guru-team/skills/contracts/task-lifecycle/task-creation-input.schema.json`.
+`.trellis/guru-team/skills/packages/guru-create-task/schemas/public-delivery-task-creation-input-2.0.schema.json`
+and `.trellis/guru-team/skills/contracts/task-lifecycle/task-creation-input-3.0.schema.json`.
 When entering through a platform discovery copy, resolve the profile schema's
 cross-package references from its directory in the shared installation.
 Its `allOf` constraints apply together with the
@@ -42,6 +42,26 @@ profile's local properties. For `source_profile=existing_issue`, copy the review
 reviewed `repo_ref` and `branch_ref`. Replace sample facts with the actual
 upstream ready/acquisition output and current Task date; examples supply no
 semantic review or creation authority.
+
+Project the actual upstream base into `reviewed_base_source={kind,selected_ref,commit}`.
+For `ready.transition.base.kind=git_object`, copy those three values unchanged.
+Its selected_ref locates the adopted source; do not resolve a later ref value or
+compare local main with that fixed commit. The exact object must be available
+as a commit in the same repository and equal acquisition.decision_head.
+For an actual synchronized base, set kind=synced_branch, normalize its
+selected_base into selected_ref, and copy decision_head into commit. Do not
+invent synchronized provenance for a read result. Before new creation, the
+synchronized source branch must match selected_base_ref and its local HEAD
+must equal commit. Result recovery validates the original source/acquisition;
+later branch advancement does not invalidate an already completed result.
+
+Choose `selected_base_ref` independently as the reviewed Task integration
+branch. It supplies official task.py --base-branch and non-base/non-target
+checkout eligibility. `delivery_target` retains its future delivery role.
+A fixed-object read does not choose either branch or require primary clean.
+The current input removes reviewed_base_head; see
+[MIGRATION-813](../../../../presets/guru-team/MIGRATION-813.md) for the matching
+consumer cutover and fixed-old-provider result recovery.
 
 Review the exact TaskId, date-prefixed TaskRef, title, ordinary scope, selected
 base and delivery target. Choose one checkout acquisition route:
@@ -99,7 +119,7 @@ changes before or during official creation, return `refresh_review` and review
 a new TaskRef; do not create a task under a different date. Read-only result
 recovery retains the original TaskRef across dates.
 
-Use the `delivery_task_creation` profile. Public input schema `guru-create-task-input-delivery-1.0` removes the retired task
+Use the `delivery_task_creation` profile. Public input schema `guru-create-task-input-delivery-2.0` retains the removal of retired task
 `creator` and `assignee` fields. Rereview an old request and omit those fields;
 the closed Delivery schema rejects them before acquisition. The reviewed delivery
 target remains call-local and is never added to official `task.json`. The
@@ -128,7 +148,7 @@ An unchanged base with invocation branch HEAD mismatch is blocked; a changed
 acquisition route requires a new semantic review. Never use task/workspace
 mappings, `task.json.branch` or checkout paths as durable identity.
 
-Metadata and occupied-identity failures may carry one optional `diagnostic`
+Metadata, occupied-identity and base/acquisition failures may carry one optional `diagnostic`
 with `field_path` and `remediation`. The declared stop consumer uses these
 call-local facts to explain the exact failing record and its disposition; they
 are not task identity or a persisted inventory. Preserve the reason code and
@@ -138,3 +158,17 @@ convert, or delete the record. Old minimal blocked/invalid outputs remain valid.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Existing-Issue ready projection
+
+For the independent Issue ready result, copy issue into reviewed_source's
+kind=issue/repo_ref/number; this owner reviews disposition as exact_source or
+reference_only. Copy all three base_source fields unchanged into
+creation.reviewed_base_source. Do not reconstruct readiness_current. Independently
+review creation.selected_base_ref as the Task integration branch and delivery_target
+as the future delivery repository/branch. Neither comes from source selected_ref.
+Current public profile 2.0 and shared Creation 3.0 remain selected. Preserve
+acquisition.decision_head=reviewed_base_source.commit, original checkout/resource
+conditions and same-result recovery. For synced_branch preserve normalized source
+branch equality; only a new creation additionally checks its current branch HEAD.
+A fixed git_object source does not require primary clean or latest same-name ref.

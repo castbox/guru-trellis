@@ -6,12 +6,13 @@ from runtime.io import CommandError,read_json
 from runtime.schema import validate_json
 from runtime.base_selection import source_ref, check_candidate
 from common import validate_owner
+from confirmation import CONFIRMATION_PROFILES, confirmation_identity, bind_confirmation
 
 OUTPUT_SCHEMAS = {
     "clear": "public-clear-output-4.0.schema.json",
     "scope_ready": "public-scope-ready-output-1.0.schema.json",
-    "needs_context": "public-needs-context-output-3.0.schema.json",
-    "refresh_context": "public-refresh-context-output-2.0.schema.json",
+    "needs_context": "public-needs-context-output-4.0.schema.json",
+    "refresh_context": "public-refresh-context-output-3.0.schema.json",
     "retarget_context": "public-retarget-context-output-2.0.schema.json",
     "new_task": "public-new-task-output.schema.json",
     "blocked": "public-blocked-output.schema.json",
@@ -32,6 +33,11 @@ def typed_output(package_root, public, transition, owner):
             "source_selection": owner["source_selection"],
             "revision_refs": owner["revision_refs"],
         }
+    elif exit_id == "clear" and public["profile"] in CONFIRMATION_PROFILES:
+        output = {"exit_id": "clear", "mode": public["mode"], **confirmation_identity(public), "source_selection": owner["source_selection"]}
+        name = "normal-scenario" if public["profile"] == "normal_scenario_scope_confirmation" else "solution-mechanism"
+        validate_json(output, package_root / "schemas" / f"public-{name}-confirmation-clear-output-1.0.schema.json", "stdout")
+        return output
     elif exit_id == "clear":
         identity = owner["content_identity"]
         disposition = owner["target_disposition"]
@@ -99,7 +105,8 @@ def typed_output(package_root, public, transition, owner):
             and isinstance(transition, dict)
             and transition.get("stage") == "base_current"
         )
-        if not initial_standalone and (
+        confirmation_bootstrap = public["profile"] in CONFIRMATION_PROFILES and owner["context_evidence"]["status"] == "missing" and isinstance(transition,dict) and transition.get("stage") == "base_current"
+        if not (initial_standalone or confirmation_bootstrap) and (
             not isinstance(transition, dict) or transition.get("stage") != "context_current"
         ):
             raise CommandError("stale_identity", "transition", "Provide the current context transition.", 3)
@@ -114,7 +121,7 @@ def typed_output(package_root, public, transition, owner):
             raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
         token=base.get("identity_sha256") if base.get("kind")=="git_object" else base.get("post_sync_resolution_sha256")
         if not isinstance(token,str):raise CommandError("stale_identity","transition.base","Provide the checked base source.",3)
-        base_transition = dict(transition) if initial_standalone else {
+        base_transition = dict(transition) if (initial_standalone or confirmation_bootstrap) else {
             "schema_version": transition.get("schema_version"),
             "transition_id": f"base_current:{token[:24]}",
             "stage": "base_current", "mode": transition.get("mode"),
@@ -134,7 +141,7 @@ def typed_output(package_root, public, transition, owner):
                 key: public[key] for key in (
                     "profile", "target_locator", "continuation_id",
                     "source_locators", "task_locator", "task_id",
-                    "lifecycle_generation", "resume_target",
+                    "lifecycle_generation", "resume_target", "candidate_refs", "task_ref", "delivery_key",
                 ) if key in public
             },
         }
@@ -152,6 +159,11 @@ def typed_output(package_root, public, transition, owner):
             and base.get("source") == "explicit"
         ):
             output["handoff_base_branch"] = source_ref(base)
+        if exit_id == "refresh_context" and public["profile"] in CONFIRMATION_PROFILES:
+            base = (transition or {}).get("base", {})
+            if base.get("kind") != "git_object":
+                raise CommandError("stale_identity", "transition.base", "Obtain the fixed read baseline for confirmation refresh.", 3)
+            output.update(handoff_operation="read", handoff_base_ref=base["commit"], return_identity=confirmation_identity(public))
     elif exit_id == "new_task":
         output = {
             "exit_id": "new_task",
@@ -171,6 +183,9 @@ def run(package_root,command,argv):
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
     envelope=read_json(a.invocation,"invocation")
     public=envelope.get("public_input",{})
+    if public.get("profile")=="issue_readiness_supplement":
+        from issue_review import execute
+        return execute(package_root,envelope,"invoke")
     if public.get("profile") in {"delivery_active_task_scope_change", "delivery_task_scope_revision", "task_scope_requirements_acceptance"}:
         from delivery_scope import invoke
         return invoke(package_root, Path.cwd(), public, envelope.get("owner_result", {}))
@@ -183,8 +198,8 @@ def run(package_root,command,argv):
         "reviewed_plan_intake": "public-reviewed-plan-intake-input.schema.json",
         "active_task_scope_change": "public-active-task-scope-change-input.schema.json",
         "standalone_review": "public-standalone-review-input.schema.json",
-        "normal_scenario_scope_confirmation": "public-normal-scenario-scope-confirmation-input.schema.json",
-        "solution_mechanism_scope_confirmation": "public-solution-mechanism-scope-confirmation-input.schema.json",
+        "normal_scenario_scope_confirmation": "public-normal-scenario-scope-confirmation-input-2.0.schema.json",
+        "solution_mechanism_scope_confirmation": "public-solution-mechanism-scope-confirmation-input-2.0.schema.json",
     }
     profile = public.get("profile")
     if profile not in profiles:
@@ -199,8 +214,7 @@ def run(package_root,command,argv):
     if profile in {"normal_scenario_scope_confirmation", "solution_mechanism_scope_confirmation"}:
         if context["kind"] != profile or context["resume_target"] != public["resume_target"]:
             raise CommandError("stale_identity", "resume_target", "Return to the original qualification owner.", 3)
-        if exit_id == "needs_context":
-            raise CommandError("schema_mismatch", "typed_exit", "Repair authority through the original qualification owner.", 3)
+        bind_confirmation(package_root, public, transition, owner)
     elif profile == "active_task_scope_change":
         try:
             task = resolve_active_task_checkout(Path.cwd(), public["task_locator"]).artifact

@@ -1936,7 +1936,7 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
                         descriptor: dict[str, Any], semantic: dict[str, Any]) -> dict[str, Any]:
     evidence = run_root / f"{args.skill}-{args.adapter}-run.json"
     output = strict_json(evidence, "completed_run")
-    validate_instance(output, skills / "schemas/skill-eval-run-2.0.schema.json", "completed_run")
+    validate_instance(output, skills / "schemas/skill-eval-run-5.0.schema.json", "completed_run")
     for key, value in {"skill_id": args.skill, "adapter": args.adapter, "platform": args.adapter,
                        "interface_schema_id": row["interface_schema_id"], "evidence_path": str(evidence)}.items():
         if output[key] != value:
@@ -1976,7 +1976,7 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
                 )) else "evaluation_failed"
     output["status"] = next((status for status in ("execution_error", "evaluation_failed", "unsupported")
                              if any(item["status"] == status for item in output["cases"])), "passed")
-    validate_instance(output, skills / "schemas/skill-eval-run-2.0.schema.json", "evidence")
+    validate_instance(output, skills / "schemas/skill-eval-run-5.0.schema.json", "evidence")
     evidence.write_text(json.dumps(output, separators=(",", ":")), encoding="utf-8")
     return output
 
@@ -2166,13 +2166,13 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
             break
     evidence = run_root / f"{args.skill}-{args.adapter}-run.json"
     output = {
-        "schema_version": "2.0", "skill_id": args.skill,
+        "schema_version": "5.0", "skill_id": args.skill,
         "interface_schema_id": row["interface_schema_id"],
         "corpus_schema_id": "guru-team-skill-evals-1.0", "corpus_version": side_corpus["schema_version"],
         "adapter": args.adapter, "platform": args.adapter, "status": status,
         "cases": results, "evidence_path": str(evidence),
     }
-    validate_instance(output, skills / "schemas/skill-eval-run-2.0.schema.json", "evidence")
+    validate_instance(output, skills / "schemas/skill-eval-run-5.0.schema.json", "evidence")
     evidence.write_text(json.dumps(output, separators=(",", ":")), encoding="utf-8")
     return output
 

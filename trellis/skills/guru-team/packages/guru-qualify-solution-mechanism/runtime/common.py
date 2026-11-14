@@ -19,13 +19,13 @@ PROFILE_SCHEMAS = {
     "task_free_evolution": "public-task-free-evolution-input.schema.json",
     "requirements_scope_set": "public-requirements-scope-set-input.schema.json",
     "change_request_candidate_set": "public-change-request-candidate-set-input.schema.json",
-    "planning_scenario_set": "public-planning-scenario-set-input.schema.json",
-    "author_candidate_set": "public-author-candidate-set-input.schema.json",
-    "implementation_discovery": "public-implementation-discovery-input.schema.json",
-    "base_impact_candidate_set": "public-base-impact-candidate-set-input.schema.json",
-    "phase2_candidate_set": "public-phase2-candidate-set-input.schema.json",
-    "branch_review_candidate_set": "public-branch-review-candidate-set-input.schema.json",
-    "publication_candidate_set": "public-publication-candidate-set-input.schema.json",
+    "planning_scenario_set": "public-planning-scenario-set-input-2.0.schema.json",
+    "author_candidate_set": "public-author-candidate-set-input-2.0.schema.json",
+    "implementation_discovery": "public-implementation-discovery-input-2.0.schema.json",
+    "base_impact_candidate_set": "public-base-impact-candidate-set-input-2.0.schema.json",
+    "phase2_candidate_set": "public-phase2-candidate-set-input-2.0.schema.json",
+    "branch_review_candidate_set": "public-branch-review-candidate-set-input-2.0.schema.json",
+    "publication_candidate_set": "public-publication-candidate-set-input-2.0.schema.json",
 }
 RESUME_TARGETS = {
     "task_free_pre_write": "guru-execute-task-free-change",
@@ -48,7 +48,7 @@ CONSUMERS = {
 }
 OUTPUT_SCHEMAS = {
     "classified": "public-classified-output-2.0.schema.json",
-    "scope_confirmation_required": "public-scope-confirmation-required-output-2.0.schema.json",
+    "scope_confirmation_required": "public-scope-confirmation-required-output-3.0.schema.json",
     "mechanism_revision_required": "public-mechanism-revision-required-output-2.0.schema.json",
     "blocked": "public-blocked-output.schema.json",
 }
@@ -183,6 +183,8 @@ def typed_output(package_root: Path, recorded: dict) -> dict:
         output = {"exit_id": exit_id, "profile": public_input["profile"], "mode": public_input["mode"], "resume_target": RESUME_TARGETS[public_input["profile"]], "continuation_id": continuation_id, "candidate_results": copy.deepcopy(recorded["candidate_results"])}
     else:
         output = {"exit_id": "blocked"}
+    if exit_id == "scope_confirmation_required" and "delivery_key" in public_input["target"]:
+        output.update({key: copy.deepcopy(public_input["target"][key]) for key in ("task_ref", "delivery_key")})
     validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[exit_id], "stdout")
     return output
 

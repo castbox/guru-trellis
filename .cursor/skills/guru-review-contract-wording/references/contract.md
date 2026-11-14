@@ -58,8 +58,9 @@ not run yet.
 
 Before this review, actually read the Clarify-owned
 [Issue content specification](../../guru-clarify-requirements/references/issue-content.md)
-and the installed writing specification. Use the common baseline for clarity,
-terminology, and full semantic preservation within the existing wording gate.
+and the installed writing specification. Apply its method for independent reading
+of the complete body and comparison with sources to clarity, terminology, and full semantic
+preservation within the existing wording gate.
 Read necessary source context to assess the final complete title/body after a
 revision. Apply the common local-revision and outside-scope-gap rules without
 changing scanner scope, widening edit authority, or taking over readiness.

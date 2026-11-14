@@ -33,6 +33,22 @@ selection rules. Runtime fixes the available commit and returns `baseline_ready`
 to Discovery. It does not require a base checkout, cleanliness, fetch, or
 fast-forward. Later ref movement does not retarget that adopted commit.
 
+For an actual Clarify qualification `refresh_context`, use the declared
+confirmation-refresh read input with its unchanged `return_identity`,
+`operation=read`, `route=repo_change` and original selected commit. The current
+baseline_ready 2.0 confirmation branch preserves that identity and enters
+Discovery context_request, rather than pre_task/stage0-current. Sync only
+validates and projects normalized identity; Clarify/Discovery retain source,
+scope and evidence judgment. Load the contract for the complete envelope and
+consumer projection. Ordinary read and sync keep their original behavior.
+
+The receiving caller follows Interface1.10's profile-selected authoring seed
+before invoking Discovery. For pre_task, its AI supplies change_input and
+clarify_profile, plus source_locators for reviewed-plan Intake. For
+context_request, it preserves the actual return_identity and supplies
+change_input. Read the selected consumer contract and validate the completed
+input; the seed alone is incomplete. Sync performs none of these AI judgments.
+
 For `operation=sync` (the compatibility default), base resolution first selects the branch without consulting the current branch
 or registered-worktree availability. It then binds that fixed selection to the
 unique clean checkout registered for `refs/heads/<selected-base>` in the same

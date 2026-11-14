@@ -36,7 +36,7 @@ def producers(installed: Path, chain: Path, source_selection=None):
             "base_branch": "main", "route": "repo_change",
         },
     }, "synced")
-    public, _ = transcript.project_installed_output(root, "guru-sync-base", "synced", sync)
+    public = transcript.full_intake_discovery_seed(sync)
     discovery_owner, _, public = transcript.checked_context_owner_for_issue(root, env, public, sync["transition"])
     discovery, _ = transcript.invoke_public(root, env, "guru-discover-change-context", {
         "schema_version": "1.0", "public_input": public, "transition": sync["transition"],

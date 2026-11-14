@@ -31,10 +31,16 @@ elsewhere and need not install these orchestration Skills.
 
 The shared method exclusively defines selected-base continuity, endpoint
 interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
-heartbeat, continuation, merge/completion proof and supported recovery. Apply
+heartbeat, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
 it at startup, resume and child continuation alike.
 The local contract owns exact order, dependency compatibility, serial
 advancement, earlier-stage disposition and this Skill's public I/O.
+
+Operate quietly by default under the shared method's `Quiet Notifications`
+section. Its native silent-result transport carries routine progress without
+changing this Skill's declared exits or its duty to observe and continue work.
+Apply the shared `Heartbeat Recovery Inputs` and `Observation After An
+Interruption` sections when bindings change and whenever supervision resumes.
 
 ## Execute The Sequence
 

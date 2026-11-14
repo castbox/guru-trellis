@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-task-intake-router-input-3.0",
+  "oneOf": [
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-stage0-task-intake-router-input-2.0",
+      "type": "object",
+      "required": [
+        "exit_id",
+        "transition"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "ready"
+        },
+        "transition": {
+          "type": "object",
+          "required": [
+            "stage",
+            "target"
+          ],
+          "properties": {
+            "stage": {
+              "const": "readiness_current"
+            },
+            "target": {
+              "type": "object",
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "proposed_draft",
+                    "existing_issue",
+                    "standalone_request"
+                  ]
+                }
+              }
+            },
+            "clarify_profile": {
+              "enum": [
+                "standard_intake",
+                "reviewed_plan_intake",
+                "active_task_scope_change",
+                "standalone_review",
+                "normal_scenario_scope_confirmation",
+                "solution_mechanism_scope_confirmation"
+              ]
+            },
+            "source_locators": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "locator",
+                  "section"
+                ],
+                "properties": {
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "section": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "source_selection": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "locator",
+                  "section",
+                  "authority_kind"
+                ],
+                "properties": {
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "section": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "authority_kind": {
+                    "enum": [
+                      "requirement",
+                      "design_constraint",
+                      "advisory"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-review-change-request-public-issue-ready-output-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "mode",
+        "issue",
+        "base_source",
+        "continuation_id",
+        "source_selection"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "ready"
+        },
+        "mode": {
+          "enum": [
+            "workflow",
+            "standalone"
+          ]
+        },
+        "issue": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-issue-review-issue-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repo_ref",
+            "number"
+          ],
+          "properties": {
+            "repo_ref": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+            },
+            "number": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "base_source": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-issue-review-base-source-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "selected_ref",
+            "commit"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "git_object",
+                "synced_branch"
+              ]
+            },
+            "selected_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        },
+        "continuation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_selection": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "locator",
+              "section",
+              "authority_kind"
+            ],
+            "properties": {
+              "locator": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section": {
+                "type": "string",
+                "minLength": 1
+              },
+              "authority_kind": {
+                "enum": [
+                  "requirement",
+                  "design_constraint",
+                  "advisory"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

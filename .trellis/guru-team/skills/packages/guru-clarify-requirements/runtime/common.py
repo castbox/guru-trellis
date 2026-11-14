@@ -10,7 +10,11 @@ def validate_shape(package,payload):
     if active and payload.get("schema_version") == "3.0" and payload.get("typed_exit") != "blocked":
         raise CommandError("stale_identity", "input.schema_version",
                            "Re-enter original Clarify with current active-task 4.0 evidence; do not convert a historical success.", 3)
-    schema = "requirements-clarification-active-task-4.0.schema.json" if payload.get("schema_version") == "4.0" else "requirements-clarification.schema.json"
+    confirmation = payload.get("invocation_context", {}).get("kind") in {"normal_scenario_scope_confirmation", "solution_mechanism_scope_confirmation"}
+    if confirmation and payload.get("schema_version") != "5.0":
+        raise CommandError("schema_mismatch", "input.schema_version", "Reassemble the current confirmation evidence with its original caller identity.", 3)
+    schema = ("requirements-clarification-confirmation-5.0.schema.json" if confirmation else
+              "requirements-clarification-active-task-4.0.schema.json" if payload.get("schema_version") == "4.0" else "requirements-clarification.schema.json")
     validate_json(payload, package / "schemas" / schema, "input")
     exit_id=payload.get("typed_exit")
     if payload.get("consumer")!=CONSUMERS.get(exit_id): raise CommandError("semantic_result_invalid","input.consumer","Match the declared typed-exit consumer.",3)
@@ -106,6 +110,9 @@ def derive_owner(package, payload, *, authoring=False):
     }
     bind(result, "content_identity", identity, "input")
     validate_shape(package, result)
+    from confirmation import validate_actions, validate_issue_actions
+    validate_issue_actions(result)
+    validate_actions(result)
     return result
 
 

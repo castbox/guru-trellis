@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本批所有正文、提示与注释的写作合同"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "本批公共I/O、consumer、版本与分发边界"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md", "reason": "原确认、source_actions、freshness与正式出口"}
+{"file": "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md", "reason": "原context请求、取证、返回及Task来源关系"}
+{"file": "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md", "reason": "固定Git对象read及deterministic运输边界"}
+{"file": ".agents/skills/guru-upgrade-tools/references/contract.md", "reason": "本checkout工具更新及受管投影的唯一合法owner"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "原Author共享正文合同及规划承接条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "所选Delivery需求正文的原结构与完整性边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "所选Delivery设计的原结构与来源处置边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "所选Delivery实施与验证的原Policy/Docs Plan边界"}
+{"file": "trellis/skills/guru-team/schemas/skill-interface-1.8.schema.json", "reason": "新普通1.10的原合同边界；旧字节保持，精确新增能力见design5.4"}
+{"file": "trellis/skills/guru-team/runtime/discovery.py", "reason": "从原target Interface解析consumer自有call-local和profile authoring，不新增resolver"}
+{"file": "trellis/skills/guru-team/runtime/installed.py", "reason": "selected authoring与call-local公开示例的原平台投影owner"}

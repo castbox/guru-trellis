@@ -1,0 +1,458 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-13-814-context-validation",
+  "id": "814-context-validation",
+  "name": "814-context-validation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 814,
+    "disposition": "exact_source"
+  },
+  "title": "修复工具升级原生 context 校验的正常工作区开销与超时失配",
+  "description": "消费已合入 Fork e379 的 context 性能前置修复，经原 source-lock/tools owner 完成 Guru 定向安装、恢复与身份保持验收。",
+  "dev_type": null,
+  "scope": "仅 castbox/guru-trellis#814 当前完整正文及其明确 Fork 来源；不包括 Release、manifest 冲突能力或历史 Task 转换。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-13",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+    "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+  },
+  "deliveries": [
+    {
+      "id": "fca8647f-14d0-436d-8298-1b561036f8e4",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+          "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/fca8647f-14d0-436d-8298-1b561036f8e4",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+        "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+      },
+      "candidate": {
+        "base_ref": "ce4644392d1ed9815d59071388b9bff9978d1cee",
+        "content_ref": "sha256:44359c0de420d54c419f15bae145c8f5da047dbe19cee02747bbeca76f308e83",
+        "head_ref": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+        "kind": "git",
+        "paths": [
+          ".trellis/.template-hashes.json",
+          ".trellis/guru-team/trellis-source.json",
+          ".trellis/scripts/common/session_storage.py",
+          "docs/design/current/runtime-location.md",
+          "docs/requirements-design-test-contributions/814-context-validation/design.md",
+          "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+          "docs/requirements-design-test-contributions/814-context-validation/requirements.md",
+          "docs/requirements-design-test-contributions/814-context-validation/test.md",
+          "docs/requirements-design-test-contributions/814-context-validation/traceability.md",
+          "docs/requirements/current/runtime-location.md",
+          "docs/test/current/runtime-location.md",
+          "trellis/presets/guru-team/source/trellis-source.json"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:a00607d8-de40-4166-b9d2-fe6b33d6b22b",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+              "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+            "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/prd.md",
+              "revision": "sha256:e8dac57c05209ccb6373a99c7e4de8cdcd783ded48bc544aef30f253157d370d"
+            },
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+              "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+            },
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/implement.md",
+              "revision": "sha256:06ba05da0848a5a191313f72f03dcee2e630283d34192d0c1428ba0ff7943f3e"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:3d2c4535ae31fb65640170b862cde2df00a55f6972d32d9fa66779a20d104e50",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+              "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+            "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+          },
+          "candidate": {
+            "base_ref": "ce4644392d1ed9815d59071388b9bff9978d1cee",
+            "content_ref": "sha256:44359c0de420d54c419f15bae145c8f5da047dbe19cee02747bbeca76f308e83",
+            "head_ref": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+            "kind": "git",
+            "paths": [
+              ".trellis/.template-hashes.json",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/scripts/common/session_storage.py",
+              "docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/814-context-validation/design.md",
+              "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+              "docs/requirements-design-test-contributions/814-context-validation/requirements.md",
+              "docs/requirements-design-test-contributions/814-context-validation/test.md",
+              "docs/requirements-design-test-contributions/814-context-validation/traceability.md",
+              "docs/requirements/current/runtime-location.md",
+              "docs/test/current/runtime-location.md",
+              "trellis/presets/guru-team/source/trellis-source.json"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:a00607d8-de40-4166-b9d2-fe6b33d6b22b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/implement.md",
+              "revision": "sha256:06ba05da0848a5a191313f72f03dcee2e630283d34192d0c1428ba0ff7943f3e"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:3d2c4535ae31fb65640170b862cde2df00a55f6972d32d9fa66779a20d104e50",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+              "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+            "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+          },
+          "candidate": {
+            "base_ref": "ce4644392d1ed9815d59071388b9bff9978d1cee",
+            "content_ref": "sha256:44359c0de420d54c419f15bae145c8f5da047dbe19cee02747bbeca76f308e83",
+            "head_ref": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+            "kind": "git",
+            "paths": [
+              ".trellis/.template-hashes.json",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/scripts/common/session_storage.py",
+              "docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/814-context-validation/design.md",
+              "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+              "docs/requirements-design-test-contributions/814-context-validation/requirements.md",
+              "docs/requirements-design-test-contributions/814-context-validation/test.md",
+              "docs/requirements-design-test-contributions/814-context-validation/traceability.md",
+              "docs/requirements/current/runtime-location.md",
+              "docs/test/current/runtime-location.md",
+              "trellis/presets/guru-team/source/trellis-source.json"
+            ]
+          },
+          "predecessor_result_id": "check:3d2c4535ae31fb65640170b862cde2df00a55f6972d32d9fa66779a20d104e50",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/implement.md",
+              "revision": "sha256:06ba05da0848a5a191313f72f03dcee2e630283d34192d0c1428ba0ff7943f3e"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:246d1092e56a01b43d5b195f6601d2adc8273d2a6f3e21f2041d59a5dcc5a557",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+              "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/design.md",
+            "revision": "sha256:a92fb5d8e77ccb51f3099549ff7e50e6a79f7ac808df70dfbd3fc41b0deeac1c"
+          },
+          "candidate": {
+            "base_ref": "ce4644392d1ed9815d59071388b9bff9978d1cee",
+            "content_ref": "sha256:44359c0de420d54c419f15bae145c8f5da047dbe19cee02747bbeca76f308e83",
+            "head_ref": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+            "kind": "git",
+            "paths": [
+              ".trellis/.template-hashes.json",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/scripts/common/session_storage.py",
+              "docs/design/current/runtime-location.md",
+              "docs/requirements-design-test-contributions/814-context-validation/design.md",
+              "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+              "docs/requirements-design-test-contributions/814-context-validation/requirements.md",
+              "docs/requirements-design-test-contributions/814-context-validation/test.md",
+              "docs/requirements-design-test-contributions/814-context-validation/traceability.md",
+              "docs/requirements/current/runtime-location.md",
+              "docs/test/current/runtime-location.md",
+              "trellis/presets/guru-team/source/trellis-source.json"
+            ]
+          },
+          "predecessor_result_id": "full-review:3d2c4535ae31fb65640170b862cde2df00a55f6972d32d9fa66779a20d104e50",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-814-context-validation/deliveries/fca8647f-14d0-436d-8298-1b561036f8e4/implement.md",
+              "revision": "sha256:06ba05da0848a5a191313f72f03dcee2e630283d34192d0c1428ba0ff7943f3e"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:8a09339bae5c536ec8cea7d430a26a1508e6c0e542a8d1632c3563571b976f0b",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/825",
+            "revision": "sha256:076e16cfa2c2f35e7c24d4cf0dfb138db79861b8099d1c6dd7dd13051aadda09"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ce4644392d1ed9815d59071388b9bff9978d1cee",
+          "content_ref": "sha256:44359c0de420d54c419f15bae145c8f5da047dbe19cee02747bbeca76f308e83",
+          "head_ref": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+          "kind": "git",
+          "paths": [
+            ".trellis/.template-hashes.json",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/scripts/common/session_storage.py",
+            "docs/design/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/814-context-validation/design.md",
+            "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+            "docs/requirements-design-test-contributions/814-context-validation/requirements.md",
+            "docs/requirements-design-test-contributions/814-context-validation/test.md",
+            "docs/requirements-design-test-contributions/814-context-validation/traceability.md",
+            "docs/requirements/current/runtime-location.md",
+            "docs/test/current/runtime-location.md",
+            "trellis/presets/guru-team/source/trellis-source.json"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 825,
+        "reviewed_head": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/825",
+          "revision": "sha256:076e16cfa2c2f35e7c24d4cf0dfb138db79861b8099d1c6dd7dd13051aadda09"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:8f866c92e7d6206fc7eafa3bf38ea2376be4d13c",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/825",
+            "revision": "8f866c92e7d6206fc7eafa3bf38ea2376be4d13c"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ce4644392d1ed9815d59071388b9bff9978d1cee",
+          "content_ref": "sha256:44359c0de420d54c419f15bae145c8f5da047dbe19cee02747bbeca76f308e83",
+          "head_ref": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+          "kind": "git",
+          "paths": [
+            ".trellis/.template-hashes.json",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/scripts/common/session_storage.py",
+            "docs/design/current/runtime-location.md",
+            "docs/requirements-design-test-contributions/814-context-validation/design.md",
+            "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+            "docs/requirements-design-test-contributions/814-context-validation/requirements.md",
+            "docs/requirements-design-test-contributions/814-context-validation/test.md",
+            "docs/requirements-design-test-contributions/814-context-validation/traceability.md",
+            "docs/requirements/current/runtime-location.md",
+            "docs/test/current/runtime-location.md",
+            "trellis/presets/guru-team/source/trellis-source.json"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 825,
+        "reviewed_head": "30625f76e8b9b8db4aa1abdbe2a903f4456db273",
+        "merge_commit": "8f866c92e7d6206fc7eafa3bf38ea2376be4d13c",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:fdad3cd7-a00d-4f4a-b24c-3b889c899b10",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/825",
+          "revision": "8f866c92e7d6206fc7eafa3bf38ea2376be4d13c"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/commits/main",
+          "revision": "8f866c92e7d6206fc7eafa3bf38ea2376be4d13c"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/43370652107",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        },
+        {
+          "locator": ".trellis/tasks/11-13-814-context-validation/task.json",
+          "revision": "full-review:3d2c4535ae31fb65640170b862cde2df00a55f6972d32d9fa66779a20d104e50"
+        },
+        {
+          "locator": "docs/requirements/current/runtime-location.md",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        },
+        {
+          "locator": "docs/design/current/runtime-location.md",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        },
+        {
+          "locator": "docs/test/current/runtime-location.md",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/814-context-validation/manifest.yaml",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        },
+        {
+          "locator": "trellis/presets/guru-team/source/trellis-source.json",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/825/files",
+          "revision": "30625f76e8b9b8db4aa1abdbe2a903f4456db273"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-13-814-context-validation/prd.md",
+        "revision": "sha256:ab389a1a02b14d550f0fcb53f3c66a0a526f455146eb289097bc517cf4dc17a8"
+      },
+      "delivery_result_ids": [
+        "delivery:8f866c92e7d6206fc7eafa3bf38ea2376be4d13c"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:d8dde229620918c00883180a",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/814",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-13-814-context-validation/closeout/closure/Y2xvc3VyZTpkOGRkZTIyOTYyMDkxOGMwMDg4MzE4MGE.json",
+          "revision": "sha256:1fd8d0c33efb12a7ef596424bd1d0c98d5122aff16a8bfaad6db1af1a8474aa4"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:fdad3cd7-a00d-4f4a-b24c-3b889c899b10",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/814",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}

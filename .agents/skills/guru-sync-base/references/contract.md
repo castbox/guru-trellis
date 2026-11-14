@@ -43,6 +43,59 @@ existing direct callers. The remaining synchronization sections preserve that
 profile's complete original behavior and result schema. Current workflow
 Intake explicitly supplies `operation=read`.
 
+## Qualification confirmation refresh
+
+An actual Clarify `refresh_context` for either qualification confirmation
+profile enters this owner's dedicated confirmation-refresh read input.
+Its normalized route is `repo_change`, operation is `read`, and base_ref is
+the original selected commit. Retain mode/repository and the exact
+`return_identity`: confirmation profile, target, candidate_refs, continuation,
+resume consumer and Task-bound task_ref/DeliveryKey. Do not carry an old
+context, authority duplicate snapshot or private Clarify result through Sync.
+
+The current deterministic invocation envelope 2.0 selects that input or the
+ordinary existing input branch. After the original Git-object read, output
+baseline-ready 2.0 selects `handoff_profile=context_request` for this branch,
+keeps the original continuation and return_identity, and projects actual
+base_current to Discovery context-request 3.0. Ordinary read still selects
+pre_task/stage0-current; sync, skipped and blocked retain their original
+meanings. This owner makes no source, scope or route-intent judgment and adds
+no semantic Gate, Task/session writer or checkpoint.
+
+The Interface 1.10 `call_local.public_input` declares this package's
+`schemas/public-input-current-2.0.schema.json` aggregate and its public example.
+Clarify's `skill_call_local_input` consumer references this target Interface;
+discovery resolves the target-owned declaration. The producer does not choose
+another schema. The ordinary scalar CLI remains available for scalar inputs;
+confirmation return_identity is structured call-local input.
+
+The versioned envelope is the canonical structured confirmation carrier.
+Ordinary calls retain the original command's accepted public_input envelope
+or bare public object, field defaults and field-level diagnostics. The new
+confirmation-envelope validation does not narrow those ordinary calls.
+The return_identity confirmation branch must use its closed current envelope
+and dedicated read input; it does not inherit ordinary omissions.
+
+After baseline_ready, the receiving caller uses the declared
+`skill_input_authoring_seed` profile selector over actual handoff_profile.
+For pre_task, project source_exit/profile/mode/continuation_id and let the
+original AI supply change_input/clarify_profile; reviewed-plan alternate also
+requires source_locators. For context_request, the seed additionally contains
+actual return_identity and the AI supplies change_input. The original synced
+fixed pre_task seed remains unchanged. Seed and authoring fields are disjoint;
+the completed input must validate against Discovery's selected schema.
+The base_current transition is handed over separately. Missing or unknown
+profile is an error, and ordinary pre_task never gains an invented identity.
+These are caller-side authoring duties outside Sync's deterministic boundary.
+
+Discovery rereads the changed authority and duplicate facts; Clarify then
+judges the current confirmation and its actual clear. Missing or mismatched
+normalized input fails at its declared field and returns to the original
+caller/producer. Sync never rewrites a previous context or supplies semantic
+approval. Matching adoption, pending input reassembly and fixed old-provider
+recovery follow `MIGRATION-811.md`; old published envelope/output bytes remain
+validation assets without a current confirmation fallback.
+
 ## Forward Behavior (Sync Profile)
 
 The caller invokes only the public `scripts/invoke.sh --invocation -` wrapper.
@@ -149,14 +202,14 @@ the deterministic profile cannot absorb that behavior.
 ## Runtime Dependency
 
 All package wrappers locate only the installed `run-skill-command` dispatcher
-and pass a fixed validator id. The dispatcher proves interface schema 1.4, installed
+and pass a fixed validator id. The dispatcher validates the registry-selected Interface, installed
 manifest/runtime API, declared runtime command, managed package inventory and
 selected discovery copy before execution. The package is not self-contained or
 portable. Missing or drifted runtime and unresolved `.new`/`.bak` sidecars fail
 before fetch and require complete Guru Team preset install/upgrade plus source
 and installed Skill validation.
 
-## Interface 1.4 Public Handoff
+## Interface 1.10 Public Handoff
 
 The public wrapper is `scripts/invoke.sh` and its validator id is
 `public_invocation`. Normal workflow invocation is the closed call-local
@@ -192,7 +245,7 @@ For `public_contracts.invocation.call_local.envelope`, read the actual installed
 schema from the repository root:
 
 ```sh
-cat .trellis/guru-team/skills/consumers/workflow/stage0/invocations/deterministic-sync.schema.json
+cat .trellis/guru-team/skills/consumers/workflow/stage0/invocations/deterministic-sync-2.0.schema.json
 ```
 
 Its closed envelope has `schema_version: "1.0"` and `public_input`. For a current
@@ -211,3 +264,11 @@ UTF-8 file. Read the package-local error example at
 `.trellis/guru-team/skills/packages/guru-sync-base/examples/public-invocation-error.json`
 and output schemas under that package's `schemas/` directory. Consume only the
 formal stdout DTO; this call does not require an `owner_result` field.
+
+For qualification refresh, the dedicated public input is
+`schemas/public-confirmation-refresh-read-input-1.0.schema.json`: supply
+`source_exit=refresh_context`, mode, repo_root, `route=repo_change`,
+`operation=read`, original commit as base_ref and exact return_identity.
+The envelope's schema path advances to 2.0 while its transport field
+schema_version remains 1.0. The old envelope path is a published validation
+asset; the current Interface selects the matching successor.

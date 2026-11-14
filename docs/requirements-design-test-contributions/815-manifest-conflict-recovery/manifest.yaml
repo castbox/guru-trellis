@@ -1,0 +1,20 @@
+task_id: 815-manifest-conflict-recovery
+source: https://github.com/castbox/guru-trellis/issues/815
+status: integrated_pending_review
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: cb8b4ce349b54cd832ff5b8f72602c5a721ce875
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirement.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/task-delivery-lifecycle.md
+  - docs/design/current/task-delivery-lifecycle.md
+  - docs/test/current/task-delivery-lifecycle.md

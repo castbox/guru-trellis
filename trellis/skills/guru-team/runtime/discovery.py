@@ -19,6 +19,7 @@ CURRENT_INTERFACE_SCHEMA_IDS = {
     "guru-team-skill-interface-1.7",
     "guru-team-skill-interface-1.8",
     "guru-team-skill-interface-1.9",
+    "guru-team-skill-interface-1.10",
 }
 
 
@@ -29,6 +30,40 @@ def _safe_relative(value: Any, field_path: str) -> Path:
     if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} for part in path.parts):
         raise CommandError("contract_asset_invalid", field_path, "Restore the normalized package contract path.")
     return path
+
+
+def call_local_public_input(package: Path, interface: dict[str, Any]) -> dict[str, Any]:
+    """Read the target Interface's own fixed call-local input declaration."""
+    declaration = interface.get("public_contracts", {}).get("invocation", {}).get("call_local", {}).get("public_input")
+    if not isinstance(declaration, dict):
+        raise CommandError("missing_contract", "invocation.call_local.public_input", "Declare the target-owned structured call-local input.")
+    resolved = {}
+    for key, directory in (("schema", "schemas"), ("example", "examples")):
+        relative = _safe_relative(declaration[key]["path"], "call_local.public_input." + key)
+        if relative.parts[0] != directory:
+            raise CommandError("contract_asset_invalid", "call_local.public_input." + key, "Use the target package's public schema and example directories.")
+        path = package / relative
+        if not path.is_file() or path.is_symlink():
+            raise CommandError("missing_contract", "call_local.public_input." + key, "Restore the target-owned public input asset.")
+        resolved[key] = path
+    from .schema import validate_json
+    example = read_json_file(resolved["example"], "call_local.public_input.example")
+    schema = read_json_file(resolved["schema"], "call_local.public_input.schema")
+    if schema.get("$id") != declaration["schema"]["schema_id"]:
+        raise CommandError("version_state_mismatch", "call_local.public_input.schema", "Use the declared target-owned input schema identity.")
+    validate_json(example, resolved["schema"], "call_local.public_input.example")
+    return resolved
+
+
+def select_authoring_profile(contract: dict[str, Any], output: dict[str, Any]) -> dict[str, Any]:
+    """Select only the producer's declared handoff discriminator."""
+    if "authoring_profiles" not in contract:
+        return contract
+    selected = output.get(contract["profile_selector"]["field"])
+    matches = [row for row in contract["authoring_profiles"] if row["profile_id"] == selected]
+    if len(matches) != 1:
+        raise CommandError("profile_binding_mismatch", "consumer.authoring_profiles", "Preserve one declared authoring profile for the actual producer handoff.")
+    return matches[0]
 
 
 def _skill_interface(skills_root: Path, skill_id: str) -> tuple[dict[str, Any], dict[str, Any], Path]:
@@ -170,6 +205,10 @@ def discover_exit(root: Path, mode: str, skills_root: Path, skill_id: str, exit_
         result["consumer_schema_locator"] = schema_path.relative_to(root).as_posix()
     if consumer["kind"] == "skill":
         _, target_interface, target_package = _skill_interface(skills_root, consumer["id"])
+        if contract.get("kind") == "skill_call_local_input":
+            assets = call_local_public_input(target_package, target_interface)
+            result["consumer_schema_locator"] = assets["schema"].relative_to(root).as_posix()
+            result["consumer_example_locator"] = assets["example"].relative_to(root).as_posix()
         result["entry"] = {
             "locator": (target_package / "SKILL.md").relative_to(root).as_posix(),
             "contract_root": target_package.relative_to(root).as_posix(),

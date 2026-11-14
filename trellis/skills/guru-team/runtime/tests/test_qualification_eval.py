@@ -19,7 +19,8 @@ SKILLS = Path(__file__).resolve().parents[2]
 REPO = SKILLS.parents[2]
 sys.path.insert(0, str(SKILLS))
 
-from adapters.eval import eval_constants, native_adapter  # noqa: E402
+from adapters.eval import eval_constants, eval_support, native_adapter  # noqa: E402
+from runtime.bootstrap import active_pointer_path  # noqa: E402
 from runtime import eval_runner  # noqa: E402
 
 
@@ -909,11 +910,11 @@ class QualificationEvalTests(unittest.TestCase):
     def test_current_manifest_binds_real_ten_profile_matrix_without_private_artifact(self) -> None:
         trellis_root = SKILLS.parents[1]
         manifest = json.loads(
-            (SKILLS / "contracts/production-current-5.0.json").read_text(encoding="utf-8")
+            (SKILLS / "contracts/production-current-6.0.json").read_text(encoding="utf-8")
         )
         eval_runner.validate_instance(
             manifest,
-            SKILLS / "schemas/production-contract-manifest-5.0.schema.json",
+            SKILLS / "schemas/production-contract-manifest-6.0.schema.json",
             "production_current_v5",
         )
         package = SKILLS / "packages/guru-qualify-normal-scenario"
@@ -924,11 +925,11 @@ class QualificationEvalTests(unittest.TestCase):
         )
         self.assertEqual(
             manifest["interface_schema_ids"],
-            ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.6", "guru-team-skill-interface-1.7", "guru-team-skill-interface-1.8"],
+            ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.6", "guru-team-skill-interface-1.7", "guru-team-skill-interface-1.8", "guru-team-skill-interface-1.10"],
         )
         self.assertEqual(
             qualification["interface_schema_id"],
-            "guru-team-skill-interface-1.6",
+            "guru-team-skill-interface-1.8",
         )
         self.assertEqual(qualification["private_artifact_ids"], [])
         self.assertEqual(
@@ -968,9 +969,9 @@ class QualificationEvalTests(unittest.TestCase):
         self.assertEqual(
             extension["public_api"]["skill_contracts"]["contract_manifests"],
             [{
-                "id": "production-current-v5",
-                "schema_id": "guru-team-production-contract-manifest-5.0",
-                "path": "contracts/production-current-5.0.json",
+                "id": "production-current-v6",
+                "schema_id": "guru-team-production-contract-manifest-6.0",
+                "path": "contracts/production-current-6.0.json",
             }],
         )
         self.assertLessEqual(
@@ -979,7 +980,7 @@ class QualificationEvalTests(unittest.TestCase):
         )
         self.assertEqual(
             (SKILLS / "contracts/production-current.json").read_bytes(),
-            (SKILLS / "contracts/production-current-5.0.json").read_bytes(),
+            (SKILLS / "contracts/production-current-6.0.json").read_bytes(),
         )
         self.assertTrue((SKILLS / "contracts/production-current-2.0.json").is_file())
 
@@ -1245,6 +1246,7 @@ print(json.dumps({"type": "turn.completed"}, separators=(",", ":")))
                     "argv": rendered,
                     "cwd": str(kwargs.get("cwd")),
                     "stdin": kwargs["input"],
+                    "runtime_pointer_before": active_pointer_path(Path(kwargs["cwd"])).read_bytes(),
                 })
             return real_subprocess_run(argv, *arguments, **kwargs)
 
@@ -1498,7 +1500,11 @@ print(json.dumps({"type": "turn.completed"}, separators=(",", ":")))
                     "-",
                 ],
             )
-            self.assertFalse((owner / ".trellis/.runtime").exists())
+            selection = active_pointer_path(owner)
+            self.assertEqual(selection.read_bytes(), wrapper_call["runtime_pointer_before"])
+            self.assertEqual({path.relative_to(owner) for path in (owner / ".trellis/.runtime").rglob("*") if path.is_file()},
+                             {selection.relative_to(owner)})
+            self.assertEqual(eval_support.runtime_residue(owner), [])
             self.assertEqual(
                 [
                     path.relative_to(owner).as_posix()

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-readiness-ready-7.0",
+  "oneOf": [
+    {
+      "$ref": "public-ready-output-5.0.schema.json"
+    },
+    {
+      "$ref": "public-issue-ready-output-1.0.schema.json"
+    }
+  ]
+}

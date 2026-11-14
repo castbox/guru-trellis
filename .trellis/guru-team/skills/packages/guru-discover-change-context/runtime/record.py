@@ -4,7 +4,11 @@ from pathlib import Path
 from common import active_task,bind_owner_to_public,load_invocation,parse,record_recovery,root
 from runtime.io import CommandError
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);envelope=load_invocation(repo,package_root,a.invocation);public=envelope["public_input"];transition=envelope["transition"];v=bind_owner_to_public(package_root,repo,public,transition,envelope["owner_result"])
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);envelope=load_invocation(repo,package_root,a.invocation);public=envelope["public_input"]
+ if public.get("profile")=="issue_readiness_supplement" or public.get("return_identity",{}).get("profile")=="issue_readiness_supplement":
+  from issue_review import execute
+  return execute(package_root,envelope,"record")
+ public=envelope["public_input"];transition=envelope["transition"];v=bind_owner_to_public(package_root,repo,public,transition,envelope["owner_result"])
  if a.recovery_continuation_id and not a.active_task:raise CommandError("invalid_arguments","recovery_continuation_id","Provide active-task identity for recovery.")
  if a.active_task:
   if public["mode"]!="workflow":raise CommandError("schema_mismatch","mode","Active-task context discovery is workflow-only.")

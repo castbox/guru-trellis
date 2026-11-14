@@ -26,8 +26,9 @@ request when available. No additional approval is needed for that recovery.
 For `change_request`, read the same Clarify-owned
 [Issue content specification](../guru-clarify-requirements/references/issue-content.md)
 in full before review, together with the writing specification above and
-necessary current source context. Review clarity, terminology, and semantic
-preservation across the final complete title/body. Keep the fixed scanner
+necessary current source context. Apply its method for independent reading of
+the complete body and comparison with sources to clarity, terminology, and semantic preservation
+across the final complete title/body. Keep the fixed scanner
 scope and original rewrite/rescan/re-entry contract. Revision language checks
 cover this round's changed text and necessary context; content completeness
 still concerns the complete revised body. Report an outside-scope gap and its
@@ -167,3 +168,13 @@ contracts. The old planning_artifacts activity profile is retired; no Task
 status fallback is supported. Pass carries its continuation; content_changed carries actual change_refs, key and task_ref to
 their selected router. Recorder/checker envelope carries key/task_ref and the
 same scope; the public DTO never carries the scan or private digest bundle.
+
+## Issue Readiness supplement
+
+Use `issue_readiness_supplement` only for the actual original Readiness gap.
+Read [the local return contract](references/issue-readiness-supplement.md).
+Execute this owner's complete applicable semantic method, original gate and
+necessary interactions. Applicable coverage and current facts satisfy local
+preconditions; do not manufacture full-chain receipts. Complete this local call
+back to the same Issue/source/continuation Readiness, without running the default
+remaining Intake chain. Read-only scope performs no mutation.

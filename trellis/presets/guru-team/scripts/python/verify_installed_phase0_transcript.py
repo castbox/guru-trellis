@@ -616,6 +616,17 @@ def project_installed_output(
     return projected, str(projection.get("id") or "")
 
 
+def full_intake_discovery_seed(actual: dict[str, Any]) -> dict[str, Any]:
+    """Retained full-chain fixture caller after the workflow base router.
+
+    The source is actual Sync stdout. This supplies no readiness judgment and
+    does not represent initial existing-Issue fast-path coverage.
+    """
+    return {"source_exit": actual["exit_id"], "profile": "pre_task",
+            "mode": actual["handoff_mode"],
+            "continuation_id": actual["handoff_continuation_id"]}
+
+
 def record_semantic(
     root: Path,
     env: dict[str, str],

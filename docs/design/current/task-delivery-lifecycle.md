@@ -191,3 +191,13 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 - **D794-05 / CON794-ADOPTION** 承接R794-07：原tools/installer成套采用source/workflow/packages/spec/受影响平台，保Task/session/定制/sidecar；源码、组件、真实Agent、安装及外部层次分开。
 
 实际接口和内部步骤由原canonical owners单写，Architecture必要ADR由其原owner晋升；本设计不产生正式pass、安装或业务采用。
+
+
+## D815：原 owner 内的 manifest 接续
+
+- **D815-01 / CON815-PREIMAGE** 承接 R815-01：原 Reconcile 冲突步骤拥有固定 H/blob 的适用性、原字节和 mode 的工作文件恢复及停止条件；原 tools inventory 继续读旧前像。该前像不成为 canonical 或最终 stage-0，merge/index 与无关内容保持。
+- **D815-02 / CON815-INSTALLATION** 承接 R815-02/05：原 tools owner 从完整组合 canonical 使用原 preview/一次 prepare/invoke，AI 作逐路径判断；原 installer 生成最终 manifest/投影，目标自身 resolver、installed/native/drift 和 sidecar/mode 证明实际安装。原失败/源锁/受管 provenance 前置保持，不增加 parser、schema、公共 profile 或 owner。
+- **D815-03 / CON815-CONTINUITY** 承接 R815-03：原 resolved executor 核完整最终 tree、正确父序、零 unmerged，并保同 key/PR 和原当前 Task dirty metadata 例外；原工具事务保 Task/session/peer 和固定恢复身份。开发结果不改标正式 source_locked，clean H 后由原工具 owner 新操作采用。
+- **D815-04 / CON815-RETIREMENT** 承接 R815-04：原 Publication 后继 action 使用已有 `retire_completed`，核真实 terminal/PR/HEAD/payload 后只退役私有事务和其 gate；公共 PublicationFact 保留。未知或未完成动作仍由原 recovery 承接，无手工清理入口。
+
+原 [Reconcile 合同](../../../trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)、[tools 合同](../../../trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)、[Publication 合同](../../../trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action) 独占执行细节，README 只定位它们。直接补原合同的成本是 matching 分发及真实组合验证；避免第二恢复路径、长期状态与 hash 拼接维护。入口或必要 owner/API 发生真实变化时返回原规划/Architecture 重新判断。来源、前驱及关系见 [#815 追踪](../../requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md)，验证由 T815 承接。

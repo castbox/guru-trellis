@@ -114,6 +114,68 @@ Each child uses its repository’s actual saved project and primary folder.
 The coordinator and provider can be in a third repository. Do not create
 anything during this dry-run.
 
+## Frontend Starts From An API Contract
+
+```yaml
+repositories:
+  example/api:
+    project_path: /absolute/path/to/api
+    base_branch: dev
+  example/mobile:
+    project_path: /absolute/path/to/mobile
+    base_branch: main
+  example/web:
+    project_path: /absolute/path/to/web
+    base_branch: main
+nodes:
+  - repository: example/api
+    issue: 21
+    depends_on: []
+  - repository: example/mobile
+    issue: 22
+    depends_on: []
+    contract_dependencies:
+      - provider: example/api#21
+        contract: https://github.com/example/api/issues/21#issuecomment-123456789
+        work: Profile screen requests, responses and error states
+  - repository: example/web
+    issue: 23
+    depends_on: []
+    contract_dependencies:
+      - provider: example/api#21
+        contract: https://github.com/example/api/issues/21#issuecomment-123456789
+        work: Profile page requests, responses and error states
+max_parallel: 3
+mode: dry-run
+```
+
+Suppose API #21 is still implementing, but its current contract specifies the
+profile interface sufficiently for both consumers. The ready set includes all
+three Issues. In a covered live run, instruct Mobile #22 and Web #23 to use
+contract-based Mock interface data and proceed while API #21 continues. No API
+merge, Issue closure or deployed endpoint is needed for this start condition.
+
+If the profile read interface is usable but the update error behavior is still
+missing, start the read work and hold only the affected update work. On each
+heartbeat reread the actual contract, request a concrete missing detail from
+the existing provider owner where permitted, and continue the same frontend
+owners when that detail becomes usable. Keep routine coordination quiet.
+
+If Web #23 also has `depends_on: [example/api#21]`, that explicit completion
+edge still holds Web #23 until API #21 fully completes. Do not silently replace
+it with a contract prerequisite. If that edge conflicts with the stated intent
+to wait only for the contract, resolve that specific discrepancy first.
+With one execution slot and API #21 running, ready frontend work waits for a
+normal slot release; contract readiness does not increase concurrency.
+
+The equivalent Chinese request is:
+
+```text
+Mobile #22 和 Web #23 仅依赖后端 #21 的可用接口合同。
+合同足以支持的部分立即用 Mock 接口数据开发，与后端并行推进；
+合同缺口只暂停受影响部分，不等待后端实现完成、部署或上线。
+```
+
 ## Initiative And Missing Environment
 
 ```text

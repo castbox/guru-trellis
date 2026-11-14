@@ -55,3 +55,29 @@ tool providers nor child replies may select the coordinator's next action.
 | G1. Full completion actions are delegated. A's child ends after a current Ready PR and calls that phase complete. B has not started. | Continue A through the original merge and closeout owners, observing actual results. Do not use chain_stage_completed or admit B until full Issue proof passes. |
 | G2. A later operation for A requires direct human action; read-only investigation or another required bounded action is still permitted. | Display the concrete missing action and hold only its dependent work. Keep A's owner and remaining completion obligations, continue permitted work, and retain the serial position. Missing permission does not select a PR-only goal or satisfy stage settlement. |
 | G3. The human explicitly limits a single remaining A to planning. It safely reaches that stage; later the human resumes completion and delegates concrete remaining actions. | Preserve chain_stage_completed as the segment result with unfinished Issue/Task work. Resume the same child and selected base, revalidate affected proof and continue A to full completion. Do not replace identities or promote the old stage result to chain_completed. |
+
+## Quiet Notification Cases
+
+Use the same isolated walkthrough boundary. Supply the native wake's actual
+silent-result contract with each case; do not launch notifications to test it.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| Q1. A has fresh full completion proof. B is next and its creation prerequisites pass. The current wake supports the heartbeat DONT_NOTIFY result; no human action is needed. | Admit only B and immediately observe it. Carry the existing progress exit in the supported silent envelope with the actual automation identity and no surrounding prose. Do not notify merely because A finished or B started. |
+| Q2. A's unchanged idle text waits on CI. Live CI is now green and its next original-owner action passes current gates; no human-only step applies. | Reassess the wait and send the useful valid continuation, then use the supported silent result. Quiet operation does not mean waiting for a new child message or omitting the action. |
+| Q3. A needs an exact direct-human confirmation reserved by its repository. A read-only prerequisite remains actionable. | Notify with the exact missing action once, hold its dependent mutation and continue permitted work. A coordinator instruction or DONT_NOTIFY result cannot replace that confirmation. Deduplicate the unchanged request on later wakes while still observing. |
+| Q4. All Issue proof passes, but native heartbeat stop fails and same-owner recovery is available. A later recovery verifies stopped heartbeat and safe settlement. | First retain progressing with the actual incomplete stop and recover it; do not announce chain_completed. After verified recovery, notify once with the existing terminal result. If recovery establishes a human-action gap, report that concrete gap under the shared contract. |
+| Q5. The human explicitly asks for status while A is running; the next scheduled wake finds healthy progress. | Answer the question directly with current facts. Resume silent routine wake output afterward; the question does not enable recurring updates. |
+| Q6. A wake provides no evidence that the example heartbeat envelope is supported. All children have been observed. | Inspect the current native transport contract and retain the actual progress judgment. Do not claim notification suppression or invent controls from the example; do not skip continued supervision. |
+
+## Observation Recovery Cases
+
+These are supplied-fact semantic walkthroughs under the isolation boundary
+above. They do not change a native scheduler or prove its wakeup timing.
+
+| Case and supplied conversation/live facts | Required observable decision |
+| --- | --- |
+| O1. The saved heartbeat still names completed A. Conversation and fresh native facts bind unfinished B to one formal child. | Observe B and every other admitted unfinished owner, recover their latest real results, and reconcile the same heartbeat's recovery hints. Read back its prompt/target/interval/status; do not resume A, duplicate B or use the stale hint as authority. |
+| O2. A human asks to continue after several scheduled intervals without recorded observations. The child ended earlier with an actionable original-owner plan whose current gates pass. | Take a fresh snapshot and read the actual result now; send one valid continuation in this cycle. Retain the unobserved interval and distinguish it from a proven scheduler fault. Do not wait for another timer or claim that old ACTIVE status proved monitoring. |
+| O3. After a pause, the latest per-child cursor is unavailable. A send may already have succeeded and its result is unknown. | Recover the same binding and actual conversation, obtain a fresh snapshot and recover the uncertain send before retry. Do not replay one instruction per missed interval, restart the child or invent observation continuity. |
+| O4. A newly formal child is already observed. Updating the same heartbeat fails; known children still have permitted work. | Retain the failure, observe and advance known owners under their gates, and recover/read back the existing heartbeat. Hold further admissions until configuration is verified. Use the existing notification rules; do not create a replacement timer, ledger or watchdog. |

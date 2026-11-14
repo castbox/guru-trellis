@@ -1,0 +1,7 @@
+{
+  "exit_id": "refresh_context",
+  "handoff_mode": "workflow",
+  "handoff_repo_root": ".",
+  "handoff_base_branch": "main",
+  "handoff_route": "repo_change"
+}

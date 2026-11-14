@@ -19,7 +19,7 @@ from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycl
 from runtime.task_lifecycle.checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult, acquire_checkout
 from runtime.task_lifecycle.composition import (
     bind_created_session, establish_created_control_state, prepare_creation_inputs,
-    recover_created_control_state,
+    normalize_creation_inputs, recover_created_control_state,
 )
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import find_registration, inspect_registered_worktree, inspect_repository
@@ -121,7 +121,8 @@ def _recover_acquired(plan: CheckoutAcquisitionPlan) -> CheckoutAcquisitionResul
     repository = inspect_repository(plan.repository_context)
     registration = find_registration(repository, expected) if expected is not None else None
     if registration is None:
-        raise LifecycleContractError("creation_result_mismatch", "checkout", "Recover only the reviewed checkout path.")
+        field = "acquisition.invocation_checkout" if plan.route == "adopt_invocation_checkout" else "acquisition.checkout_root"
+        raise LifecycleContractError("creation_result_mismatch", field, "Recover only the reviewed registered checkout path in the same repository.")
     checkout = inspect_registered_worktree(repository, registration)
     if checkout.inspection_error or checkout.branch_ref != plan.request().branch_ref or checkout.head != plan.decision_head:
         raise LifecycleContractError("creation_result_mismatch", "checkout", "Recover only the reviewed branch and decision HEAD.")
@@ -149,19 +150,12 @@ def _official_port(checkout: Path) -> Any:
 
 
 def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
-    validate_json(data, PACKAGE / "schemas/public-input.schema.json", "input")
+    validate_json(data, PACKAGE / "schemas/public-input-2.0.schema.json", "input")
     try:
         plan = _plan(root, data)
         if data["action"] == "recover_created_task_result":
             # Recovery must not run the pre-creation uniqueness check or repeat mutation.
-            from runtime.task_lifecycle.composition import CreationInputs
-            creation = data["creation"]
-            inputs = CreationInputs(
-                creation["task_id"], creation["task_ref"], creation["source_profile"],
-                creation["reviewed_source"], creation["accepted_scope_identity"],
-                creation["delivery_target"], creation["selected_base_ref"],
-                creation["reviewed_base_head"], plan,
-            )
+            inputs = normalize_creation_inputs(root, data["creation"], plan)
             acquired = _recover_acquired(plan)
             key = TaskLifecycleKey(inputs.task_id, 0)
             binding = BranchBindingStore(inspect_repository(root)).read(key)
@@ -229,6 +223,9 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
             "invalid_task_ref", "task_not_found",
             "primary_anchor_unavailable", "invalid_worktree_name", "invalid_worktree_root",
             "configured_checkout_mismatch", "worktree_config_conflict",
+            "creation_base_source_mismatch", "creation_base_object_unavailable",
+            "creation_acquisition_mismatch", "creation_repository_mismatch",
+            "creation_result_mismatch",
         }:
             diagnostic = {"diagnostic": {"field_path": exc.field_path, "remediation": exc.remediation}}
         if exc.code in {"task_identity_already_exists", "creation_identity_mismatch", "creation_control_state_exists", "creation_result_mismatch", "invalid_task_identity"}:
@@ -244,7 +241,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
     data = read_json(args.input, "input")
     command_id = command.get("id", "invoke-guru-create-task")
     if command_id == "record-task-plan":
-        validate_json(data, package_root / "schemas/public-input.schema.json", "input")
+        validate_json(data, package_root / "schemas/public-input-2.0.schema.json", "input")
         if data["action"] != "create_task":
             raise CommandError("invalid_arguments", "action", "Record only a fresh task creation plan.")
         _require_current_task_date(data["creation"]["task_ref"])

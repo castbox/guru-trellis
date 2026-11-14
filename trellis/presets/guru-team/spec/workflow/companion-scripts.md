@@ -1020,7 +1020,12 @@ without requiring its branch checkout or cleanliness; `sync` retains the
 original fetch/ff/identity loop below. Omitted operation preserves sync for old
 direct calls. Markdown selects intent. Runtime does not infer it from a Task,
 branch name, dirty state, or an earlier failure. `baseline_ready` enters the
-original Discovery consumer and never claims synchronization.
+object-specific workflow base router and never claims synchronization. The
+selected package-owned current input and closed deterministic envelope use 3.0.
+The original Sync wrapper validates both before execution. Its dedicated Issue
+refresh restores the exact adopted commit while preserving selected_ref; it does
+not reinterpret a later value of that ref. See MIGRATION-819 for controlled
+consumer selection and fixed-provider recovery.
 
 Discovery's `read-change-context-source` command consumes the actual
 `base_current` transition and a source path, then returns fixed-commit blob

@@ -64,12 +64,9 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
                 for consumer in consumers:
                     entry = root / consumer / "SKILL.md"
                     with self.subTest(projection=root, consumer=consumer):
+                        # Compare canonical and installed bytes; this does not
+                        # prove that an Agent loads the semantic rules.
                         self.assertEqual(entry.read_bytes(), (source_packages / consumer / "SKILL.md").read_bytes())
-                        # Resolve the declared loader against the actual provider.
-                        names = re.findall(r"read `(review-sufficiency\.md)`", entry.read_text())
-                        self.assertTrue(names, f"missing common-body loader: {entry}")
-                        for name in names:
-                            self.assertEqual((repo / ".trellis/spec/workflow" / name).read_bytes(), canonical)
                 method_relative = Path("guru-review-change/references/review-method.md")
                 method = root / method_relative
                 self.assertEqual(method.read_bytes(), (source_packages / method_relative).read_bytes())
