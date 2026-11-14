@@ -1216,11 +1216,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-14T03:11:31Z",
+  "installed_at": "2026-11-14T03:45:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "9edde6343c7437b6a1928e1ab0097d89ad35f40f",
-    "commit": "9edde6343c7437b6a1928e1ab0097d89ad35f40f",
+    "ref": "793f34306cd8988d26c84cb872c2d503c6d0907e",
+    "commit": "793f34306cd8988d26c84cb872c2d503c6d0907e",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -2964,7 +2964,7 @@
       {
         "path": ".trellis/guru-team/skills/consumers/workflow/stage0/sync-synced-router-3.0.schema.json",
         "source": "trellis/skills/guru-team/consumers/workflow/stage0/sync-synced-router-3.0.schema.json",
-        "sha256": "1bde6363eb9b469d5f475c70e5f73990647a340890bc0e2f2d60f34db1fd39a7",
+        "sha256": "6315928b64c61224c992068bb2848d9f5d104452f90b35b4acd2346b2d72bc2f",
         "executable": false,
         "action": "installed"
       },

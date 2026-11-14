@@ -60,8 +60,8 @@
       },
       "candidate": {
         "base_ref": "4f2adef1f7b099f78bb8429e8b8facd66dce3bfc",
-        "content_ref": "sha256:a2a4ab79225b1862f51d3e2c40c25250d912236d82f3284eb437576c5d34c4c3",
-        "head_ref": "9edde6343c7437b6a1928e1ab0097d89ad35f40f",
+        "content_ref": "sha256:c82891b78386302840cfd197d87e41a3f683e072ca7e7636ff401ce99db9b354",
+        "head_ref": "793f34306cd8988d26c84cb872c2d503c6d0907e",
         "kind": "git",
         "paths": [
           ".agents/skills/guru-clarify-requirements/SKILL.md",
@@ -304,7 +304,6 @@
           ".cursor/skills/guru-sync-base/schemas/public-input-current-3.0.schema.json",
           ".cursor/skills/guru-sync-base/schemas/public-issue-review-refresh-input-1.0.schema.json",
           ".cursor/skills/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
-          ".trellis/guru-team/extension.json",
           ".trellis/guru-team/references/routing.md",
           ".trellis/guru-team/skills/adapters/eval/eval_support.py",
           ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",

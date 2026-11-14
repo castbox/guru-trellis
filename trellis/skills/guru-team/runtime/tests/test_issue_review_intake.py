@@ -80,6 +80,14 @@ print(result if isinstance(result,str) else json.dumps(result))
         result=subprocess.run(args,input=json.dumps(payload),capture_output=True,text=True,env=self.env,cwd=REPO)
         if ok:self.assertEqual(result.returncode,0,result.stdout+'\n'+result.stderr)
         value=json.loads(result.stdout)
+        if skill=='guru-sync-base' and script=='invoke.sh' and value.get('exit_id') in ('synced','baseline_ready'):
+            # Validate the unchanged stdout before the workflow's thin projection.
+            contracts=json.loads((SKILLS/'packages'/skill/'interface.json').read_text())['public_contracts']
+            output=next(row for row in contracts['outputs'] if row['exit_id']==value['exit_id'])
+            projection=next(row for row in contracts['projections'] if row['id'] in output['consumer_use_ids'])
+            self.assertEqual('direct',projection['operation'])
+            consumer=next(row for row in contracts['consumer_inputs'] if row['id']==projection['consumer_input_id'])
+            validate_json(value,SKILLS/consumer['contract']['path'],'sync_consumer')
         return value['result'] if value.get('formal_exit') is False else value
 
     def readiness(self,public,exit_id):
