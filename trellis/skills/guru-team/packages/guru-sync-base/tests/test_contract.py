@@ -471,17 +471,38 @@ class BaseSyncPackageContractTests(unittest.TestCase):
                 self.assertNotIn(forbidden, execute)
 
     def test_public_invoke_skipped_is_schema_valid(self) -> None:
-        invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "route": "original_request"}}
-        result = subprocess.run(
-            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
-            input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-        )
-        self.assertEqual(result.returncode, 0, result)
-        payload = json.loads(result.stdout)
-        self.assertEqual(payload, {"exit_id": "skipped", "continuation_id": "start-original-request"})
         from jsonschema import Draft202012Validator
         schema = json.loads((self.package / "schemas/public-skipped-output.schema.json").read_text())
-        self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+        invocations = (
+            {"public_input": {"source_exit": "start", "mode": "workflow", "route": "original_request"}},
+            {"mode": "workflow", "route": "original_request"},
+            {"schema_version": "1.0", "public_input": {"mode": "workflow", "route": "original_request"}},
+        )
+        for invocation in invocations:
+            with self.subTest(invocation=invocation):
+                result = subprocess.run(
+                    [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                    input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result)
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload, {"exit_id": "skipped", "continuation_id": "start-original-request"})
+                self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+
+    def test_structured_return_keeps_envelope_and_required_input_validation(self) -> None:
+        public = json.loads((self.package / "examples/public-confirmation-refresh-read-input-1.0.json").read_text())
+        missing_repository = {key: value for key, value in public.items() if key != "repo_root"}
+        for invocation, field in (
+            ({"public_input": public}, "invocation.schema_version"),
+            ({"schema_version": "1.0", "public_input": missing_repository}, "public_input"),
+        ):
+            with self.subTest(field=field):
+                result = subprocess.run(
+                    [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                    input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+                )
+                self.assertEqual(result.returncode, 2, result)
+                self.assertEqual(json.loads(result.stdout)["field_path"], field)
 
     def test_public_invoke_synced_is_schema_valid(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -512,6 +533,18 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             self.assertEqual(transition["mode"], "workflow")
             self.assertEqual(transition["base"]["decision_head"], transition["base"]["local_base_head"])
             self.assertEqual(transition["base"]["local_base_head"], transition["base"]["remote_base_head"])
+
+            minimal = subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps({"mode": "workflow", "repo_root": str(root), "base_branch": "main"}),
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(minimal.returncode, 0, minimal)
+            minimal_payload = json.loads(minimal.stdout)
+            self.assertEqual(minimal_payload["exit_id"], "synced")
+            self.assertEqual(minimal_payload["handoff_repo_locator"], str(root.resolve()))
+            self.assertEqual(minimal_payload["transition"]["base"]["selected_base"], "main")
+            self.assertEqual(minimal_payload["transition"]["base"]["decision_head"], transition["base"]["decision_head"])
 
     def test_public_invoke_unresolved_base_returns_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
