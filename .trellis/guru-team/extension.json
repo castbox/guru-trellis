@@ -1216,11 +1216,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-13T19:22:35Z",
+  "installed_at": "2026-11-14T03:11:31Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "4f2adef1f7b099f78bb8429e8b8facd66dce3bfc",
-    "commit": "4f2adef1f7b099f78bb8429e8b8facd66dce3bfc",
+    "ref": "9edde6343c7437b6a1928e1ab0097d89ad35f40f",
+    "commit": "9edde6343c7437b6a1928e1ab0097d89ad35f40f",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1577,7 +1577,7 @@
       {
         "id": "guru-sync-base",
         "interface_sha256": "0ffc55f7892abe718380f39f58ac01ae3a8bdcada5f65e82ada50a69652108c3",
-        "tree_sha256": "512375febd9d284ba7186c514b3536617c4bb5b8e82366016df614446392806a"
+        "tree_sha256": "6f939ba2ecbc2e4269054656f66146d576d54b424e7e35ce686bdd86b52981ff"
       },
       {
         "id": "guru-upgrade-installation",
@@ -21780,7 +21780,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
-        "sha256": "6e3bc1aee2f54de55fee167759606350ea9c4b8e9568fdc4b40756a7a08fa22c",
+        "sha256": "6098c0dd01722991b2ea59d74cd98a8b3dc6a87dc813290157f634e3722ce759",
         "executable": false,
         "action": "installed"
       },
@@ -69149,7 +69149,7 @@
       {
         "path": ".agents/skills/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
-        "sha256": "6e3bc1aee2f54de55fee167759606350ea9c4b8e9568fdc4b40756a7a08fa22c",
+        "sha256": "6098c0dd01722991b2ea59d74cd98a8b3dc6a87dc813290157f634e3722ce759",
         "executable": false,
         "action": "installed"
       },
@@ -69380,7 +69380,7 @@
       {
         "path": ".claude/skills/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
-        "sha256": "6e3bc1aee2f54de55fee167759606350ea9c4b8e9568fdc4b40756a7a08fa22c",
+        "sha256": "6098c0dd01722991b2ea59d74cd98a8b3dc6a87dc813290157f634e3722ce759",
         "executable": false,
         "action": "installed"
       },
@@ -69611,7 +69611,7 @@
       {
         "path": ".cursor/skills/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/public-synced-output-3.0.schema.json",
-        "sha256": "6e3bc1aee2f54de55fee167759606350ea9c4b8e9568fdc4b40756a7a08fa22c",
+        "sha256": "6098c0dd01722991b2ea59d74cd98a8b3dc6a87dc813290157f634e3722ce759",
         "executable": false,
         "action": "installed"
       },

@@ -17,7 +17,6 @@
       "const": "synced"
     },
     "handoff_profile": {
-      "const": "pre_task",
       "enum": [
         "pre_task",
         "context_request",

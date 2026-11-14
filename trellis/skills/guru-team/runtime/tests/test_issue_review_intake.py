@@ -366,5 +366,29 @@ print(result if isinstance(result,str) else json.dumps(result))
         ready=self.readiness(public,'ready')
         self.assertEqual({'kind':'synced_branch','selected_ref':'main','commit':self.commit},ready['base_source'])
 
+        # Advance the local bare origin while the selected checkout stays behind.
+        advanced=self.git('commit-tree',self.git('rev-parse','HEAD^{tree}'),'-p',self.commit,'-m','remote source advance')
+        self.git('push','--quiet','origin',advanced+':refs/heads/main')
+        self.assertEqual(self.commit,self.git('rev-parse','HEAD'))
+        requested=self.readiness(public,'refresh_issue_baseline')
+        actual=self.call('guru-sync-base','invoke.sh',{'schema_version':'1.0','public_input':{'source_exit':requested['exit_id'],'mode':requested['mode'],'repo_root':str(self.repo),'route':'repo_change','operation':'sync','base_branch':requested['base_source']['selected_ref'],'return_identity':{'profile':'existing_issue_intake','issue':requested['issue'],'continuation_id':requested['continuation_id']}}})
+        self.assertEqual('synced',actual['exit_id'])
+        self.assertEqual('existing_issue_intake',actual['handoff_profile'])
+        self.assertEqual(public['mode'],actual['handoff_mode'])
+        self.assertEqual(public['continuation_id'],actual['handoff_continuation_id'])
+        self.assertEqual({'profile':'existing_issue_intake','issue':public['issue'],'continuation_id':public['continuation_id']},actual['return_identity'])
+        refreshed=actual['transition']['base']
+        self.assertEqual('main',refreshed['selected_base'])
+        self.assertEqual('origin',refreshed['remote'])
+        for field in ('decision_head','local_base_head','remote_base_head'):
+            self.assertEqual(advanced,refreshed[field])
+        self.assertEqual(advanced,self.git('rev-parse','HEAD'))
+        returned={'profile':actual['handoff_profile'],'source_exit':actual['exit_id'],'mode':actual['handoff_mode'],'issue':actual['return_identity']['issue'],'base_source':{'kind':'synced_branch','selected_ref':refreshed['selected_base'],'commit':refreshed['decision_head']},'continuation_id':actual['return_identity']['continuation_id']}
+        ready=self.readiness(returned,'ready')
+        self.assertEqual('ready',ready['exit_id'])
+        self.assertEqual(public['issue'],ready['issue'])
+        self.assertEqual(public['continuation_id'],ready['continuation_id'])
+        self.assertEqual({'kind':'synced_branch','selected_ref':'main','commit':advanced},ready['base_source'])
+
 
 if __name__=='__main__':unittest.main()
