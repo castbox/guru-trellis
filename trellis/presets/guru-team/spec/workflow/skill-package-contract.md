@@ -551,9 +551,10 @@ authoring_fields, authoring_example and alternate_authoring. The actual output
 selects exactly one item; missing, unknown or duplicate profiles do not select
 a default. The selected seed and AI-authored fields retain the disjoint,
 complete-consumer-input validation below. No new projection operation or
-semantic script is introduced. The current Sync baseline_ready cases are
-pre_task and context_request; their exact AI fields belong to the original
-Sync/Discovery contracts. Original fixed-profile authoring declarations remain.
+semantic script is introduced. The current Sync baseline_ready/synced outputs enter the object-specific
+workflow base router under MIGRATION-819. It preserves original pre_task and
+context_request uses while selecting existing-Issue Readiness explicitly.
+The package-owned profiles and routing reference own those exact projections. Original fixed-profile authoring declarations remain.
 
 The matching current graph adopts registry1.5, production manifest6 and its
 current alias, ordinary eval run5, and the direct discovery/validator,

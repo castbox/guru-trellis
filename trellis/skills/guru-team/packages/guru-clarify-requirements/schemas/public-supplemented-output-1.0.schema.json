@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-public-supplemented-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "mode",
+    "issue",
+    "base_source",
+    "continuation_id",
+    "result_summary",
+    "source_refs",
+    "source_selection"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "supplemented"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "issue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-issue-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "number"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "base_source": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-base-source-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "selected_ref",
+        "commit"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "git_object",
+            "synced_branch"
+          ]
+        },
+        "selected_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "source_selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "locator",
+          "section",
+          "authority_kind"
+        ],
+        "properties": {
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority_kind": {
+            "enum": [
+              "requirement",
+              "design_constraint",
+              "advisory"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

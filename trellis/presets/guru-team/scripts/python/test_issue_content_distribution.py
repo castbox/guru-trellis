@@ -30,7 +30,8 @@ class IssueContentDistributionTest(unittest.TestCase):
         source = self.fixture.guru_root / "trellis/skills/guru-team/packages"
         clarify = "guru-clarify-requirements"
         body = Path(clarify) / "references/issue-content.md"
-        assets = [body]
+        review_body = Path(clarify) / "references/issue-review-comment.md"
+        assets = [body, review_body]
         for kind in ("brief", "detailed", "revision"):
             assets.append(Path(clarify) / "examples/issue-content" / kind / "process.md")
         owners = (
@@ -77,6 +78,13 @@ class IssueContentDistributionTest(unittest.TestCase):
                         resolved = (reader.parent / link.split("#", 1)[0]).resolve()
                         self.assertEqual(resolved, (root / body).resolve())
                         self.assertEqual(resolved.read_bytes(), (source / body).read_bytes())
+
+                for owner in (clarify, "guru-create-issue"):
+                    reader=root/owner/"SKILL.md"
+                    review_links=[link for link in re.findall(r"\]\(([^)]+)\)",reader.read_text()) if link.endswith("issue-review-comment.md")]
+                    self.assertTrue(review_links)
+                    for link in review_links:
+                        self.assertEqual((reader.parent/link).resolve(),(root/review_body).resolve())
 
                 # The common body's source-preservation dependency must also
                 # resolve in each real projection, without another rule copy.

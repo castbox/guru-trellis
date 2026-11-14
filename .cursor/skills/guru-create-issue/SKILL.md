@@ -1,6 +1,6 @@
 ---
 name: guru-create-issue
-description: Use when the user asks to create, open, or file a GitHub Issue, including 新建 issue、创建 Issue、新增 Issue、提 Issue and contextual confirmation such as 同意新建 issue. Load the required upstream review before creating one reviewed Issue, or recover its exact result read-only.
+description: Create one reviewed proposed Issue, reread its content and review comment, and recover the same objects.
 ---
 
 # Create Issue
@@ -57,7 +57,7 @@ body, labels and duplicate disposition. At this Skill's AI review gate, capture
 `reviewed_label_identity_sha256` by canonically digesting the reviewed target's
 `identity_sha256` and the sorted, unique, case-folded reviewed label names:
 `{"reviewed_target": target.identity_sha256, "labels": sorted_label_set}`.
-Keep this review-time identity unchanged across creation and read-only recovery;
+Keep this review-time identity unchanged across creation and Issue-result recovery;
 never derive it from a changed invocation draft. The runtime independently
 recomputes it from `draft.labels`. The input carries the exact reviewed
 target digests; any repo, title, body or label-identity drift returns
@@ -68,7 +68,7 @@ reuse that same value on output-loss recovery; an older same-content Issue is
 not this creation result. GitHub's `createdAt` readback has second precision:
 creation waits until the next whole second after `reviewed_at`. The creation
 call accepts only a current review no more than 60 seconds old; future or
-older reviewed times require fresh review. Read-only output-loss recovery
+older reviewed times require fresh review. Output-loss recovery
 reuses the original time without that creation freshness limit.
 
 Record the reviewed plan, execute one Issue creation, then reread the live
@@ -82,7 +82,7 @@ case-insensitive label identity
 match with `createdAt` at or after the next whole second following
 `reviewed_at`. This same lower bound applies to creation reread and recovery;
 zero or multiple matches fail closed. Do
-not retry mutation. `check-issue-creation-result` is read-only.
+not repeat Issue creation. `check-issue-creation-result` is read-only.
 
 `created -> guru-sync-base -> fresh Intake`. `refresh_review ->
 guru-sync-base`, `blocked -> issue-creation-blocked`. A created Issue is only
@@ -100,3 +100,24 @@ remain required; unchanged applicable investigation need not start from zero.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Review comment and completion (input 2.0)
+
+Read the single [review comment rule](../guru-clarify-requirements/references/issue-review-comment.md).
+At this owner's semantic gate, review the exact `review_comment_body` against
+the actual draft reviews. Include that comment in the same precise side-effect
+preview. After official Issue content readback, publish the comment and GET it
+by id to verify its body and Issue. Only then return `created`.
+
+On output loss, recover the same attempt Issue before its comment. The original
+attempt marker locates this executor's comment; it is not Readiness evidence
+of sufficiency. A complete successful comment listing with no match permits
+only the remaining comment POST. Unknown or multiple matches stop. The check
+command is read-only; recover may finish that missing comment, with the original
+exact payload and current-dialogue side-effect boundary. Never create a second
+Issue. Old pending operations use the complete fixed provider in MIGRATION-819.
+
+`created` enters the original Sync consumer only when the current request also
+asks to start work. An Issue-only request ends after comment readback. A start
+request uses the formal Issue and live comment at Sync -> existing Issue
+Readiness; it does not reuse a draft receipt as a formal Issue pass.

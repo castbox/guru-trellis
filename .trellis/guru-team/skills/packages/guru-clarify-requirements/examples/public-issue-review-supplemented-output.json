@@ -1,0 +1,17 @@
+{
+  "exit_id": "supplemented",
+  "mode": "workflow",
+  "issue": {
+    "repo_ref": "example/repo",
+    "number": 27
+  },
+  "base_source": {
+    "kind": "git_object",
+    "selected_ref": "origin/main",
+    "commit": "1111111111111111111111111111111111111111"
+  },
+  "continuation_id": "issue-review-27",
+  "result_summary": "Completed the requested review within the original owner method.",
+  "source_refs": [],
+  "source_selection": []
+}

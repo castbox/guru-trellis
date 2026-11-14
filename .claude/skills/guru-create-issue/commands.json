@@ -27,7 +27,7 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/public-input.schema.json"
+        "schemas/public-input-2.0.schema.json"
       ],
       "validator_id": "record_plan",
       "runtime_role": "invoke"
@@ -57,7 +57,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "create_issue",
@@ -116,9 +116,9 @@
         "stale_identity",
         "internal_error"
       ],
-      "side_effect": "github_read",
+      "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "recover_result",
@@ -149,7 +149,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "public_invocation",

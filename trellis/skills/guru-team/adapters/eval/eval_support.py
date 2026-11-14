@@ -643,6 +643,9 @@ def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
     if skill in {"guru-review-contract-wording", "guru-review-change-request"}:
         review = next(item for item in interface["schemas"] if item["id"] == "review_invocation")
         assets.add(Path(review["path"]))
+    call_input = contracts["invocation"].get("call_local", {}).get("public_input", {}).get("schema")
+    if call_input:
+        assets.add(Path(call_input["path"]))
     assets.add(Path(contracts["invocation"]["error_schema"]["path"]))
     assets.update(Path(item["schema"]["path"]) for item in contracts["outputs"])
     if any(path.is_absolute() or ".." in path.parts or path.parts[0] not in
@@ -755,7 +758,31 @@ def public_projection_shared_assets(interface: dict[str, Any]) -> set[Path]:
     relative = Path(envelope["path"])
     if relative.is_absolute() or not relative.parts or ".." in relative.parts:
         raise ValueError("public call-local envelope contains an unsafe asset path")
-    return {relative}
+    # Shared invocation successors can reference the retained envelope. Include
+    # those actual consumer-owned schema dependencies in the public projection.
+    shared_root = Path(__file__).resolve().parents[2]
+    assets, pending = {relative}, [relative]
+    def references(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("$ref"), str):
+                yield value["$ref"]
+            for child in value.values():
+                yield from references(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from references(child)
+    while pending:
+        current = pending.pop()
+        for ref in references(json.loads((shared_root / current).read_text())):
+            locator = ref.split("#", 1)[0]
+            if not locator:
+                continue
+            dependency = (shared_root / current.parent / locator).resolve().relative_to(shared_root)
+            if dependency.parts[0] != "consumers" or dependency.suffix != ".json":
+                raise ValueError("Shared invocation dependency must remain consumer-owned")
+            if dependency not in assets:
+                assets.add(dependency); pending.append(dependency)
+    return assets
 
 def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tuple[Path, Path, Path, str, str]:
     canonical_root = Path(request["package_root"]).resolve()

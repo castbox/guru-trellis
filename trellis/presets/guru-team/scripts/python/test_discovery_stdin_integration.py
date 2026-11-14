@@ -72,7 +72,7 @@ class DiscoveryStdinInstallationTests(unittest.TestCase):
             }},
             "synced",
         )
-        public, _ = transcript.project_installed_output(root, "guru-sync-base", "synced", sync)
+        public = transcript.full_intake_discovery_seed(sync)
         before_files = file_snapshot(root)
         before_siblings = {p.relative_to(chain).as_posix() for p in chain.rglob("*")}
         before_status = transcript.run(["git", "status", "--porcelain=v1", "--ignored"], cwd=root).stdout

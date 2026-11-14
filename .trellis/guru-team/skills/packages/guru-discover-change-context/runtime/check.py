@@ -24,7 +24,11 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
    transition=read_json(a.source_transition,"source_transition");__import__("common").validate_transition(package_root,transition)
    repo=root(package_root,transition["repo_locator"]);commit=check_object_source(repo,transition["base"])
   return preview(repo,q,a.limit,commit)
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);envelope=load_invocation(repo,package_root,a.invocation);public=envelope["public_input"];transition=envelope["transition"]
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);envelope=load_invocation(repo,package_root,a.invocation);public=envelope["public_input"]
+ if public.get("profile")=="issue_readiness_supplement" or public.get("return_identity",{}).get("profile")=="issue_readiness_supplement":
+  from issue_review import execute
+  return execute(package_root,envelope,"check")
+ public=envelope["public_input"];transition=envelope["transition"]
  try:v=validate(package_root,envelope["owner_result"]);observation=check_owner_binding(package_root,repo,public,transition,v)
  except CommandError as exc:return {"status":"passed","typed_exit":"blocked","reason":exc.code,"diagnostic":diagnostic(exc)}
  if observation["classification"]!="current":return {"status":"passed","typed_exit":"refresh_base" if observation["classification"]=="refresh_base" else "blocked","reason":observation["reason"],"diagnostic":observation["diagnostic"]}

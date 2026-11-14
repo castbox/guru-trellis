@@ -9,7 +9,11 @@ def public_target(target):
  keys|={"issue_number","url","updated_at"} if target["kind"]=="existing_issue" else ({"draft_id","source_request_sha256"} if target["kind"]=="proposed_draft" else {"caller_locator","request_id","source_request_sha256"})
  return {key:target[key] for key in keys}
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- e,target,prerequisites=invocation(package_root,argv,final=True);public=e["public_input"];owner=e["owner_result"];up=e["transition"]
+ e,target,prerequisites=invocation(package_root,argv,final=True)
+ if target is None:
+  from issue_review import execute
+  return execute(package_root,e,"invoke")
+ public=e["public_input"];owner=e["owner_result"];up=e["transition"]
  check_result(package_root,owner,target,prerequisites);check_receipt(owner,e.get("validation_receipt"),up);exit_id=owner["typed_exit"]
  if exit_id=="blocked":out={"exit_id":"blocked"};schema="public-blocked-output.schema.json"
  elif exit_id=="refresh_context":

@@ -1,5 +1,7 @@
 # Issue 内容的设计责任
 
+#819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
+
 Identity：`RDT-DES-ISSUE-CONTENT`；状态：`current`。导航别名：`D153`、`CON153`、`D153-01..03`、`CON153-01..03`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 原设计](../../requirements-design-test-contributions/153-issue-content-ssot/design.md)与 #818 D1 的原正文收敛和 Docs Plan。
 
 本单元由原 RDT owner 在 #818 批准 Planning、实际实现及工程结果完成后，于 `codex/818-issue-minimal-sufficiency` 的 final_integration 实际整合。整合前重读真实目标、适用来源及必要关系，写后逐项 readback；整合状态为 `integrated_pending_review`，尚待 TaskCommit 与独立 committed Review。该事实不产生 Check/Review pass 或 Task Completion。原基线为 Git `fd0ee32618433a92ae934e29afb5b72e7136b4f7`；本次来源及精确替代范围见 [#818 贡献](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)，普通当前读取无需拼接提案。
@@ -45,3 +47,11 @@ Clarify、Wording、Readiness、Create Issue 的 SKILL 与前三者原合同完�
 ## R/D/T 整合与历史
 
 完整测试策略及观察位于 `docs/test/current/issue-content.md`；[#818 traceability](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)定位原身份、提案和实际目标。只有原 RDT owner 在真实工程验证后重读实际 target、整合并逐项 readback，才返回整合事实；其后仍待 TaskCommit 和同一次独立 committed Review。当前知识状态不替代 Delivery、Completion、Closure 或发布判断。
+
+## D819-01 / CON819-COMMENT：共享正文与原动作恢复
+
+Clarify package的references/issue-review-comment.md单写评论内容规则，Create/Clarify引用同一正文；不复制完整Issue方法或制造机器资格格式。AI判断实际覆盖/结论及精确payload，runtime不能自行生成审核pass。
+
+Create2.0接已审review_comment_body，原executor执行创建→正式title/body读回→POST评论→GET评论读回→created。原单次attempt只定位本次已成功Issue/comment，未知结果先找回唯一对象，确认未执行才补剩余动作；标记不供Readiness作覆盖判据，历史清楚评论不需该标记。
+
+Clarify复用原repo-bound source_actions的POST/PATCH及live readback，更新只限明确comment_id；只读只返回结论，未知结果沿原动作查同Issue/comment，不另建长期writer。实际覆盖不完整时评论如实陈述，真实写入范围和原交互合同保持。新typed路线及来源/恢复consumer由local-fix-intake的D819-02/03/04拥有；对应R819-01与T819-01/02。

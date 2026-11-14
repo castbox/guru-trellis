@@ -60,7 +60,10 @@
       "schema_bindings": [
         "schemas/requirements-clarification.schema.json",
         "schemas/requirements-clarification-active-task-4.0.schema.json",
-        "schemas/requirements-clarification-confirmation-5.0.schema.json"
+        "schemas/requirements-clarification-confirmation-5.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-needs-context-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
       ],
       "runtime_role": "record"
     },
@@ -118,7 +121,10 @@
       "schema_bindings": [
         "schemas/requirements-clarification.schema.json",
         "schemas/requirements-clarification-active-task-4.0.schema.json",
-        "schemas/requirements-clarification-confirmation-5.0.schema.json"
+        "schemas/requirements-clarification-confirmation-5.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-needs-context-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
       ],
       "runtime_role": "check"
     },
@@ -158,7 +164,10 @@
         "schemas/public-retarget-context-output.schema.json",
         "schemas/public-new-task-output.schema.json",
         "schemas/public-blocked-output.schema.json",
-        "schemas/public-scope-ready-output-2.0.schema.json"
+        "schemas/public-scope-ready-output-2.0.schema.json",
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/public-issue-needs-context-output-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

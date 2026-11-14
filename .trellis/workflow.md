@@ -225,7 +225,9 @@ remains subject to the matching installation boundary above.
 
 Initial read-only Intake invokes `guru-sync-base` with `operation=read` and
 adopts its explicit/config-selected fixed Git source. Both `baseline_ready` and
-`synced` have Discovery as their sole consumer. Use `operation=sync` only when
+`synced` enter the thin `guru-issue-intake-base-router`: existing Issues invoke
+original Readiness first; drafts/discussion/standalone and original confirmation
+returns retain their applicable Discovery input. Use `operation=sync` only when
 the actual operation is branch refresh/synchronization; it retains its original
 clean/ff/identity conditions. A draft review does not require commit/push or
 moving another checkout. Formal Task, committed Branch Review, and publication
@@ -250,20 +252,32 @@ Invoke guru-review-change-request and consume only its declared exit.
 
 #### 0.5 Issue and task creation
 
-The normal repo-changing route is:
+The normal route starts with actual Sync -> `guru-issue-intake-base-router`.
+For an existing Issue, explicitly invoke `guru-review-change-request` using
+existing_issue_intake. Consume ready, supplement_context, supplement_requirements,
+supplement_wording, full_intake_required, refresh_issue_baseline or blocked only
+through the declared unique consumers in the routing reference.
 
-guru-sync-base -> guru-discover-change-context ->
-guru-clarify-requirements -> guru-review-contract-wording ->
-guru-review-change-request -> `guru-task-intake-router` ->
-`guru-create-issue` or `guru-create-task` by `ready.transition.target.kind`.
+Each supplementary exit explicitly invokes its original Discovery/Clarify/Wording
+Skill with issue_readiness_supplement. Each actual supplemented result returns
+only to Readiness issue_review_return. Clarify facts return through original
+Discovery context_request to that same Clarify; Wording requirements_gap returns
+to Readiness without a wording pass. The Readiness owner decides the earliest
+remaining dependency after every return. Necessary full Intake retains actual
+Sync -> Discovery -> Clarify -> Wording -> current_issue Readiness.
 
-Only `guru-create-task:created` establishes the Task; current scope acceptance and
-`guru-create-delivery:created` establish the first Delivery before its Planning. `guru-create-issue:created`
-returns to Sync and fresh Intake with the live created Issue as `kind=issue`;
-`guru-create-issue:refresh_review` returns with the proposed draft, without
-inventing an Issue number. The workflow does not create the issue, branch,
-worktree, or task directly. A Scope Change Gate during any active phase
-uses guru-clarify-requirements and returns only through its mapped router.
+Without an Issue, keep Sync -> Discovery -> Clarify. A discussion/draft-only
+request ends at its requested result. Creation intent continues complete Wording
+and proposed_draft Readiness -> original Create Issue, including formal content
+and comment readback. An Issue-only request ends there. A request to start work
+then uses the formal Issue and actual live comment at Sync -> existing-Issue
+Readiness; it does not repeat unaffected draft reviews or convert their receipts.
+The legal standalone_request/no_issue full chain still enters original Create Task.
+
+Only original `guru-create-task:created` establishes the Task. It retains scope,
+identity, checkout, branch/acquisition and real side-effect checks. Current scope
+acceptance and `guru-create-delivery:created` establish the first Delivery before
+its Planning. A Scope Change Gate uses original Clarify and its mapped router.
 
 
 ## Phase Index

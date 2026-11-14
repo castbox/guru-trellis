@@ -349,6 +349,11 @@ race, fault-injection or cross-OS hardening follows this same rule.
 
 ## Source Actions And Mutation Boundary
 
+For review-comment publication/update, first read the single
+[review comment rule](issue-review-comment.md). Apply it within the original
+exact action scope. A pure read-only request performs no GitHub mutation.
+
+
 For Issue/draft writing, revision, and requirements review, actually read
 [the shared Issue content specification](issue-content.md) and the installed
 writing specification before the applicable work. That body owns necessity,

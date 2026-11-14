@@ -8,6 +8,9 @@ from runtime.base_selection import check_candidate
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");public=e.get("public_input");owner=e.get("owner_result");transition=e.get("transition")
  if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and owner result.")
+ if public.get("profile")=="issue_readiness_supplement":
+  from issue_review import execute
+  return execute(package_root,e,"invoke")
  interface=__import__("json").loads((package_root/"interface.json").read_text())
  rows=[row for row in interface["public_contracts"]["input"]["profiles"] if row["id"]==public.get("profile")]
  if len(rows)!=1:raise CommandError("schema_mismatch","profile","Use one declared current wording profile.")

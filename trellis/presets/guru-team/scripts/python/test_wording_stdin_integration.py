@@ -38,7 +38,7 @@ class WordingStdinIntegrationTests(unittest.TestCase):
         sync, _ = transcript.invoke_public(root, env, "guru-sync-base", {
             "schema_version": "1.0", "public_input": {"source_exit": "start", "mode": "workflow", "repo_root": ".", "base_branch": "main", "route": "repo_change"},
         }, "synced")
-        public, _ = transcript.project_installed_output(root, "guru-sync-base", "synced", sync)
+        public = transcript.full_intake_discovery_seed(sync)
         owner, _, public = transcript.checked_context_owner_for_issue(root, env, public, sync["transition"])
         discovery, _ = transcript.invoke_public(root, env, "guru-discover-change-context", {
             "schema_version": "1.0", "public_input": public, "transition": sync["transition"], "owner_context": {}, "owner_result": owner,

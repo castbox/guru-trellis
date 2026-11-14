@@ -131,7 +131,10 @@
         "internal_error"
       ],
       "side_effect": "none",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "contract_wording_recorder",
       "runtime_role": "record"
     },
@@ -233,7 +236,10 @@
         "internal_error"
       ],
       "side_effect": "git_read",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "contract_wording_checker",
       "runtime_role": "check"
     },
@@ -263,7 +269,10 @@
         "internal_error"
       ],
       "side_effect": "runtime_write",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
+        "schemas/issue-review-owner-1.0.schema.json"
+      ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
     }

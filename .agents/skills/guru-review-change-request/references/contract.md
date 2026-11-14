@@ -1,5 +1,13 @@
 # Change Request Readiness Review Contract
 
+## Current existing-Issue profiles
+
+After actual Sync or a local return, load [Issue intake](issue-intake.md).
+That independent contract owns existing_issue_intake/issue_review_return inputs
+and local outputs. The linked-prerequisite provisions below apply to retained
+full-chain current_issue/proposed_draft/standalone_request profiles. No comment
+or local summary is converted into those prior receipts.
+
 ## Ownership And Boundary
 
 `guru-review-change-request` is the only semantic owner of pre-task change

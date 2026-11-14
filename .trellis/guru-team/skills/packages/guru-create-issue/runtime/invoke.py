@@ -134,8 +134,45 @@ def _result(repo: str, issue: dict[str, Any]) -> dict[str, Any]:
     return {"exit_id": "created", "repo_ref": repo, "number": issue["number"], "url": issue["url"]}
 
 
+def _review_comment(data: dict[str, Any], issue: dict[str, Any], *, recover: bool, read_only: bool) -> dict[str, Any]:
+    repo = data["draft"]["repo_ref"]
+    number = issue["number"]
+    attempt = _digest({"created_body": issue["body"]})
+    body = data["review_comment_body"] + f"\n\n<!-- guru-create-issue-review:{attempt} -->"
+    endpoint = f"repos/{repo}/issues/{number}/comments"
+    if recover:
+        pages = json.loads(_gh("api", "--paginate", "--slurp", endpoint))
+        comments = [row for page in pages for row in page] if isinstance(pages, list) and all(isinstance(page, list) for page in pages) else None
+        if comments is None:
+            return {"exit_id": "blocked", "reason_code": "review_comment_result_unresolved"}
+        marker = f"<!-- guru-create-issue-review:{attempt} -->"
+        matches = [row for row in comments if marker in str(row.get("body", ""))]
+        if any(row.get("body") != body for row in matches):
+            return {"exit_id": "blocked", "reason_code": "review_comment_payload_mismatch"}
+        if len(matches) > 1:
+            return {"exit_id": "blocked", "reason_code": "review_comment_result_not_unique"}
+        if matches:
+            comment = matches[0]
+        elif read_only:
+            return {"exit_id": "blocked", "reason_code": "review_comment_missing"}
+        else:
+            # A complete successful listing established that the remaining action
+            # has not completed. A failed/unknown listing never reaches this POST.
+            comment = json.loads(_gh("api", "--method", "POST", endpoint, "--raw-field", "body=" + body))
+    else:
+        comment = json.loads(_gh("api", "--method", "POST", endpoint, "--raw-field", "body=" + body))
+    comment_id = comment.get("id")
+    if type(comment_id) is not int:
+        return {"exit_id": "blocked", "reason_code": "review_comment_result_unresolved"}
+    live = json.loads(_gh("api", f"repos/{repo}/issues/comments/{comment_id}"))
+    expected_issue = f"https://api.github.com/repos/{repo}/issues/{number}"
+    if live.get("id") != comment_id or live.get("body") != body or live.get("issue_url") != expected_issue:
+        return {"exit_id": "blocked", "reason_code": "review_comment_identity_mismatch"}
+    return _result(repo, issue)
+
+
 def invoke(data: dict[str, Any], *, command_id: str = "invoke-guru-create-issue") -> dict[str, Any]:
-    validate_json(data, PACKAGE / "schemas/public-input.schema.json", "input")
+    validate_json(data, PACKAGE / "schemas/public-input-2.0.schema.json", "input")
     draft = data["draft"]
     if (data["reviewed_target"] != _reviewed_target(draft, data["reviewed_target"])
             or data["reviewed_label_identity_sha256"] != _reviewed_label_identity(
@@ -167,7 +204,7 @@ def invoke(data: dict[str, Any], *, command_id: str = "invoke-guru-create-issue"
         issue = _read_issue(repo, number)
         if not _same_issue(issue, draft, reviewed_at, created_body) or issue.get("url") != url:
             return {"exit_id": "blocked", "reason_code": "created_issue_identity_mismatch"}
-        return _result(repo, issue)
+        return _review_comment(data, issue, recover=False, read_only=False)
     # Search is discovery only; recover after exact content validation and
     # uniqueness, never by reissuing the mutation or trusting a title alone.
     candidates = json.loads(_gh("issue", "list", "--repo", repo, "--state", "all", "--limit", "1000",
@@ -179,7 +216,7 @@ def invoke(data: dict[str, Any], *, command_id: str = "invoke-guru-create-issue"
     exact = [item for item in matches if _same_issue(item, draft, reviewed_at, created_body)]
     if len(exact) != 1:
         return {"exit_id": "blocked", "reason_code": "created_issue_result_not_unique"}
-    return _result(repo, exact[0])
+    return _review_comment(data, exact[0], recover=True, read_only=command_id == "check-issue-creation-result")
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:

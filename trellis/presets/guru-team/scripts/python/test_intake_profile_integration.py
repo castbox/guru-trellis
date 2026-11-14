@@ -13,6 +13,7 @@ SCRIPT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_ROOT))
 import verify_installed_phase0_transcript as transcript
 from test_discovery_stdin_integration import run_preset_install
+from test_apply_guru_team_trellis_preset import install_canonical_workflow
 from test_readiness_transition_integration import producers
 from jsonschema import Draft202012Validator
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
@@ -28,8 +29,7 @@ class InstalledIntakeProfilesTests(unittest.TestCase):
         cls.work = Path(cls.temp.name)
         cls.installed = cls.work / "installed"
         (cls.installed / ".trellis").mkdir(parents=True)
-        shutil.copy2(SOURCE / "trellis/workflows/guru-team/workflow.md", cls.installed / ".trellis/workflow.md")
-        shutil.copytree(SOURCE / ".trellis/scripts", cls.installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        install_canonical_workflow(cls.installed)
         applied = run_preset_install(cls.installed)
         if applied.returncode:
             raise RuntimeError(applied.stdout[-3000:] + applied.stderr)
@@ -37,6 +37,63 @@ class InstalledIntakeProfilesTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.temp.cleanup()
+
+    def test_current_issue_local_profiles_use_installed_wrappers(self):
+        # Reuse the source wrapper scenarios with the actual installed package
+        # inventory. No expected producer output enters a downstream call.
+        import importlib.util
+        path=SOURCE/'trellis/skills/guru-team/runtime/tests/test_issue_review_intake.py'
+        spec=importlib.util.spec_from_file_location('installed_issue_review_cases',path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        module.SKILLS=self.installed/'.trellis/guru-team/skills'
+        for method in ('test_actual_discovery_return_reenters_same_readiness',
+                       'test_clarify_extra_facts_return_and_readonly_supplement',
+                       'test_wording_scanner_result_returns_or_reports_requirement_gap',
+                       'test_create_comment_order_and_same_object_recovery'):
+            with self.subTest(method=method):
+                case=module.IssueReviewIntakeTests(method)
+                try:
+                    case.setUp();getattr(case,method)()
+                finally:
+                    case.doCleanups()
+
+    def test_issue_body_comment_sequence_uses_installed_wrapper(self):
+        import importlib.util
+        path=SOURCE/'trellis/skills/guru-team/runtime/tests/test_issue_review_intake.py'
+        spec=importlib.util.spec_from_file_location('installed_issue_action_sequence',path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        module.SKILLS=self.installed/'.trellis/guru-team/skills'
+        for method in ('test_clarify_body_revision_then_comment_uses_each_live_preimage',
+                       'test_clarify_body_success_pending_comment_preserves_facts_then_recovers'):
+            with self.subTest(method=method):
+                case=module.IssueReviewIntakeTests(method)
+                try:
+                    case.setUp();getattr(case,method)()
+                finally:
+                    case.doCleanups()
+
+    def test_full_intake_request_uses_original_sync_producer(self):
+        root,env=transcript.stage_transcript_owner_repo(self.installed,self.work/'full-issue-return')
+        sync,_=transcript.invoke_public(root,env,'guru-sync-base',{'schema_version':'1.0','public_input':{'source_exit':'start','mode':'workflow','repo_root':'.','base_branch':'main','route':'repo_change'}},'synced')
+        issue=transcript.live_issue(root,env)
+        import importlib.util
+        path=SOURCE/'trellis/skills/guru-team/runtime/tests/test_issue_review_intake.py'
+        spec=importlib.util.spec_from_file_location('full_issue_review_cases',path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        module.SKILLS=self.installed/'.trellis/guru-team/skills'
+        case=module.IssueReviewIntakeTests()
+        case.repo=root;case.env=env
+        case.source={'kind':'issue','repo':'example/guru-extension','number':145,'title':issue['title'],'body':issue['body'],'updated_at':issue['updatedAt']}
+        base=sync['transition']['base']
+        public={'profile':'existing_issue_intake','source_exit':sync['exit_id'],'mode':sync['handoff_mode'],'issue':{'repo_ref':'example/guru-extension','number':145},'base_source':{'kind':'synced_branch','selected_ref':base['selected_base'],'commit':base['decision_head']},'continuation_id':sync['handoff_continuation_id']}
+        actual=case.readiness(public,'full_intake_required')
+        self.assertEqual('full_intake_required',actual['exit_id'])
+        # The retained complete transition is actual Sync stdout, never rebuilt
+        # from Readiness's deliberately minimal three-field base_source.
+        discovery_input=transcript.full_intake_discovery_seed(sync)
+        owner,_,discovery_input=transcript.checked_context_owner_for_issue(root,env,discovery_input,sync['transition'])
+        discovered,_=transcript.invoke_public(root,env,'guru-discover-change-context',{'schema_version':'1.0','public_input':discovery_input,'transition':sync['transition'],'owner_context':{},'owner_result':owner},'context_ready')
+        self.assertEqual(sync['transition']['base'],discovered['transition']['base'])
 
     def author(self, owner):
         owner = copy.deepcopy(owner)

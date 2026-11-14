@@ -37,6 +37,12 @@ class CreateIssueTests(unittest.TestCase):
             "reviewed_label_identity_sha256": "ad9937d4e61b88a14e943756cc7c0bb47a7ad86bbaf0679f24a2c332f92f7a3b",
             "draft": self.draft,
         }
+        self.request["review_comment_body"] = "Reviewed full draft; no unresolved prerequisite."
+        # These retained tests isolate draft/Issue identity and timing. The
+        # full comment interval is exercised through the real wrapper elsewhere.
+        comment = patch.object(MODULE, "_review_comment", side_effect=lambda data, issue, **_: MODULE._result(data["draft"]["repo_ref"], issue))
+        comment.start()
+        self.addCleanup(comment.stop)
         self.issue = {
             "number": 654, "url": "https://github.com/castbox/guru-trellis/issues/654",
             "title": self.draft["title"], "body": MODULE._created_body(
@@ -198,12 +204,12 @@ class CreateIssueTests(unittest.TestCase):
     def test_candidate_input_and_current_exit_contracts(self) -> None:
         root = PACKAGE.parents[4]
         interface = json.loads((PACKAGE / "interface.json").read_text())
-        schema = PACKAGE / "schemas/public-input.schema.json"
-        self.assertEqual(json.loads(schema.read_text())["$id"], "guru-create-issue-input-1.0")
+        schema = PACKAGE / "schemas/public-input-2.0.schema.json"
+        self.assertEqual(json.loads(schema.read_text())["$id"], "guru-create-issue-input-2.0")
         self.assertEqual(interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
-                         "guru-create-issue-input-1.0")
+                         "guru-create-issue-input-2.0")
         manifest = json.loads((root / "trellis/guru-team-extension.json").read_text())
-        self.assertIn("guru-create-issue-input-1.0", manifest["public_api"]["skill_contracts"]["public_input_schema_ids"])
+        self.assertIn("guru-create-issue-input-2.0", manifest["public_api"]["skill_contracts"]["public_input_schema_ids"])
         for name in ("public-create-input.json", "public-recover-input.json"):
             example = json.loads((PACKAGE / "examples" / name).read_text())
             MODULE.validate_json(example, schema, name)

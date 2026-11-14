@@ -110,7 +110,8 @@ def derive_owner(package, payload, *, authoring=False):
     }
     bind(result, "content_identity", identity, "input")
     validate_shape(package, result)
-    from confirmation import validate_actions
+    from confirmation import validate_actions, validate_issue_actions
+    validate_issue_actions(result)
     validate_actions(result)
     return result
 

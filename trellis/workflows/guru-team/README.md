@@ -1,5 +1,11 @@
 # Guru Team Workflow
 
+已有 Issue 在实际 Sync 后先由原 Readiness 复核当前审核覆盖，再按缺口调用必要原 owner；
+局部补审返回同次 Readiness。Create Issue 的完成结果包括准确的最小审核评论及读回；
+只读审核不发布评论。讨论、仅创建、创建并开工和 no_issue 保持各自终点。
+当前公开合同、来源投影与旧操作恢复见 [MIGRATION-819](../../presets/guru-team/MIGRATION-819.md)。
+源码/fixture 验证不代替 live 评论或实际安装采用证据。
+
 受管 manifest Git 冲突的有界接续由原
 [Reconcile 合同](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)
 和 [tools 合同](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)
@@ -464,8 +470,9 @@ DeliveryKey，并复用原身份和当前选择校验。原 caller 持有本次�
 
 ## Current Intake migration (#250)
 
-The initial route remains Sync → Discovery → Clarify. Clarify owns six profiles
-and selected requirement/design source authority; context requests preserve
+Existing Issues now enter Readiness after Sync under #819. Discussion, draft
+and necessary full Intake retain Sync → Discovery → Clarify. Clarify owns
+selected requirement/design source authority; context requests preserve
 the original caller. Install/reapply the complete current preset and controlled
 callers together; see the canonical Clarify
 [API migration](../../skills/guru-team/packages/guru-clarify-requirements/references/MIGRATION-250.md).

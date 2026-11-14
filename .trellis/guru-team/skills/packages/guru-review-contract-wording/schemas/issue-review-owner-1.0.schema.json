@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-contract-wording-issue-review-owner-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "public_input",
+    "typed_exit",
+    "result_summary",
+    "source_refs",
+    "ai_review_gate",
+    "wording_review"
+  ],
+  "properties": {
+    "public_input": {
+      "type": "object"
+    },
+    "typed_exit": {
+      "enum": [
+        "supplemented",
+        "requirements_gap",
+        "blocked"
+      ]
+    },
+    "result_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ai_review_gate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-gate-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "reroute",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "wording_review": {
+      "$ref": "contract-wording-review.schema.json"
+    },
+    "gap": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
