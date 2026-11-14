@@ -8664,12 +8664,20 @@
       },
       "planning_root": "deliveries/9076720c-9302-4343-b50c-50a39a68a65a",
       "profile": "pull_request",
-      "phase": "implementing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/design.md",
         "revision": "sha256:314c0535792a1351575e6a1c572cadbb2c8d299f1df14278ac8cc191303f1fe4"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+        "content_ref": "sha256:9ed6fb4446b9d647749676e31d9c36be874846d147cff6395cc2c9ac33b912ef",
+        "head_ref": "f52662938b2385f414534bc63009be53fbe10a6d",
+        "kind": "git",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py"
+        ]
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:087a440c-1318-497e-9759-6ccaa31f9113",
@@ -8711,12 +8719,180 @@
             }
           ]
         },
-        "check": null,
-        "full_review": null,
-        "readiness": null
+        "check": {
+          "result_id": "check:1fd2593497dcb927f6233a7dde1dda6fd9375baf4cd859380eea50bbd3b1e002",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-12-808-release-v070-guru9/prd.md",
+              "revision": "sha256:835586c0c5ca6a22a50a872ce8249a2548dfac4d6f84a4321f78f4d06addb950"
+            },
+            "anchors": [
+              "AC-04",
+              "AC-01",
+              "AC-03",
+              "AC-05",
+              "AC-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/design.md",
+            "revision": "sha256:314c0535792a1351575e6a1c572cadbb2c8d299f1df14278ac8cc191303f1fe4"
+          },
+          "candidate": {
+            "base_ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+            "content_ref": "sha256:9ed6fb4446b9d647749676e31d9c36be874846d147cff6395cc2c9ac33b912ef",
+            "head_ref": "f52662938b2385f414534bc63009be53fbe10a6d",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:087a440c-1318-497e-9759-6ccaa31f9113",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/implement.md",
+              "revision": "sha256:48909fcacde72cd4180998fd90885cebd00b2d6182e72b8e84f148f747f77232"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:1fd2593497dcb927f6233a7dde1dda6fd9375baf4cd859380eea50bbd3b1e002",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-12-808-release-v070-guru9/prd.md",
+              "revision": "sha256:835586c0c5ca6a22a50a872ce8249a2548dfac4d6f84a4321f78f4d06addb950"
+            },
+            "anchors": [
+              "AC-04",
+              "AC-01",
+              "AC-03",
+              "AC-05",
+              "AC-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/design.md",
+            "revision": "sha256:314c0535792a1351575e6a1c572cadbb2c8d299f1df14278ac8cc191303f1fe4"
+          },
+          "candidate": {
+            "base_ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+            "content_ref": "sha256:9ed6fb4446b9d647749676e31d9c36be874846d147cff6395cc2c9ac33b912ef",
+            "head_ref": "f52662938b2385f414534bc63009be53fbe10a6d",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py"
+            ]
+          },
+          "predecessor_result_id": "check:1fd2593497dcb927f6233a7dde1dda6fd9375baf4cd859380eea50bbd3b1e002",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/implement.md",
+              "revision": "sha256:48909fcacde72cd4180998fd90885cebd00b2d6182e72b8e84f148f747f77232"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:34587631c44d658a15fa02cdcb6b6b2c10bd2a7ddc7e16e52df9629af679ce1a",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-12-808-release-v070-guru9/prd.md",
+              "revision": "sha256:835586c0c5ca6a22a50a872ce8249a2548dfac4d6f84a4321f78f4d06addb950"
+            },
+            "anchors": [
+              "AC-04",
+              "AC-01",
+              "AC-03",
+              "AC-05",
+              "AC-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/design.md",
+            "revision": "sha256:314c0535792a1351575e6a1c572cadbb2c8d299f1df14278ac8cc191303f1fe4"
+          },
+          "candidate": {
+            "base_ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+            "content_ref": "sha256:9ed6fb4446b9d647749676e31d9c36be874846d147cff6395cc2c9ac33b912ef",
+            "head_ref": "f52662938b2385f414534bc63009be53fbe10a6d",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:1fd2593497dcb927f6233a7dde1dda6fd9375baf4cd859380eea50bbd3b1e002",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-12-808-release-v070-guru9/deliveries/9076720c-9302-4343-b50c-50a39a68a65a/implement.md",
+              "revision": "sha256:48909fcacde72cd4180998fd90885cebd00b2d6182e72b8e84f148f747f77232"
+            }
+          ]
+        }
       },
-      "publication_result": null,
-      "delivery_result": null,
+      "publication_result": {
+        "result_id": "publication:05551df4a6c314a846b65cce07106fb485cb53426ad2e962f443cb503ba1807d",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/845",
+            "revision": "sha256:15943eae0590caf3eeb1c9a93c0d6065045126d602682f6795e84798bc0d23d8"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+          "content_ref": "sha256:9ed6fb4446b9d647749676e31d9c36be874846d147cff6395cc2c9ac33b912ef",
+          "head_ref": "f52662938b2385f414534bc63009be53fbe10a6d",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 845,
+        "reviewed_head": "f52662938b2385f414534bc63009be53fbe10a6d",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/845",
+          "revision": "sha256:15943eae0590caf3eeb1c9a93c0d6065045126d602682f6795e84798bc0d23d8"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:8c4615d10fa8d1950da696a2bfa8e2d9b2200dd2",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/845",
+            "revision": "8c4615d10fa8d1950da696a2bfa8e2d9b2200dd2"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+          "content_ref": "sha256:9ed6fb4446b9d647749676e31d9c36be874846d147cff6395cc2c9ac33b912ef",
+          "head_ref": "f52662938b2385f414534bc63009be53fbe10a6d",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 845,
+        "reviewed_head": "f52662938b2385f414534bc63009be53fbe10a6d",
+        "merge_commit": "8c4615d10fa8d1950da696a2bfa8e2d9b2200dd2",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
@@ -8797,6 +8973,53 @@
         "delivery:74f361da28d24e02a797e9a33a97be1fede065ac"
       ],
       "outcome": "completed"
+    },
+    {
+      "result_id": "completion:808-release-v070-guru9:2:preparation",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/839",
+          "revision": "647df4de6c4443720b4bacb674dbe3909333bf4d"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/840",
+          "revision": "997a57bec3e3f67c227cff3edc81efa0014da0fb"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/842",
+          "revision": "74f361da28d24e02a797e9a33a97be1fede065ac"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/844",
+          "revision": "d3b9196c5ca30c11e857fab5a912ab9aee6ac232"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/845",
+          "revision": "8c4615d10fa8d1950da696a2bfa8e2d9b2200dd2"
+        },
+        {
+          "locator": ".trellis/guru-team/extension.json",
+          "revision": "sha256:aab39216916bcdeefdff00136e14ad894a47cdff7a91b44921b0dfa65bb008a2"
+        },
+        {
+          "locator": "docs/architecture/contributions/808-release-v070-guru9.md",
+          "revision": "sha256:8319e418f95040e457f2498883134a7b19702ba6bd3ce73c6e4110e34c493ce1"
+        }
+      ],
+      "lifecycle_generation": 2,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-12-808-release-v070-guru9/prd.md",
+        "revision": "sha256:835586c0c5ca6a22a50a872ce8249a2548dfac4d6f84a4321f78f4d06addb950"
+      },
+      "delivery_result_ids": [
+        "delivery:647df4de6c4443720b4bacb674dbe3909333bf4d",
+        "delivery:997a57bec3e3f67c227cff3edc81efa0014da0fb",
+        "delivery:74f361da28d24e02a797e9a33a97be1fede065ac",
+        "delivery:d3b9196c5ca30c11e857fab5a912ab9aee6ac232",
+        "delivery:8c4615d10fa8d1950da696a2bfa8e2d9b2200dd2"
+      ],
+      "outcome": "completed"
     }
   ],
   "closure_results": [
@@ -8833,6 +9056,24 @@
       ],
       "lifecycle_generation": 1,
       "completion_result_id": "completion:808-release-v070-guru9:1:preparation",
+      "disposition": "no_mutation",
+      "source_result": null
+    },
+    {
+      "result_id": "closure:f9a5b3e7744ec2b18a1d55b2",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-12-808-release-v070-guru9/prd.md",
+          "revision": "sha256:835586c0c5ca6a22a50a872ce8249a2548dfac4d6f84a4321f78f4d06addb950"
+        },
+        {
+          "locator": ".trellis/tasks/11-12-808-release-v070-guru9/closeout/closure/Y2xvc3VyZTpmOWE1YjNlNzc0NGVjMmIxOGExZDU1YjI.json",
+          "revision": "sha256:a6dd6e653054ed7a4e20e026af15d9d3609b5fa3d50cc5269e86bbb1cf555df4"
+        }
+      ],
+      "lifecycle_generation": 2,
+      "completion_result_id": "completion:808-release-v070-guru9:2:preparation",
       "disposition": "no_mutation",
       "source_result": null
     }
