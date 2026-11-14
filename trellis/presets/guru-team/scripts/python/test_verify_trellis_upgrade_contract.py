@@ -673,6 +673,12 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     "lifecycle_generation": 0, "deliveries": []}))
                 original = {"content_base64": base64.b64encode(task_path.read_bytes()).decode(),
                     "sha256": hashlib.sha256(task_path.read_bytes()).hexdigest(), "mode": 0o644}
+                artifact_path = target / ref / "prd.md"
+                artifact_content = "# Bootstrap guidelines\n保留原始文档。\n".encode()
+                artifact_path.write_bytes(artifact_content)
+                artifact_path.chmod(0o644)
+                artifact_identity = {"sha256": hashlib.sha256(artifact_content).hexdigest(),
+                                     "mode": 0o644}
                 manifest = target / ".trellis/guru-team/extension.json"
                 manifest.parent.mkdir(parents=True)
                 manifest.write_text(json.dumps({"extension": {"version": "0.7.0-guru.4"},
@@ -681,7 +687,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 workflow.parent.mkdir(parents=True)
                 workflow.write_text("[trellis-runtime-contract]{}[/trellis-runtime-contract]")
                 workspace = {"root": str(target), "local_sessions": [], "tasks": [{
-                    "task_ref": ref, "source": original, "artifacts": {ref + "/task.json": original}}],
+                    "task_ref": ref, "source": original, "artifacts": {ref + "/prd.md": artifact_identity}}],
                     "prospective_templates": {"files": [], "contents": {}, "candidate_sha256": "a" * 64},
                     "receipt_source": {"content_base64": base64.b64encode(b'{"hashes":{}}').decode()},
                     "workflow_source": None, "version_source": None}
@@ -696,6 +702,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     result = self.matrix._upgrade_bootstrap_fixture(root, target, root,
                         "gh:castbox/guru-trellis/trellis#" + "a" * 40, root, {})
                 self.assertEqual(task_path.read_bytes(), base64.b64decode(original["content_base64"]))
+                self.assertEqual(artifact_path.read_bytes(), artifact_content)
+                self.assertEqual(artifact_path.stat().st_mode & 0o777, 0o644)
                 if schema == "2.0":
                     self.assertEqual(result["exit_id"], "tools_upgraded")
                     tools.assert_called_once()
