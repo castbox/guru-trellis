@@ -291,15 +291,17 @@ source lock 声明的 package-manager 版本。
 
 ## Apply And Verify
 
-已发布稳定版本为 `v0.7.0-guru.8`，peeled commit 为
-`2ab135ed2d3908966785bb23ad42ada0790f0c81`。默认稳定安装使用同一 immutable `.8`
-tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
+`v0.7.0-guru.8` 是本轮发布准备起点的正式前驱，peeled commit 为
+`2ab135ed2d3908966785bb23ad42ada0790f0c81`。安装该历史版本时，使用同一 immutable
+`.8` tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前 canonical extension 与 maintenance target 为 `0.7.0-guru.9`，处于未发布的
-完整来源准备阶段。稳定安装继续使用已发布 `.8` 的原始配对来源。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.9`。
+仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.9` 的非 draft、
+非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.9`
+与同一 `.9` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](source/trellis-source.json)。
 本页不另存当前 SHA/CI 对照表；按[构建所选 Fork](#构建所选-fork)核验实际构建。
@@ -328,10 +330,11 @@ package-manager 版本采用所选 checkout 自身 source lock 声明的值。
 Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包含本次修复，
 不能用该 tag 或相同 extension/CLI 版本号代替所选修复 SHA。
 当前源码、投影及代表性安装各保留其真实来源和验证边界，不证明新 Release 通过。
-当前准备先交付完整 canonical 来源，再由后继 Delivery 从真实已交付的干净来源
-加载 `guru-upgrade-tools`，经 `source_locked` 实际采用并验证完整受管投影及保留行为。
-本地来源样本只验证来源自身安装可用性，不证明远端 `.9` marketplace、正式
-`source_locked` 或真实 dogfood `.9` 安装。各 Delivery 保留完整质量与交付责任；
+完整 canonical 来源经 Delivery 交付后，目标 checkout 从该干净来源加载
+`guru-upgrade-tools`，经 `source_locked` 实际采用并验证完整受管投影及保留行为。
+本地来源样本只验证来源自身安装可用性；目标采用须由目标自身的 resolver、installed
+与 native 检查证明。两者均不证明远端 `.9` marketplace 或正式 Release 通过。
+各 Delivery 保留完整质量与交付责任；
 只有全部准备业务及实际采用完成，才可能通过 Task Completion 并进入终态收尾。
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
@@ -378,7 +381,9 @@ business Intake，普通 apply 保持严格。
 For current-source validation, read the selected Guru checkout's own
 [source lock](source/trellis-source.json), verify its source and CI identity,
 and build that exact Fork commit. Use its CLI with that same reviewed Guru source.
-Stable `.8` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
+Historical `.8` installation uses its original source pair described above.
+Install `.9` only when its non-draft, non-prerelease Release exists, using the same
+immutable tag for workflow and preset. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. For a target meeting the ordinary current-only installation
 prerequisites, run:
