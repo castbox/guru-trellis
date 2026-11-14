@@ -1216,11 +1216,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-14T16:07:48Z",
+  "installed_at": "2026-11-14T21:55:23Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ce25043d33e487def1043b4a9fee6cb180844480",
-    "commit": "ce25043d33e487def1043b4a9fee6cb180844480",
+    "ref": "3f7099b9db78700d03a29b2c825e84280f5b6821",
+    "commit": "3f7099b9db78700d03a29b2c825e84280f5b6821",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
@@ -1577,7 +1577,7 @@
       {
         "id": "guru-sync-base",
         "interface_sha256": "0ffc55f7892abe718380f39f58ac01ae3a8bdcada5f65e82ada50a69652108c3",
-        "tree_sha256": "6f939ba2ecbc2e4269054656f66146d576d54b424e7e35ce686bdd86b52981ff"
+        "tree_sha256": "bd5b29e8baba01e1c5670e9ffa633b3fb6e314718fc915e1953fb9bf9b8805da"
       },
       {
         "id": "guru-upgrade-installation",
@@ -21689,7 +21689,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-sync-base/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-sync-base/runtime/invoke.py",
-        "sha256": "297c81d601d034bf08385b871ba5151c538cfbffac72b40493ca15d2a1877b5a",
+        "sha256": "eff5aa82688edbeda1ced58a2049c1dab5693facbfa92a7db618388bf1f3ef28",
         "executable": false,
         "action": "installed"
       },

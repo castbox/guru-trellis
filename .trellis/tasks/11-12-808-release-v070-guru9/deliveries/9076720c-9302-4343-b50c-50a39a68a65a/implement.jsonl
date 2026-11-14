@@ -1,0 +1,12 @@
+{"file": ".trellis/tasks/11-12-808-release-v070-guru9/prd.md", "reason": "整体accepted scope与准备/发布责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批三正文与引用完整加载合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求结构与完整性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批方案/来源设计与验证"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批执行/Policy/DocsPlan"}
+{"file": ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md", "reason": "原tools唯一owner与公开入口"}
+{"file": ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md", "reason": "完整source_locked及preservation/native/恢复"}
+{"file": ".trellis/guru-team/skills/packages/guru-upgrade-tools/interface.json", "reason": "原tools当前输入输出及唯一consumer"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "来源采用/Task终态和Stage2边界"}
+{"file": "trellis/presets/guru-team/MIGRATION-794.md", "reason": "提交后一次完整Review和原owner迁移"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "TestAndValidationValue及验证范围"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整当前写作规范"}
