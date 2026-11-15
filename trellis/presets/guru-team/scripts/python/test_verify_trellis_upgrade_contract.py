@@ -96,7 +96,7 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
 
     def test_readiness_all_routes_author_only_semantic_gate_fields(self):
         with mock.patch.object(self.helper, "live_issue", return_value=self.issue()):
-            for route in ("ready", "clarify_requirements", "review_wording", "refresh_context"):
+            for route in ("ready", "clarify_requirements", "refresh_context"):
                 with self.subTest(route=route):
                     authored = self.helper.readiness_owner_for_issue(Path("/fixture"), {}, {}, route)
                     self.assertEqual(set(authored["semantic_review"]["ai_review_gate"]),

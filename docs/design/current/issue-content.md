@@ -1,5 +1,7 @@
 # Issue 内容的设计责任
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
 Identity：`RDT-DES-ISSUE-CONTENT`；状态：`current`。导航别名：`D153`、`CON153`、`D153-01..03`、`CON153-01..03`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 原设计](../../requirements-design-test-contributions/153-issue-content-ssot/design.md)与 #818 D1 的原正文收敛和 Docs Plan。
@@ -10,7 +12,7 @@ Identity：`RDT-DES-ISSUE-CONTENT`；状态：`current`。导航别名：`D153`�
 
 适用基线为 Git `fd0ee32618433a92ae934e29afb5b72e7136b4f7`。需求关系为 `docs/requirements/current/issue-content.md` 的 R153/BEH153 与 R818/BEH818。本单元只承接 `.109` 设计入口所连接的 D153-01..03 / CON153-01..03 Issue 内容设计，不迁移 `.109` 对前驱的其他继承，不改历史 ADR、贡献或原验证结果。新要求的设计差额由下列 D818 身份承接。
 
-原 Architecture 独立 final_plan 为 `baseline_current / no_architecture_impact / no_change`，公开 authority 为 `docs/architecture/README.md / guru-trellis-architecture / active`。本设计沿既有 owner、Markdown 控制面与受管分发，没有新的运行依赖、数据状态或 public I/O；不制造 Architecture contribution 或 ADR。
+原 Architecture 独立 final_plan 为 `baseline_current / no_architecture_impact / no_change`，公开 authority 为 `docs/architecture/README.md / guru-trellis-architecture / active`。#818当次设计沿既有owner、Markdown控制面与受管分发，没有新的运行依赖、数据状态或public I/O，当次未制造Architecture contribution或ADR。#850的真实合同与Architecture差额由其原owners另行承接，不继承这项历史no-impact结论。
 
 ## D153-01 / CON153-01：唯一内容方法
 
@@ -20,19 +22,19 @@ Identity：`RDT-DES-ISSUE-CONTENT`；状态：`current`。导航别名：`D153`�
 
 ## D153-02 / CON153-02：原入口执行及写入边界
 
-Clarify、Wording、Readiness、Create Issue 的 SKILL 与前三者原合同完整加载同一内容正文，并在各自原门禁内使用。方法只通过必要薄引用承接，完整定义仍在 D153-01 的正文。Wording 的 scanner 范围保持 title/body；必要评论是 AI 读取的来源，不冒称被 scanner 扫描。Readiness 保留原十维，Create Issue 核对已审内容而不变成第二 writer。
+Clarify、Readiness、Create Issue 的当前 SKILL 与适用合同完整加载同一内容正文，并在各自原门禁内使用。方法只通过必要薄引用承接，完整定义仍在 D153-01 的正文。独立 Wording 包、scanner、词表分类和专属回执退出；原内容 owner 亲自判断完整当前标题/正文与必要来源，不以词命中代替判断。Readiness 保留原十维，Create Issue 核对已审内容而不变成第二 writer。
 
-草稿更新、已有正文修订、真实创建和只读请求各沿原动作、确认、live reread、刷新及重审路径。内容缺口不自行授权写入。没有新 Skill、审核节点、typed exit、schema 或最小 DTO 差额。对应 R153-02/04/05、R818-01..04；由 T153-02/03 和 T818-01/02 观察。
+草稿更新、已有正文修订、真实创建和只读请求各沿原动作、确认、live reread、刷新及重审路径。内容缺口不自行授权写入。原#153/#818当次没有新Skill、审核节点、typed exit、schema或最小DTO差额；#850当前后继合同由D850及MIGRATION-850承接，不把历史结论扩成当前无差额。对应 R153-02/04/05、R818-01..04；由 T153-02/03 和 T818-01/02 观察。
 
 ## D153-03 / CON153-03：受管分发及现有目标采用
 
-既有递归 package/preset writer 分发完整正文、必要示例、四入口及三个合同；受影响 managed spec 沿原机制安装。定向 fixture 实际执行 writer/reapply，核声明平台字节、引用、用户保留和 sidecar。正式 Task checkout 使用完整 matching source 的原 `guru-upgrade-tools`，按其 preview、审查、prepare、invoke 和 readback 更新，保留 Task/session 与用户内容。原管理机制处理冲突，禁止手抄受管副本。
+既有递归 package/preset writer 分发完整正文、必要示例、当前入口及适用合同；受影响 managed spec 沿原机制安装。定向 fixture 实际执行 writer/reapply，核声明平台字节、引用、用户保留和 sidecar。正式 Task checkout 使用完整 matching source 的原 `guru-upgrade-tools`，按其 preview、审查、prepare、invoke 和 readback 更新，保留 Task/session 与用户内容。原管理机制处理冲突，禁止手抄受管副本。
 
 源码、实际目标安装及 Agent 行为分别证明本层结果。`local_candidate` 不能建立 `formal_fork_source_lock`、其他业务仓采用或完整升级/Release 矩阵。对应 R153-03/05、R818-04；由 T153-04/05 和 T818-03/04 观察。
 
 ## D818-01 / CON818-01：原完整段落内修改方法
 
-#818 在唯一正文原第2节修改整理与必要性判断，在第3节承接完整规则及验收，在第4节承接独立阅读与反查，在第5节定位四个原职责。采用直接修改及薄引用，使一个 consumer 仍只需读取一份完整方法。原来源保留、局部完整性和必要保护继续有效；不以叠加摘要、平行准入流程或语义脚本承接方法。
+#818 在唯一正文原第2节修改整理与必要性判断，在第3节承接完整规则及验收，在第4节承接独立阅读与反查，在第5节定位当时四个原职责；历史含义保持，当前职责由R850/D850承接独立Wording退役。采用直接修改及薄引用，使一个 consumer 仍只需读取一份完整方法。原来源保留、局部完整性和必要保护继续有效；不以叠加摘要、平行准入流程或语义脚本承接方法。
 
 该选择服务 R818-01..04，复用 T818-01/02 的原入口观察。后续若真实改变 owner、状态、I/O 或依赖，须回最早受影响的原 owner，本单元不预留另一机制。
 
@@ -55,3 +57,13 @@ Clarify package的references/issue-review-comment.md单写评论内容规则，C
 Create2.0接已审review_comment_body，原executor执行创建→正式title/body读回→POST评论→GET评论读回→created。原单次attempt只定位本次已成功Issue/comment，未知结果先找回唯一对象，确认未执行才补剩余动作；标记不供Readiness作覆盖判据，历史清楚评论不需该标记。
 
 Clarify复用原repo-bound source_actions的POST/PATCH及live readback，更新只限明确comment_id；只读只返回结论，未知结果沿原动作查同Issue/comment，不另建长期writer。实际覆盖不完整时评论如实陈述，真实写入范围和原交互合同保持。新typed路线及来源/恢复consumer由local-fix-intake的D819-02/03/04拥有；对应R819-01与T819-01/02。
+
+## D850-01 / CON850-CONTENT：源身份及有界入口
+
+单一纯函数runtime/content_identity.py::title_body_identity计算源标题/正文组合身份，供Clarify、Readiness及Create对应组合项复用。源身份与Clarify semantic identity分开；原owner读取真实对象，recorder/checker只校验客观绑定，不保存完整快照或把token当语义authority。
+
+Clarify standalone_wording_review消费完整当前Issue/draft与必要来源，reviewed/blocked止于用户答复。review-change explicit_files/wording_only捕获选定完整bytes/mode，AI审核后以同snapshot验证连续性，未变文件也进入捕获。两入口不建Task/绑定、不改正文或报告；修订归原writer。对应R850-01/T850-01。
+
+## D850-04 / CON850-ADOPTION：匹配分发与历史退出
+
+MIGRATION-850单写前代path/id保留、后继版本及当前consumer映射，旧schema存在不激活双读。原tools owner以完整matching source执行preview/prepare/invoke/readback/reapply，不手抄managed副本或改manifest隐藏差额。原managed removal退役包/命令/wrappers；resolver、installed/native、平台bytes/mode、sidecar与Task/session/peer分别读回。不增加状态模型、collector或授权持久化；安装不等于业务完成或Review pass。对应R850-04/T850-04。

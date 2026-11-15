@@ -1046,7 +1046,7 @@ def build_context(
             "Package roots and allowed original commands:",
             *package_navigation,
             "Only the declared assets below are readable. Interface links do not grant additional reads; examples, evals, legacy assets and private runtime are not projected.",
-            "For Wording and Readiness review commands, use the package-local schemas/review-invocation.schema.json, including Wording's captured source structure. The shared semantic-owner envelope describes the final public invoke, not those review commands.",
+            "For Readiness review commands, use the package-local schemas/review-invocation.schema.json. Clarify record/check receive owner_result and owner_context.change_request in the original --input carrier. The shared semantic-owner envelope describes the final public invoke, not those review commands.",
             "Declared read inventory: " + json.dumps(inventory, sort_keys=True),
             f"Forward command: {helper_command} command --skill-id <skill> --command <original basename without .sh> --stdin -- <original stdin arguments>",
             "Send one JSON input on stdin. All commands run at the real installed repository root; use repo_root='.' for Sync. No extra --root or --json is needed.",
@@ -1055,7 +1055,7 @@ def build_context(
             f"{helper_command} command --skill-id <skill> --command <command> --stdin -- <original stdin arguments> <<'GURU_COMMAND_JSON'\n"
             "<current-command-input-json>\n"
             "GURU_COMMAND_JSON\n```",
-            "Discovery preview uses --query-json '<your current query object>' and empty stdin. Wording scan uses record-contract-wording-review --invocation - --scan-only before recording.",
+            "Discovery preview uses --query-json '<your current query object>' and empty stdin.",
             "A nonzero command exit is an invocation error, not a declared typed exit. Read that command's error, correct its input and call the same command again; do not skip the current owner or forward error JSON as a public output.",
             "Only a successful invoke command's declared typed output can be terminal. Return its actual stdout without changing its owner, schema or fields; recorder/checker output and invocation errors are not terminal public outputs.",
             "Printing stdout in a tool does not deliver your final message.",

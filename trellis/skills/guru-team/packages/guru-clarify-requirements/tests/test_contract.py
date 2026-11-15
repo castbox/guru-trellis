@@ -15,6 +15,29 @@ from runtime.io import project_intermediate_receipt
 
 
 class RequirementsClarificationPackageContractTests(unittest.TestCase):
+    def test_standalone_draft_wording_uses_public_wrapper_without_task_writes(self):
+        public = json.loads((self.package / "examples/public-standalone-wording-review-input.json").read_text())
+        conclusion = "The stated default and exception remain explicit."
+        envelope = {"schema_version": "1.0", "public_input": public,
+                    "owner_context": {}, "owner_result": {
+                        "typed_exit": "reviewed", "conclusion": conclusion, "findings": []}}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            before = list(root.iterdir())
+            result = subprocess.run([str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
+                cwd=root, input=json.dumps(envelope), text=True, capture_output=True,
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertEqual({"exit_id": "reviewed", "conclusion": conclusion, "findings": []}, json.loads(result.stdout))
+            self.assertEqual(before, list(root.iterdir()))
+
+    def test_checker_requires_recorded_source_identity(self):
+        recorded = self.record_owner(self.example)
+        del recorded["source_content_sha256"]
+        result = self.command("check-requirements-clarification.sh", recorded, "--input", "-")
+        self.assertEqual(2, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("input.source_content_sha256", json.loads(result.stdout)["field_path"])
+
     def test_scope_acceptance_schema_requires_the_reviewed_authority(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -90,7 +113,23 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertNotIn("owner_not_yet_executed", [row["id"] for row in interface["external_exits"]])
 
+    def source_for(self, owner):
+        source = copy.deepcopy(self.source)
+        if owner.get("typed_exit") in {"blocked", "needs_context"}:
+            return None
+        target = owner.get("review_target", {})
+        target = target if isinstance(target, dict) else {}
+        source.update(kind=target.get("kind"), repo=target.get("repo"))
+        if source["kind"] == "issue":
+            source.update(number=target["issue_number"], updated_at=target["updated_at"])
+        return source
+
     def command(self, script, payload, *args):
+        if isinstance(payload, dict) and payload.get("schema_version") == "6.0":
+            payload = {"owner_result": payload, "owner_context": {"change_request": self.source_for(payload)}}
+        elif isinstance(payload, dict) and payload.get("owner_result", {}).get("schema_version") == "6.0":
+            payload = copy.deepcopy(payload)
+            payload["owner_context"] = {"change_request": self.source_for(payload["owner_result"])}
         return subprocess.run(
             [str(self.package / "scripts" / script), "--json", *args],
             input=json.dumps(payload), text=True, stdout=subprocess.PIPE,
@@ -100,6 +139,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
     def authoring(self, owner):
         value = copy.deepcopy(owner)
         value.pop("content_identity", None)
+        value.pop("source_content_sha256", None)
         value["review_target"].pop("facts_sha256", None)
         if value["target_disposition"] is not None:
             value["target_disposition"].pop("disposition_digest", None)
@@ -118,6 +158,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.package = Path(__file__).resolve().parents[1]
+        self.source = json.loads((self.package / "examples/clarification-source.json").read_text())
         self.interface = json.loads((self.package / "interface.json").read_text(encoding="utf-8"))
         self.example = json.loads(
             (self.package / "examples/requirements-clarification.json").read_text(encoding="utf-8")
@@ -152,7 +193,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],
-            ["clear", "scope_ready", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"],
+            ["clear", "scope_ready", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked", "supplemented", "reviewed"],
         )
         self.assertEqual(
             [item["consumer"] for item in self.interface["external_exits"]],
@@ -164,6 +205,8 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                 {"kind": "skill", "id": "guru-sync-base"},
                 {"kind": "workflow", "id": "guru-full-task-intake-chain"},
                 {"kind": "stop", "id": "requirements-clarification-blocked"},
+                {"kind": "skill", "id": "guru-review-change-request"},
+                {"kind": "stop", "id": "wording-review-response"},
             ],
         )
 
@@ -243,7 +286,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         schema = json.loads(
-            (self.package / "schemas/requirements-clarification.schema.json").read_text(encoding="utf-8")
+            (self.package / "schemas/requirements-clarification-6.0.schema.json").read_text(encoding="utf-8")
         )
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
@@ -405,7 +448,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         schema = json.loads(
-            (self.package / "schemas/requirements-clarification.schema.json").read_text(encoding="utf-8")
+            (self.package / "schemas/requirements-clarification-6.0.schema.json").read_text(encoding="utf-8")
         )
         validator = Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
         markdown = "# Clarification\n\n- first\tvalue\r\n- second"
@@ -487,16 +530,12 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotEqual(list(validator.iter_errors(empty)), [])
 
     def test_package_local_record_check_and_closed_json_error(self) -> None:
-        source = self.package / "examples/requirements-clarification.json"
-        record = subprocess.run(
-            [str(self.package / "scripts/record-requirements-clarification.sh"), "--json", "--mode", "standalone", "--input", str(source)],
-            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-        )
+        record = self.command("record-requirements-clarification.sh", self.authoring(self.example), "--mode", "standalone", "--input", "-")
         self.assertEqual(record.returncode, 0, record)
         owner = project_intermediate_receipt(json.loads(record.stdout), self.package.parents[1] / "schemas")
         check = subprocess.run(
             [str(self.package / "scripts/check-requirements-clarification.sh"), "--json", "--input", "-", "--expected-result-sha256", owner["content_identity"]["result_sha256"]],
-            input=json.dumps(owner), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            input=json.dumps({"owner_result": owner, "owner_context": {"change_request": self.source_for(owner)}}), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(check.returncode, 0, check)
         self.assertEqual(project_intermediate_receipt(json.loads(check.stdout), self.package.parents[1] / "schemas")["typed_exit"], owner["typed_exit"])
@@ -607,7 +646,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "schema_version": "1.0",
             "public_input": public_input,
             "transition": transition,
-            "owner_context": {},
+            "owner_context": {"change_request": self.source_for(owner)},
             "owner_result": owner,
         }
         schema = json.loads(
@@ -692,6 +731,8 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
         }
         historical = copy.deepcopy(owner)
+        historical["schema_version"] = "3.0"
+        historical.pop("source_content_sha256", None)
         historical_schema = json.loads((self.package / "schemas/requirements-clarification.schema.json").read_text())
         self.assertEqual([], list(Draft202012Validator(historical_schema).iter_errors(historical)))
         rejected = self.command("record-requirements-clarification.sh", self.authoring(historical),
@@ -700,6 +741,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertIn("Re-enter original Clarify", rejected.stdout)
         # Freshly authored fixture review; this is not a runtime conversion or AI semantic proof.
         owner["schema_version"] = "4.0"
+        owner.pop("source_content_sha256", None)
         owner["typed_exit"] = "scope_ready"
         owner["revision_refs"] = ["https://github.com/example/project/issues/145#acceptance"]
         owner["source_selection"] = [{"locator": "https://github.com/example/project/issues/145",
@@ -736,7 +778,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "schema_version": "1.0",
             "public_input": public_input,
             "transition": transition,
-            "owner_context": {},
+            "owner_context": {"change_request": self.source_for(owner)},
             "owner_result": owner,
         }
         schema = json.loads(
@@ -853,7 +895,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                 contracts = self.interface["public_contracts"]
                 projection = next(row for row in contracts["projections"] if row["id"] == "project_needs_context")
                 consumer = next(row for row in contracts["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
-                seed = {row["target"]: output[row["source"]] for row in projection["mappings"]}
+                seed = {row["target"]: output[row["source"]] for row in projection["mappings"] if row["source"] in output}
                 contract = consumer["contract"]
                 authoring = json.loads((self.package / contract["authoring_example"]["path"]).read_text())
                 discovery = self.package.parent / "guru-discover-change-context"
@@ -929,7 +971,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                         "repo_locator": ".",
                         "base": malformed_base,
                     },
-                    "owner_context": {},
+                    "owner_context": {"change_request": self.source_for(owner)},
                     "owner_result": owner,
                 }
                 rejected = invoke(invocation)
@@ -993,6 +1035,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         owner = copy.deepcopy(self.example)
         source_body = "Reviewed requirement body\n\nCurrent acceptance criteria."
         updated_source_body = source_body + "\nAdditional accepted criterion."
+        self.source["body"] = source_body
         owner["review_target"]["body_sha256"] = hashlib.sha256(source_body.encode()).hexdigest()
         owner["typed_exit"] = "new_task"
         owner["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}

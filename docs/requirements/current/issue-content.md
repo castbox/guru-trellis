@@ -1,5 +1,7 @@
 # Issue 内容的需求责任
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
 Identity：`RDT-REQ-ISSUE-CONTENT`；状态：`current`。导航别名：`R153`、`BEH153`、`R153-01..05`、`BEH153-01..05`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 需求来源](../../requirements-design-test-contributions/153-issue-content-ssot/requirements.md)与 [#818](https://github.com/castbox/guru-trellis/issues/818) R1–R4。
@@ -26,15 +28,15 @@ Identity：`RDT-REQ-ISSUE-CONTENT`；状态：`current`。导航别名：`R153`�
 
 创建与修订共用唯一 Issue 内容规范。适用内容、复杂度裁剪、来源规则及清晰写作规范按该正文加载，不另造格式或语言权威。规范缺失时暂停依赖判断，沿原安装或原 owner 恢复并完整读取后继续；无需新增审批。简单完整正文无需为形式重写，历史 Issue 不追溯润色。
 
-### R153-04 / BEH153-04：四个原 owner 的完整判断
+### R153-04 / BEH153-04：原内容 owner 的完整判断
 
-Clarify 负责正文写作与自检；Wording 在原措辞门禁内检查完整语义并保持完整 title/body scan；Readiness 在原十维内判断完整性、独立交付单位与验收；Create Issue 在原创建门禁核对已审草稿及前序适用性，再沿原路径创建和回读。每个 owner 实际读取当前正文和必要来源，上游通过不能代替自己的判断。
+Clarify 负责正文写作与自检；独立 Wording 及其 scanner 已退出当前链，不增加替代语言关卡；Clarify 在原范围内亲自判断含义、完整条件和义务强度；Readiness 在原十维内判断完整性、独立交付单位与验收；Create Issue 在原创建门禁核对已审草稿及前序适用性，再沿原路径创建和回读。每个 owner 实际读取当前正文和必要来源，上游通过不能代替自己的判断。
 
 局部修订的内容完整性判断覆盖完整 postimage，语言检查限本轮文本和必要上下文。普通遗漏回原受影响 owner；范围外既有缺口先说明影响，不能静默扩写或虚报完整。只读审核、讨论和查询不自动获得正文写入权。原 public I/O、typed exits、确认、freshness、刷新与恢复保持。
 
 ### R153-05 / BEH153-05：分层证明与受管采用
 
-实际 Agent 写作/审核、机械分发、代表目标安装和外部写入回读分别提供证据。原 writer 分发完整正文、必要示例和四入口投影，既有目标由原 tools owner 保护用户内容与 Task/session，并检查 reapply、drift 和 sidecar。原 #153 的 V1–V7 和真实 GitHub 对象是该次历史观察，不成为每个后继任务的固定样本或写入义务。
+实际 Agent 写作/审核、机械分发、代表目标安装和外部写入回读分别提供证据。原 writer 分发完整正文、必要示例和当前内容入口投影，既有目标由原 tools owner 保护用户内容与 Task/session，并检查 reapply、drift 和 sidecar。原 #153 的 V1–V7 和真实 GitHub 对象是该次历史观察，不成为每个后继任务的固定样本或写入义务。
 
 ## #818 的方法责任差额
 
@@ -48,7 +50,7 @@ Issue 创建、修订或原审核中，原 owner 先判断新增要求、机制�
 
 ### R818-03 / BEH818-03：完整规则与独立理解
 
-正文按唯一正文第3节组织完整规则，四原 owner 按第4、5节在各自范围独立理解并核对来源、入口和必要遗漏。规则清楚可读且仍完整时保留。识别真实入口不自动增加交付项，完成原始目标所需的适配也不能被精简删去。
+正文按唯一正文第3节组织完整规则，各原内容 owner 按第4、5节在各自范围独立理解并核对来源、入口和必要遗漏。规则清楚可读且仍完整时保留。识别真实入口不自动增加交付项，完成原始目标所需的适配也不能被精简删去。
 
 ### R818-04 / BEH818-04：围绕主要结果验收
 
@@ -58,7 +60,7 @@ Issue 验收按唯一正文第3节优先证明主要结果，并覆盖与实际�
 
 设计责任为 `docs/design/current/issue-content.md` 的 D153-01..03 / CON153-01..03、D818-01..03 / CON818-01..03；测试责任为 `docs/test/current/issue-content.md` 的 T153-01..05、T818-01..04。[#818 双向追踪](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)定位本次来源与实际目标。
 
-共同审核充分性的职责保持在 [R717](../../requirements/current/review-sufficiency.md)，其规范只定位原 Issue 方法，不取得第二内容 authority。Architecture 继承 `docs/architecture/README.md / guru-trellis-architecture / active`；原独立 final_plan 为 no_architecture_impact/no_change，不产生空 Architecture contribution。没有新增 Skill、公共字段、状态或外仓运行依赖；#819 路由与完整安装/Release 矩阵不进入本能力差额。
+共同审核充分性的职责保持在 [R717](../../requirements/current/review-sufficiency.md)，其规范只定位原 Issue 方法，不取得第二内容 authority。Architecture 继承 `docs/architecture/README.md / guru-trellis-architecture / active`；#818的原独立 final_plan 为 no_architecture_impact/no_change，不产生空 Architecture contribution。#818当次没有新增Skill、公共字段、状态或外仓运行依赖，也未承接#819路由或完整安装/Release矩阵。#850的当前路由及合同差额分别由R850和对应D/T承接，不改变该历史结论。
 
 ## R819-01 / BEH819-COMMENT：最小审核评论
 
@@ -67,3 +69,13 @@ Issue 验收按唯一正文第3节优先证明主要结果，并覆盖与实际�
 两入口共用Clarify-owned一份评论正文规则。评论说明实际对象/覆盖、结论和影响开工的未决/前置，代码基线只在影响判断时说明；不要求固定模板、label、身份资格、期限、hash链或长期ledger。结果不确定时沿原owner找回同一已成功Issue/comment，不重复创建或发布。完整内容方法继续由原issue-content正文拥有，评论规则不替代它。
 
 评论仅供原Readiness复核，当前适用性和分流由R819-02/03/04及其原owner拥有，不自动放行Task。对应D819-01、T819-01/02；#818内容方法与本次入口/评论差额分开，不追溯润色旧Issue或历史验证。
+
+## R850-01 / BEH850-CONTENT：原语义责任与显式只读
+
+完整Intake由Discovery到Clarify，直接进入Readiness。原内容owner亲自保留来源含义、完整条件、义务强度、例外和可观察验收；独立Wording退出不削弱原门禁，也不新增替代语言gate、scanner或词表分类。
+
+明确Issue/draft措辞请求由原Clarify standalone_wording_review只读完成，不要求Task/Delivery/session、完整Intake或ready。明确Markdown请求由原review-change explicit_files/wording_only读取全部选定当前正文，包括Git未变文件。报告具体位置、影响和原修订owner；必要来源缺失时blocked。合法建议、默认、引用、历史和literal不因词面阻塞。审核不授权正文修订、评论或发布。对应D850-01/T850-01。原range code review完整方法保持，有界结论不替代实现完整度判断。
+
+## R850-04 / BEH850-ADOPTION：完整迁移与分层证明
+
+当前producer/consumer、profile、schema及在途按匹配版本切换。固定旧provider已开始的副作用由原完整provider恢复同一操作后再更新，旧结果不改标签为新通过。原installer退役未改managed资产，用户修改/sidecar保原owner处理；Task/Delivery/scope/阶段/规划/session/配置/peer保持。源码、机械检查、实际Agent、目标安装与外部效果分层证明。真实不足保持未验证，local_candidate不证明formal_fork_source_lock或完整Release矩阵。对应D850-04/T850-04，历史原结果保其截止。

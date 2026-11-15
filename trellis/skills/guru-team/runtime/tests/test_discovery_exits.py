@@ -76,10 +76,10 @@ class ExitDiscoveryTests(unittest.TestCase):
         self.assertNotIn("private_artifacts", result)
 
     def test_conditional_router_is_returned_without_choosing_a_branch(self) -> None:
-        result = self.successful("guru-review-contract-wording", "pass")
-        self.assertEqual(result["consumer"]["id"], "guru-contract-wording-pass-router")
-        self.assertIn("change_request", result["entry"]["body"])
-        self.assertIn("delivery_planning_artifacts", result["entry"]["body"])
+        result = self.successful("guru-clarify-requirements", "clear")
+        self.assertEqual(result["consumer"]["id"], "guru-requirements-clear-router")
+        self.assertIn("original Readiness", result["entry"]["body"])
+        self.assertIn("resume target", result["entry"]["body"])
         self.assertNotIn("## Mandatory Skills", result["entry"]["body"])
 
     def test_stop_consumer_keeps_its_own_behavior(self) -> None:

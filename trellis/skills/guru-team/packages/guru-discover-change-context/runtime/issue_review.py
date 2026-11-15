@@ -12,7 +12,7 @@ def identity(public):
 def validate(package, envelope):
     public = envelope["public_input"]
     profile = public["profile"]
-    schema = "public-issue-context-request-input-1.0.schema.json" if profile=="context_request" else "public-" + profile.replace("_", "-") + "-input-1.0.schema.json"
+    schema = "public-issue-context-request-input-2.0.schema.json" if profile=="context_request" else "public-" + profile.replace("_", "-") + "-input-1.0.schema.json"
     validate_json(public, package / "schemas" / schema, "public_input")
     owner = envelope["owner_result"]
     validate_json(owner, package / "schemas/issue-review-owner-1.0.schema.json", "owner_result")
@@ -32,7 +32,7 @@ def execute(package, envelope, operation):
         raise CommandError("schema_mismatch", "ai_review_gate.status", "Complete this owner's actual semantic gate before serialization.")
     returning = public.get("return_identity")
     if returning:
-        if returning != {"profile":"issue_readiness_supplement", **identity(public), "gap":public["gap"]}:
+        if returning != {"profile":"issue_readiness_supplement", **identity(public), "gap":public["gap"], "review_focus":public["review_focus"]}:
             raise CommandError("stale_identity", "return_identity", "Return to the original Clarify supplement.", 3)
         if owner["typed_exit"] not in {"context_ready", "blocked"}:
             raise CommandError("schema_mismatch", "typed_exit", "Return requested context to Clarify before Readiness.")
@@ -42,8 +42,8 @@ def execute(package, envelope, operation):
     if operation == "check": return {"status": "passed", "typed_exit": owner["typed_exit"]}
     output = {"exit_id": owner["typed_exit"]}
     if output["exit_id"] == "context_ready":
-        output.update(handoff_profile="issue_readiness_supplement",handoff_mode=public["mode"],handoff_issue=public["issue"],handoff_base_source=public["base_source"],handoff_continuation_id=public["continuation_id"],handoff_gap=public["gap"],context_result=owner["result_summary"],source_refs=owner["source_refs"])
-        validate_json(output, package / "schemas/public-issue-context-ready-output-1.0.schema.json", "stdout")
+        output.update(handoff_profile="issue_readiness_supplement",handoff_mode=public["mode"],handoff_issue=public["issue"],handoff_base_source=public["base_source"],handoff_continuation_id=public["continuation_id"],handoff_gap=public["gap"],handoff_review_focus=public["review_focus"],context_result=owner["result_summary"],source_refs=owner["source_refs"])
+        validate_json(output, package / "schemas/public-issue-context-ready-output-2.0.schema.json", "stdout")
         return output
     if output["exit_id"] != "blocked":
         output.update(identity(public), result_summary=owner["result_summary"], source_refs=owner["source_refs"])

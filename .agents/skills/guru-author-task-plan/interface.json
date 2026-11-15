@@ -101,10 +101,6 @@
       "path": "examples/public-solution-planning-input.json"
     },
     {
-      "id": "public_wording_reentry_input",
-      "path": "examples/public-wording-reentry-input.json"
-    },
-    {
       "id": "semantic_result",
       "path": "examples/semantic-result.json"
     },
@@ -145,10 +141,6 @@
       "path": "examples/public-delivery-solution-planning-input.json"
     },
     {
-      "id": "public_delivery_wording_reentry_input",
-      "path": "examples/public-delivery-wording-reentry-input.json"
-    },
-    {
       "id": "public_plan_ready_output_2_0",
       "path": "examples/public-plan-ready-output-2.0.json"
     },
@@ -167,6 +159,10 @@
     {
       "id": "semantic_result_2_0",
       "path": "examples/semantic-result-2.0.json"
+    },
+    {
+      "id": "delivery_content_revision_input",
+      "path": "examples/public-delivery-content-revision-input.json"
     }
   ],
   "schemas": [
@@ -293,6 +289,14 @@
     {
       "id": "semantic_result_2_0",
       "path": "schemas/semantic-result-2.0.schema.json"
+    },
+    {
+      "id": "public_input_3_0_schema",
+      "path": "schemas/public-input-3.0.schema.json"
+    },
+    {
+      "id": "public_delivery_content_revision_input_schema",
+      "path": "schemas/public-delivery-content-revision-input.schema.json"
     }
   ],
   "validators": [
@@ -384,8 +388,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-author-task-plan-input-aggregate-2.0",
-        "path": "schemas/public-input-2.0.schema.json"
+        "schema_id": "guru-author-task-plan-input-aggregate-3.0",
+        "path": "schemas/public-input-3.0.schema.json"
       },
       "profiles": [
         {
@@ -434,18 +438,18 @@
           }
         },
         {
-          "id": "delivery_wording_reentry",
+          "id": "delivery_content_revision",
           "schema": {
-            "schema_id": "guru-author-task-plan-input-delivery-wording-reentry-1.0",
-            "path": "schemas/public-delivery-wording-reentry-input.schema.json"
+            "schema_id": "guru-author-task-plan-input-delivery-content-revision-1.0",
+            "path": "schemas/public-delivery-content-revision-input.schema.json"
           },
           "example": {
-            "id": "delivery_wording_reentry_input",
-            "path": "examples/public-delivery-wording-reentry-input.json"
+            "id": "delivery_content_revision_input",
+            "path": "examples/public-delivery-content-revision-input.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "delivery_wording_reentry"
+            "value": "delivery_content_revision"
           }
         },
         {

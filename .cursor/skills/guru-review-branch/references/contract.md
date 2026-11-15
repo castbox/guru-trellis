@@ -73,7 +73,7 @@ Real scope change uses clarify_requirements and actual proposal_refs. Recorder
 binds original Planning, candidate, scope and plan before rollback. Invoke
 validates authorities, then clears planning/check/full_review/readiness. The
 unique guru-task-check-planning-router reaches earliest affected Author/Clarify,
-Wording/Architecture/Approval. Do not broaden scope or rewrite the frozen candidate.
+Author/Architecture/Approval. Do not broaden scope or rewrite the frozen candidate.
 After rollback, delivery_planning_stale_recovery takes the original_review_input
 and reads this same retained checkpoint. Verify same key/B/H/candidate/scope/plans
 and cleared slots, then return the same handoff without rework/pass creation.

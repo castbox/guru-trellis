@@ -37,9 +37,9 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-issue-review-return-input-1.0.schema.json",
+        "schemas/public-issue-review-return-input-2.0.schema.json",
         "schemas/public-existing-issue-intake-input-1.0.schema.json",
-        "schemas/issue-review-owner-1.0.schema.json",
+        "schemas/issue-review-owner-2.0.schema.json",
         "schemas/public-issue-ready-output-1.0.schema.json"
       ],
       "validator_id": "change_request_review_recorder",
@@ -80,9 +80,9 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-issue-review-return-input-1.0.schema.json",
+        "schemas/public-issue-review-return-input-2.0.schema.json",
         "schemas/public-existing-issue-intake-input-1.0.schema.json",
-        "schemas/issue-review-owner-1.0.schema.json",
+        "schemas/issue-review-owner-2.0.schema.json",
         "schemas/public-issue-ready-output-1.0.schema.json"
       ],
       "validator_id": "change_request_review_checker",
@@ -123,9 +123,9 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-issue-review-return-input-1.0.schema.json",
+        "schemas/public-issue-review-return-input-2.0.schema.json",
         "schemas/public-existing-issue-intake-input-1.0.schema.json",
-        "schemas/issue-review-owner-1.0.schema.json",
+        "schemas/issue-review-owner-2.0.schema.json",
         "schemas/public-issue-ready-output-1.0.schema.json"
       ],
       "validator_id": "public_invocation",

@@ -10,7 +10,9 @@ def run(package_root,command,argv):
     if payload.get("public_input",{}).get("profile")=="issue_readiness_supplement":
         from issue_review import execute
         return execute(package_root,{"public_input":payload["public_input"],"owner_result":payload},"check")
-    value=validate_owner(package_root,payload); identity=value["content_identity"]
+    source = payload.get("owner_context", {}).get("change_request")
+    payload = payload.get("owner_result", payload)
+    value=validate_owner(package_root,payload,source=source); identity=value["content_identity"]
     from confirmation import check_live_issue_actions
     check_live_issue_actions(value)
     if a.expected_result_sha256 and a.expected_result_sha256!=identity["result_sha256"]: raise CommandError("stale_identity","expected_result_sha256","Reread current authority and repeat the semantic round.",3)

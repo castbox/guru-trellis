@@ -73,7 +73,7 @@ The current pre-task input is 4.0; context-request is 3.0. Their optional
 `candidate_file` intentionally identifies a draft body file. For a file-backed
 draft, supply it so the runtime rereads its bytes and binds
 `live_change.body_sha256`. The recorder emits a separate candidate locator/body
-identity; downstream Wording and Readiness reread it. Ordinary changes require
+identity; downstream Clarify and Readiness reread it. Ordinary changes require
 fresh affected review. This does not commit, publish, or turn the draft into
 baseline authority.
 

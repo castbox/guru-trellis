@@ -68,7 +68,7 @@ Review requirements, scope and acceptance against live Issue authority. A
 request only to read Issue status is an information query, not this review.
 Quoting trigger phrases to discuss routing does not request an Issue review.
 An explicit readiness request belongs to `guru-review-change-request`; an
-explicit wording request belongs to `guru-review-contract-wording`.
+explicit Issue/draft wording request selects this owner's `standalone_wording_review` profile.
 
 Review-only scope permits findings and proposed revisions; it does not
 authorize an Issue edit/comment, Task/resource creation or implementation.
@@ -341,3 +341,11 @@ For a user-requested Issue rereview whose action scope includes publishing or
 updating the conclusion, read [the shared review comment rule](references/issue-review-comment.md)
 before the original source_actions loop. State the actual local or complete
 coverage accurately. Read-only review returns its conclusion without a comment.
+
+## Explicit wording review
+
+For an explicit read-only Issue or draft wording request, select
+standalone_wording_review and read [its complete bounded method](references/wording-review.md).
+This profile has no Task/Delivery binding or Intake receipt prerequisite and
+terminates at the user response. Explicit Markdown files use original
+`guru-review-change:explicit_files` with review_focus=wording_only.

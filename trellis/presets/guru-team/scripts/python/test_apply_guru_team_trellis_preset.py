@@ -295,7 +295,6 @@ STAGE0_SKILL_IDS = (
     "guru-sync-base",
     "guru-discover-change-context",
     "guru-clarify-requirements",
-    "guru-review-contract-wording",
     "guru-review-change-request",
     "guru-create-task",
 )
@@ -2535,39 +2534,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-publish-task-delivery-gate-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        schema_relative = Path("schemas/contract-wording-review.schema.json")
-        canonical_schema_path = (
-            self.guru_root
-            / "trellis/skills/guru-team/packages/guru-review-contract-wording"
-            / schema_relative
-        )
-        canonical_schema_bytes = canonical_schema_path.read_bytes()
-        canonical_schema = json.loads(canonical_schema_bytes)
-        planning_dimensions = canonical_schema["$defs"]["planningCheckedDimensions"]
-        self.assertFalse(planning_dimensions["additionalProperties"])
-        self.assertEqual(
-            set(planning_dimensions["required"]),
-            {
-                "no_requirement_weakening",
-                "source_issue_semantics_preserved",
-                "conditional_paths_have_conditions",
-                "no_parallel_implementation_paths",
-                "gates_have_machine_verifiable_conditions",
-                "acceptance_criteria_are_deterministic",
-                "external_quotes_are_labeled_non_contract",
-            },
-        )
-        installed_wording = self.repo / ".trellis/guru-team/skills/packages/guru-review-contract-wording"
-        self.assertEqual(
-            (installed_wording / schema_relative).read_bytes(),
-            canonical_schema_bytes,
-        )
-        for package_root in (
-            self.repo / ".agents/skills/guru-review-contract-wording",
-            self.repo / ".cursor/skills/guru-review-contract-wording",
-        ):
-            self.assertFalse((package_root / schema_relative).exists())
-        readiness_schema_relative = Path("schemas/change-request-review-3.0.schema.json")
+        readiness_schema_relative = Path("schemas/change-request-review-4.0.schema.json")
         readiness_canonical_root = (
             self.guru_root
             / "trellis/skills/guru-team/packages/guru-review-change-request"

@@ -462,7 +462,7 @@ is valid only after the contribution has an independent reviewed state.
 ## Stage lifecycle
 
 Planning assesses the real prewrite candidate before solution writing, then
-Wording-current final facts immediately before Approval. Implementation discovery
+current Author final facts immediately before Approval. Implementation discovery
 re-enters only when a material boundary expands. The original maintenance owner
 integrates complete proposed targets before local TaskCommit, using approved
 Planning and genuine implementation/engineering results. It returns
@@ -602,7 +602,7 @@ current output's purpose, authority identities, impact/reason, path/decisions
 and design freshness have direct consumers in the current router and Author.
 It makes no future contribution or reviewed_candidate claim.
 
-For final_plan, read Wording-current design and consumers before explanations
+For final_plan, read current Author design and consumers before explanations
 and real contribution/necessary ADR. Apply the existing independent assessment
 applicability rule: if candidate facts changed, obtain a fresh independent
 conclusion; if the prior independent conclusion remains applicable, this owner

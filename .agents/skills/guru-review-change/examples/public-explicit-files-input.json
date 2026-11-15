@@ -1,0 +1,9 @@
+{
+  "profile": "explicit_files",
+  "mode": "standalone",
+  "repository": ".",
+  "paths": [
+    "README.md"
+  ],
+  "review_focus": "wording_only"
+}

@@ -450,8 +450,7 @@ The retained full Intake route carries a workflow-owned closed transition:
 ```text
 base_current -> guru-discover-change-context
 context_current -> guru-clarify-requirements
-clarity_current -> guru-review-contract-wording
-wording_current -> guru-review-change-request
+clarity_current -> guru-review-change-request
 readiness_current -> guru-task-intake-router
 ```
 
@@ -540,14 +539,13 @@ obligations. No Task solution-planning state or automatic empty Delivery exists.
 The same Author's Delivery profiles own their three planning documents and
 official planning JSONL. Their `requirements_ready` enters the original Architecture
 owner's planning `candidate_assessment`; that current result returns to Author
-for solution writing. Author `plan_ready` enters Wording, whose planning pass
-enters Architecture `final_plan`; only that current result enters adjacent
+for solution writing. Author `plan_ready` enters Architecture `final_plan`; only that current result enters adjacent
 Approval. The packages own their local contracts, including source-design
 disposition, Delivery Policy and Docs SSOT Plan. Automatically consume each
 declared typed exit. Task scope is distinct from the per-Delivery plan. The first and subsequent
 Delivery are created/selected through `guru-create-delivery` before the existing
 unique Author writes their public planning_root. D2 never replaces D1 artifacts.
-Wording, Architecture and Approval retain separate judgments over that exact plan.
+Author, Architecture and Approval retain their original judgments over that exact plan.
 Only current approved output enters `phase-1-delivery-activation`, which presents
 the complete plan and invokes `guru-activate-delivery` after the current dialogue
 boundary. No base-pair observation is required. No Task planning/in_progress writer remains.
@@ -555,7 +553,7 @@ Same-Delivery rework uses the same owner rather than first/subsequent activation
 The exact profiles and output-loss recovery are step-local package contracts.
 Questions, revision requests, partial choices and ambiguous replies remain
 paused. Material plan changes re-enter the earliest affected Author/dependency
-and repeat current Wording, final Architecture and Approval before presentation.
+and repeat current final Architecture and Approval before presentation.
 Explicit autonomous execution omits only the ordinary unchanged-plan pause;
 scope, authority, material design or risk changes retain their existing boundary.
 
@@ -695,7 +693,7 @@ status, old summaries, and earlier confirmation are never substitutes.
 Planning preserves the original Author, source selection and both
 purpose-bound Architecture producers. Incomplete plans and lost source selection
 return to their original producer; a legitimate branch rebind never replays
-initial creation. Wording and final_plan precede fresh Approval.
+initial creation. Current Author content and final_plan precede fresh Approval.
 Adjacent current public DTOs use their Interface projection. Missing outputs
 return to their original semantic or transaction producer. Commit/publication/
 merge facts survive affected gate rework; their existence does not prove pass.

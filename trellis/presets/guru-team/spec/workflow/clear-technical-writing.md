@@ -71,9 +71,9 @@ Required rules apply only under their stated conditions. Advisory rules guide im
 | 建议 / Advisory | 可改善表达的偏好；不是业务前置或独立阻塞理由。/ A preference that can improve wording; not a business prerequisite or an independent blocker. |
 | literal | 需要精确保留的字面内容；其外部解释仍受本规范约束。/ Content that must remain exact; surrounding explanations still follow this specification. |
 
-这些含义用于写作，不替代当前 workflow、Skill Interface 或业务需求中的权威定义。公共名称保持原字面，例如 `guru-review-contract-wording`、`passed`；不要为语言统一重命名它们。
+这些含义用于写作，不替代当前 workflow、Skill Interface 或业务需求中的权威定义。公共名称保持原字面，例如 `guru-clarify-requirements`、`passed`；不要为语言统一重命名它们。
 
-These meanings guide writing and do not replace authoritative workflow, Skill Interface, or business definitions. Preserve public names such as `guru-review-contract-wording` and `passed` exactly.
+These meanings guide writing and do not replace authoritative workflow, Skill Interface, or business definitions. Preserve public names such as `guru-clarify-requirements` and `passed` exactly.
 
 ## 加载与现有职责 / Loading and existing responsibilities
 
@@ -93,9 +93,9 @@ After resume or context compaction, confirm that the complete current body remai
 
 If the file is missing or cannot be read, report the specific gap and pause affected substantive text. After recovery through the existing installation or recovery path, read the whole file and continue the original request. This recovery adds no approval step. Existing Git/GitHub side-effect and business-permission rules remain with their original owners.
 
-写作 owner 输出前比较改写与原需求、证据和用途。审核 owner 只审其原有范围：歧义改变行为、遗漏必要条件或弱化义务，按 correctness 问题处理；违反适用强制规则时要求修订。仅建议差异或另一种同样清晰的表达不构成阻塞 finding。`guru-review-contract-wording` 的固定范围、前置条件和 typed exits 保持不变，不承担通用语言审核。
+写作 owner 输出前比较改写与原需求、证据和用途。审核 owner 只审其原有范围：歧义改变行为、遗漏必要条件或弱化义务，按 correctness 问题处理；违反适用强制规则时要求修订。仅建议差异或另一种同样清晰的表达不构成阻塞 finding。原内容与审核 owner 在各自范围承接这些责任，不新增通用语言审核关卡。
 
-Before output, the writer compares the text with the original requirements, evidence, and purpose. Reviewers stay within their existing scope. Treat ambiguity that changes behavior, missing conditions, or weakened obligations as correctness issues. Require revision for an applicable required-rule violation. Advice-only differences and equally clear alternatives are not blocking findings. Keep the fixed scope, preconditions, and typed exits of `guru-review-contract-wording`; it is not a general language reviewer.
+Before output, the writer compares the text with the original requirements, evidence, and purpose. Reviewers stay within their existing scope. Treat ambiguity that changes behavior, missing conditions, or weakened obligations as correctness issues. Require revision for an applicable required-rule violation. Advice-only differences and equally clear alternatives are not blocking findings. The original content and review owners apply these rules within their own scope; no general language gate is added.
 
 AI 判断语义与清晰度，句长、关键词和扫描结果不能独立证明合规。安装投影一致也不能证明 Agent 实际读取或写作行为。源码修改不代表已有安装已更新；已有项目按匹配版本更新 workflow 并 reapply 完整 preset，沿原机制保留用户指令、处理冲突及 `.new`/`.bak`，再验证实际安装。
 

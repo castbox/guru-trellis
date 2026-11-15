@@ -33,7 +33,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-input.schema.json"
+        "schemas/public-input-2.0.schema.json"
       ],
       "validator_id": "review_context_capture",
       "runtime_role": "check"
@@ -70,7 +70,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/invocation.schema.json"
+        "schemas/invocation-2.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

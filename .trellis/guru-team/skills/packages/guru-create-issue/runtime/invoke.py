@@ -13,6 +13,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.io import CommandError, fail, read_json, write_json
 from runtime.schema import validate_json
+from runtime.content_identity import title_body_identity
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -58,7 +59,7 @@ def _reviewed_target(draft: dict[str, Any], target: dict[str, Any]) -> dict[str,
     return {
         **identity,
         "identity_sha256": _digest(identity),
-        "content_sha256": _digest({"title_sha256": title_sha256, "body_sha256": body_sha256}),
+        "content_sha256": title_body_identity(draft["title"], draft["body"]),
     }
 
 

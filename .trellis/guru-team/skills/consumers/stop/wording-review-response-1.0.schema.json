@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-wording-review-response-1.0",
+  "$ref": "../../packages/guru-clarify-requirements/schemas/public-reviewed-output-1.0.schema.json"
+}

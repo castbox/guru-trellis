@@ -51,7 +51,6 @@ from adapters.eval.stage0_fixtures import (
     build_context_owner,
     build_readiness_owner,
     build_task_free_change_owner,
-    build_wording_owner,
     build_workflow_mode_owner,
     build_workspace_owner,
     build_workspace_recovery_owner,
@@ -198,7 +197,7 @@ def stage_owner_execution(
     }
     if skill_id == ARCHITECTURE_SKILL and json.loads(public_input.read_text())["profile"].startswith("delivery_"):
         task_required = False
-    if task_required and not (skill_id == "guru-review-contract-wording" and recipe == "wording-content-changed"):
+    if task_required:
         task.mkdir(parents=True, exist_ok=True)
         (task / "task.json").write_text(json.dumps({
             "id": "current", "name": "current", "title": "Stage 0 wording fixture",
@@ -295,9 +294,6 @@ def stage_owner_execution(
         environment["TRELLIS_CONTEXT_ID"] = os.environ.get("TRELLIS_CONTEXT_ID") or DELIVERY_CONTEXT
     previous_path = os.environ.get("PATH")
     previous_context = os.environ.get("TRELLIS_CONTEXT_ID")
-    if skill_id == "guru-review-contract-wording" and recipe == "wording-content-changed":
-        environment["TRELLIS_CONTEXT_ID"] = "wording-delivery-eval"
-        os.environ["TRELLIS_CONTEXT_ID"] = environment["TRELLIS_CONTEXT_ID"]
     os.environ["PATH"] = environment["PATH"]
     owner_context: dict[str, Any] = {}
     readiness_invocation = None
@@ -337,15 +333,10 @@ def stage_owner_execution(
             owner = build_task_free_change_owner(public_payload, recipe)
         elif skill_id == "guru-clarify-requirements":
             owner = build_clarity_owner(runtime, package, recipe, public_payload)
+            live = json.loads(subprocess.check_output(["gh", "issue", "view", str(owner["review_target"]["issue_number"]), "--repo", owner["review_target"]["repo"], "--json", "number,title,body,updatedAt"], text=True))
+            owner_context = {"change_request":{"kind":"issue","repo":owner["review_target"]["repo"],"number":live["number"],"title":live["title"],"body":live["body"],"updated_at":live["updatedAt"]}}
         elif skill_id == "guru-discover-change-context":
             owner = build_context_owner(runtime, fixture, package, recipe)
-        elif skill_id == "guru-review-contract-wording":
-            owner, change_request = build_wording_owner(
-                runtime, fixture, package, recipe, public_payload
-            )
-            (fixture / OWNER_INPUT).write_text(json.dumps(public_payload) + "\n")
-            if owner.get("profile") == "change_request":
-                owner_context["change_request"] = change_request
         elif skill_id == "guru-review-change-request":
             owner, readiness_state, change_request = build_readiness_owner(
                 runtime,
@@ -660,7 +651,6 @@ def stage_owner_execution(
     if skill_id in {
         "guru-discover-change-context",
         "guru-clarify-requirements",
-        "guru-review-contract-wording",
         "guru-review-change-request",
         "guru-create-task-workspace",
     }:

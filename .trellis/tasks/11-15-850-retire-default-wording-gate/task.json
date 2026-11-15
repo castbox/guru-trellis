@@ -1,0 +1,115 @@
+{
+  "schema_version": "2.0",
+  "id": "850-retire-default-wording-gate",
+  "name": "850-retire-default-wording-gate",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 850,
+    "disposition": "exact_source"
+  },
+  "title": "#850 取消默认独立 Wording 关卡并迁移职责与依赖",
+  "description": "按 #850 完整正文及复审要求，取消默认 Intake/Planning 的独立强制 Wording 关卡，迁移职责、公共 API、在途接续与受管安装。",
+  "dev_type": null,
+  "scope": "仅 #850 accepted scope：默认 Intake/Planning、#819 补审和 Author 返工的直接依赖迁移；保留语义质量职责、显式只读审核、等义/实质修改路由；完成公共 API、在途及安装迁移和定向验收。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-15",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/prd.md",
+    "revision": "sha256:000290d5242e6e8e7f24cc2b1adf212004aea228d1b1cde81e9208a80f11b415"
+  },
+  "deliveries": [
+    {
+      "id": "eb5ddae6-a516-41a4-9058-fb5d5d59c20b",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/prd.md",
+          "revision": "sha256:000290d5242e6e8e7f24cc2b1adf212004aea228d1b1cde81e9208a80f11b415"
+        },
+        "anchors": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "AC01",
+          "AC02",
+          "AC03",
+          "AC04",
+          "AC05"
+        ]
+      },
+      "planning_root": "deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/design.md",
+        "revision": "sha256:b54dde9b988b2b12db222df7532f5636a2e7a86c5f90e52c76c32a8575007181"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:abcb6971-6d17-4c43-9594-8828576083a7",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/prd.md",
+              "revision": "sha256:000290d5242e6e8e7f24cc2b1adf212004aea228d1b1cde81e9208a80f11b415"
+            },
+            "anchors": [
+              "R01",
+              "R02",
+              "R03",
+              "R04",
+              "AC01",
+              "AC02",
+              "AC03",
+              "AC04",
+              "AC05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/design.md",
+            "revision": "sha256:b54dde9b988b2b12db222df7532f5636a2e7a86c5f90e52c76c32a8575007181"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/prd.md",
+              "revision": "sha256:affa9d3c192c23193ab07d921d5f43c360b03005b3841d1ed2ac1a80bbf87f43"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/design.md",
+              "revision": "sha256:b54dde9b988b2b12db222df7532f5636a2e7a86c5f90e52c76c32a8575007181"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/implement.md",
+              "revision": "sha256:91fd49b9418fd2896a25d7956a28dbab3979c63689bd9f0641e332ef2552b070"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

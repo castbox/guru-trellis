@@ -13,7 +13,7 @@ from runtime.schema import validate_json
 
 
 def validate_input(package_root: Path, public_input: dict) -> None:
-    validate_json(public_input, package_root / "schemas/public-input.schema.json", "public_input")
+    validate_json(public_input, package_root / "schemas/public-input-2.0.schema.json", "public_input")
     for index, value in enumerate(public_input.get("paths", [])):
         path = PurePosixPath(value)
         if path.is_absolute() or ".." in path.parts or "\x00" in value:
@@ -66,7 +66,20 @@ def capture(package_root: Path, public_input: dict) -> dict:
     bind("base", json.dumps(base).encode())
     bind("head", json.dumps(head).encode())
     options = ["--no-ext-diff", "--no-textconv", "--no-color", "--binary", "--full-index", "--no-renames", "--submodule=short", "--ignore-submodules=none"]
-    if public_input["profile"] == "committed_range":
+    if public_input["profile"] == "explicit_files":
+        for selected in sorted(paths):
+            path = root / selected
+            try:
+                mode = path.lstat().st_mode
+                if not stat.S_ISREG(mode) or path.suffix != ".md":
+                    raise CommandError("unsupported_content", "public_input.paths", "Select exact regular Markdown files.")
+                content = path.read_bytes()
+            except OSError as exc:
+                raise CommandError("content_unavailable", "public_input.paths", "Make every selected Markdown file readable.") from exc
+            bind("selected_path", os.fsencode(selected))
+            bind("selected_mode", str(stat.S_IMODE(mode)).encode())
+            bind("selected_full_content", content)
+    elif public_input["profile"] == "committed_range":
         bind("committed", _git(root, "diff", *options, base, head, "--", *selectors))
     else:
         baseline = [head] if head is not None else []

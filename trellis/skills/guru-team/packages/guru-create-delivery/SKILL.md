@@ -28,7 +28,7 @@ planning. Its workflow consumer rereads the actual public phase: only a current
 planning object with an actual initial-requirements obligation and matching
 Author entry goes to initial Author. All others enter the sole Task/Delivery
 continuation at the actual obligation, including existing planning's applicable
-Author/Wording/Architecture/Approval or current approved to Activation.
+Author/Architecture/Approval or current approved to Activation.
 Missing/stale outputs return to their original producer; phase alone never
 restarts initial Author. Selection and result recovery preserve phase, plans and applicable
 results, and cannot manufacture a gate pass. This package requires the complete

@@ -1,48 +1,40 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "skill_id": "guru-review-change-request",
   "generated_at": "2026-01-01T00:00:00Z",
-  "mode": "workflow",
+  "mode": "standalone",
   "target": {
-    "kind": "existing_issue",
+    "kind": "proposed_draft",
     "repo": "example/guru-extension",
-    "issue_number": 27,
-    "url": "https://github.com/example/guru-extension/issues/27",
-    "updated_at": "2026-01-01T00:00:00Z",
-    "draft_id": null,
-    "source_request_sha256": null,
+    "issue_number": null,
+    "url": null,
+    "updated_at": null,
+    "draft_id": "draft-27",
+    "source_request_sha256": "3e51a33bff9c99156283acb15a148ca378ba430c8c7cf9e8a9df09da581c6403",
     "caller_locator": null,
     "request_id": null,
-    "title_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "body_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "side_effect_free": false,
-    "identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-    "content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    "title_sha256": "74fe9efe254e4286647b1df6c3b38d08ad609c9c51230f531c65284f7cb53fe9",
+    "body_sha256": "7a8eade71eb255a016318eb4329e1608c9df58b77b9c3d4576534520ccabf44e",
+    "side_effect_free": true,
+    "identity_sha256": "6d7e2a2a7aa5f868fe589566a553e61fe1e07a8cefa22c85142019d77cf87e48",
+    "content_sha256": "5c0ddf9f6ad4acdfd415f9dbf91e033d9093575ccb1106a99078f791c7e4a577"
   },
   "prerequisites": {
     "clarity": {
       "status": "current",
-      "facts_sha256": "2121212121212121212121212121212121212121212121212121212121212121",
-      "target_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "disposition_sha256": "2424242424242424242424242424242424242424242424242424242424242424",
-      "content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-      "scope_sha256": "2323232323232323232323232323232323232323232323232323232323232323"
-    },
-    "wording": {
-      "status": "current",
-      "facts_sha256": "3131313131313131313131313131313131313131313131313131313131313131",
-      "scope_sha256": "3232323232323232323232323232323232323232323232323232323232323232",
-      "scan_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
-      "target_content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      "facts_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "target_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "disposition_sha256": "3535353535353535353535353535353535353535353535353535353535353535",
+      "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "scope_sha256": "3737373737373737373737373737373737373737373737373737373737373737"
     }
   },
   "evidence_linkage": {
-    "target_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-    "target_content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-    "clarity_facts_sha256": "2121212121212121212121212121212121212121212121212121212121212121",
-    "clarity_disposition_sha256": "2424242424242424242424242424242424242424242424242424242424242424",
-    "wording_facts_sha256": "3131313131313131313131313131313131313131313131313131313131313131",
-    "linkage_sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4"
+    "target_identity_sha256": "6d7e2a2a7aa5f868fe589566a553e61fe1e07a8cefa22c85142019d77cf87e48",
+    "target_content_sha256": "5c0ddf9f6ad4acdfd415f9dbf91e033d9093575ccb1106a99078f791c7e4a577",
+    "clarity_facts_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "clarity_disposition_sha256": "3535353535353535353535353535353535353535353535353535353535353535",
+    "linkage_sha256": "5b5d6a1bd553ca4f5b0d3e1daeabcd6e700fe5cc198e4e396fb57aff2323906d"
   },
   "semantic_review": {
     "dimensions": [
@@ -51,10 +43,10 @@
         "status": "passed",
         "summary": "The current requirement is complete.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -63,10 +55,10 @@
         "status": "passed",
         "summary": "The request is one delivery unit.",
         "evidence_refs": [
-          "evidence_linkage"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -75,10 +67,10 @@
         "status": "passed",
         "summary": "Implementation targets are evidenced.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -87,10 +79,10 @@
         "status": "passed",
         "summary": "Claims match current behavior evidence.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -99,10 +91,10 @@
         "status": "passed",
         "summary": "A current implementation gap remains.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -111,10 +103,10 @@
         "status": "passed",
         "summary": "Docs, code, and tests are consistent.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -123,10 +115,10 @@
         "status": "passed",
         "summary": "Archived constraints are accounted for.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -135,10 +127,10 @@
         "status": "passed",
         "summary": "Duplicate and reuse facts are resolved.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -147,10 +139,10 @@
         "status": "passed",
         "summary": "The issue authority is current.",
         "evidence_refs": [
-          "target"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       },
@@ -159,10 +151,10 @@
         "status": "passed",
         "summary": "All prerequisite hashes are linked.",
         "evidence_refs": [
-          "evidence_linkage"
+          "transition.context_result_sha256"
         ],
         "affected_hashes": [
-          "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4"
+          "2222222222222222222222222222222222222222222222222222222222222222"
         ],
         "finding_ids": []
       }
@@ -186,25 +178,25 @@
     },
     "ai_review_gate": {
       "status": "passed",
-      "reviewer": "example-ai-reviewer",
-      "reviewed_linkage_sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4",
-      "summary": "All ten dimensions were reviewed against the linked evidence.",
-      "findings_count": 0,
-      "scope_conclusion_sha256": "24099de55e8c29f9e7f1a945125fd16d93f36d6d1467365453bc9c5a86abe095"
+      "reviewer": "readiness-owner",
+      "summary": "AI completed the readiness review.",
+      "reviewed_linkage_sha256": "5b5d6a1bd553ca4f5b0d3e1daeabcd6e700fe5cc198e4e396fb57aff2323906d",
+      "scope_conclusion_sha256": "24099de55e8c29f9e7f1a945125fd16d93f36d6d1467365453bc9c5a86abe095",
+      "findings_count": 0
     }
   },
   "typed_exit": "ready",
   "reason": "The independently deliverable change request is ready for workspace creation.",
   "affected_evidence": [
     {
-      "ref": "evidence_linkage",
-      "sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4",
-      "summary": "The complete portable prerequisite linkage."
+      "ref": "transition.context_result_sha256",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "summary": "Current public context evidence."
     }
   ],
   "consumer": {
     "kind": "workflow",
     "id": "guru-task-intake-router"
   },
-  "facts_sha256": "0d5acf4744bd177d5440b7001c08549039394707b0fa76e332933a82e1632bde"
+  "facts_sha256": "f15baac8438029128a11cb4399ca627fba33d427609e03e35fa005c265b90796"
 }

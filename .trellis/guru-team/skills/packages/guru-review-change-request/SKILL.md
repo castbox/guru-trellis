@@ -79,7 +79,7 @@ follow this Skill's declared routes; runtime cannot supply your judgment.
 Use the applicable existing-Issue or full-chain profile before task creation. Load
 [references/contract.md](references/contract.md) before acting.
 
-Reread the current target authority, then validate clarity and wording evidence. Review all
+Reread the current target authority, then validate current Clarity and source evidence. Review all
 ten readiness dimensions, record findings and one scope conclusion, complete
 the AI Review Gate, and call the recorder and checker only after the semantic
 judgment exists. Return exactly one declared typed exit.
@@ -139,11 +139,10 @@ Explicit dimensions, findings (including `[]`), scope conclusion and selected
 exit remain AI-owned and required. Record derives both gate digests and the
 findings count; never import private linkage or eval runtime to author them.
 
-Use the actual `wording_current` producer transition for ready, original
-`clarity_current` for a missing-wording reroute, or original `context_current`
-for a missing-clarity reroute. Do not reconstruct upstream private results or
-downgrade a later transition. Preserve the original public context needed for
-re-entry in the call-local conversation; never fabricate missing hashes.
+Use the actual `clarity_current` 4.0 producer transition for ready, or the original
+`context_current` for a missing-Clarity return. Preserve the distinct source
+content token and semantic identity. Keep original public context call-locally;
+never reconstruct private evidence, downgrade a transition or fabricate a token.
 The runtime derives minimal prerequisites, validates the AI-selected route,
 and emits the public handoff. Checker alone rereads the issue; invoke checks
 the exact receipt and current envelope without live calls. It does not decide
@@ -176,5 +175,5 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 
 Load [the complete existing-Issue contract](references/issue-intake.md) after
 actual Sync or a local owner return. This is the same Readiness owner and gate.
-Its independent profiles do not require current-run Discovery/Clarify/Wording
+Its independent profiles do not require current-run Discovery/Clarify
 receipts. Comments are review material; AI judges their coverage and applicability.

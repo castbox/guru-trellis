@@ -9,7 +9,7 @@ from common import validate_owner
 from confirmation import CONFIRMATION_PROFILES, confirmation_identity, bind_confirmation
 
 OUTPUT_SCHEMAS = {
-    "clear": "public-clear-output-4.0.schema.json",
+    "clear": "public-clear-output-5.0.schema.json",
     "scope_ready": "public-scope-ready-output-1.0.schema.json",
     "needs_context": "public-needs-context-output-4.0.schema.json",
     "refresh_context": "public-refresh-context-output-3.0.schema.json",
@@ -87,6 +87,8 @@ def typed_output(package_root, public, transition, owner):
             },
             "target_disposition": transition_disposition,
         })
+        if owner.get("schema_version") == "6.0":
+            current["source_content_sha256"] = owner["source_content_sha256"]
         output = {
             "exit_id": "clear",
             "profile": public["profile"],
@@ -173,7 +175,8 @@ def typed_output(package_root, public, transition, owner):
     else:
         raise CommandError("schema_mismatch", "typed_exit", "Return one declared typed exit.", 3)
     if exit_id in {"refresh_context","retarget_context"} and (transition or {}).get("base",{}).get("kind")=="git_object":output.update(handoff_operation="read",handoff_base_ref=transition["base"]["commit"])
-    validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[exit_id], "stdout")
+    output_schema = ("public-clear-output-4.0.schema.json" if exit_id == "clear" and owner.get("schema_version") == "4.0" else OUTPUT_SCHEMAS[exit_id])
+    validate_json(output, package_root / "schemas" / output_schema, "stdout")
     return output
 
 
@@ -183,6 +186,9 @@ def run(package_root,command,argv):
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
     envelope=read_json(a.invocation,"invocation")
     public=envelope.get("public_input",{})
+    if public.get("profile") == "standalone_wording_review":
+        from wording_review import execute
+        return execute(package_root, envelope)
     if public.get("profile")=="issue_readiness_supplement":
         from issue_review import execute
         return execute(package_root,envelope,"invoke")
@@ -191,7 +197,7 @@ def run(package_root,command,argv):
         return invoke(package_root, Path.cwd(), public, envelope.get("owner_result", {}))
     if public.get("profile") == "active_task_scope_change":
         raise CommandError("schema_mismatch", "profile", "Use the current Task/Delivery scope continuation after installation migration.", 3)
-    validate_json(envelope, package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json", "invocation")
+    validate_json(envelope, package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json", "invocation")
     public=envelope["public_input"]
     profiles = {
         "standard_intake": "public-standard-intake-input.schema.json",
@@ -205,7 +211,7 @@ def run(package_root,command,argv):
     if profile not in profiles:
         raise CommandError("schema_mismatch", "public_input.profile", "Use a current Clarify profile; migrate initial_change_request through fresh Intake.", 3)
     validate_json(public, package_root / "schemas" / profiles[profile], "public_input")
-    owner=validate_owner(package_root,envelope["owner_result"])
+    owner=validate_owner(package_root,envelope["owner_result"],source=envelope["owner_context"].get("change_request"))
     transition=envelope.get("transition")
     exit_id=owner["typed_exit"]
     if public.get("mode") != owner.get("mode"):

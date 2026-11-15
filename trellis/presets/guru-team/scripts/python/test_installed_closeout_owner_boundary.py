@@ -77,7 +77,7 @@ phase0.run = observed_phase0_run
 task, branch, commit, intake = v.write_full_fixture(root, real_git, "initial", 105)
 skills = (
     "guru-sync-base", "guru-discover-change-context",
-    "guru-clarify-requirements", "guru-review-contract-wording",
+    "guru-clarify-requirements",
     "guru-review-change-request", "guru-create-task-workspace",
     "guru-approve-task-plan", "guru-check-task", "guru-create-task-commit",
     "guru-review-branch", "guru-review-task-publication",

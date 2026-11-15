@@ -15,7 +15,6 @@
         "current_authority",
         "planning_documents",
         "docs_ssot",
-        "wording_result",
         "invocation_freshness"
       ]
     },
@@ -27,7 +26,6 @@
         "current_authority",
         "planning_documents",
         "docs_ssot",
-        "wording_result",
         "invocation_freshness"
       ]
     }
@@ -62,12 +60,6 @@
       "evidence": "current strategy, durable paths, and semantic execution summary",
       "binding": "the durable documentation responsibility for the task",
       "freshness": "the AI classifies current Docs SSOT meaning before recording"
-    },
-    {
-      "id": "wording_result",
-      "evidence": "current passed planning wording result",
-      "binding": "the same planning scope consumed by this owner",
-      "freshness": "the wording owner is rerun only when its semantic dependency changes"
     },
     {
       "id": "invocation_freshness",

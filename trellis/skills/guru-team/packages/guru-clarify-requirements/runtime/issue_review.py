@@ -12,10 +12,10 @@ def identity(public):
 def validate(package, envelope):
     public = envelope["public_input"]
     profile = public["profile"]
-    schema = "public-" + profile.replace("_", "-") + "-input-1.0.schema.json"
+    schema = "public-" + profile.replace("_", "-") + "-input-2.0.schema.json"
     validate_json(public, package / "schemas" / schema, "public_input")
     owner = envelope["owner_result"]
-    validate_json(owner, package / "schemas/issue-review-owner-1.0.schema.json", "owner_result")
+    validate_json(owner, package / "schemas/issue-review-owner-2.0.schema.json", "owner_result")
     if owner["public_input"] != public:
         raise CommandError("stale_identity", "owner_result.public_input", "Rerun this owner for the original Issue, source and continuation.", 3)
     if (owner["typed_exit"] == "blocked") != (owner["ai_review_gate"]["status"] == "blocked"):
@@ -54,7 +54,7 @@ def local_clarification(package, authored, *, authoring=False):
 
 def execute(package, envelope, operation):
     if operation == "invoke":
-        validate_json(envelope, package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-2.0.schema.json", "invocation")
+        validate_json(envelope, package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json", "invocation")
     if operation == "record":
         envelope = copy.deepcopy(envelope)
         envelope["owner_result"]["clarification"] = local_clarification(package, envelope["owner_result"]["clarification"], authoring=True)
@@ -82,8 +82,8 @@ def execute(package, envelope, operation):
         output.update(identity(public), result_summary=owner["result_summary"], source_refs=owner["source_refs"], source_selection=owner["source_selection"])
         name = "public-supplemented-output-1.0.schema.json"
     elif output["exit_id"] == "needs_context":
-        output.update(handoff_profile="context_request", handoff_mode=public["mode"], issue=public["issue"], base_source=public["base_source"], handoff_continuation_id=public["continuation_id"], gap=public["gap"], return_identity={"profile":"issue_readiness_supplement", **identity(public), "gap":public["gap"]})
-        name = "public-issue-needs-context-output-1.0.schema.json"
+        output.update(handoff_profile="context_request", handoff_mode=public["mode"], issue=public["issue"], base_source=public["base_source"], handoff_continuation_id=public["continuation_id"], gap=public["gap"], review_focus=public["review_focus"], return_identity={"profile":"issue_readiness_supplement", **identity(public), "gap":public["gap"], "review_focus":public["review_focus"]})
+        name = "public-issue-needs-context-output-2.0.schema.json"
     else: name = "public-blocked-output.schema.json"
     validate_json(output, package / "schemas" / name, "stdout")
     return output

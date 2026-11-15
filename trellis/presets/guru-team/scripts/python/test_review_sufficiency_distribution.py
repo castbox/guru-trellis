@@ -33,7 +33,7 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
         source_packages = fixture.guru_root / "trellis/skills/guru-team/packages"
         consumers = (
             "guru-clarify-requirements", "guru-review-change-request",
-            "guru-review-contract-wording", "guru-approve-task-plan",
+            "guru-approve-task-plan",
             "guru-review-change", "guru-check-task", "guru-review-branch",
             "guru-review-task-delivery", "guru-review-task-completion",
             "guru-maintain-architecture-baseline",

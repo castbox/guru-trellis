@@ -403,12 +403,9 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
 
     def test_declared_workflow_routers_continue_only_current_intake(self):
         clarity = json.loads((SKILLS / "packages" / INTAKE_SKILLS[2] / "interface.json").read_text())
-        wording = json.loads((SKILLS / "packages" / INTAKE_SKILLS[3] / "interface.json").read_text())
         self.assertEqual(next_intake_owner(INTAKE_SKILLS[2], {"exit_id": "clear", "resume_target": INTAKE_SKILLS[3]}, clarity), INTAKE_SKILLS[3])
         self.assertIsNone(next_intake_owner(INTAKE_SKILLS[2], {"exit_id": "blocked"}, clarity))
         self.assertIsNone(next_intake_owner(INTAKE_SKILLS[2], {"exit_id": "clear", "resume_target": "guru-standalone-caller"}, clarity))
-        self.assertEqual(next_intake_owner(INTAKE_SKILLS[3], {"exit_id": "pass", "profile": "change_request"}, wording), INTAKE_SKILLS[4])
-        self.assertIsNone(next_intake_owner(INTAKE_SKILLS[3], {"exit_id": "pass", "profile": "explicit_paths"}, wording))
 
     def test_failed_record_can_be_corrected_without_skipping_checker(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -450,7 +447,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
                 self.assertEqual(json.loads(result["stdout"]), {"exit_id": "blocked"})
                 self.assertTrue(dispatcher.terminal)
                 with self.assertRaisesRegex(ValueError, "terminal"):
-                    dispatcher.forward({"skill_id": INTAKE_SKILLS[3], "command": "record-contract-wording-review", "arguments": ["--invocation", "-", "--scan-only"], "stdin": "{}"})
+                    dispatcher.forward({"skill_id": INTAKE_SKILLS[3], "command": COMMANDS[INTAKE_SKILLS[3]][0], "arguments": ["--invocation", "-"], "stdin": "{}"})
                 self.assertEqual(run.call_count, 1)
 
     def test_real_clarification_invoke_omission_can_be_rerecorded(self):
@@ -461,6 +458,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
         snapshot = public["duplicate_snapshot"]
         authoring = json.loads((package / "examples/requirements-clarification.json").read_text())
         authoring.pop("content_identity")
+        authoring.pop("source_content_sha256", None)
         authoring["review_target"].pop("facts_sha256")
         authoring["review_target"].update(kind="issue", issue_number=145, url=public["target_locator"],
                                           state="open", updated_at=snapshot["checked_at"])
@@ -501,6 +499,8 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
                 arguments = ["--invocation", "-"] if command == "invoke" else ["--input", "-"]
                 if command.startswith("record-"):
                     arguments = ["--mode", "workflow", *arguments]
+                if value.get("schema_version") == "6.0":
+                    value = {"owner_result": value, "owner_context": {}}
                 return dispatcher.forward({"skill_id": skill, "command": command, "arguments": arguments,
                                            "stdin": json.dumps(value)})
 
@@ -522,7 +522,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
                 self.assertFalse(dispatcher.terminal)
                 self.assertNotIn(skill, dispatcher.outputs)
                 with self.assertRaisesRegex(ValueError, "owner order"):
-                    dispatcher.forward({"skill_id": INTAKE_SKILLS[3], "command": "record-contract-wording-review",
+                    dispatcher.forward({"skill_id": INTAKE_SKILLS[3], "command": COMMANDS[INTAKE_SKILLS[3]][0],
                                         "arguments": ["--invocation", "-"], "stdin": "{}"})
                 authoring["target_disposition"] = disposition
                 fresh = success(COMMANDS[skill][0], authoring)
@@ -542,13 +542,13 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
             self.assertEqual([row["response"]["returncode"] for row in dispatcher.receipts], [0, 0, 3, 0, 0, 0])
             self.assertEqual(json.loads(dispatcher.receipts_path.read_text()), dispatcher.receipts)
 
-    def test_failed_check_reentry_keeps_scan_and_requires_fresh_receipt(self):
+    def test_failed_check_reentry_requires_fresh_receipt(self):
         with tempfile.TemporaryDirectory() as temporary:
             stage_receipt_schema(Path(temporary))
             dispatcher = IntakeCommands(Path(temporary), {}, Path(temporary) / "receipts.json")
             skill = INTAKE_SKILLS[3]
             dispatcher.owner_index = 3
-            dispatcher.completed = ["scan", COMMANDS[skill][0]]
+            dispatcher.completed = [COMMANDS[skill][0]]
             dispatcher.recorded = {"owner": "old"}
             dispatcher.checked = {"validation_receipt": {"version": "old"}}
             record = {"skill_id": skill, "command": COMMANDS[skill][0],
@@ -562,7 +562,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
             with mock.patch("adapters.eval.intake_authoring.subprocess.run", side_effect=replies) as run:
                 self.assertEqual(dispatcher.forward(check)["returncode"], 3)
                 self.assertEqual(dispatcher.forward(record)["returncode"], 0)
-                self.assertEqual(dispatcher.completed, ["scan", COMMANDS[skill][0]])
+                self.assertEqual(dispatcher.completed, [COMMANDS[skill][0]])
                 self.assertIsNone(dispatcher.checked)
                 with self.assertRaisesRegex(ValueError, "order"):
                     dispatcher.forward({**record, "command": "invoke"})

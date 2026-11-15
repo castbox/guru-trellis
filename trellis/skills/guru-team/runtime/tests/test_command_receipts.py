@@ -49,9 +49,9 @@ class CommandReceiptTests(unittest.TestCase):
                 self.assertEqual(project_intermediate_receipt(output, SKILLS / "schemas"), original)
 
     def test_formal_positive_and_nonpass_outputs_remain_exact(self):
-        for original in ({"exit_id": "pass", "profile": "planning_artifacts", "continuation_id": "test"},
+        for original in ({"exit_id": "reviewed", "conclusion": "Current draft is clear.", "findings": []},
                          {"exit_id": "blocked", "reason": "current wording needs revision"}):
-            self.assertEqual(self.dispatch("guru-review-contract-wording", "invoke-guru-review-contract-wording", original), original)
+            self.assertEqual(self.dispatch("guru-clarify-requirements", "invoke-guru-clarify-requirements", original), original)
 
     def test_same_owner_projection_requires_current_receipt_not_formal_or_old_stdout(self):
         for payload in ({"status": "passed"}, {"exit_id": "approved"},

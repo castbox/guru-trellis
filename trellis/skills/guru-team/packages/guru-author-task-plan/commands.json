@@ -43,7 +43,7 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-input-2.0.schema.json",
+        "schemas/public-input-3.0.schema.json",
         "schemas/semantic-result-2.0.schema.json"
       ],
       "validator_id": "public_invocation",

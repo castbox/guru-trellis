@@ -16,7 +16,7 @@ Guru freshness token 不写 GateResult.result_id、不成为 evidence 或跨阶�
 
 ## 返工、失效与恢复
 
-原当前阶段 owner 先完成合法 rework 到 planning，再由唯一 Author 修订该 Delivery 文档、受影响 Wording/Architecture/Approval fresh 重入。保留同一 key/candidate/commit/PR，未受影响证据不整链 replay。整体 scope 修订先由 Clarify 收敛，再让最早受影响阶段 owner 接续。
+原当前阶段 owner 先完成合法 rework 到 planning，再由唯一 Author 修订该 Delivery 文档、受影响 Architecture/Approval fresh 重入。保留同一 key/candidate/commit/PR，未受影响证据不整链 replay。整体 scope 修订先由 Clarify 收敛，再让最早受影响阶段 owner 接续。
 
 公共转换前的 ignored checkpoint 只保留同 operation/key/result 的恢复输入；同 owner 重试必须用原 result_id。转换及输出校验后删除 checkpoint。`recover_activation` 从当前公共 planning slot 读回该原 key/result，校验同 scope 和当前文档；它不重复 record_gate、不新分配 result、不从 phase 推导批准。尚未转换或原结果不可用时回原计划展示/接受路径；新内容不允许旧结果冒充当前 pass。历史完成事实由公共查询保存，本恢复结果不覆盖后续语义义务。
 

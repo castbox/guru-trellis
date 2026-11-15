@@ -56,7 +56,7 @@ restarts initial planning or supplies a gate pass.
 
 This is the sole business writer: task_scope_requirements writes only the
 root overall PRD; eight delivery_<original_profile> entries write that
-Delivery planning_root PRD/design/implement and official JSONL. Wording owns only its controlled rewrite; Architecture
+Delivery planning_root PRD/design/implement and official JSONL. Architecture
 owns independent assessment; Approval owns semantic approval. Loading upstream
 `trellis-brainstorm` may supply a method, but never another planning writer.
 
@@ -73,7 +73,7 @@ No persistent Author checkpoint or authorization record is created.
   acceptance, with fresh original source selection. It is not Task Planning.
 - `requirements_ready`: `guru-task-plan-requirements-ready-router` projects the
   real candidate into original Architecture `candidate_assessment`.
-- `plan_ready`: `guru-task-plan-ready-router` invokes Wording on current docs.
+- `plan_ready`: `guru-task-plan-ready-router` invokes final-plan Architecture on current docs.
 - `clarify_scope`: original `guru-task-plan-clarify-scope-router` invokes Clarify
   for the precise unresolved choice.
 - `blocked`: stop at `task-plan-author-blocked` with the actual missing refs.

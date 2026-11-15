@@ -258,7 +258,7 @@ Do not create replacement TaskIds.
 
 Planning continuation requires the real project Architecture baseline, actual
 normal-scenario and solution-mechanism qualifications, and AI semantic
-Architecture, wording and Planning gates. Recorder/checker/invoke success only
+Architecture and Planning gates. Recorder/checker/invoke success only
 proves objective structure and does not replace these judgments. Preserve the
 original planning bytes while establishing the fresh current results.
 

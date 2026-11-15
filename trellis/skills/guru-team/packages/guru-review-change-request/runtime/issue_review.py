@@ -12,10 +12,10 @@ def identity(public):
 def validate(package, envelope):
     public = envelope["public_input"]
     profile = public["profile"]
-    schema = "public-" + profile.replace("_", "-") + "-input-1.0.schema.json"
+    schema = "public-" + profile.replace("_", "-") + ("-input-2.0.schema.json" if profile == "issue_review_return" else "-input-1.0.schema.json")
     validate_json(public, package / "schemas" / schema, "public_input")
     owner = envelope["owner_result"]
-    validate_json(owner, package / "schemas/issue-review-owner-1.0.schema.json", "owner_result")
+    validate_json(owner, package / "schemas/issue-review-owner-2.0.schema.json", "owner_result")
     if owner["public_input"] != public:
         raise CommandError("stale_identity", "owner_result.public_input", "Rerun this owner for the original Issue, source and continuation.", 3)
     if (owner["typed_exit"] == "blocked") != (owner["ai_review_gate"]["status"] == "blocked"):
@@ -25,7 +25,7 @@ def validate(package, envelope):
 
 def execute(package, envelope, operation):
     if operation == "invoke":
-        validate_json(envelope, package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-2.0.schema.json", "invocation")
+        validate_json(envelope, package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json", "invocation")
     from common import DIMENSIONS, digest, live_issue_source
     public, owner = validate(package, envelope)
     source = envelope.get("owner_context", {}).get("change_request")
@@ -54,7 +54,9 @@ def execute(package, envelope, operation):
         output.update(identity(public))
         if exit_id == "ready": output["source_selection"] = owner["source_selection"]
         if exit_id.startswith("supplement_"): output["gap"] = owner["gap"]
+    if exit_id == "supplement_requirements": output["review_focus"] = owner["review_focus"]
     name = "public-issue-ready-output-1.0" if exit_id == "ready" else "public-" + exit_id.replace("_", "-") + "-output-1.0"
+    if exit_id == "supplement_requirements": name = "public-supplement-requirements-output-2.0"
     if exit_id == "blocked": name = "public-blocked-output"
     validate_json(output, package / "schemas" / (name + ".schema.json"), "stdout")
     return output

@@ -16,7 +16,6 @@ INTAKE_SKILLS = (
     "guru-sync-base",
     "guru-discover-change-context",
     "guru-clarify-requirements",
-    "guru-review-contract-wording",
     "guru-review-change-request",
 )
 FACTS_PATH = "docs/intake/public-source-facts.json"
@@ -24,8 +23,7 @@ COMMANDS = {
     INTAKE_SKILLS[0]: ("invoke",),
     INTAKE_SKILLS[1]: ("preview-change-context-history", "record-context-discovery", "check-context-discovery", "invoke"),
     INTAKE_SKILLS[2]: ("record-requirements-clarification", "check-requirements-clarification", "invoke"),
-    INTAKE_SKILLS[3]: ("record-contract-wording-review", "check-contract-wording-review", "invoke"),
-    INTAKE_SKILLS[4]: ("record-change-request-review", "check-change-request-review", "invoke"),
+    INTAKE_SKILLS[3]: ("record-change-request-review", "check-change-request-review", "invoke"),
 }
 
 
@@ -127,8 +125,6 @@ def command_arguments(skill: str, command: str, arguments: list[str]) -> None:
             expected = ["--mode", "workflow", *expected]
     if arguments == expected:
         return
-    if skill == INTAKE_SKILLS[3] and command.startswith("record-") and arguments == [*expected, "--scan-only"]:
-        return
     raise ValueError("Intake command arguments differ from declared stdin transport")
 
 
@@ -143,10 +139,8 @@ def next_intake_owner(skill: str, output: dict[str, Any], interface: dict[str, A
     if target == "guru-requirements-clear-router":
         # scope_ready leaves this Intake-only adapter for the original Author.
         target = "guru-author-task-plan" if output["exit_id"] == "scope_ready" else output["resume_target"]
-    elif target == "guru-contract-wording-pass-router":
-        target = INTAKE_SKILLS[4] if output["profile"] == "change_request" else None
     index = INTAKE_SKILLS.index(skill)
-    following = INTAKE_SKILLS[index + 1] if index < 4 else None
+    following = INTAKE_SKILLS[index + 1] if index < len(INTAKE_SKILLS)-1 else None
     return target if target == following else None
 
 
@@ -175,10 +169,8 @@ class IntakeCommands:
         if self.terminal or skill != INTAKE_SKILLS[self.owner_index]:
             raise ValueError("Intake command is after terminal output or out of owner order")
         envelope = json.loads(payload["stdin"]) if payload["stdin"] else {}
-        step = "scan" if "--scan-only" in arguments else command
+        step = command
         required = list(COMMANDS[skill])
-        if skill == INTAKE_SKILLS[3]:
-            required.insert(0, "scan")
         expected = required[len(self.completed)]
         last = self.receipts[-1] if self.receipts else None
         if (step.startswith("record-") and step in required and last
@@ -188,13 +180,13 @@ class IntakeCommands:
                 and last["request"].get("command") == expected
                 and last["response"]["returncode"] != 0):
             # Same-owner correction retires the old record/check results, while
-            # keeping preview/scan evidence and the original failure receipt.
+            # keeping the original failure receipt.
             self.completed = required[:required.index(step)]
             self.recorded, self.checked = None, None
         if step != required[len(self.completed)]:
             raise ValueError("Intake command is out of recorder/checker order")
         if command.startswith("check-") or command == "invoke" and self.owner_index:
-            owner = envelope if skill == INTAKE_SKILLS[2] and command != "invoke" else envelope.get("owner_result")
+            owner = envelope.get("owner_result")
             if owner != self.recorded:
                 raise ValueError("Intake owner result does not equal actual recorder stdout")
         if command == "invoke":
@@ -214,7 +206,7 @@ class IntakeCommands:
         if command != "invoke":
             output = project_intermediate_receipt(output, wrapper.parents[3] / "schemas")
         self.completed.append(step)
-        if command.startswith("record-") and step != "scan":
+        if command.startswith("record-"):
             self.recorded = output
         elif command.startswith("check-"):
             self.checked = output

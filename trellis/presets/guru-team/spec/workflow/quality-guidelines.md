@@ -815,31 +815,30 @@ distribution contract.
 The throwaway fresh-install and after-update/reapply phases must each discover
 the installed package and execute a real v2 recorder/checker path.
 For `guru-review-change-request`, tests must cover workflow/standalone
-precondition parity; all three target variants; current context/clarity/wording
+precondition parity; all three target variants; current context/clarity/source-content
 projection and hash linkage; each prerequisite missing, stale, wrong-exit, or
 target/content mismatched; all ten ordered dimensions; finding/reference/hash
-closure; five exits and exact consumers; active #112 exact transition;
+closure; four exits and exact consumers; active #112 exact transition;
 unknown/multiple/unmapped exit rejection; empty or incomplete AI Gate;
-scanner/checker success without a semantic Gate; non-ready failed-dimension,
+checker success without a semantic Gate; non-ready failed-dimension,
 blocking-finding, affected-evidence requirements; facts digest freshness;
 stdout-only zero-write behavior; source/installed/schema/runtime/platform
 distribution; and clean throwaway update/workflow/preset reapply with zero
 cache/sidecar residue. Tests must prove scripts preserve the AI-authored route
 and contain no readiness, finding, delivery-unit, history, duplicate, or
 workspace-creation generator. The #386 full-chain regression uses actual
-Discovery/Clarification/Wording public outputs through Readiness record/check/
+Discovery/Clarification public outputs through Readiness record/check/
 invoke, without test-side prerequisite reduction. Preserve distinct semantic
 content, title/body content, and disposition hashes. Exercise original earlier
 stage reroutes, live title-only/body-only drift, wrong target/stage, missing
 inputs and retired private-result shapes; distinguish shape diagnostics from
 live drift. Verify zero repository residue and no workspace creation on a
 representative clean install and reapply, without implying Release-matrix proof.
-The #388 installed regression must exercise real Sync/Discovery/Clarification
-outputs and Wording scan/record/check/invoke with all Wording inputs held in
-memory. Check initial installation and reapply, zero repository/input-file
-residue, unchanged fixed scope, actual checker receipts, and live title/body
-drift rejection. Mock remote responses only at the fixture GitHub boundary;
-do not replace the installed dispatcher or synthesize a successful receipt.
+The retired #388 scanner-only regression has no current consumer. Current
+Issue/draft bounded wording review uses Clarify's explicit profile; Markdown
+full-text wording review uses review-change explicit_files. Their source and
+installed tests observe read-only behavior and actual public outputs without
+claiming that deterministic transport proves Agent semantic review.
 ### Current Task Checkout Boundary
 
 For current checkout-boundary changes, run
@@ -926,7 +925,7 @@ recorder, checker, fixture, or re-entry route.
 
 For the #718 read-only source route, run the original public Sync read profile,
 Discovery source reads and record/check/invoke, Clarify including its context
-return, Wording, Readiness, and the unchanged target-creation projection.
+return, Readiness, and the unchanged target-creation projection.
 Observe one fixed tree and independent uncommitted draft from an external
 worktree without Task creation, implicit fast-forward, commit, or push.
 Validate actual stdout against the selected consumer schemas. Separately prove

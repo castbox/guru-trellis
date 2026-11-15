@@ -16,7 +16,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     except SystemExit as exc:
         raise CommandError("invalid_arguments", "arguments", "Provide --invocation with one call-local envelope or dash for stdin.") from exc
     envelope = read_json(args.invocation, "invocation")
-    validate_json(envelope, package_root / "schemas/invocation.schema.json", "invocation")
+    validate_json(envelope, package_root / "schemas/invocation-2.0.schema.json", "invocation")
     public_input, owner_result = envelope["public_input"], envelope["owner_result"]
     validate_input(package_root, public_input)
     exit_id = owner_result["exit_id"]

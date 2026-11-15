@@ -29,7 +29,6 @@ SEMANTIC_FIXTURES = {
 }
 NON_OWNERS = (
     "guru-review-change-request",
-    "guru-review-contract-wording",
     "guru-create-task-commit",
     "guru-review-task-delivery",
     "guru-publish-task-delivery",
