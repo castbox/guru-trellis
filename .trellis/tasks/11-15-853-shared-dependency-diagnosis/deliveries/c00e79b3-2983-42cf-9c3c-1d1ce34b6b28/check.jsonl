@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "写作规范；全部实质正文的原入口加载合同。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "整体与Delivery来源、正文、上下文及验证唯一共享合同。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "所选Delivery需求正文和来源边界。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "设计九节及实际consumer、验证与固定范围职责。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实施步骤、唯一Policy与Docs Plan。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value、Validation Scope Ownership及本次Python定向检查；不扩大矩阵。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Phase2实施派工及Candidate Applicability/Contract continuity/工程事实适用性。"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "诊断、修复、证据层和完成语义区分。"}
+{"file": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md", "reason": "真实整合触发、固定对象及原owner边界。"}
+{"file": "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py", "reason": "复用的完整provider、真实upstream fixture和native事实采集实现；不当语义grader。"}
+{"file": "docs/requirements/current/behavior-validation-method.md", "reason": "R735完整行为验证与原因果、停止要求。"}
+{"file": "docs/design/current/behavior-validation-method.md", "reason": "D735当前方法与原职责、分发边界。"}
+{"file": "docs/test/current/behavior-validation-method.md", "reason": "T735真实Agent入口、host事实隔离和证明范围。"}

@@ -1,0 +1,3 @@
+# Cache Fixture Architecture
+
+Identity: behavior-fixture-architecture-v1. Status: active. This isolated local library has app/scalar_cache.py for cached values, app/cache_proxy.py for query adaptation, app/service.py for the caller and app/generated_client.py for the SDK interface. schema/ identifies generation inputs. core.py owns an independent pure string utility. There is no server or production deployment in this fixture. Current code and observations define current implementation facts; selected Task scope defines requested work. Constitution: docs/architecture/constitution.md. Change contract: docs/architecture/change-contract.md.

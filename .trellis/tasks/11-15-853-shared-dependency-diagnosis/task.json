@@ -1,0 +1,121 @@
+{
+  "schema_version": "2.0",
+  "id": "853-shared-dependency-diagnosis",
+  "name": "853-shared-dependency-diagnosis",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 853,
+    "disposition": "exact_source"
+  },
+  "title": "诊断共享依赖差额判断问题，按证据选择最小修复（G07）",
+  "description": "按 #853 的诊断优先合同，从实际形成共享差额采用或等待结论的原入口取得当前加载与行为证据，再由原 owner 选择必要最小修复或证据充分的无需追加修复结论。",
+  "dev_type": null,
+  "scope": "仅承担 #853 全部 accepted scope：当前消费或方法缺口诊断、对应最小处理和中性材料经原 Agent 入口的行为验证；不预定新增方法或 gate，不实施 #848/#850，不重放历史业务、云端或模型运行，不建立跨 Task 协调状态。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-15",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+    "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+  },
+  "deliveries": [
+    {
+      "id": "c00e79b3-2983-42cf-9c3c-1d1ce34b6b28",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+          "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "R8",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+        "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:094d45e0-e8b5-4220-8853-77a592e2dbce",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+              "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "R8",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+            "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/prd.md",
+              "revision": "sha256:d3a912f79742b69e9953af258a8a3f2b18c0547db951dea258cc097586728e2f"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+              "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/implement.md",
+              "revision": "sha256:652eb336e0bee82bcd5854d5bc3fb4bfdd315e59fe8317b4612902732140469d"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
