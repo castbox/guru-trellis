@@ -1216,11 +1216,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-15T15:50:21Z",
+  "installed_at": "2026-11-15T19:06:06Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
-    "commit": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+    "ref": "03bbb84c4e69233afc23b459a20d4f379b80ac22",
+    "commit": "03bbb84c4e69233afc23b459a20d4f379b80ac22",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1507,7 +1507,7 @@
       {
         "id": "guru-publish-task-delivery",
         "interface_sha256": "4557c89e2c4b96c1d5c11358b82b2ca9780cc88ef6364e97ce74659e2a9ed978",
-        "tree_sha256": "efa864c9a7487d45b74df442103e93e92f187653b3ac7a65dfb6b8e288583d82"
+        "tree_sha256": "e8f63a998473798f408778462459bd317d7b9f4afc4ce8883f80074e551bb548"
       },
       {
         "id": "guru-qualify-normal-scenario",
@@ -13695,7 +13695,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "c3e80057fb177092930a641e8ffa5f5d571366b5b6a0a472731c0b42cfb199d2",
+        "sha256": "1bc2b903714d24e782862aecc39ea8c1a84eccecaa6c2c4f9cdcdc215ceb12cc",
         "executable": false,
         "action": "installed"
       },
@@ -13723,7 +13723,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
-        "sha256": "64e04f83ae6a62129d014611c67b2fdfc298db96e4b17d96464d6d43a5997ce6",
+        "sha256": "9ae1062a7131eb1e1db384d940a190381f39b8a360cc445fa27c224cdade83b3",
         "executable": false,
         "action": "installed"
       },
@@ -14094,7 +14094,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
-        "sha256": "2689318f80072a6193f3ff0737a6874f0638c8d8f043a3eca3a2b8bbe67b0cdd",
+        "sha256": "9dea7590cff8f5e95ef80521ea51689776e070268af53ac9a7d5f32ef2f5d200",
         "executable": false,
         "action": "installed"
       },
@@ -14108,14 +14108,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
-        "sha256": "f65a79cb5229e9adf833247f20be51deeec8ab90d3baf91c18bebd20f5a57b9a",
+        "sha256": "b84256697211ef96944fdab54f3f79a21f25967fcab639612b243beae1157983",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
-        "sha256": "04e96e2a3d6cb2830b5a6e952dd47c6ecb40ae54cc441c7a63928a4c85137f50",
+        "sha256": "a29af5326def8a0a68f3b3ed43b242268399cd99993db87c2b926d0e3347a42a",
         "executable": false,
         "action": "installed"
       },
@@ -14129,28 +14129,28 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
-        "sha256": "0434d09320197fed61701153a2c95ca9389aa19b84b1e74214ef3370d55181b1",
+        "sha256": "6dfd0316a9a5afb99e4b5b4682ed1585c841dfb9c6f13aa155def79f72399455",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
-        "sha256": "edda242d587414fa4f70bb8a7883839042ec1ef26f4974dbbc87412582c52302",
+        "sha256": "09f422483a7c30c608c312aee98db2d53d4d62db4a4bdc1efe20a31fdb5993e9",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
-        "sha256": "748379888e6c03d9851b7ca4cc0e2da83e93f2a7c04e23ed0e2f58eeac49556f",
+        "sha256": "2cb9c96fed78ec7e61a5c7a2e2a59e6e86c83e9f576d5800ae4b1706247f2654",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
-        "sha256": "1d3f86c47c4791f7defa7d4a92bc8b3bdd1c0c6bf833fa5703ec5babef93111a",
+        "sha256": "b6307249c42ca1f8891a3ebd086d2c125a1d5b959b246d524b5bc5c89e77d181",
         "executable": false,
         "action": "installed"
       },
@@ -49689,7 +49689,7 @@
       {
         "path": ".agents/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "c3e80057fb177092930a641e8ffa5f5d571366b5b6a0a472731c0b42cfb199d2",
+        "sha256": "1bc2b903714d24e782862aecc39ea8c1a84eccecaa6c2c4f9cdcdc215ceb12cc",
         "executable": false,
         "action": "installed"
       },
@@ -50396,7 +50396,7 @@
       {
         "path": ".claude/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "c3e80057fb177092930a641e8ffa5f5d571366b5b6a0a472731c0b42cfb199d2",
+        "sha256": "1bc2b903714d24e782862aecc39ea8c1a84eccecaa6c2c4f9cdcdc215ceb12cc",
         "executable": false,
         "action": "installed"
       },
@@ -51103,7 +51103,7 @@
       {
         "path": ".cursor/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "c3e80057fb177092930a641e8ffa5f5d571366b5b6a0a472731c0b42cfb199d2",
+        "sha256": "1bc2b903714d24e782862aecc39ea8c1a84eccecaa6c2c4f9cdcdc215ceb12cc",
         "executable": false,
         "action": "installed"
       },

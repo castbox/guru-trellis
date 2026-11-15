@@ -31,7 +31,17 @@
         "invalid_json",
         "schema_mismatch",
         "publication_stale",
-        "internal_error"
+        "internal_error",
+        "closing_keyword_forbidden",
+        "external_command_failed",
+        "unsafe_path",
+        "task_not_active",
+        "task_identity_stale",
+        "repository_identity_stale",
+        "remote_identity_stale",
+        "pr_identity_stale",
+        "private_state_invalid",
+        "private_state_missing"
       ],
       "side_effect": "git_read",
       "schema_bindings": [
@@ -77,7 +87,17 @@
         "invalid_json",
         "schema_mismatch",
         "publication_stale",
-        "internal_error"
+        "internal_error",
+        "closing_keyword_forbidden",
+        "external_command_failed",
+        "unsafe_path",
+        "task_not_active",
+        "task_identity_stale",
+        "repository_identity_stale",
+        "remote_identity_stale",
+        "pr_identity_stale",
+        "private_state_invalid",
+        "private_state_missing"
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
@@ -123,7 +143,17 @@
         "invalid_json",
         "schema_mismatch",
         "publication_stale",
-        "internal_error"
+        "internal_error",
+        "closing_keyword_forbidden",
+        "external_command_failed",
+        "unsafe_path",
+        "task_not_active",
+        "task_identity_stale",
+        "repository_identity_stale",
+        "remote_identity_stale",
+        "pr_identity_stale",
+        "private_state_invalid",
+        "private_state_missing"
       ],
       "side_effect": "git_read",
       "schema_bindings": [
@@ -170,7 +200,16 @@
         "schema_mismatch",
         "publication_stale",
         "external_command_failed",
-        "internal_error"
+        "internal_error",
+        "closing_keyword_forbidden",
+        "unsafe_path",
+        "task_not_active",
+        "task_identity_stale",
+        "repository_identity_stale",
+        "remote_identity_stale",
+        "pr_identity_stale",
+        "private_state_invalid",
+        "private_state_missing"
       ],
       "side_effect": "github_write",
       "schema_bindings": [
@@ -226,7 +265,16 @@
         "publication_stale",
         "external_command_failed",
         "internal_error",
-        "source_mismatch"
+        "source_mismatch",
+        "closing_keyword_forbidden",
+        "unsafe_path",
+        "task_not_active",
+        "task_identity_stale",
+        "repository_identity_stale",
+        "remote_identity_stale",
+        "pr_identity_stale",
+        "private_state_invalid",
+        "private_state_missing"
       ],
       "side_effect": "github_write",
       "schema_bindings": [
@@ -282,7 +330,12 @@
         "publication_stale",
         "closing_keyword_forbidden",
         "external_command_failed",
-        "internal_error"
+        "internal_error",
+        "unsafe_path",
+        "repository_identity_stale",
+        "pr_identity_stale",
+        "private_state_invalid",
+        "private_state_missing"
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [

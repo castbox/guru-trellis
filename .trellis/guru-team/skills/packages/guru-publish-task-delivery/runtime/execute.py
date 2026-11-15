@@ -3,10 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from owner import check_gate, execute, parser, plan_from_input, repo_root, validate_public_input
+from owner import _public_command, check_gate, execute, parser, plan_from_input, repo_root, validate_public_input
 from runtime.io import read_json
 
 
+@_public_command
 def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[str, Any]:
     del package_root, command
     args = parser("execute").parse_args(argv)

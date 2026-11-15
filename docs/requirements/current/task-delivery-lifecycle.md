@@ -227,3 +227,15 @@ R531/R530/R600/R636/R637/R638/R710/R711/R713 的未替代条件、source身份�
 - **R815-05 / BEH815-ADOPTION**：原 public I/O、语义门禁和 owner 不变，完整 matching source 经原工具 owner 同步并验证实际目标。开发 local_candidate 保留正式 source-lock 未验证边界；clean committed H 的正式 source_locked 采用是后继原操作。本项独立交付及 Task 终态责任保持，不绑定发布版本。
 
 精确接续步骤归原 canonical packages；职责 D815、场景 T815 位于同名完整单元。证据及窄增加范围见 [#815 追踪](../../requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md)。本节不引入通用恢复框架、授权存储、审计 ledger 或完整矩阵；前文未替代条件保持。
+
+
+## R856：Publish 公共异常边界
+
+来源：[Issue #856](https://github.com/castbox/guru-trellis/issues/856)及其[接受评论](https://github.com/castbox/guru-trellis/issues/856#issuecomment-6894689222)。本节细化 R713-03 的错误诊断和 R531-05 的同事务恢复，不改变发布资格、Refs-only、Closure 或 Task/Delivery 生命周期。
+
+- **R856-01 / BEH856-CLASSIFIED**：Publish 原 owner 已分类的失败经过正式命令边界后，保留真实 code、有依据的 field_path、安全 remediation 和对应 catalog 退出码。缺 readiness_result_id 的当前输入返回 schema_mismatch／exit 2；PR body 含关闭关键词返回 closing_keyword_forbidden／exit 3。两项均须在发布副作用前拒绝。不完整 JSON 保留既有 invalid_json／input／exit 2。
+- **R856-02 / BEH856-RECOVERY**：兼容原 WorkflowError 构造、内部捕获和必要 code/payload。原 owner 先消费合法 review_stale、reprepare_required、resume_publication 路线；未消费失败才进入公共错误输出。失败或未知外部结果先由原 owner 回读同事务，已完成动作不重复；不新增恢复状态或账本。
+- **R856-03 / BEH856-UNKNOWN**：真正未知编程异常保留安全 internal_error／runtime／exit 70 和原维护路径。公共错误不公开原始异常消息、traceback、外部 stderr、完整 payload、PR 正文、命令参数、环境或凭据；不依据这些原值猜测分类或字段。
+- **R856-04 / BEH856-ADOPTION**：同一错误边界覆盖 Publish 的实际直接入口及原 migration/recover consumer。canonical 与受影响受管投影由原 tools owner 成套同步，定向验证 package/runtime、installed/reapply/drift、mode 和 sidecar。源码及 fixture 结果不证明旧业务安装、历史发布或生产效果；完整 Release 矩阵另属原 owner。
+
+职责 D856-01..03、验证 T856-01..05 位于对应生命周期单元。固定前驱为 Git `4f3d9069e0720ec94e39d1079154d2f7a7058935` 的本单元；来源和窄增加边界见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。本节保留全部未替代条件。
