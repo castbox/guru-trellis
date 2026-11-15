@@ -324,17 +324,21 @@ Mobile/Web 的 [合同就绪条件](../../skills/guru-team/packages/guru-orchest
 分发、执行终点和个人安装迁移见
 [Issue 编排迁移说明](../../presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
 
-`v0.7.0-guru.8` 是本轮发布准备起点的正式前驱，peeled commit 为
+`v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，peeled commit 为
+`ac1c823857ad6695c106daeedd25aafce4c50934`。安装该版本时，workflow marketplace 与
+preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身的 Fork lock。
+
+`v0.7.0-guru.8` 是更早的正式版本，peeled commit 为
 `2ab135ed2d3908966785bb23ad42ada0790f0c81`。安装该历史版本时，使用同一 immutable
 `.8` tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前 canonical extension 与 maintenance target 为 `0.7.0-guru.9`。
-仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.9` 的非 draft、
-非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.9`
-与同一 `.9` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.10`。
+仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.10` 的非 draft、
+非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.10`
+与同一 `.10` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](../../presets/guru-team/source/trellis-source.json)。
 按 preset 的[构建所选 Fork](../../presets/guru-team/README.md#构建所选-fork)核验实际构建；
@@ -367,6 +371,10 @@ Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包�
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
+
+本轮 `.10` 发布内容以正式前驱 `v0.7.0-guru.9` 到最终候选的完整 diff 为准。
+准备交付和终态簿记合入后，从届时最新 main 冻结候选；发布前 main 若推进，重新冻结并刷新受影响验证。
+不以其他 Issue 的完成、关闭、合并或归档为前置。以下 `.8` 说明保留其历史截止，不代表本轮验证结果。
 
 已发布 `.8` 的准备集合由 `v0.7.0-guru.7` 到该 Release candidate 的完整 diff 确定。
 该准备差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
@@ -407,7 +415,7 @@ For current-source validation, read the selected Guru checkout's own
 [source lock](../../presets/guru-team/source/trellis-source.json) and follow the
 [Fork build recipe](../../presets/guru-team/README.md#构建所选-fork).
 Use that exact build with the same reviewed Guru source. Historical `.8` installation
-uses its original source pair described above. Install `.9` only when its non-draft,
+uses its original source pair described above. Install `.10` only when its non-draft,
 non-prerelease Release exists, using the same immutable tag for workflow and preset.
 For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
