@@ -57,6 +57,62 @@
       "exit_status": 2,
       "locator": "field_path",
       "remediation": "Reread the exact selected archive through the original maintenance owner; preserve its frozen source and any later work."
+    },
+    {
+      "code": "unsafe_path",
+      "trigger": "The Task or publication transaction locator does not satisfy its existing path contract.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use the exact repository-local Task or publication transaction locator."
+    },
+    {
+      "code": "task_not_active",
+      "trigger": "The selected Task is not active.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Return to the original Task owner and select the active Task before publication."
+    },
+    {
+      "code": "task_identity_stale",
+      "trigger": "The current Task identity, checkout binding or base is unavailable or stale.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Recover the current Task identity and checkout through the original owner, then reprepare publication."
+    },
+    {
+      "code": "repository_identity_stale",
+      "trigger": "The canonical repository binding cannot be resolved.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Restore the canonical repository binding, then reprepare publication."
+    },
+    {
+      "code": "remote_identity_stale",
+      "trigger": "The Delivery branch read did not return a valid commit identity.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Reread the Delivery branch through the original publication owner before resuming."
+    },
+    {
+      "code": "pr_identity_stale",
+      "trigger": "The original publication PR binding or recorded metadata no longer matches live facts.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Reread the exact original PR through the publication owner before resuming the same transaction."
+    },
+    {
+      "code": "private_state_invalid",
+      "trigger": "The original publication transaction or semantic gate does not match its contract or current plan.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Recover the exact original publication transaction through this owner; preserve completed external actions."
+    },
+    {
+      "code": "private_state_missing",
+      "trigger": "The requested original publication transaction is unavailable.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Recover the exact original publication transaction through this owner before retrying."
     }
   ]
 }

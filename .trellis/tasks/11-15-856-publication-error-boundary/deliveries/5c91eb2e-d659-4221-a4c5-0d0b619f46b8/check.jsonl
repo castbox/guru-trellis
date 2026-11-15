@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "新写提示与报告保持准确、清晰及证据边界"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "执行原公共命令、managed Python和错误/receipt合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按实际缺陷和声明层级选择最小可靠验证"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "只保真实consumer、直接演进及必要单点边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "原RDT完整单元、隔离拟写和提交前整合边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md", "reason": "保Task/session的原tools-only同步、真实写集与同操作恢复"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "原Architecture评估、无影响路径和晋升时序"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "核完整来源承接、唯一来源处置及slice完成责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核本批七节需求与实际scope/ref"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核本批九节可实施设计与来源处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核唯一Policy/Docs Plan、依赖顺序与验证入口"}
