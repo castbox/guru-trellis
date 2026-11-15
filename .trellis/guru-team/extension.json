@@ -1216,11 +1216,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-15T10:08:20Z",
+  "installed_at": "2026-11-15T11:47:57Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
-    "commit": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+    "ref": "e93aca9ff264c24baf68fd8cb4c5604722ef95b3",
+    "commit": "e93aca9ff264c24baf68fd8cb4c5604722ef95b3",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1311,7 +1311,7 @@
       ".trellis/spec/workflow/workflow-contract.md": "7de50dc2376fc1b0cf0fb0ff94100863be81d8b10c99b60fc93a32e7d40bc1ff",
       ".trellis/spec/workflow/skill-package-contract.md": "ec1c7efb689349afd5a4261aef0f9ab496e6774c41bfc7a982ce0a607b72b671",
       ".trellis/spec/workflow/data-contracts.md": "06ce49bac71a15abe5e484f355763f59e211cc63e815f9a8c2cd11c4fedc0575",
-      ".trellis/spec/workflow/companion-scripts.md": "bbf5d794c6f8dad5438331685ce89155f076d5e398c6f168bbc8b835d25eddad",
+      ".trellis/spec/workflow/companion-scripts.md": "0cbe623a90fe841338e36de0c5d8e9481a296893c1c13804c80943b0e1513a9f",
       ".trellis/spec/workflow/quality-guidelines.md": "13db64317e97852619d462ff67bdc62ce4ebdaf962b74cb5c5aa9ac7439948d6",
       ".trellis/guru-team/trellis-source.json": "f5ea4e3b9ae66710aac760b9825c867770c509ec88cfabac0178dfcc4f3b8126",
       ".trellis/guru-team/MIGRATION-794.md": "11c48a8339cae40fd155ba5e4d412ab6c3da8ec3e37fc1190afe3421a2a86262",
@@ -1547,7 +1547,7 @@
       {
         "id": "guru-review-change",
         "interface_sha256": "a26bf74b9427007d43601cda2ce0ed033afd217544f13b7284964d9dff26ad75",
-        "tree_sha256": "8caa7376fba350e76bea3a5b036431b515cf76e195c8c952397746c9f2afe976"
+        "tree_sha256": "b4f5fec26cdedfc2e7f46b57cd0a251d4497fa5496fdd1471e479d384ae9c7ff"
       },
       {
         "id": "guru-review-change-request",
@@ -18805,7 +18805,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/SKILL.md",
-        "sha256": "18064fd40414d6f9777d050af31da18ee7c5b5e15f5fa7511faabe4b4a56d99f",
+        "sha256": "030765ee9698564f7c658da70b65be147c14f3bd792f360e7190eaa7bacae899",
         "executable": false,
         "action": "installed"
       },
@@ -62492,7 +62492,7 @@
       {
         "path": ".agents/skills/guru-review-change/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/SKILL.md",
-        "sha256": "18064fd40414d6f9777d050af31da18ee7c5b5e15f5fa7511faabe4b4a56d99f",
+        "sha256": "030765ee9698564f7c658da70b65be147c14f3bd792f360e7190eaa7bacae899",
         "executable": false,
         "action": "installed"
       },
@@ -62625,7 +62625,7 @@
       {
         "path": ".claude/skills/guru-review-change/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/SKILL.md",
-        "sha256": "18064fd40414d6f9777d050af31da18ee7c5b5e15f5fa7511faabe4b4a56d99f",
+        "sha256": "030765ee9698564f7c658da70b65be147c14f3bd792f360e7190eaa7bacae899",
         "executable": false,
         "action": "installed"
       },
@@ -62758,7 +62758,7 @@
       {
         "path": ".cursor/skills/guru-review-change/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-change/SKILL.md",
-        "sha256": "18064fd40414d6f9777d050af31da18ee7c5b5e15f5fa7511faabe4b4a56d99f",
+        "sha256": "030765ee9698564f7c658da70b65be147c14f3bd792f360e7190eaa7bacae899",
         "executable": false,
         "action": "installed"
       },
@@ -71893,21 +71893,21 @@
       {
         "path": ".claude/commands/guru/finish-work.md",
         "source": "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
-        "sha256": "aacba0d06f0b7c282417e29d21d4d3717d51607fabc7427209cdda83aa864dd4",
+        "sha256": "57d242fb126f44f3b81550cfec7f24fa48bdb50663133140c080f0f5c348f13a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/prompts/guru-finish-work.md",
         "source": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
-        "sha256": "aacba0d06f0b7c282417e29d21d4d3717d51607fabc7427209cdda83aa864dd4",
+        "sha256": "57d242fb126f44f3b81550cfec7f24fa48bdb50663133140c080f0f5c348f13a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/commands/guru-finish-work.md",
         "source": "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
-        "sha256": "aacba0d06f0b7c282417e29d21d4d3717d51607fabc7427209cdda83aa864dd4",
+        "sha256": "57d242fb126f44f3b81550cfec7f24fa48bdb50663133140c080f0f5c348f13a",
         "executable": false,
         "action": "installed"
       }
