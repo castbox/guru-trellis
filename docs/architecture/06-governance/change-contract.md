@@ -26,7 +26,7 @@ shared-current integration 自身绑定写前 live expected-current；错配只�
 
 ## Constitution applicability consumption
 
-在原 Architecture、Planning 与独立完整 Review 职责内，按唯一 current constitution 的完整五原则判断本次采用的机制及直接影响，包含没有实现 diff 的复用；不单独提高其中一条的地位。具体必要性、作用范围、代价、替代与证据方法只读取原 `guru-maintain-architecture-baseline/references/contract.md`；保护提出方责任沿原 `guru-qualify-root-cause` 的 Protection 合同消费，完整知识与存量处置沿原 `guru-maintain-requirements-design-test-ssot/references/current-knowledge.md` 消费，不在项目另写第二套方法。
+在原 Architecture、Planning 与独立完整 Review 职责内，按唯一 current constitution 的完整五原则及其架构准入与基线纠错要求，判断本次采用的机制及直接影响，包含没有实现 diff 的复用；不单独提高其中一条的地位。具体必要性、作用范围、代价、替代与证据方法只读取原 `guru-maintain-architecture-baseline/references/contract.md`；同一方法用于判断所沿用基线决定及 reviewer 提出的修复，不以设计、代码、测试和基线相符代替合理性判断。保护提出方责任沿原 `guru-qualify-root-cause` 的 Protection 合同消费，完整知识与存量处置沿原 `guru-maintain-requirements-design-test-ssot/references/current-knowledge.md` 消费，不在项目另写第二套方法。
 
 项目原九 concerns 和 project-check 使用既有 reason、evidence、before/after 与真实贡献承接这些判断。改变本项目 Architecture 规范性投影时，由原 Architecture owner 准备隔离完整 proposed 定义，并沿提交前 final_integration/readback、TaskCommit、committed after 绑定和一次独立完整质量链实际写入；RDT owner 只写自身三层 authority。当前 Task 的存量义务仍归原 Planning/Completion，不因基线晋升或拆 Delivery消失；新决策生效、新需求交付、旧实现迁完及环境切换分别表达。无 Architecture 影响保持原轻量路径，不创建空贡献、ADR、逐能力字段、原则评分或永久台账。
 
