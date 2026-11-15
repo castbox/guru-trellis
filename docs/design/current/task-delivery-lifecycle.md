@@ -207,3 +207,11 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 ## D850-03 / CON850-PLANNING：原 writer 与直接 consumer
 
 Author requirements_ready经candidate assessment回solution_planning，plan_ready直接交Architecture final_plan，其实际结果紧邻Approval；默认链无Wording/receipt。Approval修订薄投影真实revision_actions到Author，由原owner按实际修订出口刷新依赖，不由脚本选择等义或实质route。delivery_content_revision承接原wording reentry的内容修订，保同Delivery/change_refs，不恢复退役字段/reader。原Activation、TaskCommit、committed Candidate及一次独立Check/fullReview顺序保持；token不作跨阶段批准或授权。精确版本由packages/MIGRATION-850单写。对应R850-03/T850-03。
+
+## D856：原 Publish 异常的单点接续
+
+- **D856-01 / CON856-CLASSIFIED** 承接 R856-01/02：原 Publish package 在 WorkflowError 定义处兼容接共享 CommandError，保原构造、code、内部 payload 和 except WorkflowError 消费。静态映射提供有依据的字段、安全提示和退出码；不从 message/payload/stderr 或任意异常属性生成公开数据。原抛错点明确 readiness_result_id 与 pr_body；缺乏具体字段依据时定位原步骤。catalog/commands 仅补真实 owner code 和实际 consumer。
+- **D856-02 / CON856-BOUNDARY** 承接 R856-02/03：package 私有单一命令边界由 invoke、check、record、execute、recover 五个实际 entry 复用；CommandError 原样传播，未分类 Exception 转安全 internal_error／runtime／70。原内部恢复在边界之前消费，不截断合法 typed route；不吞 SystemExit/KeyboardInterrupt。migration 传播安全原异常字段及正确退出码，移除原 str(exc) 和固定 exit 3。shared command/io 及其他 package 不变。
+- **D856-03 / CON856-CONTINUITY** 承接 R856-02/04：保持原事务、digest、公共 DTO、成功域、生命周期与恢复资格。已完成动作回读、未知外部结果先核同事务，不新建恢复协议。原 tools owner 采用完整 matching source 同步受管投影；local_candidate 明确正式 source-lock 未验证边界。实现、安装与真实外部效果分别判断。
+
+采用原异常定义和一个 package 私有 unknown 边界，成本为静态映射、五个真实 consumer 及定向回归的维护。它不增加共享 catalog 读取、package 特判、状态或额外 I/O。实际需求若涉及跨 package 协议、owner、共享行为或新状态，返回原 Planning/Architecture 判断。来源为 #856；固定前驱及 R/D/T 关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。

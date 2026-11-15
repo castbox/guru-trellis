@@ -3,10 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from owner import parser, plan_from_input, record_gate, repo_root, validate_public_input, validate_review, expected_publication_exit
+from owner import _public_command, parser, plan_from_input, record_gate, repo_root, validate_public_input, validate_review, expected_publication_exit
 from runtime.io import read_json
 
 
+@_public_command
 def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[str, Any]:
     if command.get("id") == "migrate-task-delivery-publication":
         from migration import run as migrate

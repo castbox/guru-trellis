@@ -223,3 +223,15 @@ T792-01/02/03是长期回归，T792-04/06是本项语义/实际行为观察。�
 ## T850-03 / SC850-PLANNING：实际内容与审核链
 
 Agent读完整来源及整体/切片要求，由Author写规划，独立Architecture candidate/final和Approval各自判断。真实遗漏交原writer，修订后依实际出口刷新必要依赖，不重标旧pass。保切片边界、条件/例外、Policy/Docs Plan及提交后一次正式Review顺序。同切片content_revision及在途恢复区分wrapper和实际Agent；不手改hash/state，不把旧provider输出给当前reader。#657等历史截止保持；隔离Planning不是真实#850 Planning/Check/Completion结果。对应R850-03/D850-03。
+
+## T856：Publish 分类、脱敏与原恢复入口
+
+| 场景 → requirement/design | 真实入口与正常输入 | 必须观察及边界 |
+| --- | --- | --- |
+| T856-01 → R856-01、D856-01 | 原生产 scripts/invoke.sh；当前合法形状分别缺 readiness_result_id、PR body 含 Closes #435 | schema_mismatch/input.readiness_result_id/2 与 closing_keyword_forbidden/input.pr_body/3；安全 remediation；Task/Publication 与 Git/GitHub 副作用前拒绝。内部属性或修正后成功不替代此观察。 |
+| T856-02 → R856-01/04、D856-01/02 | 原 wrapper 不完整 JSON；适用 check/record/execute/Preview 与 migration/recover 错误边界 | invalid_json/input/2 保持；直接 consumer 保相同分类与安全字段；migration 不把 exit 2 固定为 3。不执行 legacy 真实发布。 |
+| T856-03 → R856-02、D856-02/03 | 原正常 stateful transaction/remote recovery fixture，已完成动作、未知结果及 stale/reprepare/resume | 合法 typed exits 和 consumer 保持；先回读同事务，已完成动作零重复；替身只替代受测边界外依赖，不补偿生产输出或制造 gate。 |
+| T856-04 → R856-03、D856-01/02 | 五个实际 entry 下游普通未知异常；已分类 external 失败含内部敏感 sentinel 作对照 | unknown 为安全 internal_error/runtime/70；known external 保 exit 4；三字段公共输出无原 message/payload/stderr/sentinel 或 traceback；原 CommandError 不被重写。 |
+| T856-05 → R856-04、D856-03 | package 全套、共享 test_io/test_command_receipts、source/installed validation 及原 tools 同步/reapply/drift | 实际相关正常 consumer、catalog/commands、mode/sidecar 和投影保持；保 Task/session/peer。source、fixture、installed 与实际 Agent/外部效果分层，不执行完整多平台 Release 矩阵。 |
+
+实际工程结果由 [#856 Test](../../requirements-design-test-contributions/856-publication-error-boundary/test.md) 定位。本单元定义预期，不预填 Check、committed Review、安装采用或生产通过；历史 G10 首次异常及旧 Draft 不追加真实重放义务。固定前驱和窄增加关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。
