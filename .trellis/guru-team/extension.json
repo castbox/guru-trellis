@@ -1216,11 +1216,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-15T11:47:57Z",
+  "installed_at": "2026-11-15T15:50:21Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "e93aca9ff264c24baf68fd8cb4c5604722ef95b3",
-    "commit": "e93aca9ff264c24baf68fd8cb4c5604722ef95b3",
+    "ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+    "commit": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1477,7 +1477,7 @@
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "a1ff091896464fcdb99275650894fd7d804062dc744129fe332b9a518c450e79",
-        "tree_sha256": "a670dd778cc676a31b6c0450e497378a6a126fb6e766e89297f79ed5bf6c2ecf"
+        "tree_sha256": "c97754fce9c052bdf782ad9303a4227c213a9b89acc73124e3c48700ed41770c"
       },
       {
         "id": "guru-maintain-legacy-task",
@@ -11441,7 +11441,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d9b781816e21573a249be3abe796785c14057d7fa0b06d5f7821a0bfa19708f7",
+        "sha256": "cb19ca66c598754d93ca3b7d20f9d9b473915ee8ce0c0b93c0d7c1d90b4b7332",
         "executable": false,
         "action": "installed"
       },
@@ -42787,7 +42787,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d9b781816e21573a249be3abe796785c14057d7fa0b06d5f7821a0bfa19708f7",
+        "sha256": "cb19ca66c598754d93ca3b7d20f9d9b473915ee8ce0c0b93c0d7c1d90b4b7332",
         "executable": false,
         "action": "installed"
       },
@@ -44061,7 +44061,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d9b781816e21573a249be3abe796785c14057d7fa0b06d5f7821a0bfa19708f7",
+        "sha256": "cb19ca66c598754d93ca3b7d20f9d9b473915ee8ce0c0b93c0d7c1d90b4b7332",
         "executable": false,
         "action": "installed"
       },
@@ -45335,7 +45335,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d9b781816e21573a249be3abe796785c14057d7fa0b06d5f7821a0bfa19708f7",
+        "sha256": "cb19ca66c598754d93ca3b7d20f9d9b473915ee8ce0c0b93c0d7c1d90b4b7332",
         "executable": false,
         "action": "installed"
       },
