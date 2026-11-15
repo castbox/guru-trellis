@@ -97,6 +97,10 @@
       "path": "examples/public-ready-output-4.0.json"
     },
     {
+      "id": "public_output_ready_example_6_0",
+      "path": "examples/public-ready-output-6.0.json"
+    },
+    {
       "id": "public_output_clarify_requirements_example",
       "path": "examples/public-clarify-requirements-output.json"
     },
@@ -541,7 +545,7 @@
         },
         "example": {
           "id": "ready_output",
-          "path": "examples/public-ready-output-4.0.json"
+          "path": "examples/public-ready-output-6.0.json"
         },
         "consumer_use_ids": [
           "project_ready"

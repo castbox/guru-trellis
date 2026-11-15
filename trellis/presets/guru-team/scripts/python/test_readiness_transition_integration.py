@@ -14,6 +14,7 @@ if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
 import verify_installed_phase0_transcript as transcript
+from installer_test_support import install_reviewed_delivery_candidate
 from test_discovery_stdin_integration import run_preset_install
 
 
@@ -68,7 +69,7 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
             installed = work / "installed"
             (installed / ".trellis").mkdir(parents=True)
             shutil.copy2(SOURCE / "trellis/workflows/guru-team/workflow.md", installed / ".trellis/workflow.md")
-            shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            install_reviewed_delivery_candidate(installed)
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
                     applied = run_preset_install(installed)
@@ -94,7 +95,7 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
                 self.assertEqual(actual["exit_id"], "ready")
                 self.assertEqual(actual["mode"], "workflow")
                 self.assertEqual(actual["transition"]["clarity"], clarity["transition"]["clarity"])
-                self.assertEqual(actual["transition"]["target_content_sha256"], clarity["transition"]["target_content_sha256"])
+                self.assertEqual(actual["transition"]["target_content_sha256"], clarity["transition"]["source_content_sha256"])
                 self.assertNotEqual(actual["transition"]["clarity"]["content_sha256"], actual["transition"]["target_content_sha256"])
                 self.assertNotIn("payload_sha256", recorded["prerequisites"]["clarity"])
                 ready_envelope = {key: value for key, value in envelope.items() if key != "validation_receipt"}

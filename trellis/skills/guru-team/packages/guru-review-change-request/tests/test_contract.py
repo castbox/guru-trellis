@@ -28,6 +28,11 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
     def test_current_recorded_example_reaches_its_original_result_consumer(self):
         example = json.loads((PACKAGE_ROOT / "examples/issue-review.json").read_text(encoding="utf-8"))
         review_common.check_result(PACKAGE_ROOT, example, example["target"], example["prerequisites"])
+        from runtime.schema import validate_json
+        interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
+        ready = next(output for output in interface["public_contracts"]["outputs"] if output["exit_id"] == "ready")
+        declared = json.loads((PACKAGE_ROOT / ready["example"]["path"]).read_text(encoding="utf-8"))
+        validate_json(declared, PACKAGE_ROOT / ready["schema"]["path"], "declared_ready_example")
 
     def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
         package = Path(__file__).resolve().parents[1]
