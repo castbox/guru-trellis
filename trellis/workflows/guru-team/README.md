@@ -305,7 +305,7 @@ accept Delivery Planning or begin implementation.
 ## Installation
 
 当前源码支持 Codex 独立显式调用受管的 `guru-orchestrate-issue-dag` 和
-`guru-orchestrate-issue-sequence`，协调器 heartbeat 默认为 2 分钟。
+`guru-orchestrate-issue-sequence`，协调器在当前聊天内以原生事件等待持续观察子聊天，不创建跟踪具体 Issue 完成的 automation。
 两个入口默认静默执行；通知条件与原生静默输出方式见共享规范的
 [Quiet Notifications](../../presets/guru-team/spec/workflow/issue-orchestration.md#quiet-notifications)。
 DAG 支持跨仓节点及各仓项目、基线和环境恢复，保留单仓简写；Sequence 仍单仓严格串行。

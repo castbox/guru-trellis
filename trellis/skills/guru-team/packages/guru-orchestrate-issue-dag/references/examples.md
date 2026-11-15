@@ -55,13 +55,13 @@ start. If 102 completes while 103 is still running, 105 may start immediately.
 ```
 
 For a live request, the human can specify `mode=auto` and explicitly ask the
-coordinator to create per-Issue chats/worktrees, start a heartbeat, and send
+coordinator to create per-Issue chats/worktrees, observe through native waits, and send
 follow-up instructions. They can also delegate the listed Git/GitHub actions
 within each Issue, specifying whether merge, release, deployment, and exact
 resource cleanup are included. These are human conversation instructions, not
 fields to persist in the skill input or automation configuration. Missing
 authority is resolved after the concrete read-only plan is available.
-Resolve that choice before creating children or a heartbeat. A current human
+Resolve that choice before creating children. A current human
 request that already covers the actions needs no repeat question. Full Issue
 completion is the goal; only an explicit human stage limit narrows the current
 execution segment. The coordinator does not invent a PR-only endpoint.
@@ -157,7 +157,7 @@ merge, Issue closure or deployed endpoint is needed for this start condition.
 
 If the profile read interface is usable but the update error behavior is still
 missing, start the read work and hold only the affected update work. On each
-heartbeat reread the actual contract, request a concrete missing detail from
+observation cycle reread the actual contract, request a concrete missing detail from
 the existing provider owner where permitted, and continue the same frontend
 owners when that detail becomes usable. Keep routine coordination quiet.
 

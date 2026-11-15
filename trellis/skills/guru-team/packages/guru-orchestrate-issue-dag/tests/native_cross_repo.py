@@ -87,7 +87,7 @@ class CrossCarrier(Carrier):
                 "environment_read": "inspect_environment(repository)",
                 "environment_creation": "establish_environment(repository, path, remote, primary_folder)",
                 "project_list": "list_projects", "trust_mutation": None,
-                "heartbeat_update": "automation_update(mode=update, id, status=ACTIVE|PAUSED, prompt, interval_minutes, target); preserve existing fields, then heartbeat_read",
+                "native_observation": "read_child and bounded wait_events; old-run heartbeat_read/heartbeat_stop are recovery only",
                 "user_ui": "Codex Projects: add/edit local project and choose primary folder; review App-displayed trust prompt; local environment setup only when actual prerequisites exist",
                 "operation_read": "read_operation(operation_id); child recover_operation(operation_id) reads its original transaction",
                 "child_creation": "create_child(repository, issue, project_id, source_branch, target_branch, model, effort, message)",

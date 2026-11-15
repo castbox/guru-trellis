@@ -1,6 +1,6 @@
 # 跨 Issue 协调责任与主动解阻
 
-Identity：RDT-REQ-ISSUE-ORCHESTRATION；别名：R731、DAG、Sequence、整体完成、主动解阻。原语义 owner：guru-maintain-requirements-design-test-ssot。适用来源：https://github.com/castbox/guru-trellis/issues/731；定义晋升来源为 docs/requirements-design-test-contributions/731-coordinator-completion。目标位置：docs/requirements/current/issue-orchestration.md。Version：issue-orchestration-761；Status：current。原 RDT owner 在本 Delivery candidate Check 后的 final_integration 晋升本完整定义，保留 #731 有效条件并承接 #761。知识状态不证明软件安装、运行或整体任务完成。
+Identity：RDT-REQ-ISSUE-ORCHESTRATION；别名：R731、DAG、Sequence、整体完成、主动解阻。原语义 owner：guru-maintain-requirements-design-test-ssot。适用来源：https://github.com/castbox/guru-trellis/issues/731；定义晋升来源为 docs/requirements-design-test-contributions/731-coordinator-completion。目标位置：docs/requirements/current/issue-orchestration.md。Version：issue-orchestration-native-observation；Status：current。原 RDT owner 曾在 #731/#761 的 Delivery final_integration 晋升此前定义；本轮原生监督修订由 task-free 请求承接。知识状态不证明软件安装、运行或整体任务完成。
 
 关系：RDT-DES-ISSUE-ORCHESTRATION（docs/design/current/issue-orchestration.md）；RDT-TST-ISSUE-ORCHESTRATION（docs/test/current/issue-orchestration.md）。完整运行合同为 canonical trellis/presets/guru-team/spec/workflow/issue-orchestration.md，调度分别归两 package 的 DAG/chain contract。
 
@@ -20,11 +20,11 @@ Identity：RDT-REQ-ISSUE-ORCHESTRATION；别名：R731、DAG、Sequence、整体
 
 ## R731-04 / BEH731-WAIT：可维护等待
 
-外部等待必须有具体责任方、对象和复查条件。复查实际外部条件和原等待有效性，不能只比较子会话文字。操作结束、超时、无人承接或复查条件失效时重新判断和安排处置。心跳静默仅控制通知，去重不得永久保留失效等待。无变化的真实等待保持轻量。
+外部等待必须有具体责任方、对象和复查条件。复查实际外部条件和原等待有效性，不能只比较子会话文字。操作结束、超时、无人承接或复查条件失效时重新判断和安排处置。静默协作仅控制通知，去重不得永久保留失效等待。无变化的真实等待保持轻量。
 
 ## R731-05 / BEH731-BLOCK：真实阻塞与安全收口
 
-先核当前入口、原 owner 支持的修正/等价路径，以及修复是否在既有范围内。完成有依据的解阻判断且无仍可推进的范围内工作后，才能报告整体终局阻塞。说明目标缺口、已核路径和不能继续原因、责任方最小条件或真实选择、恢复条件及受影响节点，无需穷举或新增证明文件。保持原安全停妥和原生回读；真无路不能只留 ACTIVE 空转，条件补齐后恢复同 run。
+先核当前入口、原 owner 支持的修正/等价路径，以及修复是否在既有范围内。完成有依据的解阻判断且无仍可推进的范围内工作后，才能报告整体终局阻塞。说明目标缺口、已核路径和不能继续原因、责任方最小条件或真实选择、恢复条件及受影响节点，无需穷举或新增证明文件。保持原安全停妥和原生回读；真无路不能只维持等待而不处理，条件补齐后恢复同 run。
 
 DAG 只暂停真正依赖障碍的工作，按原 failure policy 继续合法独立节点；Sequence 当前项完整完成后才推进下一项。不得跳节点、削弱依赖或降低验收。
 
@@ -46,7 +46,7 @@ DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、�
 
 ## R761-03 / BEH761-BINDING：各仓执行与完成核证
 
-每仓独立解析 Codex 已保存项目、正确 primary repository、remote、可用 checkout 与适用 base；每节点创建及恢复使用所属仓绑定。各仓执行自己的 workflow 和操作边界。心跳、pending、child、host、Task/Delivery、PR、merge ancestry、来源 Issue 和整体完成证明均保持同一仓库与 base，禁止按裸编号串仓。全局并行槽位、每仓单 integration owner、资源排它与 failure policy 保持；硬前驱完整完成后才释放边。Sequence 仍是原单仓严格串行入口。
+每仓独立解析 Codex 已保存项目、正确 primary repository、remote、可用 checkout 与适用 base；每节点创建及恢复使用所属仓绑定。各仓执行自己的 workflow 和操作边界。观察、pending、child、host、Task/Delivery、PR、merge ancestry、来源 Issue 和整体完成证明均保持同一仓库与 base，禁止按裸编号串仓。全局并行槽位、每仓单 integration owner、资源排它与 failure policy 保持；硬前驱完整完成后才释放边。Sequence 仍是原单仓严格串行入口。
 
 ## R761-04 / BEH761-ENVIRONMENT：建立、信任与恢复
 
@@ -56,6 +56,14 @@ DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、�
 
 ## 本次变更来源与适用边界
 
-新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。本完整定义已由原语义 owner 在本 Delivery candidate Check 后的 final_integration 整合并回读；软件验证与 Task 完成仍以原阶段结果和 Git/PR 事实为准。
+新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。以上为 #731/#761 的历史整合来源；本轮 task-free 修订仅更新原生监督承接，不声明再次执行了该 Delivery 的 final_integration。软件验证与 Task 完成仍以实际阶段结果和 Git/PR 事实为准。
 
 各仓 integration owner 负责本仓选定 base 的原 merge 事务与未知结果恢复；同仓不同时发送第二个未知合并，紧邻必要 shared-base closeout 保持。不同仓没有硬前驱或实际共享资源约束时，A 合并结果待定不能阻止 B 按自身 fresh gate 与原 owner 推进；global 执行槽位仍统一。仓库身份不是绕过真实共享资源约束的理由。
+
+## 当前聊天原生监督
+
+协调者在当前聊天内持续使用原生子聊天快照与有界事件等待；事件返回或超时后，完整观察所有已启动未完成节点并承接合法下一步。不为具体 Issue 的里程碑、失败或完成创建、重启或更新 automation，缺少 timer 不阻塞启动。当前聊天停止或不再执行时，不承诺后台定期观察；恢复后保留未观察区间并立即补做一轮事实核对。
+
+保留所有原有依赖、槽位、原 owner gate、当前对话行动边界及整体完成证明。常规进展通过继续工具执行保持静默，不用进度 final 或 heartbeat XML 结束监督。旧run已有timer只通过支持入口停止并验证；新run无需制造timer停止证据。
+
+本轮来源：2026-11-15 的 task-free 原生监督修订。当前宿主禁止用 automation 跟踪具体工作直至完成，因此在原 Markdown owner 内直接替换 timer 前置；未变更 #847/#848 的实现范围，也不声明这两项已交付。

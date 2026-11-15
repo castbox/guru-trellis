@@ -62,7 +62,7 @@ without adding that Issue to the run or requiring its full completion. These
 inputs identify ordinary prerequisites, not a readiness assertion or new state
 artifact. Omitting the field preserves existing explicit completion edges.
 
-At preflight, before affected dispatch and on every heartbeat or recovery,
+At preflight, before affected dispatch and on every observation cycle or recovery,
 read the current contract and relevant accepted clarifications. The coordinator
 AI judges whether it describes the consuming work's request/response shape,
 field meaning, errors, authentication and state behavior where applicable well
@@ -269,15 +269,15 @@ same Issue owners for the remaining completion obligations when that limit ends.
   observation recovery or incomplete safe settlement still requires supervision.
 - `dag_stage_completed`: every selected node has reached the explicitly
   human-requested earlier stage; every child and operation is safely settled,
-  and heartbeat stop is verified. State actual remaining Issue/Task work.
+  and native child/operation settlement is verified. State actual remaining Issue/Task work.
 - `dag_blocked`: the shared terminal-block test establishes that the requested
   endpoint remains unmet and no legal work can advance. Use its gap, checked
   directions, missing condition and resume explanation for affected nodes and
   descendants; preserve partial results, safely settle children and verify
-  heartbeat stop. Under
+  native child/operation settlement. Under
   `continue_independent`, first finish all remaining permitted independent work.
 - `dag_completed`: every selected node passes fresh full completion proof,
-  and all children, operations and heartbeat are safely settled.
+  and all children and operations are safely settled.
 
 For `stop_dispatch`, instruct existing children to hold at the next safe
 workflow boundary, and observe them until that boundary is verified. Do not
@@ -319,18 +319,20 @@ earlier-stage goal.
 Return exactly one primary exit. Outputs stay in the current conversation;
 they are concise action/results for their named consumer, not audit artifacts.
 Apply the same-provider shared method's `Quiet Notifications` section to
-delivery of these results. Routine `auto_started` and `progressing` results use
-its supported silent transport; the primary exit and its consumer stay intact.
+delivery of these results. Keep routine `auto_started` and `progressing`
+results within the active observation loop; a necessary handback preserves their
+original next-observation consumer and remaining obligations. The shared timer
+migration applies to existing old-run automations only.
 
 | Exit | Minimal output and sole consumer |
 | --- | --- |
 | `dry_run_ready` | Normalized graph/settings, live identities, gate summary, first ready set, prospective effects and verification limits; dry-run response to the user. Auto/live consume ready preflight internally rather than emitting another final exit. |
 | `dry_run_blocked` | Concrete failed preconditions or missing choice and useful available facts; user resolves them before re-entry. |
-| `auto_started` | Admitted Issue/formal or pending chat bindings and heartbeat identity; next observation cycle in this coordinator. |
+| `auto_started` | Admitted Issue/formal or pending chat bindings and its immediate native observation condition; next observation cycle in this coordinator. |
 | `progressing` | Changed node results, concrete blockers or incomplete settlement, and next observation condition; next coordinator cycle. |
-| `dag_blocked` | Incomplete nodes, concrete blockers and descendants, partial results and verified child/heartbeat disposition. For each environment gap, include the exact repository and checkout path/remote, concrete supported user steps to establish the checkout/project/primary folder or complete the displayed trust review, and what will be reread before same-run resume; the user consumes those steps to resolve the block. |
-| `dag_stage_completed` | Per-node original-owner stage evidence, unfinished Issue/Task work and safe child/heartbeat settlement; user receives the requested stage result. |
-| `dag_completed` | Per-Issue verified delivery, applicable release identity, validation limits and verified heartbeat stop; user receives final completion. |
+| `dag_blocked` | Incomplete nodes, concrete blockers and descendants, partial results and verified child/operation disposition. For each environment gap, include the exact repository and checkout path/remote, concrete supported user steps to establish the checkout/project/primary folder or complete the displayed trust review, and what will be reread before same-run resume; the user consumes those steps to resolve the block. |
+| `dag_stage_completed` | Per-node original-owner stage evidence, unfinished Issue/Task work and safe child/operation settlement; user receives the requested stage result. |
+| `dag_completed` | Per-Issue verified delivery, applicable release identity, validation limits and verified safe operation settlement; user receives final completion. |
 
 Unknown, multiple or unmapped exits stop here. Do not import `chain_*` outcomes
 or the sequence's one-child invariant.

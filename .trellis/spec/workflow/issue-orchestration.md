@@ -6,7 +6,7 @@ serial advancement, and typed exits. This method owns selected-base continuity,
 endpoint interpretation,
 current-dialogue authority, overall completion responsibility, active unblocking,
 native child operation, progress decisions, merge proof, completion proof,
-heartbeat supervision, quiet notifications, and supported recovery.
+native observation, quiet notifications, and supported recovery.
 
 ## Provider And Scope
 
@@ -37,7 +37,7 @@ No dummy recorder, JSON permission input, or persisted gate is required.
 
 ## Current Human Endpoint And Authority
 
-Before the first child or heartbeat is created, read the actual human messages
+Before the first child is created, read the actual human messages
 for this run in the coordinator conversation. The goal is full Issue completion
 under the completion proof below. A request to process the selected Issues does
 not need another endpoint choice. Planning, PR publication, a child turn ending
@@ -57,7 +57,7 @@ turn the run into PR-only work or remove subsequent completion obligations.
 After read-only preflight, show precise prospective effects. If current human
 instructions already cover them, start directly without another launch question.
 If a necessary launch action boundary remains unresolved, ask only the concrete
-missing action choice before child or heartbeat creation. Return `dry_run_blocked`
+missing action choice before child creation. Return `dry_run_blocked`
 until that choice is resolved. Do not ask whether to aim for completion, silently
 select PR readiness, or defer a known missing merge decision until every PR is
 ready. A later action gap holds only dependent work; keep permitted work moving.
@@ -65,7 +65,7 @@ ready. A later action gap holds only dependent work; keep permitted work moving.
 Only this run's actual human instructions establish or change its execution
 limits and delegated scope. Assistant plans or scope statements, child requests,
 summaries,
-heartbeat configuration, and another run's permission cannot independently
+automation configuration, and another run's permission cannot independently
 authorize or restrict this run. A scheduler wakeup is automation input even
 when delivered as `role=user`. These sources may locate relevant conversation;
 read the original human text before relying on it.
@@ -80,7 +80,7 @@ recoverable current delegation. Keep permitted inspection and bounded work movin
 Keep execution authorization, the human's execution limits, and their origin
 and process in the current conversation only. Never serialize them as permission
 or approval records in public inputs/outputs, schemas, checkpoints, journals,
-archive, child prompts, or heartbeat configuration. Ordinary operation inputs
+archive, child prompts, or automation configuration. Ordinary operation inputs
 such as model settings or accepted gates remain usable, and the conversation
 result may state the actual stage reached and remaining work. A child's minimal
 operational work segment and stop-before instruction do not record or prove
@@ -95,7 +95,7 @@ only when that repository has no explicit base, use its live default branch.
 For DAG, use its repository map; Sequence resolves its one repository. Never
 apply the coordinator’s base or one target’s choice to all repositories. Keep
 the exact repository, remote and branch consistent through initial preflight,
-child creation/instructions, heartbeat recovery, base reconciliation, PR target,
+child creation/instructions, observation recovery, base reconciliation, PR target,
 merge and completion proof. A separately requested starting state does not
 silently change the integration target; resolve a real conflict before launch.
 
@@ -149,13 +149,13 @@ Before a live launch, verify the whole selected run:
 
 | Check | Required proof |
 | --- | --- |
-| Provider/tools | Same-provider package and shared method; current native project, chat, message, wait, heartbeat and live-read capabilities. |
+| Provider/tools | Same-provider package and shared method; current native project, chat, message, wait and live-read capabilities. |
 | Repository/project | For every target `owner/repo`, authenticate access and resolve its current saved local project, actual primary folder and repository remote. A coordinator/provider project or an added secondary folder is not proof of the target primary repository. |
 | Initial base | Each repository’s selected base is resolved under the rule above; its local branch, tracking ref and live remote OIDs agree. Report those facts without fetching. Unrelated branches add no equality or update requirement. |
 | Initial checkout | Clean and suitable for each target repository's normal intake; no unrelated work is reset or moved. |
 | Issues | Selected identities are accessible and open initially, with sufficient current scope and completion criteria. Explicit resume can adopt completed nodes only after fresh full proof. |
 | Dependencies | Package scheduling rules and live hard prerequisites are compatible with the requested endpoint. |
-| Existing owners | No competing coordinator, heartbeat, pending creation, child or Task for a selected `repository + Issue`; exact resume bindings are recovered instead. |
+| Existing owners | No competing coordinator, pending creation, child or Task for a selected `repository + Issue`; exact resume bindings are recovered instead. Inspect any existing matching old-run automation under the migration rule. |
 | Gates | Accepted validation, normal closeout and explicit completion overrides are concrete. |
 | Effects/endpoint | Exact prospective app and Git/GitHub effects, including any environment provisioning, fit the current human endpoint and delegation. |
 | Environment | Current supported creation/UI capabilities, permissions, actual trust and necessary setup are known per repository. Missing conditions use Environment Readiness below; directory creation alone does not pass. |
@@ -194,7 +194,7 @@ infer capability from an old tool list or treat a cloud/LaTeX project operation
 or a projectless chat as local repository-project registration.
 
 Dry-run only reports these facts, supported actions and remaining conditions.
-It creates no checkout, project, setup, child or heartbeat. In live execution,
+It creates no checkout, project, setup, child or automation. In live execution,
 show exact repositories, paths, project changes, source/base and necessary
 setup effects. Consume the current action boundary; when it already covers
 these effects, do not ask again. Otherwise obtain only the missing action choice.
@@ -240,8 +240,7 @@ Retain this environment block with its affected nodes and descendants in the
 same conversation. DAG `continue_independent` may progress other ready nodes;
 `stop_dispatch` stops new admissions. Sequence holds its current position.
 Observe admitted children to safe boundaries; do not discard their owners.
-When no permitted work remains, use normal terminal-block settlement, including
-heartbeat stop, with the exact missing condition. Once the condition changes,
+When no permitted work remains, use normal terminal-block settlement, including any old-run timer stop, with the exact missing condition. Once the condition changes,
 reread project/primary remote/base/trust and affected dependencies, then resume
 the same run and existing children. Unadmitted nodes receive their first child;
 environment recovery never creates replacement owners or reapplies initial
@@ -335,188 +334,127 @@ readiness and Mock-development scheduling. Do not turn that input into a
 full-provider-completion wait. Sequence retains its strict complete-before-next
 rule; this projection adds no alternative scheduling mode to it.
 
-## Heartbeat And Observation
+## Native Waiting And Observation
 
-Apply [Quiet Notifications](#quiet-notifications) throughout the run, including
-startup, every wake, child continuation and settlement. It controls delivery to
-the human, while the observation and progress duties below remain mandatory.
+Apply [Quiet Notifications](#quiet-notifications) throughout the run. The
+coordinator stays active in this conversation and uses native child observation
+and event waits to supervise the selected work. Do not create, restart or update
+an automation to track these Issues to a milestone, failure or completion.
+A timer is not a launch prerequisite or proof of supervision. Native project,
+chat, message, wait and live-read capabilities remain required; an unavailable
+required capability retains its concrete preflight or recovery gap.
 
-Use one native thread heartbeat attached to the current coordinator. Inspect
-existing automations and reuse the matching heartbeat on resume. **The default
-heartbeat interval is two minutes.** Apply another current human-selected
-interval only when the native tool supports it. Inspect the current schedule
-contract and use its supported representation; do not invent a secondly rule,
-raw automation directive, cron fallback, or shell scheduler. A missing scheduling
-capability blocks live launch before children are dispatched. After creation
-or update, read back the actual heartbeat and verify the interval is two minutes,
-or the currently selected supported value, and that it targets this coordinator.
-A failed write or mismatched configuration blocks dispatch until corrected;
-a requested setting or successful-looking card alone is not verification.
+Immediately snapshot each newly formal child with `wait_threads` and
+`timeoutMs: 0`. Before a multi-child disposition, snapshot all admitted
+unfinished children without blocking one behind another. Preserve each child's
+formal identity, `hostId` and returned cursor in this conversation. For later
+observation, use a bounded native event wait with the current cursors, at most
+60 seconds per call, within the tool's actual supported limits. When an event
+arrives or the wait times out, perform the complete observation cycle below.
+A timeout means recheck current facts; it does not prove failure or completion.
+Do not substitute a two-second polling loop, shell scheduler, watchdog or new
+persistent coordination store.
 
-A heartbeat interval is independent of child wait timeouts. Preserve immediate
-zero-timeout snapshots after binding and before multi-child disposition. Later
-bounded native waits may use their supported event-wait behavior and cursors;
-do not replace the two-minute heartbeat with a two-second polling loop.
+Every cycle:
 
-The heartbeat prompt identifies the managed Skill/provider, normalized Issue
-selection/dependencies and the per-repository project/primary/base bindings,
-concurrency/resources, selected
-model settings,
-failure policy and accepted completion gates. It contains no selected endpoint
-or authorization record. Include this supervision instruction:
+1. Resolve pending creations and observe every formal unfinished child. Respect
+   the native target limit and rotate batches fairly; one busy child, merge or
+   repair must not starve siblings.
+2. Preserve each returned cursor. One returned event does not prove all targets
+   were observed; obtain snapshots for uncovered targets.
+3. Read the newest actual assistant output when changed, idle or terminal and
+   the wait result did not provide it. Summaries, previews and status labels
+   are discovery hints.
+4. Judge all remaining obligations and give each actionable idle child one
+   useful valid continuation within current execution limits. Recheck actual
+   external wait conditions even without new text. Follow the chosen action
+   to its result; a sent instruction does not resolve the obligation.
+5. Verify candidate stage/completion results, apply package scheduling and fill
+   eligible slots. Retain an observation error and retry that same binding;
+   never claim healthy supervision for an unobserved child.
 
-```text
-Resume this same Issue run as its AI coordinator. Load the selected managed
-Skill, its local contract and the shared issue-orchestration.md from the same
-provider. Recover the selected base and current execution limits from original
-human messages in this chat. Keep full Issue completion as the goal; a phase
-result or missing action permission does not complete it.
-Observe every admitted unfinished Issue chat and read its newest real assistant
-output when changed or idle. Compare actual results against all remaining
-completion obligations within current execution limits. Apply the shared
-active-unblocking method
-to blockers, absent recommendations and insufficient completion claims; follow
-the chosen action to its actual result. Give each actionable idle child below
-the endpoint one useful continuation in this cycle. Use 确认继续, 按建议方案执行
-or 合并PR only when their current conditions pass. Recheck actual external wait
-conditions even without new child text; reassess ended, expired or unowned waits.
-Deduplicate notifications, not progress judgment. Apply this Skill's scheduling
-and advancement rules and the shared Quiet Notifications contract. Keep routine
-progress silent, including phase changes and individual Issue completion.
-Stop the heartbeat only after verified settlement.
-```
+Stay in this loop while permitted work or an owned bounded wait remains. Do
+not end the active turn with `auto_started` or `progressing` merely to wait for
+an automation, another child message or a human reminder. Those existing exits
+remain concise conversation results for their original next-observation
+consumer when a native interruption or necessary handback ends execution; they
+are not terminal success and do not remove continuation responsibility. Native
+created-chat directives retain their own reporting contract.
+
+### Conversation Recovery Inputs
 
 Qualify each node, pending reservation, child/host/cursor, Task/Delivery and PR
-with its repository. Never recover cross-repository owners by bare Issue number.
-Keep bindings, pending operations, cursors, consumed events and each repository’s
-integration owner in conversation context. App-owned configuration carries only minimum
-replayable run inputs. No new persistent coordination or authorization store.
-After context loss, recover original identities and live facts before dispatch.
+with its repository. Keep the selected run inputs, current sequence position,
+consumed events, pending operations and each repository's integration owner in
+this conversation. After admission or a carrier change, reconcile these facts
+with the actual native result before continuing. No checkpoint, ledger,
+authorization record or automation prompt is introduced.
 
-### Heartbeat Recovery Inputs
-
-After admission, pending-to-formal binding, replacement of a chat carrier, or
-advancement of the current sequence position, reconcile any child identities
-and current-position hints carried by the existing heartbeat prompt. Remove
-superseded hints and retain unfinished parked owners and the selected run inputs.
-If those recovery inputs changed, update that same native heartbeat before
-yielding. Read back its prompt, target, interval and active status; an unchanged
-minimal prompt needs no rewrite. Do not create a second heartbeat or copy
-authorization, phase history or every cursor revision into its configuration.
-Conversation-held cursors remain the current observation inputs.
-
-At every resume, compare the saved recovery hints with the original conversation
-and live child facts. A stale prompt does not retake ownership, roll back the
-current position or permit duplicate creation. Correct the existing prompt
-through the native owner. A failed update retains its diagnostic and recovery;
-continue observing known children, but hold new admissions until the recovery
-inputs and scheduling configuration are verified.
+On resume, recover original messages and existing formal or pending owners,
+then recheck live child facts. A stale summary does not retake ownership, roll
+back the sequence position or permit duplicate creation. A lost cursor requires
+a fresh snapshot of the same child; an unknown send or mutation outcome first
+requires exact-operation recovery.
 
 ### Observation After An Interruption
 
-On each heartbeat and each human-requested continuation, first complete a
-fresh observation of every admitted unfinished child. Use the latest available
-per-child cursor; if it was lost, recover the same child and take a fresh
-snapshot. Read actual latest output for changed or idle children and act on
-each actionable idle result in this cycle under the existing gates. Do not
-wait for the next timer, a new child message or another human reminder.
+On every resumed execution, first observe all admitted unfinished children and
+read changed or idle results. Act on each actionable idle child in this cycle
+under its current gates. Do not wait for another timer or human reminder.
 
-Compare the current observation time with the last actual observation available
-in this conversation or native history. If scheduled intervals passed without
-observations, retain that gap as unobserved time and inspect the current child
-and native heartbeat facts before describing monitoring as healthy. If the
-previous observation cannot be recovered, state that limit rather than inventing
-continuity. A late wake or an idle child alone does not establish a scheduler
-failure; distinguish missed coordinator observations from a demonstrated native
-scheduling fault. Fix a known configuration mismatch through its original owner;
-do not claim that a Markdown change guarantees timely native wakeups.
+Compare the current time with the last actual observation available in this
+conversation or native history. Preserve any gap as unobserved time. If the
+previous observation is unavailable, state that limit. Do not claim background
+supervision while this coordinator was stopped, interrupted, or not executing.
+An idle child or elapsed interval alone proves no native scheduler fault.
 
-Perform one current catch-up cycle, not one replay for every missed interval.
-Preserve active owners and unknown side-effect recovery; do not restart work,
-repeat a possibly delivered instruction or relax a gate to compensate for delay.
-Keep only the necessary observation context in this conversation, with no new
-ledger, watchdog, polling script or persistent checkpoint. Quiet Notifications
-still governs delivery after the actual observation and disposition.
+Perform one current catch-up cycle. Preserve owners and unknown-operation
+recovery; do not replay an instruction for each missed interval, restart from
+a fresh base, or relax a gate to compensate for delay. The same observation,
+active-unblocking and quiet-output rules then resume.
 
-Every wake performs one complete observation cycle:
+### Migration From Timer-Based Supervision
 
-1. Resolve pending creations and observe every formal unfinished child. For a
-   multi-child run start with nonblocking snapshots, so one busy child cannot
-   starve siblings. Respect the tool target limit and rotate batches fairly.
-2. Preserve each child's `hostId` and cursor. One returned event does not prove
-   other targets were observed; obtain snapshots for any uncovered targets.
-3. Read newest actual assistant output when changed or terminal and the wait
-   result did not provide it. Summaries, previews and status labels are hints.
-4. Apply the progress decision below to every unfinished obligation and each
-   actionable idle child within the endpoint. Check actual external conditions
-   and wait validity even without new text; silence is not a progress decision.
-5. Verify candidate stage/completion results, apply package scheduling and fill
-   eligible slots. State an observation error and retry that same binding;
-   never advertise healthy monitoring for an unobserved child.
+This contract directly replaces mandatory two-minute automation heartbeat with
+current-conversation native waits. Skill ids, graph/chain inputs, scheduling,
+stable exit ids and their consumers remain. `auto_started` now hands the next
+observation consumer the verified initial child bindings and observation
+condition, rather than a heartbeat identity. Terminal outputs prove safe child
+and operation settlement, rather than requiring a timer that was never created.
+Apply the complete matching provider through the existing installation owner;
+do not combine old timer instructions with these packages.
 
-A failed gate changes the requested remedy; it does not justify abandoning an
-idle incomplete child. `ACTIVE` configuration alone proves no observation.
-An unknown send result requires reading the child's actual conversation before
-retry; do not duplicate a possibly delivered instruction. Notification deduplication
-does not skip observation or renewed judgment. Stay quiet only after successful
-observation verifies running work or a handled wait that remains valid. An
-observation error retains its actual diagnostic and retry; quiet delivery must
-never turn that error into a claim of healthy monitoring.
+For a resumed old run, inspect any already existing matching heartbeat only to
+recover its original identities and stop it through the supported native owner.
+Verify the stop without recreating or reactivating it. An unknown stop result
+requires recovery of that operation. A stop failure retains the precise
+settlement gap; known children still receive permitted observation and
+continuation. It does not justify a replacement timer or duplicate child.
+After verified stop, keep observing the same run through native waits.
 
 ## Quiet Notifications
 
-**Both orchestrators operate quietly by default.** The coordinator does not
-send routine progress commentary or notifications to the human in this chat.
-This applies even when work changes phase, a child needs a valid continuation,
-a PR is published or merged, one Issue completes, the next eligible Issue
-starts, a supported retry runs, or an owned external wait remains valid.
-Complete the required observation, semantic judgment and original-owner action
-first. Keep the existing child messages, cursors and continuation duties.
+Both orchestrators operate quietly by default. During active supervision,
+continue tool observation and original-owner actions without routine commentary
+or a progress-only final response. Phase changes, PR publication or merge,
+individual Issue completion, successor admission, supported retry and an
+unchanged valid wait do not themselves require a human notification. No
+heartbeat XML envelope or invented notification API is used.
 
-Notify the human only when:
+Notify the human when a real choice, missing action permission or expressly
+direct-human step is required; when active unblocking establishes an unresolved
+condition needing human action; or when the whole selected run reaches a
+verified terminal result. Give the exact affected work, action or minimum
+condition. Deduplicate an unchanged request while preserving observations and
+useful continuations. A necessary human handback retains the remaining work
+and exact resume condition; it is not a completion claim.
 
-- a real choice, missing action permission or expressly direct-human step is
-  required, with the exact decision or action and its affected work;
-- active unblocking establishes an unresolved condition that needs human
-  action, with the concrete gap, responsible party and resume condition;
-- the whole selected run reaches its verified terminal result, including an
-  explicitly requested earlier-stage segment, under the existing settlement
-  and heartbeat-stop rules.
-
-Show the initial precise prospective effects and any necessary setup choices
-under the existing preflight contract. Answer an explicit human status question
-directly. These interactions do not enable routine notifications for later
-wakes. A child phase ending, a repairable failure or an individual node's
-completion alone is not a notification condition. Deduplicate an unchanged
-human-action request without suppressing a material change to its facts.
-
-Use the current native wake's supported silent-result transport. When that
-transport accepts a `heartbeat` result with `DONT_NOTIFY`, return only this
-envelope for a routine wake, with the actual automation identity and the
-selected existing typed exit's concise factual result in `message`:
-
-```xml
-<heartbeat>
-  <automation_id>actual-automation-id</automation_id>
-  <decision>DONT_NOTIFY</decision>
-  <message>progressing: actual remaining work and next observation condition</message>
-</heartbeat>
-```
-
-Do not add commentary, a second final message or prose outside the silent
-envelope on that wake. `DONT_NOTIFY` controls notification delivery; it is not
-a Skill exit, a new DTO, a completion claim or a replacement for the one
-package-declared primary exit. That exit keeps its original meaning and sole
-consumer. Required native created-chat directives retain their native contract.
-For a notification condition, use the current surface's supported notifying
-response and report only the actual choice, gap or verified terminal result.
-
-Verify the current transport from its native instructions or observed same-run
-behavior; the example does not establish support on every host. If support is
-unclear, inspect the current native contract. Do not invent a notification API,
-filter script, scheduler, persistent flag or coordinator store, and do not claim
-notification suppression without evidence. A transport limit does not remove
-required human interactions, observation, progress judgment or safe settlement.
+Show the initial precise prospective effects and necessary setup choices under
+preflight. Answer an explicit status question directly, then continue permitted
+supervision. Follow higher-priority host requirements for progress reporting;
+quiet operation does not suppress a required human interaction or excuse an
+observation gap. Do not create an automation or custom delivery mechanism to
+silence routine progress.
 
 ## Progress Decision
 
@@ -596,7 +534,7 @@ not request fixed wording before receiving a useful next instruction.
 Before messaging, verify the formal destination, inactive relevant turn, current
 evidence and actual human messaging delegation. Do not broadcast a generic
 approval. Deduplicate by child, turn/message, live gate state and the last
-instruction's expected result. A new heartbeat alone creates no new event.
+instruction's expected result. A wait timeout alone creates no new event.
 A material prerequisite change does. Never use a coordinator message as a
 substitute for a direct-human confirmation expressly required by the repository.
 
@@ -604,7 +542,7 @@ For a newly observed temporary capacity/overload event, including the tool's
 current 429 retry-limit or model-at-capacity messages, preserve the same child,
 Task, worktree, branch, model and reasoning. Within continuation scope, send
 exactly `确认继续` once for that error event. If a new attempt fails likewise,
-retry on the next heartbeat; no repeat within one wake, model switch or replacement
+retry after the next bounded wait and observation; no repeat within one cycle, model switch or replacement
 child. Actual exhausted quota, missing credentials and unsupported models retain
 their concrete blocker. Other admitted DAG children still receive observation.
 
@@ -743,11 +681,12 @@ results and validation limits. This requires a reasoned judgment from relevant
 facts, not exhaustive theoretical options or a child's unsupported assertion.
 Apply the package's failure policy to unaffected work before whole-run settlement.
 
-A terminal result requires no pending creation or unresolved operation, all
-admitted children inactive at verified safe boundaries, and verified heartbeat
-stop through the native tool. Do not blindly interrupt a merge. If stopping the
-heartbeat fails or safe disposition remains unproven, return `progressing`
-with that exact incomplete settlement and recover it.
+A terminal result requires no pending creation or unresolved operation and all
+admitted children inactive at verified safe boundaries. Any matching timer from
+an old run must have a verified stopped disposition under the migration rule.
+Do not blindly interrupt a merge. If safe disposition or an old timer stop
+remains unproven, retain `progressing` with that exact incomplete settlement
+and recover it while continuing permitted observations.
 
 Use a stage-completed exit only under the selected package's declared stage
 conditions. State unfinished Issue/Task work without inventing a merge blocker.
@@ -757,7 +696,7 @@ Do not archive chats, remove worktrees or perform other incidental cleanup.
 
 Resume the same run after its concrete blocker is resolved or the human resumes
 a limited segment. Recover children, the selected base and unfinished completion
-obligations, revalidate affected proofs and resume the same heartbeat as needed.
+obligations, revalidate affected proofs and resume native observation of those same owners.
 No new Task or fresh-base restart. Membership, dependency, completion-gate or resource changes
 need fresh semantic impact review and only their real human choices. Do not
 persist authorization during recovery.
