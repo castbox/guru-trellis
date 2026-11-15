@@ -329,10 +329,8 @@ inspect_environment (repository), establish_environment (repository, path, remot
 primary_folder), create_child (issue, model, effort,
 message; cross-repository scenes also require repository, project_id,
 source_branch and target_branch), read_child (child_id), send_message (child_id, message), read_operation
-(operation_id), heartbeat_create (interval_minutes, prompt), heartbeat_read,
-heartbeat_stop; cross-repository carriers expose automation_update (mode=update,
-id, status=ACTIVE|PAUSED, prompt, interval_minutes, target) to update an existing
-heartbeat while preserving its fields. observe_external (issue), wait_events
+(operation_id), heartbeat_read, heartbeat_stop (existing old-run timer recovery
+only), observe_external (issue), wait_events
 (seconds, at most 2).
 For child only: inspect, inspect_inputs, inspect_provider, recover_operation
 (operation_id), execute (input_path), verify, record_gate (stage, status,
@@ -484,11 +482,11 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
         "Carry out the synthetic app/repository operations needed to fully complete all selected Issues. "
         "No further launch question is needed for these isolated fixture effects. "
         "This is a test carrier, not real GitHub or a production application. Its MCP native tool replaces app, "
-        "GitHub, Git and heartbeat I/O. Read its factual repository/workflow/preflight state. "
+        "GitHub, Git and native observation I/O. Read its factual repository/workflow/preflight state. "
         "Use that tool for all synthetic observations, child processes and effects. "
         "File tools may read only the provided same-provider contracts in this directory; do not read runner "
         "source, parent directories, configurations, histories or other repositories. "
-        "The fixture's heartbeat is a native simulated clock, with a two-minute schedule and bounded wait_events. "
+        "The fixture provides bounded native wait_events; it does not require a timer or promise background supervision. "
         "Actual child turns are real independently executing Codex processes. "
         "Continue observing actual results until the requested endpoint or a genuinely settled block. "
         "Report validation limits accurately.\n" +

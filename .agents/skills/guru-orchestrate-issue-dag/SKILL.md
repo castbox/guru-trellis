@@ -1,6 +1,6 @@
 ---
 name: guru-orchestrate-issue-dag
-description: Explicitly coordinate a cross-repository GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.
+description: Explicitly coordinate a cross-repository GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, native observation and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.
 ---
 
 # Guru Issue DAG Orchestrator
@@ -20,27 +20,33 @@ root is `trellis/presets/guru-team/spec/workflow`; the installed root is
 `.trellis/spec/workflow`. Until loading succeeds, give only a short progress or
 missing-file diagnostic. After recovery, load it and continue without new approval.
 
-Before preflight, live execution, every heartbeat or recovery, read that same
-provider's `issue-orchestration.md` in full and this package's
-[complete DAG contract](references/dag-contract.md). Package-local references
+Before preflight, live execution, each observation cycle or recovery, have that same
+provider's `issue-orchestration.md` and this package's
+[complete DAG contract](references/dag-contract.md) fully loaded. Package-local references
 come from `trellis/skills/guru-team/packages/guru-orchestrate-issue-dag` in source
 or `.trellis/guru-team/skills/packages/guru-orchestrate-issue-dag` after installation.
 A discovery projection is only an entry locator. Do not mix providers or use a
 historical personal copy. The target repository may be elsewhere and need not
 install these orchestration Skills.
 
+Keep both complete current contracts available before judgment. Reuse already
+read or fully injected text while it remains complete and current. Reread when
+the provider version changes, text is lost or truncated, or recovery leaves
+its identity or completeness uncertain; a new observation cycle alone does not
+require another file read.
+
 The shared method exclusively defines selected-base continuity, endpoint
 interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
-heartbeat, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
+native waiting, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
 it at startup, resume and child continuation alike.
 The local contract owns graph normalization, eligibility, slots, exclusion,
 failure propagation, stage settlement and this Skill's public I/O.
 
 Operate quietly by default under the shared method's `Quiet Notifications`
-section. Its native silent-result transport carries routine progress without
-changing this Skill's declared exits or its duty to observe and continue work.
-Apply the shared `Heartbeat Recovery Inputs` and `Observation After An
-Interruption` sections when bindings change and whenever supervision resumes.
+section. Keep routine progress inside active tool observation and continuation;
+do not end supervision with a progress-only final response. Apply the shared
+`Conversation Recovery Inputs` and `Observation After An Interruption` sections
+when bindings change and whenever supervision resumes.
 
 ## Execute The DAG
 
@@ -60,8 +66,8 @@ Interruption` sections when bindings change and whenever supervision resumes.
    prerequisites, exclusions and any explicit execution-limit compatibility.
    A dry-run returns `dry_run_ready|dry_run_blocked` and stops. Auto/live consume
    ready preflight internally and launch only within current human instructions.
-3. Start or recover the one native current-chat heartbeat, default every two
-   minutes. Recompute eligibility; reserve each slot before creating its child.
+3. Establish the shared native-wait observation loop in this current chat.
+   Recompute eligibility; reserve each slot before creating its child.
    Preserve pending bindings and immediately observe each newly formal child.
    Fill available slots without creating blocked descendants or duplicate owners.
 4. Apply the shared progress and active-unblocking method each cycle, following
@@ -78,7 +84,7 @@ Interruption` sections when bindings change and whenever supervision resumes.
    do not impose a wave barrier. An earlier requested stage frees only the
    execution slot under local rules, never a hard dependency edge.
 6. Recheck current live facts and semantic sufficiency, settle under the local
-   contract, validate child/operation/heartbeat facts with native tools, and
+   contract, validate child/operation/observation facts with native tools, and
    return exactly one declared exit. Tool status never substitutes for AI judgment.
 
 ## Exits

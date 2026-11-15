@@ -35,7 +35,7 @@ Task确认对象与来源authority分别保留；原工具owner负责已有check
 跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
 `guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
 DAG 可处理跨仓显式或动议正式绑定依赖图；Sequence 保持单仓严格串行。
-DAG 按仓核项目、基线及环境，保留旧单仓简写。默认协调器 heartbeat 为 2 分钟。
+DAG 按仓核项目、基线及环境，保留旧单仓简写。协调器在当前聊天内以原生事件等待持续观察子聊天，不创建跟踪具体 Issue 完成的 automation。
 Mobile/Web 可通过 [合同就绪条件](../../skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md#contract-readiness-and-mock-development)
 在接口合同可用后使用 Mock，与后端并行开发；`depends_on` 保留完整完成语义。
 两个入口默认静默执行；通知条件与原生静默输出方式由共享规范的

@@ -43,7 +43,7 @@ An included hard predecessor must occur earlier in the chain or already have
 fresh full completion proof. An external hard predecessor must independently
 pass the same current proof before launch and be rechecked before admission.
 If the supplied order contradicts a live prerequisite, report the exact conflict
-before creating a child or heartbeat. Do not reorder, add or skip Issues silently.
+before creating a child. Do not reorder, add or skip Issues silently.
 
 Detect overlap by selected `repository + Issue`, including coordinators with
 different lists or ordering. Current context must prove ownership; a similar
@@ -107,9 +107,9 @@ never skip to a later Issue. There is no `continue_independent` policy here.
 
 ## Settlement
 
-Apply the shared safe settlement and heartbeat-stop proof. A terminal result
+Apply the shared safe child and operation settlement proof. A terminal result
 requires inactive safely disposed children, no unresolved creation or operation,
-and verified stopped heartbeat. Until those facts pass, return `progressing`
+and verified operation disposition. Until those facts pass, return `progressing`
 with the exact unfinished settlement rather than claiming a terminal outcome.
 
 - `chain_completed`: all selected Issues freshly satisfy full completion proof.
@@ -126,7 +126,7 @@ with the exact unfinished settlement rather than claiming a terminal outcome.
 Resume the same chain after the concrete blocker is resolved. Recover the
 current position, exact child and current proofs. Do not ask again for existing
 recoverable delegation or broaden it from an assistant statement. No later Issue
-starts merely because the heartbeat was restarted.
+starts merely because observation resumed.
 
 ## Public Conversation Contract
 
@@ -134,18 +134,20 @@ Return exactly one primary exit, directly in the current conversation. These
 outputs are action/results for their sole consumer, not persistent artifacts.
 The stage exit is additive; `chain_completed` retains full-completion meaning.
 Apply the same-provider shared method's `Quiet Notifications` section to
-delivery of these results. Routine `auto_started` and `progressing` results use
-its supported silent transport; the primary exit and its consumer stay intact.
+delivery of these results. Keep routine `auto_started` and `progressing`
+results within the active observation loop; a necessary handback preserves their
+original next-observation consumer and remaining obligations. The shared timer
+migration applies to existing old-run automations only.
 
 | Exit | Minimal output and sole consumer |
 | --- | --- |
 | `dry_run_ready` | Normalized chain/settings, live identities, per-Issue gate/dependency summary, first current Issue, prospective effects and limits; dry-run response to the user. Auto/live consume ready preflight internally rather than emitting another final exit. |
 | `dry_run_blocked` | Actual failed preconditions or missing choice with useful available facts; user resolves them before same-chain preflight re-entry. |
-| `auto_started` | Current Issue/formal or pending child binding and heartbeat identity; next observation cycle in this coordinator. |
+| `auto_started` | Current Issue/formal or pending child binding and its immediate native observation condition; next observation cycle in this coordinator. |
 | `progressing` | Changed current-Issue result, exact remaining prerequisite/settlement and next observation condition; next coordinator cycle. |
-| `chain_blocked` | Current Issue, genuine blocker, completed prefix, remaining Issues and verified child/heartbeat disposition; user resolves it before same-chain resume. |
-| `chain_stage_completed` | Fully completed prefix, last Issue's stage proof, its remaining Issue/Task work and safe child/heartbeat settlement; user receives the requested stage result. |
-| `chain_completed` | Per-Issue verified delivery, applicable release identity, validation limits and heartbeat stop; user receives full completion. |
+| `chain_blocked` | Current Issue, genuine blocker, completed prefix, remaining Issues and verified child/operation disposition; user resolves it before same-chain resume. |
+| `chain_stage_completed` | Fully completed prefix, last Issue's stage proof, its remaining Issue/Task work and safe child/operation settlement; user receives the requested stage result. |
+| `chain_completed` | Per-Issue verified delivery, applicable release identity, validation limits and safe operation settlement; user receives full completion. |
 
 Unknown, multiple or unmapped exits stop here. Do not import `dag_*` outcomes
 or allow DAG slot rules to weaken strict serial advancement.
