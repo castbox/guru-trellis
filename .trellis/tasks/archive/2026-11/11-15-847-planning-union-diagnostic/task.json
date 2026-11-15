@@ -1,0 +1,383 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-15-847-planning-union-diagnostic",
+  "id": "847-planning-union-diagnostic",
+  "name": "847-planning-union-diagnostic",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 847,
+    "disposition": "exact_source"
+  },
+  "title": "#847 修复 Planning union 字段错层误报用途",
+  "description": "在共享诊断器中修复双向 Planning union 错层误导，保持合法性与既有回退，并同步受管安装副本。",
+  "dev_type": null,
+  "scope": "仅承担 #847 当前正文与接受评论规定的诊断修复、必要回归及 source/installed 同步。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-15",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+    "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+  },
+  "deliveries": [
+    {
+      "id": "85d5b984-11d3-4a4c-81d3-118e2160ca42",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+          "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/design.md",
+        "revision": "sha256:903e1599ca16e48a352a13d5cb48e607d933e485d160a3506aba7e421ba2d340"
+      },
+      "candidate": {
+        "base_ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+        "content_ref": "sha256:d1d41efcdbd0b36ab12e1772f9303555d28788fbd2d78f870f4cd8f54c08d689",
+        "head_ref": "1bc0b747b56554b4692a769138af6109a12f50e7",
+        "kind": "git",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/runtime/schema.py",
+          "trellis/skills/guru-team/runtime/schema.py",
+          "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:b9d7f2d6-bbc5-40c8-87eb-de315318eaeb",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+              "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/design.md",
+            "revision": "sha256:903e1599ca16e48a352a13d5cb48e607d933e485d160a3506aba7e421ba2d340"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/prd.md",
+              "revision": "sha256:eb2c20cd40a5ead2c33e67d6b0b9b6a596f0ffd88e99fe6d6b605f218d21968b"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/design.md",
+              "revision": "sha256:903e1599ca16e48a352a13d5cb48e607d933e485d160a3506aba7e421ba2d340"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/implement.md",
+              "revision": "sha256:e657940ecd3e8fa6d2775832c8bb637292c419b7373b196feec732b14acabeb6"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:65598d31cefd59a659abd058b1f758d03f80ae5480d89f71541930f37d65e084",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+              "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/design.md",
+            "revision": "sha256:903e1599ca16e48a352a13d5cb48e607d933e485d160a3506aba7e421ba2d340"
+          },
+          "candidate": {
+            "base_ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+            "content_ref": "sha256:d1d41efcdbd0b36ab12e1772f9303555d28788fbd2d78f870f4cd8f54c08d689",
+            "head_ref": "1bc0b747b56554b4692a769138af6109a12f50e7",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:b9d7f2d6-bbc5-40c8-87eb-de315318eaeb",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/implement.md",
+              "revision": "sha256:e657940ecd3e8fa6d2775832c8bb637292c419b7373b196feec732b14acabeb6"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:65598d31cefd59a659abd058b1f758d03f80ae5480d89f71541930f37d65e084",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+              "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/design.md",
+            "revision": "sha256:903e1599ca16e48a352a13d5cb48e607d933e485d160a3506aba7e421ba2d340"
+          },
+          "candidate": {
+            "base_ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+            "content_ref": "sha256:d1d41efcdbd0b36ab12e1772f9303555d28788fbd2d78f870f4cd8f54c08d689",
+            "head_ref": "1bc0b747b56554b4692a769138af6109a12f50e7",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py"
+            ]
+          },
+          "predecessor_result_id": "check:65598d31cefd59a659abd058b1f758d03f80ae5480d89f71541930f37d65e084",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/implement.md",
+              "revision": "sha256:e657940ecd3e8fa6d2775832c8bb637292c419b7373b196feec732b14acabeb6"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:338d03ce7bf14e961c4aa8d112b9ddec32da9175e11b39638e5a9cf69cb3dcb8",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+              "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/design.md",
+            "revision": "sha256:903e1599ca16e48a352a13d5cb48e607d933e485d160a3506aba7e421ba2d340"
+          },
+          "candidate": {
+            "base_ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+            "content_ref": "sha256:d1d41efcdbd0b36ab12e1772f9303555d28788fbd2d78f870f4cd8f54c08d689",
+            "head_ref": "1bc0b747b56554b4692a769138af6109a12f50e7",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:65598d31cefd59a659abd058b1f758d03f80ae5480d89f71541930f37d65e084",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/deliveries/85d5b984-11d3-4a4c-81d3-118e2160ca42/implement.md",
+              "revision": "sha256:e657940ecd3e8fa6d2775832c8bb637292c419b7373b196feec732b14acabeb6"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:a6470750b2afd69289d8bc54ea8a7fad0cd6c71d146246bccb95487b401ee2e3",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/851",
+            "revision": "sha256:ee7d97ef3e71493e0109ad497b2e3a3d6f4c2233b6e535ee73e933f442464160"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+          "content_ref": "sha256:d1d41efcdbd0b36ab12e1772f9303555d28788fbd2d78f870f4cd8f54c08d689",
+          "head_ref": "1bc0b747b56554b4692a769138af6109a12f50e7",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/runtime/schema.py",
+            "trellis/skills/guru-team/runtime/schema.py",
+            "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 851,
+        "reviewed_head": "1bc0b747b56554b4692a769138af6109a12f50e7",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/851",
+          "revision": "sha256:ee7d97ef3e71493e0109ad497b2e3a3d6f4c2233b6e535ee73e933f442464160"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:bd9b1fd00c993656ee7055883aee44f6350e243c",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/851",
+            "revision": "bd9b1fd00c993656ee7055883aee44f6350e243c"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "0fb7dc9aac817a684c2f95bebb6570061a5ef868",
+          "content_ref": "sha256:d1d41efcdbd0b36ab12e1772f9303555d28788fbd2d78f870f4cd8f54c08d689",
+          "head_ref": "1bc0b747b56554b4692a769138af6109a12f50e7",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/runtime/schema.py",
+            "trellis/skills/guru-team/runtime/schema.py",
+            "trellis/skills/guru-team/runtime/tests/test_public_contract_diagnostics.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 851,
+        "reviewed_head": "1bc0b747b56554b4692a769138af6109a12f50e7",
+        "merge_commit": "bd9b1fd00c993656ee7055883aee44f6350e243c",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:c042a063-77f4-4798-b5c1-bd014068f1b6",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/851",
+          "revision": "bd9b1fd00c993656ee7055883aee44f6350e243c"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/43705147156",
+          "revision": "1bc0b747b56554b4692a769138af6109a12f50e7"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/prd.md",
+        "revision": "sha256:836691ca52d402266cc07a1aa060b4a9275bb6ee603d3c21595fe9906d8bcab2"
+      },
+      "delivery_result_ids": [
+        "delivery:bd9b1fd00c993656ee7055883aee44f6350e243c"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:1dbd7ba1d351c42784626b5f",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/847",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-15-847-planning-union-diagnostic/closeout/closure/Y2xvc3VyZToxZGJkN2JhMWQzNTFjNDI3ODQ2MjZiNWY.json",
+          "revision": "sha256:82967f4adecad8d551c0b845978fe1bb0ac2cea4efaa6299a83376cb973ef041"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:c042a063-77f4-4798-b5c1-bd014068f1b6",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/847",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
