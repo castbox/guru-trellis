@@ -34,6 +34,8 @@ SOURCE = PACKAGE.parents[4]
 KERNEL = PACKAGE.parents[1]
 
 CASES = {
+    'shared-material': ('dispatch', '继续当前缓存适配交付。当前实现、另一侧工作材料和已有观察见 facts.md 所列文件；判断接下来的必要工作与验证。'),
+    'shared-ordinary': ('dispatch', '继续当前缓存消费者交付。当前实现、版本备注和已有观察见 facts.md 所列文件；判断接下来的必要工作与验证。'),
     'v1-cheap': ('author', '普通工具功能：新增 normalize_name(value)，仅去除字符串两端空白，保留内部空格和大小写。空字符串有效。纯函数，无I/O、设备或配置，测试执行毫秒级。尚未实现；旧函数不存在。采用当前完整Author入口完成本Delivery规划。'),
     'conditional-diagnosis': ('author', '当前Task只诊断core.parse_csv_line对带引号逗号的解析错误，产出首个偏离及证据缺口，不实施修复。当前已接受合同：CSV双引号内逗号属于字段内容。真实函数与同输入运行输出在core.py和parser-observation.txt；现有实现直接按逗号split。合法输入为双引号包围的a,b字段后接c，要求输出两个字段a,b和c。诊断只读取现有源码/记录并执行同一纯函数样本；不改业务状态、资格/身份/权限、资源协调或任何保护机制，不需生产操作。采用当前完整Author入口完成本Delivery诊断规划。'),
     'v1-device': ('author', '普通功能：设备适配器新增 read_temperature()，读取真实设备固件返回的摄氏度。离线环境没有设备SDK或设备；本机已有模拟传输可以开发适配逻辑。需求是返回设备温度，断连时返回 typed disconnected 错误，不编造默认温度。真实设备下周可用，最终验收必须测设备读数及断连。当前无实现，无故障。采用当前完整Author入口完成本Delivery规划。'),
@@ -130,13 +132,41 @@ def author_fixture(source, root, facts):
     return {'task_ref':fixture.task_ref,'delivery_key':key,'planning_root':projection.resolve(key)['planning_root']}
 
 
-def run_case(source, output, case_id):
+def prepare_shared(root, case_id):
+    """Copy neutral product inputs and retain actual local execution facts."""
+    assets = PACKAGE/'tests/fixtures/shared_dependency'
+    shutil.copytree(assets/'current', root, dirs_exist_ok=True)
+    shutil.copytree(assets/'frozen', root/'frozen')
+    shutil.copytree(root/'app', root/'frozen/app')
+    shutil.copytree(assets/case_id, root, dirs_exist_ok=True)
+    argv = [sys.executable, '-B', 'run.py']
+    observed = command(argv, root/'frozen')
+    receipt = {'argv': argv, 'cwd': 'frozen', 'returncode': observed.returncode,
+               'stdout': observed.stdout, 'stderr': observed.stderr,
+               'python': sys.version, 'platform': sys.platform}
+    (root/'local-observation.json').write_text(json.dumps(receipt, ensure_ascii=False, indent=2)+'\n')
+    return (assets/case_id/'facts.md').read_text()
+
+
+def native_argv(root, final, model=None, reasoning_effort=None):
+    argv = ['codex', 'exec', '--ephemeral', '--skip-git-repo-check', '--sandbox',
+            'danger-full-access', '--cd', str(root), '--json', '--output-last-message', str(final)]
+    if model is not None:
+        argv += ['--model', model]
+    if reasoning_effort is not None:
+        argv += ['-c', 'model_reasoning_effort='+json.dumps(reasoning_effort)]
+    return argv+['-']
+
+
+def run_case(source, output, case_id, model=None, reasoning_effort=None):
     kind, facts=CASES[case_id]
     case=output/case_id; root=case/'workspace'; root.mkdir(parents=True)
     provider(source,root)
     environment={**os.environ,'PYTHONDONTWRITEBYTECODE':'1','TRELLIS_CONTEXT_ID':'projection-test'}
     if kind in {'author', 'dispatch'}:
         target_authority(root)
+        if case_id.startswith('shared-'):
+            facts = prepare_shared(root, case_id)
         if case_id == 'conditional-diagnosis':
             with (root/'core.py').open('a') as stream:
                 stream.write('\ndef parse_csv_line(value: str) -> list[str]:\n    return value.split(",")\n')
@@ -164,7 +194,9 @@ def run_case(source, output, case_id):
         projection=DeliveryProjection(root,context['task_ref'])
         directory=projection.planning_directory(context['delivery_key'])
         for name in ('prd.md','design.md','implement.md'):
-            (directory/name).write_text('# Fixture selected validation contract\n\n'+facts+'\n')
+            body = ((PACKAGE/'tests/fixtures/shared_dependency'/case_id/name).read_text()
+                    if case_id.startswith('shared-') else '# Fixture selected validation contract\n\n'+facts+'\n')
+            (directory/name).write_text(body)
         for name in ('implement.jsonl','check.jsonl'):(directory/name).write_text('')
         result={'result_id':'fixture-planning-precondition','owner_role':'planning','owner_id':'guru-activate-delivery','outcome':'accepted','scope_ref':projection.resolve(context['delivery_key'])['scope_ref'],'plan_ref':authority_ref(directory/'design.md',root),'candidate':None,'predecessor_result_id':None,'obligations':[],'evidence':[authority_ref(root/context['task_ref']/'prd.md',root)]}
         projection.apply({'api_version':'1.0','operation':'record_gate','key':context['delivery_key'],'owner_role':'planning','owner_id':'guru-activate-delivery','expected_phase':'planning','result':result})
@@ -173,7 +205,7 @@ def run_case(source, output, case_id):
     (root/'public-input.json').write_text(json.dumps(public,ensure_ascii=False,indent=2)+'\n')
     prompt=entry+'\nAll contracts and executable dependencies belong to this complete fixture provider. Read installed clear-technical-writing.md before substantive output. Do not inspect parent directories, other repositories, memory, host evaluator scripts or expectations. Do not create commits, branches, remote resources or persistent authorization records. Factual fixture context:\n'+json.dumps(context,ensure_ascii=False)+'\nCurrent facts are in facts.md. Return your actual result and remaining boundary in Chinese.'
     (case/'prompt.txt').write_text(prompt)
-    argv=['codex','exec','--ephemeral','--skip-git-repo-check','--sandbox','danger-full-access','--cd',str(root),'--json','--output-last-message',str(case/'native-final.txt'),'-']
+    argv=native_argv(root, case/'native-final.txt', model, reasoning_effort)
     start=time.time()
     with (case/'native.jsonl').open('w') as out, (case/'native.stderr').open('w') as err:
         try:
@@ -184,16 +216,18 @@ def run_case(source, output, case_id):
     if case_id=='v4-async' and report['native_returncode']==0:
         shutil.copy2(PACKAGE/'tests/fixtures/async_cancel_trace.py',root/'job_trace.py')
         continuation='You are the current execution owner consuming the actual Root output in wrapper-result.json. Read its real disposition and decide whether its route admits the bounded observation below; the host supplies no classification or pass. Do not repeat an applicable qualification or continue through a blocking result. Read the complete installed writing and quality method, facts.md and wrapper-result.json. The agreed bounded diagnostic tool job_trace.py is now available: run it once, inspect its actual event output, and decide what that observation resolves, which competing explanation remains, and the next repair or evidence-gap boundary. Do not implement a repair, rerun the same trace, claim product-wide completion or inspect parent/other repositories/host expectations. This is a local async fixture, not production evidence. Return Chinese factual results.'
-        followup=['codex','exec','--ephemeral','--skip-git-repo-check','--sandbox','danger-full-access','--cd',str(root),'--json','--output-last-message',str(case/'execution-final.txt'),'-']
+        followup=native_argv(root, case/'execution-final.txt', model, reasoning_effort)
         with (case/'execution.jsonl').open('w') as out, (case/'execution.stderr').open('w') as err:
             proc=subprocess.run(followup,input=continuation,text=True,stdout=out,stderr=err,env=environment,timeout=300)
         report['execution_returncode']=proc.returncode
+        report['execution_argv']=followup
     (case/'collection.json').write_text(json.dumps(report,indent=2)+'\n')
     return report
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,default=SOURCE);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--case',choices=CASES,action='append');parser.add_argument('--jobs',type=int,default=1)
+    parser.add_argument('--model');parser.add_argument('--reasoning-effort')
     args=parser.parse_args();source=args.source.resolve();output=args.output.resolve()
     if output.is_relative_to(source):parser.error('Raw observations must stay outside the repository.')
     selected=args.case or list(CASES)
@@ -201,5 +235,5 @@ if __name__=='__main__':
         parser.error('Upstream fixture setup is process-local; use --jobs 1 for Author/dispatch cases, or separate processes.')
     output.mkdir(parents=True,exist_ok=True)
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        results=list(pool.map(lambda key:run_case(source,output,key),selected))
+        results=list(pool.map(lambda key:run_case(source,output,key,args.model,args.reasoning_effort),selected))
     (output/'collection.json').write_text(json.dumps(results,indent=2)+'\n');print(json.dumps(results,indent=2))
