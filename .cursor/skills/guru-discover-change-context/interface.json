@@ -228,7 +228,7 @@
     },
     {
       "id": "current_input_index",
-      "path": "schemas/public-input-6.0.schema.json"
+      "path": "schemas/public-input-7.0.schema.json"
     },
     {
       "id": "issue_review_supplemented",
@@ -237,6 +237,42 @@
     {
       "id": "issue_review_owner",
       "path": "schemas/issue-review-owner-1.0.schema.json"
+    },
+    {
+      "id": "current_public_context_ready_output_7_0_schema_json",
+      "path": "schemas/public-context-ready-output-7.0.schema.json"
+    },
+    {
+      "id": "current_public_context_ready_output_8_0_schema_json",
+      "path": "schemas/public-context-ready-output-8.0.schema.json"
+    },
+    {
+      "id": "current_public_context_request_input_4_0_schema_json",
+      "path": "schemas/public-context-request-input-4.0.schema.json"
+    },
+    {
+      "id": "current_public_context_request_input_5_0_schema_json",
+      "path": "schemas/public-context-request-input-5.0.schema.json"
+    },
+    {
+      "id": "current_public_input_6_0_schema_json",
+      "path": "schemas/public-input-6.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_context_ready_output_1_0_schema_json",
+      "path": "schemas/public-issue-context-ready-output-1.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_context_ready_output_2_0_schema_json",
+      "path": "schemas/public-issue-context-ready-output-2.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_context_request_input_1_0_schema_json",
+      "path": "schemas/public-issue-context-request-input-1.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_context_request_input_2_0_schema_json",
+      "path": "schemas/public-issue-context-request-input-2.0.schema.json"
     }
   ],
   "validators": [
@@ -344,8 +380,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-discover-change-context-input-aggregate-6.0",
-        "path": "schemas/public-input-6.0.schema.json"
+        "schema_id": "guru-stage0-discover-change-context-input-aggregate-7.0",
+        "path": "schemas/public-input-7.0.schema.json"
       },
       "profiles": [
         {
@@ -366,8 +402,8 @@
         {
           "id": "context_request",
           "schema": {
-            "schema_id": "guru-discovery-context-request-4.0",
-            "path": "schemas/public-context-request-input-4.0.schema.json"
+            "schema_id": "guru-discovery-context-request-5.0",
+            "path": "schemas/public-context-request-input-5.0.schema.json"
           },
           "example": {
             "id": "current_public_context_request_input_3_0_json",
@@ -431,8 +467,8 @@
       {
         "exit_id": "context_ready",
         "schema": {
-          "schema_id": "guru-discovery-context-ready-7.0",
-          "path": "schemas/public-context-ready-output-7.0.schema.json"
+          "schema_id": "guru-discovery-context-ready-8.0",
+          "path": "schemas/public-context-ready-output-8.0.schema.json"
         },
         "example": {
           "id": "current_public_context_ready_output_6_0_json",
@@ -647,6 +683,10 @@
           {
             "source": "source_refs",
             "target": "source_refs"
+          },
+          {
+            "source": "handoff_review_focus",
+            "target": "review_focus"
           }
         ]
       },

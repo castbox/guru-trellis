@@ -52,7 +52,7 @@ class ReadinessAdapterTests(unittest.TestCase):
         shutil.copytree(SKILLS / "schemas", installed / "skills/schemas", ignore=ignore)
         shutil.copytree(SKILLS / "consumers", installed / "skills/consumers", ignore=ignore)
         for skill in ("guru-select-workflow-mode", "guru-sync-base", "guru-discover-change-context", "guru-clarify-requirements",
-                      "guru-review-contract-wording", "guru-review-change-request"):
+                      "guru-review-change-request"):
             shutil.copytree(SKILLS / "packages" / skill, cls.packages / skill, ignore=ignore)
         (cls.fixture / ".gitignore").write_text(".trellis/.runtime/\n__pycache__/\n*.pyc\n")
         for relative in ("docs/requirements.md", "trellis/runtime.py", "trellis/test_runtime.py"):
@@ -81,12 +81,12 @@ class ReadinessAdapterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.temporary.cleanup()
 
-    def test_readiness_five_exits_use_real_producer_outputs(self):
+    def test_readiness_four_exits_use_real_producer_outputs(self):
         package = self.packages / "guru-review-change-request"
         runtime = load_package_owner_runtime(self.target, package.name)
         recipes = {
             "readiness-ready": "ready", "readiness-clarify": "clarify_requirements",
-            "readiness-wording": "review_wording", "readiness-refresh": "refresh_context",
+            "readiness-refresh": "refresh_context",
             "readiness-blocked": "blocked",
         }
         for mode in ("workflow", "standalone"):
@@ -102,7 +102,7 @@ class ReadinessAdapterTests(unittest.TestCase):
                     self.assertEqual(exit_id, output["exit_id"])
                     self.assertNotIn("prerequisite_payloads", envelope["owner_result"])
                     self.assertEqual(source, envelope["owner_context"]["change_request"])
-                    if exit_id in {"clarify_requirements", "review_wording"}:
+                    if exit_id in {"clarify_requirements"}:
                         self.assertEqual(envelope["transition"], output["transition"])
                     if "clarity" in state["producer_results"]:
                         semantic_hash = state["producer_results"]["clarity"]["content_identity"]["content_sha256"]
@@ -129,11 +129,13 @@ class ReadinessAdapterTests(unittest.TestCase):
                         "mode": "workflow", "target_locator": "#145",
                         "continuation_id": "stage0-current",
                     }
-                with mock.patch(
+                binary = write_fake_gh(self.root, recipe)
+                with mock.patch.dict(os.environ, {"PATH": f"{binary}:{os.environ['PATH']}"}), mock.patch(
                     "adapters.eval.stage0_fixtures.stage0_command", wraps=stage0_command,
                 ) as record:
                     owner = build_clarity_owner(runtime, package, recipe, public_input)
-                authored = record.call_args.args[3]
+                carrier = record.call_args.args[3]
+                authored = carrier["owner_result"]
                 self.assertEqual(public_input["mode"], authored["mode"])
                 self.assertEqual(145, authored["review_target"]["issue_number"])
                 self.assertEqual("issue", authored["review_target"]["kind"])
@@ -153,7 +155,7 @@ class ReadinessAdapterTests(unittest.TestCase):
                     self.assertNotIn("action_digest", action)
                 stage0_command(
                     self.fixture, package.name, "check-requirements-clarification",
-                    owner, "--input", "-",
+                    {"owner_result": owner, "owner_context": carrier["owner_context"]}, "--input", "-",
                 )
                 self.assertEqual(exit_id, owner["typed_exit"])
                 if expected_kind == "standalone_review":
@@ -162,7 +164,7 @@ class ReadinessAdapterTests(unittest.TestCase):
                         "transition": stage0_eval_transition(
                             package.name, self.fixture, public_input, owner,
                         ),
-                        "owner_context": {}, "owner_result": owner,
+                        "owner_context": carrier["owner_context"], "owner_result": owner,
                     }, "--invocation", "-")
                     self.assertEqual(exit_id, output["exit_id"])
                     if exit_id == "clear":
@@ -183,11 +185,11 @@ class ReadinessAdapterTests(unittest.TestCase):
                         producers = state["producer_results"]["public_outputs"]
                         original = copy.deepcopy(producers)
                         self.assertEqual(
-                            ["context_ready", "clear", "pass"],
+                            ["context_ready", "clear"],
                             [value["exit_id"] for value in producers.values()],
                         )
                         self.assertTrue(all(value["transition"]["mode"] == mode for value in producers.values()))
-                        self.assertEqual(producers["wording"]["transition"], envelope["transition"])
+                        self.assertEqual(producers["clarity"]["transition"], envelope["transition"])
                         self.assertEqual(source, envelope["owner_context"]["change_request"])
                         output = stage0_command(
                             self.fixture, package.name, "invoke", envelope, "--invocation", "-",
@@ -248,7 +250,7 @@ class ReadinessAdapterTests(unittest.TestCase):
         )
         return subprocess.run(
             [sys.executable, "-B", "-c", driver], cwd=self.fixture,
-            input=json.dumps({"source": source, "producer": prerequisites["public_outputs"]["wording"],
+            input=json.dumps({"source": source, "producer": prerequisites["public_outputs"]["clarity"],
                               "repo": seed["owner_result"]["target"]["repo"],
                               "review": completed_review, "profile": seed["public_input"]["profile"],
                               "caller": "docs/readiness-request.md", "mistaken_id": mistaken_id}),
@@ -258,10 +260,10 @@ class ReadinessAdapterTests(unittest.TestCase):
     def assert_public_recipe(self, seed, prerequisites, source):
         original_producers = copy.deepcopy(prerequisites["public_outputs"])
         self.assertEqual(
-            ["context_ready", "clear", "pass"],
+            ["context_ready", "clear"],
             [output["exit_id"] for output in original_producers.values()],
         )
-        locator = original_producers["wording"]["transition"]["target_locator"]
+        locator = original_producers["clarity"]["transition"]["target_locator"]
         self.assertEqual(locator, source["draft_id"])
         profile = seed["public_input"]["profile"]
         self.assertEqual(locator, seed["owner_result"]["target"][
@@ -376,8 +378,8 @@ class ReadinessAdapterTests(unittest.TestCase):
             new_seed["owner_result"]["target"]["source_request_sha256"],
         )
         self.assertNotEqual(
-            old_producers["wording"]["transition"]["target_content_sha256"],
-            new_prerequisites["public_outputs"]["wording"]["transition"]["target_content_sha256"],
+            old_producers["clarity"]["transition"]["source_content_sha256"],
+            new_prerequisites["public_outputs"]["clarity"]["transition"]["source_content_sha256"],
         )
         old_digest = copy.deepcopy(new_seed)
         old_digest["owner_result"]["target"]["source_request_sha256"] = (
@@ -397,8 +399,7 @@ class ReadinessAdapterTests(unittest.TestCase):
     def test_missing_prerequisites_use_original_available_stage_or_stop(self):
         for recipe, expected_exit, expected_stage in (
             ("readiness-clarify", "clarify_requirements", "context_current"),
-            ("readiness-wording", "review_wording", "clarity_current"),
-        ):
+                    ):
             with self.subTest(stage=expected_stage):
                 seed, prerequisites, _ = self.draft_seed(recipe)
                 original = copy.deepcopy(prerequisites["transition"])

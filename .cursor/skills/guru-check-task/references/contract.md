@@ -135,7 +135,7 @@ specific field and remediation, rather than becoming a fabricated handoff.
 
 The original result remains available only for this bounded same-owner
 recovery. The original owner retires it when its consumer finishes. Recovery proves planning handoff usability only; Author,
-Wording, Architecture, Approval and current independent Review retain their own entry and
+Architecture, Approval and current independent Review retain their own entry and
 judgment. It establishes no Planning, Check, publication or Task Completion pass.
 
 ## Qualification input compatibility

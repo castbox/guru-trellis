@@ -532,7 +532,7 @@ current workflow and Clarify contract constrain method reuse and resume.
 
 The sole task-plan business writer is `guru-author-task-plan`. The global
 workflow invokes its requirements and solution exits around purpose-specific
-Architecture planning 3.0, then current Wording, final Architecture and Approval.
+Architecture planning 3.0, then current final Architecture and Approval.
 Step-local behavior stays in the selected packages; upstream brainstorm/start/
 continue and hooks remain upstream-owned. Install the matching complete preset
 and marketplace workflow together using the [version and in-flight migration](./MIGRATION-292.md).

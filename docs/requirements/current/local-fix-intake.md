@@ -1,5 +1,7 @@
 # 局部修复 Intake 与一致性诊断
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
 导航别名：`R692/BEH692`；`局部修复 Intake 与诊断`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
@@ -44,18 +46,22 @@ AI 拥有 scope、风险、充分性和恢复判断；脚本只验证事实。ca
 
 模式选择和原Sync后，已有Issue由原guru-review-change-request亲自复核完整live正文、有效讨论/审核评论、必要前置交付和影响原判断的代码差额。充分且仍适用并满足前置时ready，经原router进入原Task创建；评论存在不是自动通过，没有评论也不独立阻塞。历史清楚自然语言评论不因模板、label、身份资格或期限被排除。
 
-只有事实缺口交原Discovery；需求、范围或独立交付单位问题交原Clarify；仅措辞问题交原Wording。原覆盖不足或影响不可界定时执行必要完整Discovery→Clarify→Wording→Readiness。确认必要前置未满足、真实选择未解或必要证据无法取得时按原blocked/等待说明恢复条件，不以重跑掩盖阻塞。对应D819-02、T819-03。
+只有事实缺口交原Discovery；需求、范围或独立交付单位问题交原Clarify；仅措辞问题也交原Clarify，以review_focus=wording_only区分；需求问题使用requirements。原覆盖不足或影响不可界定时执行必要完整Discovery→Clarify→Readiness。确认必要前置未满足、真实选择未解或必要证据无法取得时按原blocked/等待说明恢复条件，不以重跑掩盖阻塞。对应D819-02、T819-03。
 
 ## R819-03 / BEH819-SUPPLEMENT：同次返回与最早必要依赖
 
-三个原owner以真实局部profile、必要输入和逐出口consumer进入，不要求先取得本轮完整前序receipts，也不伪造前序pass。各owner完成其适用完整方法后，将实际结果交回同一Issue、来源及continuation的Readiness。Discovery不替Readiness判断开工；Clarify确需事实时沿原context往返，结束后回判；Wording发现真实需求变化也回原需求分支。
+Discovery与Clarify两个原owner以真实局部profile、必要输入和逐出口consumer进入，不要求先取得本轮完整前序receipts，也不伪造前序pass。各owner完成其适用完整方法后，将实际结果交回同一Issue、来源及continuation的Readiness。Discovery不替Readiness判断开工；Clarify确需事实时沿原context往返，结束后回判；wording_only发现真实需求变化时回原Readiness的requirements分支，不借措辞请求扩大范围。
 
-多缺口按事实→需求→措辞的依赖顺序处理最早必要项，每次补足后由Readiness再判断剩余缺口；事实不变可直接ready，需求变化只补受影响措辞，不能进入一个局部步骤就自动串完剩余全链。旧完整链仍须真实本轮结果。对应D819-03、T819-03/04。
+多缺口按事实→需求→措辞的依赖顺序处理最早必要项，每次补足后由Readiness再判断剩余缺口；事实不变可直接ready，需求变化只刷新受影响的原内容判断，不能进入一个局部步骤就自动串完剩余全链。旧完整链仍须真实本轮结果。对应D819-03、T819-03/04。
 
 ## R819-04 / BEH819-BOUNDARY：来源、终点与后续门禁
 
 局部返回保真实来源kind、selected_ref、commit；固定对象read不替owner选择Task集成branch，当前Create Task只接reviewed_base_source，selected_base_ref与delivery_target分别承担原职责。保同仓commit、acquisition等值、真实同步和原成功恢复条件，完整链不反拼旧transition。只有选定来源真实失效回原Sync；会话、Agent、时间或无关HEAD变化本身不使覆盖失效。
 
-无Issue讨论仍经原标准调查/Clarify；只讨论或草稿在对应结果结束。需要创建须完整草稿Wording/Readiness后进入R819-01创建和评论读回；只创建至created结束，还要求开工则正式Issue经Sync→先行复核。合法standalone_request/no_issue保完整原审核和Task创建，不造空Issue或评论。Task身份、checkout、分支/资源、副作用和后续规划/交付门禁保持。
+无Issue讨论仍经原标准调查/Clarify；只讨论或草稿在对应结果结束。需要创建须完整草稿Clarify/Readiness后进入R819-01创建和评论读回；只创建至created结束，还要求开工则正式Issue经Sync→先行复核。合法standalone_request/no_issue保完整原审核和Task创建，不造空Issue或评论。Task身份、checkout、分支/资源、副作用和后续规划/交付门禁保持。
 
 公共profiles、逐出口schema、consumers、例子及恢复通过本项matching迁移和原installer同步；AI判覆盖/路线，脚本执行/校验客观事实，不增独立复核Skill、长期ledger或digest authority。对应D819-04、T819-03/04/05。完整当前定义由原RDT owner沿#819 final_integration整合，真实观察由本次Test单写；实施及验收状态不能由本条存在推出。
+
+## R850-02 / BEH850-LOCAL：同次措辞补审
+
+#819仅措辞缺口由Readiness以supplement_requirements及review_focus=wording_only交原Clarify，需求用requirements、事实归Discovery。保原Issue/base_source/continuation/真实gap；需要事实时原context往返保focus。原Clarify实际处理当前文字和来源含义，必要修订沿source_actions及回读，不扩大需求。真实supplemented仅回同次Readiness issue_review_return，再重读对象判断剩余缺口或ready。局部成功不自动串完整链，无独立Wording。对应D850-02/T850-02。

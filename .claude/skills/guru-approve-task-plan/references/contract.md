@@ -265,7 +265,7 @@ owner reviews the sole design.md matrix commitment by commitment, actual
 retain landing points, change/reject rationale/impact and required upstream
 handling; no provenance flag substitutes. Check implement's unique Delivery
 Policy and Docs SSOT Plan with their actual remaining-work/Completion and RDT
-reconciliation consumers. Only Wording-current final_plan Architecture output
+reconciliation consumers. Only current Author final_plan Architecture output
 is eligible; candidate_assessment never substitutes. Revision returns actual
 revision_actions through the workflow router to Author approval_revision, then
 fresh dependent gates and this owner's revision_reentry. The old Approval
@@ -302,7 +302,7 @@ The invocation objectively checks design freshness, and semantic Approval
 still checks adequate current authority/contribution and full planning scope.
 The older Delivery1.0 input without that actual final producer is retained as
 a validation asset and fails closed at current invocation. Lost output refreshes
-final Architecture after Wording, not an inferred approval from public phase.
+final Architecture after Author, not an inferred approval from public phase.
 
 ## Applicable authority and fixed candidate
 

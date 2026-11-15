@@ -28,6 +28,11 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
     def test_current_recorded_example_reaches_its_original_result_consumer(self):
         example = json.loads((PACKAGE_ROOT / "examples/issue-review.json").read_text(encoding="utf-8"))
         review_common.check_result(PACKAGE_ROOT, example, example["target"], example["prerequisites"])
+        from runtime.schema import validate_json
+        interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
+        ready = next(output for output in interface["public_contracts"]["outputs"] if output["exit_id"] == "ready")
+        declared = json.loads((PACKAGE_ROOT / ready["example"]["path"]).read_text(encoding="utf-8"))
+        validate_json(declared, PACKAGE_ROOT / ready["schema"]["path"], "declared_ready_example")
 
     def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
         package = Path(__file__).resolve().parents[1]
@@ -60,15 +65,14 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
                      "state": "draft", "updated_at": None, "body_sha256": review_common.sha(self.source["body"])}
         self.raw_target["source_request_sha256"] = review_common.digest(authority)
         self.target = review_common.normalize_target(self.source, self.raw_target)
-        self.transition = json.loads((PACKAGE_ROOT.parent / "guru-review-contract-wording/examples/public-pass-output-2.0.json").read_text())["transition"]
+        self.transition = json.loads((PACKAGE_ROOT.parent / "guru-clarify-requirements/examples/public-clear-output-delivery-index-4.0.json").read_text())["transition"]
         self.transition.update(mode="standalone", target_locator="draft-27", continuation_id="stage0-current")
         self.transition["clarity"].update(target_sha256="7" * 64, content_sha256="a" * 64)
         self.transition["clarity_result_sha256"] = self.transition["clarity"]["facts_sha256"]
         self.transition["target_disposition"]["disposition_sha256"] = "b" * 64
-        self.transition["wording"]["target_content_sha256"] = self.target["content_sha256"]
-        self.transition["target_content_sha256"] = self.target["content_sha256"]
-        self.transition["wording_facts_sha256"] = self.transition["wording"]["facts_sha256"]
-        self.public = {"profile": "proposed_draft", "source_exit": "pass", "mode": "standalone",
+        self.transition["target_content_sha256"] = self.transition["clarity"]["content_sha256"]
+        self.transition["source_content_sha256"] = self.target["content_sha256"]
+        self.public = {"profile": "proposed_draft", "source_exit": "clear", "mode": "standalone",
                        "target_locator": "draft-27", "continuation_id": "stage0-current"}
 
     def authoring(self, exit_id="ready", transition=None):
@@ -135,7 +139,7 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         output = self.run_command(review_invoke, envelope)
         self.assertEqual("ready", output["exit_id"])
         owner = envelope["owner_result"]
-        self.assertEqual("3.0", owner["schema_version"])
+        self.assertEqual("4.0", owner["schema_version"])
         self.assertNotEqual(owner["prerequisites"]["clarity"]["content_sha256"], self.target["content_sha256"])
         self.assertEqual(self.transition["target_disposition"], output["transition"]["target_disposition"])
         for value in owner["prerequisites"].values():
@@ -208,22 +212,20 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
             else:
                 self.assertEqual("ready", output["exit_id"])
 
-    def test_all_five_exits_and_original_reroute_stages(self):
+    def test_all_four_exits_and_original_reroute_stages(self):
         for exit_id in review_common.CONSUMERS:
             transition = self.transition
             if exit_id == "clarify_requirements":
                 transition = self.earlier("context_current")
-            elif exit_id == "review_wording":
-                transition = self.earlier("clarity_current")
             with self.subTest(exit_id=exit_id):
                 envelope = self.checked(self.envelope(exit_id, transition))
                 output = self.run_command(review_invoke, envelope)
                 self.assertEqual(exit_id, output["exit_id"])
-                if exit_id in {"clarify_requirements", "review_wording"}:
+                if exit_id == "clarify_requirements":
                     self.assertEqual(transition, output["transition"])
 
     def test_missing_prerequisite_cannot_be_ready(self):
-        self.assert_error(review_record, self.envelope("ready", self.earlier("clarity_current")), "schema_mismatch")
+        self.assert_error(review_record, self.envelope("ready", self.earlier("context_current")), "schema_mismatch")
 
     def test_title_and_body_drift_rejected(self):
         for field in ("title", "body"):
@@ -254,6 +256,7 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         envelope = self.envelope()
         for key in ("target_sha256", "content_sha256", "disposition_sha256"):
             envelope["transition"]["clarity"][key] = "8" * 64
+        envelope["transition"]["target_content_sha256"] = envelope["transition"]["clarity"]["content_sha256"]
         self.transition = envelope["transition"]
         envelope["owner_result"] = self.authoring()
         envelope = self.checked(envelope)

@@ -135,7 +135,7 @@ Docs, code, tests, and selected archive bodies. Run history preview with the
 same `--source-transition` so it reads the fixed archive tree. Working checkout
 HEAD and dirty bytes are separate from this authority. Supply `candidate_file`
 for a file-backed draft; its body remains a separate candidate through
-Clarify, Wording, and Readiness. Read the package contract for the exact fields.
+Clarify and Readiness. Read the package contract for the exact fields.
 
 ## Issue Readiness supplement
 

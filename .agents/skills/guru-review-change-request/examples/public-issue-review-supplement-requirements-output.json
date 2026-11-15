@@ -11,5 +11,6 @@
     "commit": "1111111111111111111111111111111111111111"
   },
   "continuation_id": "issue-review-27",
-  "gap": "Complete the indicated missing coverage."
+  "gap": "Complete the indicated missing coverage.",
+  "review_focus": "requirements"
 }

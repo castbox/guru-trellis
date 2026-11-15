@@ -1,5 +1,7 @@
 # Task / Delivery 生命周期测试策略
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 导航别名：`BEH-001..006`；`R531-01..05/08`；`R636/BEH636`；`R637/BEH637`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
 
 本次 #679 拟整合的完整前驱：Git `e6c3b8276d62ac174ab42cba5bca4d5784be2ca3:docs/test/current/task-delivery-lifecycle.md`。来源及窄补充见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
@@ -19,7 +21,7 @@
 
 | 稳定scenario/test identity | 正常起点/动作 | 必须观察 |
 | --- | --- | --- |
-| T531-02 / R531-01/02 | 同Task建立D1、独立D2，分别写规划 | key/root/文档和历史分开；Task scope持续；唯一Author、独立Wording/Architecture/Approval，Activation是真公共Planning writer。 |
+| T531-02 / R531-01/02 | 同Task建立D1、独立D2，分别写规划 | key/root/文档和历史分开；Task scope持续；唯一Author、独立Architecture candidate/final与Approval，Activation是真公共Planning writer；无独立Wording前置。 |
 | T154-02/03/04 | 全量、partial、后继和返工；详细来源及规范性承诺 | 真实完整来源被读取；Task与slice正文分明；设计处置唯一且保条件；Policy/Docs Plan不重复；下游实际消费正文。 |
 | T531-03 / R531-03 | 同slice scope/方案变化、部分/全部撤回，各真实stage | 原Clarify及最早stage合法rework，身份/PR/history保留；stop/release不冒充delivered；独立工作不因局部provider缺口阻断。 |
 | T531-04 / T530-01..05 | dirty精确提交；clean既有候选完成真实工程/整合后首次Review；普通stdout loss | 真实内容进入commit，clean零空/重复commit；Review输入绑定实际H；完整独立Architecture/Branch Review；旧gate不冒充current。 |
@@ -218,6 +220,9 @@ T792-01/02/03是长期回归，T792-04/06是本项语义/实际行为观察。�
 
 本项实际命令、首失败、结果和观察截止唯一在 [#815 Test](../../requirements-design-test-contributions/815-manifest-conflict-recovery/test.md) 维护；前文历史观察保持。本策略不预填安装、Check、committed Review、正式采用或 Task 完成。
 
+## T850-03 / SC850-PLANNING：实际内容与审核链
+
+Agent读完整来源及整体/切片要求，由Author写规划，独立Architecture candidate/final和Approval各自判断。真实遗漏交原writer，修订后依实际出口刷新必要依赖，不重标旧pass。保切片边界、条件/例外、Policy/Docs Plan及提交后一次正式Review顺序。同切片content_revision及在途恢复区分wrapper和实际Agent；不手改hash/state，不把旧provider输出给当前reader。#657等历史截止保持；隔离Planning不是真实#850 Planning/Check/Completion结果。对应R850-03/D850-03。
 
 ## T856：Publish 分类、脱敏与原恢复入口
 

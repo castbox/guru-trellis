@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-change-request-issue-review-owner-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "public_input",
+    "typed_exit",
+    "result_summary",
+    "source_refs",
+    "ai_review_gate",
+    "source_selection",
+    "dimensions"
+  ],
+  "properties": {
+    "public_input": {
+      "type": "object"
+    },
+    "typed_exit": {
+      "enum": [
+        "ready",
+        "supplement_context",
+        "supplement_requirements",
+        "supplement_wording",
+        "full_intake_required",
+        "refresh_issue_baseline",
+        "blocked"
+      ]
+    },
+    "result_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ai_review_gate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-gate-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "reroute",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "locator",
+          "section",
+          "authority_kind"
+        ],
+        "properties": {
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority_kind": {
+            "enum": [
+              "requirement",
+              "design_constraint",
+              "advisory"
+            ]
+          }
+        }
+      }
+    },
+    "gap": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "guru-issue-readiness-dimension-1.0",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "conclusion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "conclusion": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

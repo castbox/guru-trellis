@@ -36,8 +36,7 @@ class IssueContentDistributionTest(unittest.TestCase):
             assets.append(Path(clarify) / "examples/issue-content" / kind / "process.md")
         owners = (
             clarify,
-            "guru-review-contract-wording",
-            "guru-review-change-request",
+                    "guru-review-change-request",
             "guru-create-issue",
         )
         for owner in owners:

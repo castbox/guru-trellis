@@ -11,7 +11,7 @@ or local summary is converted into those prior receipts.
 ## Ownership And Boundary
 
 `guru-review-change-request` is the only semantic owner of pre-task change
-request readiness. The global workflow owns mandatory invocation, five unique
+request readiness. The global workflow owns mandatory invocation, four full-chain
 consumers, and the fail-closed stop. The package runtime owns prerequisite
 projection, linkage, recording and checking; the shared runtime provides only
 neutral schema, hash and dispatch primitives.
@@ -20,7 +20,7 @@ The Skill rereads current target authority and the Docs/code/tests/history
 needed by its own readiness gate. It never chooses duplicate reuse, runs the
 clarification loop, scans wording independently, or
 creates an issue, branch, worktree, or Trellis task. It reuses the current
-outputs of `guru-clarify-requirements` and `guru-review-contract-wording`;
+output of `guru-clarify-requirements`;
 Discovery cognition is not reopened through a private artifact. Issue #112's
 the `guru-task-intake-router` consumes the checked ready exit, dispatching
 `proposed_draft` to Issue creation and `existing_issue | standalone_request`
@@ -92,8 +92,7 @@ Exactly one target kind is reviewed:
 For `current_issue`, `owner_context.change_request` is the reviewed Issue source.
 Use `kind="issue"`, the normalized `repo`, the live integer `number`, the actual
 `title` and `body`, and `updated_at` from the captured GitHub `updatedAt` value.
-Keep the reviewed state as `open`. This source differs from both the Wording
-`source_kind` object and Readiness's normalized `existing_issue` target.
+Keep the reviewed state as `open`. This source differs from Readiness's normalized `existing_issue` target.
 For example, the following is an `owner_context` shape with teaching values:
 
 ```json
@@ -128,59 +127,27 @@ variant identity rather than being folded into the #113 authority projection.
 
 ## Prerequisite Projection
 
-For `current_issue`, copy public `target_locator` from the real producer
-stdout's `transition.target_locator`, preserving the transition unchanged.
-Both must equal the canonical source issue URL (`target.url`), carried from
-Discovery's `live_change.identity` through Clarification and Wording. `#N` is
-only a search clue or display label here; it is not an equivalent chain binding
-and returns `stale_identity` at `public_input.target_locator`. Use the captured
-live source snapshot and actual recorder/checker receipt `result`; never manually rebuild
-producer transitions, duplicate snapshots or validation receipts from examples.
+The current full chain consumes the actual Clarify `clarity_current` 4.0
+transition. Preserve its mode, base, source locator, continuation, source_selection,
+semantic clarity identities and both disposition domains. Its distinct
+`source_content_sha256` binds the reviewed title/body bytes; it is not the
+semantic `clarity.content_sha256`. Readiness computes the current source identity
+with the same neutral `title_body_identity` function and compares that source
+token before recording. A title/body change returns to original Clarify; a token
+never supplies semantic approval. No Wording object, scanner or classification
+is consumed.
 
-The only prerequisite input is the independent, schema-validated public
-transition from the actual producer. `wording_current` supplies clarity and
-wording. Original `clarity_current` supports a missing-wording reroute; original
-`context_current` supports a missing-clarity reroute. Neither full upstream
-owner results nor handwritten projections are accepted. Wrong/absent stages,
-unsupported shape, or inconsistent duplicate fields return `schema_mismatch`,
-not a request to repeatedly refresh unchanged live content.
+An actual `context_current` supports `clarify_requirements` when the original
+Clarity review is missing. Keep that original earlier output call-locally;
+do not downgrade a later transition or reconstruct private producer state.
+Other missing facts stop at their real producer. Local existing-Issue profiles
+retain their independent coverage method in issue-intake.md.
 
-The owner-private 2.0 result contains only status and the public identities:
-clarity facts/target/disposition/content/scope, and wording facts/scope/scan/
-target-content. Missing stages become `status=missing` with null identities;
-present stages become `status=current`. Callers never author these statuses.
-The runtime validates public mode, continuation, target locator and source
-profile. Current target matching uses the public target locator (including
-repository and issue identity), Wording's public title/body identity, and the
-checker's authoritative issue reread. For `context_current`, the public
-`authority_content_sha256` must match the source body hash. Readiness does not
-reconstruct Clarification's private review target, facts digest, or serialization
-format. Clarity target/content/disposition hashes are opaque checker-bound
-identities, preserved unchanged in the local result and receipt linkage.
-The existing draft `source_request_sha256` normalization remains Readiness's
-explicit source contract, not an interpretation of clarity target identity.
-Wording's top-level and nested content
-identities must agree and match current title/body combination. Real content
-or target drift returns `stale_identity`.
-
-Clarity `content_sha256` is the semantic review content identity, not the
-title/body combination. Clarity's disposition hash covers the full reviewed
-disposition object; `target_disposition.disposition_sha256` carries the
-producer's distinct disposition digest. They are preserved, not equated.
-Clarity facts must match `clarity_result_sha256`, and wording facts must match
-`wording_facts_sha256`. In `clarity_current` only, top-level content equals
-clarity's semantic content; Wording replaces that top-level value with its
-title/body combination. The full transition, including both disposition
-domains, is bound by the checker's receipt.
-
-`evidence_linkage` binds target identity/content, clarity facts, wording facts,
-and one canonical
-`linkage_sha256`. The clarification disposition digest is an independent
-linkage member, so a retained/selected target decision cannot drift while a
-previous readiness pass remains reusable. Checker invocation supplies the same
-public transition and source snapshot, rebuilds this projection, and compares
-it byte-for-byte with the recorded result. The AI still owns every route;
-scripts never turn missing evidence into an automatically chosen exit.
+The owner-private 4.0 result projects only Clarity's status and original
+identities. Its local linkage binds the current target and Clarity disposition.
+The checker rereads the live Issue and returns the adjacent validation receipt;
+invoke validates that unchanged receipt without another live read. Neither
+checker success nor linkage decides readiness.
 
 ## Semantic Review
 
@@ -237,11 +204,10 @@ If the AI identifies a proposal that would change confirmed product semantics,
 `guru-clarify-requirements` owns the exact dialogue decision. The review result
 records the route and objective evidence only, never authorization state.
 
-## Five Typed Exits
+## Four Full-Chain Typed Exits
 
 - `ready` -> workflow `guru-task-intake-router`
 - `clarify_requirements` -> Skill `guru-clarify-requirements`
-- `review_wording` -> Skill `guru-review-contract-wording`
 - `refresh_context` -> Skill `guru-sync-base`
 - `blocked` -> stop `change-request-review-blocked`
 
@@ -266,7 +232,7 @@ They contain no active task state, workspace journal, credential, private
 business data, or machine-local absolute path.
 
 Production linkage regression tests create a real clean Git repository, run
-clarification and wording through their production record/check/invoke
+clarification through its production record/check/invoke
 commands, then feed the actual public transition through
 the readiness production record/check/invoke commands to `ready`. Negative cases cover
 wrong prerequisite exits, consumer and target/content mismatch, live target
@@ -297,8 +263,7 @@ there is no dual reader or backfill of invented upstream hashes.
 
 Each public output keeps its existing schema and consumer. Ready carries the
 declared readiness transition and workspace profile. Clarification re-entry
-requires the original `context_current`; wording re-entry requires the original
-`clarity_current`. Pass that original transition to all three commands. Keep
+requires the original `context_current`. Pass that original transition to all three commands. Keep
 the upstream public output in call-local context while reviewing so re-entry
 does not reconstruct Discovery private state or fabricate hashes. Missing
 original context fails closed. Refresh and blocked remain AI-authored exits.
@@ -373,7 +338,7 @@ reviewed normalized repository identity, not a draft name, as `repo`.
 ```
 
 The following executable recipe uses standard-library JSON/hash/transport only.
-Call it in the target repository with the actual Wording `pass` stdout, current
+Call it in the target repository with the actual Clarify `clear` stdout, current
 draft source, reviewed repository identity, and this AI's freshly completed
 owner review. `completed_review` supplies `generated_at`, `semantic_review`,
 `typed_exit`, `reason`, `affected_evidence`, and `consumer`, as described above;
@@ -388,11 +353,11 @@ import hashlib
 import json
 import subprocess
 
-def draft_envelope(draft_source, wording_output, repo_ref, completed_review,
+def draft_envelope(draft_source, clarity_output, repo_ref, completed_review,
                    *, profile="proposed_draft", caller_locator=None):
-    transition = copy.deepcopy(wording_output["transition"])
-    assert wording_output["exit_id"] == "pass"
-    assert transition["stage"] == "wording_current"
+    transition = copy.deepcopy(clarity_output["transition"])
+    assert clarity_output["exit_id"] == "clear"
+    assert transition["stage"] == "clarity_current"
     locator = transition["target_locator"]
     source = copy.deepcopy(draft_source)
     assert source["kind"] == "draft" and source["draft_id"] == locator
@@ -421,7 +386,7 @@ def draft_envelope(draft_source, wording_output, repo_ref, completed_review,
     return {
         "schema_version": "1.0",
         "public_input": {
-            "profile": profile, "source_exit": wording_output["exit_id"],
+            "profile": profile, "source_exit": clarity_output["exit_id"],
             "mode": transition["mode"], "target_locator": locator,
             "continuation_id": transition["continuation_id"],
         },
@@ -450,7 +415,7 @@ def record_check_invoke(envelope):
 
 For a standalone request, call this same recipe with
 `profile="standalone_request"` and the real `caller_locator`; the first four
-arguments are the actual current source, Wording output, normalized repository
+arguments are the actual current source, Clarify output, normalized repository
 and completed review. For example, when the caller is a repository document,
 its repo-relative path can be the caller locator while `request_id` remains
 the producer's distinct draft locator. No example value supplies an identity
@@ -494,26 +459,23 @@ recovery. If the source snapshot is actually for another draft, do not relabel
 it to force a match; obtain the current matching source/upstream output first.
 
 A real body or authority revision requires the existing upstream refresh:
-Sync/Discovery, Clarification, and Wording run against the revised content
+Sync/Discovery and Clarification run against the revised content
 before a new readiness review. Consume their new actual outputs; the locator
 may legitimately change. The old source-authority digest and old receipt do
 not stand in for revised content. Do not edit an old transition's hashes or
 locator to make it appear refreshed.
 
 Missing prerequisites are distinct from consumer construction errors.
-With an actual original `clarity_current`, author a real missing-wording
-finding and `review_wording` decision using that original transition. With
-an actual original `context_current`, the corresponding missing-clarity route
-is `clarify_requirements`. Perform the declared review and record/check/invoke
-for that route; never downgrade a later transition or synthesize an earlier
-one. If the required original public output or current authority is absent,
+With an actual original `context_current`, a missing-Clarity decision uses
+`clarify_requirements`. Perform the original semantic review and record/check/invoke
+for that route; never synthesize an earlier public transition. If the required original public output or current authority is absent,
 stop and identify exactly what its owner must supply. Do not manufacture
 producer passes, hashes, receipts or `ready` to continue.
 
 # Invocation-Local Authority Snapshot And Receipt
 
 One readiness invocation captures the target issue authority once. Recorder,
-clarity projection, wording projection and target normalization use that same
+clarity projection and target normalization use that same
 snapshot; the checker performs the one authoritative validation and returns a
 call-local receipt bound to exact result, prerequisites and target snapshot.
 The receipt's `prerequisite_sha256` is the canonical digest of

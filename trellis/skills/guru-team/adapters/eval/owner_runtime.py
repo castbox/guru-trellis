@@ -76,21 +76,10 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
     review = load_package_runtime_module(
         runtime_target, "guru-review-change-request", "common"
     )
-    wording = load_package_runtime_module(
-        runtime_target, "guru-review-contract-wording", "common"
-    )
     module.context_digest = review.digest
     module.CHANGE_REQUEST_REVIEW_DIMENSIONS = review.DIMENSIONS
     module.CHANGE_REQUEST_REVIEW_CONSUMERS = review.CONSUMERS
     module.CHANGE_REQUEST_REVIEW_GATE_BY_EXIT = review.GATES
-    module.CONTRACT_WORDING_REVIEW_DIMENSIONS = wording.CONTRACT_WORDING_REVIEW_DIMENSIONS
-    module.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = (
-        wording.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-    )
-    module.contract_wording_build_scope = wording.contract_wording_build_scope
-    module.scan_contract_wording = wording.scan_contract_wording
-    module.contract_wording_derive_result = wording.contract_wording_derive_result
-
     def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
         process = subprocess.run(
             ["gh", "issue", "view", str(number), "--repo", repo, "--json",
@@ -104,14 +93,6 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
         if not isinstance(value, dict):
             raise ValueError("change-request eval issue authority is invalid")
         return value
-
-    def scope_hashes(scope: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
-        values = {
-            item.get("field"): item.get("content_sha256")
-            for item in scope.get("items", []) if isinstance(item, dict)
-        }
-        title, body = values.get("title"), values.get("body")
-        return title, body, review.digest({"title_sha256": title, "body_sha256": body}) if title and body else None
 
     def authority_projection(repo: Any, source: Any, body_sha256: Any) -> dict[str, Any] | None:
         if not isinstance(repo, str) or not isinstance(source, dict) or source.get("kind") != "draft":
@@ -131,13 +112,9 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
                 "body": live.get("body"),
                 "updated_at": live.get("updatedAt"),
             }
-        scope, contents = wording.contract_wording_build_scope(
-            root, "change_request", mode, change_request_input=source_path
-        )
-        return review.normalize_target(source, raw), scope, contents
+        return review.normalize_target(source, raw), None, None
 
     module.issue_view = issue_view
-    module.change_request_review_scope_hashes = scope_hashes
     module.change_request_review_request_authority_projection = authority_projection
     module.change_request_review_normalize_target = normalize_target
 
@@ -297,7 +274,6 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
             "base": ("guru-sync-base", "guru-base-sync-result-1.0", "synced"),
             "discovery": ("guru-discover-change-context", "guru-stage0-transition-context-current-1.0", "context_ready"),
             "clarity": ("guru-clarify-requirements", "guru-requirements-clarification-2.0", "clear"),
-            "wording": ("guru-review-contract-wording", "guru-contract-wording-review-1.0", "pass"),
             "readiness": ("guru-review-change-request", "guru-change-request-review-2.0", "ready"),
         }
         skill_id, schema_id, typed_exit = identities[key]
@@ -308,10 +284,6 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
         elif key == "clarity":
             identity = payload.get("content_identity", {})
             facts, content, linkage = identity.get("result_sha256"), identity.get("content_sha256"), identity.get("context_sha256")
-        elif key == "wording":
-            facts = payload.get("facts_sha256")
-            content = payload.get("scope", {}).get("scope_sha256")
-            linkage = payload.get("scan", {}).get("scan_sha256")
         else:
             facts = payload.get("facts_sha256")
             content = payload.get("target", {}).get("content_sha256")

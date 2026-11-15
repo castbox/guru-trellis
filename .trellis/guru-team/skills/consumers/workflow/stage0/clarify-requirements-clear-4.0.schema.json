@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-workflow-clear-input-4.0",
+  "$ref": "../../../packages/guru-clarify-requirements/schemas/public-clear-output-delivery-index-4.0.schema.json"
+}

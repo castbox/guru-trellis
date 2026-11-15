@@ -9,7 +9,7 @@
 | Task `prd.md` | [task-prd.md](../templates/task-prd.md) | 整体问题、来源、需求和验收责任；`scope_requirements_ready` 前完成，由原 Clarify 审查后 `accept_scope`。此时不要求 Delivery 方案。 |
 | 所选 Delivery `prd.md` | [delivery-prd.md](../templates/delivery-prd.md) | 本批完整需求与上下文；当前 requirements 阶段返回 `requirements_ready` 前完成。此时不要求尚未开始的方案。 |
 | 所选 Delivery `design.md` | [delivery-design.md](../templates/delivery-design.md) | 本批实际设计和唯一来源设计处置；`plan_ready` 前完成适用内容。 |
-| 所选 Delivery `implement.md` | [delivery-implement.md](../templates/delivery-implement.md) | 本批执行、验证、Policy 和 Docs Plan；`plan_ready` 前完成适用内容，再经原 Wording、Architecture、Approval。 |
+| 所选 Delivery `implement.md` | [delivery-implement.md](../templates/delivery-implement.md) | 本批执行、验证、Policy 和 Docs Plan；`plan_ready` 前完成适用内容，再经原 Architecture、Approval。 |
 
 整体范围仍由公共 `accepted_scope` 承载。Delivery 写作先解析本次实际 DeliveryKey、`scope_ref/planning_root`，另读整体 PRD 和真实前序事实。scope-only Task PRD 写作不要求存在 Delivery。不得从目录盘点猜选切片，不创建 Task 根 design/implement，不覆盖历史 Delivery。原生 seed 是合法起点，不代表正文已完成。
 

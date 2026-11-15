@@ -24,6 +24,7 @@ PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS = {
 SKILL_RUNTIME_KERNEL_PATHS = (
     Path("__init__.py"),
     Path("base_selection.py"),
+    Path("content_identity.py"),
     Path("bootstrap.py"),
     Path("bootstrap_check.py"),
     Path("bootstrap_transport.py"),

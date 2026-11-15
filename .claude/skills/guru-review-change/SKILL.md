@@ -72,10 +72,20 @@ clarification before running scripts. Do not select a Task or enlarge scope.
 Discussion about this Skill or its trigger wording is not a request to review
 an actual object.
 
+## Bounded Markdown wording profile
+
+For explicit selected Markdown wording review, choose explicit_files with
+review_focus=wording_only and read [the bounded method](references/wording-review.md).
+Execute that method and terminate at its user-response exit. It covers the full
+selected current bytes, including unchanged files. The range method and distinct
+subagent perspectives below apply only to working_tree and committed_range;
+they are not prerequisites for this bounded profile. Issue/draft wording remains
+with original Clarify standalone_wording_review.
+
 ## Execute The Review
 
 1. After the entry decision, resolve the requested repository, review purpose
-   and scope from the current conversation and live facts. Choose `working_tree`
+   and scope from the current conversation and live facts. For range review choose `working_tree`
    or `committed_range`; preserve any explicitly selected paths. Clarify only
    a real ambiguity that remains. Do not create a Task to obtain review inputs.
 2. Run `scripts/capture.sh --input -` with the selected public input on stdin.

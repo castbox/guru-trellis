@@ -207,6 +207,14 @@
     {
       "id": "issue_review_supplemented",
       "path": "examples/public-issue-review-supplemented-output.json"
+    },
+    {
+      "id": "standalone_wording_review_input",
+      "path": "examples/public-standalone-wording-review-input.json"
+    },
+    {
+      "id": "wording_reviewed_output",
+      "path": "examples/public-wording-reviewed-output.json"
     }
   ],
   "schemas": [
@@ -393,6 +401,62 @@
     {
       "id": "issue_review_owner",
       "path": "schemas/issue-review-owner-1.0.schema.json"
+    },
+    {
+      "id": "current_issue_clarification_1_0_schema_json",
+      "path": "schemas/issue-clarification-1.0.schema.json"
+    },
+    {
+      "id": "current_issue_review_owner_2_0_schema_json",
+      "path": "schemas/issue-review-owner-2.0.schema.json"
+    },
+    {
+      "id": "current_public_clear_output_5_0_schema_json",
+      "path": "schemas/public-clear-output-5.0.schema.json"
+    },
+    {
+      "id": "current_public_clear_output_delivery_index_4_0_schema_json",
+      "path": "schemas/public-clear-output-delivery-index-4.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_needs_context_output_1_0_schema_json",
+      "path": "schemas/public-issue-needs-context-output-1.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_needs_context_output_2_0_schema_json",
+      "path": "schemas/public-issue-needs-context-output-2.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_readiness_supplement_input_2_0_schema_json",
+      "path": "schemas/public-issue-readiness-supplement-input-2.0.schema.json"
+    },
+    {
+      "id": "current_public_needs_context_output_5_0_schema_json",
+      "path": "schemas/public-needs-context-output-5.0.schema.json"
+    },
+    {
+      "id": "current_requirements_clarification_6_0_schema_json",
+      "path": "schemas/requirements-clarification-6.0.schema.json"
+    },
+    {
+      "id": "current_public_input_5_0_schema_json",
+      "path": "schemas/public-input-5.0.schema.json"
+    },
+    {
+      "id": "current_public_needs_context_output_6_0_schema_json",
+      "path": "schemas/public-needs-context-output-6.0.schema.json"
+    },
+    {
+      "id": "current_public_reviewed_output_1_0_schema_json",
+      "path": "schemas/public-reviewed-output-1.0.schema.json"
+    },
+    {
+      "id": "current_public_standalone_wording_review_input_1_0_schema_json",
+      "path": "schemas/public-standalone-wording-review-input-1.0.schema.json"
+    },
+    {
+      "id": "current_wording_review_owner_1_0_schema_json",
+      "path": "schemas/wording-review-owner-1.0.schema.json"
     }
   ],
   "validators": [
@@ -479,6 +543,14 @@
         "kind": "skill",
         "id": "guru-review-change-request"
       }
+    },
+    {
+      "id": "reviewed",
+      "evidence": "bounded requested wording review complete",
+      "consumer": {
+        "kind": "stop",
+        "id": "wording-review-response"
+      }
     }
   ],
   "reentry": {
@@ -518,8 +590,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-clarify-requirements-input-delivery-index-4.0",
-        "path": "schemas/public-input-4.0.schema.json"
+        "schema_id": "guru-clarify-requirements-input-delivery-index-5.0",
+        "path": "schemas/public-input-5.0.schema.json"
       },
       "profiles": [
         {
@@ -645,8 +717,8 @@
         {
           "id": "issue_readiness_supplement",
           "schema": {
-            "schema_id": "guru-clarify-requirements-public-issue-readiness-supplement-input-1.0",
-            "path": "schemas/public-issue-readiness-supplement-input-1.0.schema.json"
+            "schema_id": "guru-clarify-requirements-public-issue-readiness-supplement-input-2.0",
+            "path": "schemas/public-issue-readiness-supplement-input-2.0.schema.json"
           },
           "example": {
             "id": "issue_readiness_supplement_input",
@@ -655,6 +727,21 @@
           "discriminator": {
             "field": "profile",
             "value": "issue_readiness_supplement"
+          }
+        },
+        {
+          "id": "standalone_wording_review",
+          "schema": {
+            "schema_id": "guru-clarify-requirements-input-standalone-wording-review-1.0",
+            "path": "schemas/public-standalone-wording-review-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "standalone_wording_review_input",
+            "path": "examples/public-standalone-wording-review-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standalone_wording_review"
           }
         }
       ]
@@ -682,8 +769,8 @@
         "flag": "--invocation",
         "stdin": "-",
         "envelope": {
-          "schema_id": "guru-stage0-invocation-semantic-owner-2.0",
-          "path": "consumers/workflow/stage0/invocations/semantic-owner-2.0.schema.json"
+          "schema_id": "guru-stage0-invocation-semantic-owner-3.0",
+          "path": "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json"
         }
       },
       "example_argv": [
@@ -695,12 +782,12 @@
       {
         "exit_id": "clear",
         "schema": {
-          "schema_id": "guru-clarify-requirements-output-clear-delivery-index-3.0",
-          "path": "schemas/public-clear-output-delivery-index-3.0.schema.json"
+          "schema_id": "guru-clarify-requirements-output-clear-delivery-index-4.0",
+          "path": "schemas/public-clear-output-delivery-index-4.0.schema.json"
         },
         "example": {
           "id": "current_public_clear_output_delivery_index_3_0_json",
-          "path": "examples/public-clear-output-delivery-index-3.0.json"
+          "path": "examples/public-clear-output-delivery-index-4.0.json"
         },
         "consumer_use_ids": [
           "project_clear"
@@ -723,8 +810,8 @@
       {
         "exit_id": "needs_context",
         "schema": {
-          "schema_id": "guru-clarify-needs-context-output-5.0",
-          "path": "schemas/public-needs-context-output-5.0.schema.json"
+          "schema_id": "guru-clarify-needs-context-output-6.0",
+          "path": "schemas/public-needs-context-output-6.0.schema.json"
         },
         "example": {
           "id": "current_public_needs_context_output_4_0_json",
@@ -803,6 +890,20 @@
         "consumer_use_ids": [
           "issue_review_supplemented"
         ]
+      },
+      {
+        "exit_id": "reviewed",
+        "schema": {
+          "schema_id": "guru-clarify-requirements-output-reviewed-1.0",
+          "path": "schemas/public-reviewed-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "wording_reviewed_output",
+          "path": "examples/public-wording-reviewed-output.json"
+        },
+        "consumer_use_ids": [
+          "wording_reviewed"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -815,8 +916,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-clarify-requirements-workflow-clear-input-3.0",
-          "path": "consumers/workflow/stage0/clarify-requirements-clear-3.0.schema.json"
+          "schema_id": "guru-stage0-clarify-requirements-workflow-clear-input-4.0",
+          "path": "consumers/workflow/stage0/clarify-requirements-clear-4.0.schema.json"
         }
       },
       {
@@ -943,6 +1044,19 @@
             "path": "examples/author-supplemented.json"
           }
         }
+      },
+      {
+        "id": "wording_reviewed",
+        "consumer": {
+          "kind": "stop",
+          "id": "wording-review-response"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-wording-review-response-1.0",
+          "path": "consumers/stop/wording-review-response-1.0.schema.json"
+        }
       }
     ],
     "projections": [
@@ -1045,6 +1159,10 @@
           {
             "source": "gap",
             "target": "gap"
+          },
+          {
+            "source": "review_focus",
+            "target": "review_focus"
           }
         ]
       },
@@ -1176,6 +1294,12 @@
             "target": "source_selection"
           }
         ]
+      },
+      {
+        "id": "wording_reviewed",
+        "exit_id": "reviewed",
+        "consumer_input_id": "wording_reviewed",
+        "operation": "direct"
       }
     ],
     "private_artifacts": [
@@ -1183,8 +1307,8 @@
         "id": "clarification_result",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-3.0.json",
-          "path": "schemas/requirements-clarification.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-6.0.json",
+          "path": "schemas/requirements-clarification-6.0.schema.json"
         },
         "persistence": "stdout_only_pre_task"
       },
@@ -1210,8 +1334,8 @@
         "id": "issue_review_owner",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "guru-clarify-requirements-issue-review-owner-1.0",
-          "path": "schemas/issue-review-owner-1.0.schema.json"
+          "schema_id": "guru-clarify-requirements-issue-review-owner-2.0",
+          "path": "schemas/issue-review-owner-2.0.schema.json"
         },
         "persistence": "stdout_only_owner_private"
       }

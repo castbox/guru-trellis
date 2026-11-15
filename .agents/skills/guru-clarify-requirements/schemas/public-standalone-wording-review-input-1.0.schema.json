@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-input-standalone-wording-review-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "target",
+    "review_request"
+  ],
+  "properties": {
+    "profile": {
+      "const": "standalone_wording_review"
+    },
+    "mode": {
+      "const": "standalone"
+    },
+    "target": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "repo_ref",
+            "number"
+          ],
+          "properties": {
+            "kind": {
+              "const": "issue"
+            },
+            "repo_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "number": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "caller_locator",
+            "title",
+            "body"
+          ],
+          "properties": {
+            "kind": {
+              "const": "draft"
+            },
+            "caller_locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "body": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "review_request": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

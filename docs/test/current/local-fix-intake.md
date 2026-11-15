@@ -1,5 +1,7 @@
 # 局部修复 Intake 与一致性诊断测试策略
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
 导航别名：`局部修复 Intake 与诊断`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
@@ -24,7 +26,7 @@ Identity：`RDT-TST-LOCAL-FIX-INTAKE`；T692/SC692；适用基线 `6a65ec8afe6d1
 
 ## T819-03 / SC819-ROUTE：实际分流与终点
 
-从原已有Issue→Sync→Readiness入口，观察直接ready、事实/需求/措辞局部补审、必要完整链、真实阻塞/恢复及多缺口最早依赖。局部实际producer必须返回同次Readiness；事实不变不自动补Clarify/Wording，需求变化只补失效措辞。另观察讨论/草稿/只创建/创建并开工及原no_issue边界。实际AI判断和完整答复单独验证，机械出口或文案存在不代替它。对应R819-02/03/04、D819-02/03/04。
+从原已有Issue→Sync→Readiness入口，观察直接ready、事实/需求/措辞局部补审、必要完整链、真实阻塞/恢复及多缺口最早依赖。局部实际producer必须返回同次Readiness；事实不变不自动补Clarify，需求变化只刷新受影响内容判断；措辞问题由原Clarify wording_only真实producer处理，不保留独立Wording补审。另观察讨论/草稿/只创建/创建并开工及原no_issue边界。实际AI判断和完整答复单独验证，机械出口或文案存在不代替它。对应R819-02/03/04、D819-02/03/04。
 
 ## T819-04 / SC819-SOURCE：真实producer到当前Creation
 
@@ -35,3 +37,7 @@ Identity：`RDT-TST-LOCAL-FIX-INTAKE`；T692/SC692；适用基线 `6a65ec8afe6d1
 按真实受影响package/runtime、public graph/例子、原tools更新、installed/native、reapply、声明平台、drift、mode、sidecar及Task/session/用户保持提供证据。源码、目标采用、实际AI和GitHub外部效果分别报告；不扩完整多平台Release矩阵。对应R819-04、D819-04；评论分发关系见issue-content的T819-01/02。
 
 本次真实结果唯一由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)维护；当前提案不预填实现、工程、Agent、GitHub或安装通过。#692/#811的历史观察不改写，当前执行时机仍读原质量合同。
+
+## T850-02 / SC850-LOCAL：实际措辞局部往返
+
+用原#819正常三来源及真实Sync/Readiness/Clarify wrappers，Agent自行判gap/focus，不预填supplement_requirements、wording_only或pass。仅实际出口要求该focus时进入Clarify，原owner修订沿source_actions/readback，真实supplemented以同Issue/base/continuation回Readiness，必要context往返保focus。受控GitHub fixture不证明live写入。旧helper预选exit/复制示例语义只证明装配，不算实际Agent。本轮live#850 ready未触发该分支，不证明已覆盖或不能另用fixture补验；本轮独立Sol/medium Agent已在受控本地三来源fixture经原Sync、Readiness、Clarify及同次Readiness实际往返；保单次PATCH/GET及首错，具体观察由原贡献test.md单写，不证明live GitHub写入、完整链或全部正常分支。对应R850-02/D850-02。

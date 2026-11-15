@@ -3,7 +3,7 @@
 Consume the actual supplement output from original Readiness. Add only
 profile=issue_readiness_supplement and rename exit_id to source_exit. Preserve
 mode, Issue, base_source (kind/selected_ref/commit), continuation_id and gap.
-No current context_current/clarity_current/wording_current transition is required.
+No current context_current/clarity_current transition is required.
 Read current authority and still-applicable evidence, then perform this owner's
 original full applicable method and AI gate. The gap states the review purpose;
 it does not permit omission of necessary facts or complete-body consistency.

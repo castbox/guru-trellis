@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-needs-context-output-6.0",
+  "oneOf": [
+    {
+      "$ref": "public-needs-context-output-4.0.schema.json"
+    },
+    {
+      "$ref": "public-issue-needs-context-output-2.0.schema.json"
+    }
+  ]
+}

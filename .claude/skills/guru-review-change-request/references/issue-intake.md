@@ -17,9 +17,8 @@ as commit. Keep the original full Sync stdout available call-locally if complete
 Intake becomes necessary. It cannot be rebuilt from these three source fields.
 
 `issue_review_return` keeps that exact Issue/source/continuation. Its separate
-closed variants carry the actual local context_result, requirements_result or
-wording_result summary with source_refs; Clarify also supplies source_selection.
-Wording requirements_gap is its own variant and is not a wording pass. Project
+closed variants carry actual context_result or requirements_result with source_refs;
+Clarify also supplies source_selection. Project
 the actual producer result_summary to the corresponding result field, preserving
 all other identity/source fields. Add only profile=issue_review_return and map
 exit_id to source_exit. Do not handwrite a producer result or copy its private
@@ -29,7 +28,7 @@ Use the original record/check/invoke wrappers with --invocation -. The envelope
 has schema_version=1.0, public_input, owner_context.change_request and owner_result;
 no transition is required or manufactured for these two profiles. Supply current
 Issue kind/repo/number/title/body/updated_at in change_request. The independent
-issue-review-owner-1.0 schema requires public_input unchanged, typed_exit,
+issue-review-owner-2.0 schema requires public_input unchanged, typed_exit,
 result_summary, source_refs, source_selection, ten original dimensions with actual
 conclusions and ai_review_gate. `gap` is required for supplement exits. Record
 returns the reviewed owner result. Check rereads Issue and emits a local receipt;
@@ -41,10 +40,11 @@ invoke consumes that exact receipt. Local digests bind adjacent bytes only.
   task-intake router invokes Create Task with its own scope/resource gate.
 - supplement_context: ask original Discovery to resolve the actual fact gap.
 - supplement_requirements: ask original Clarify to resolve requirements, source
-  roles, scope or delivery-unit questions and actual required choices.
-- supplement_wording: ask original Wording to review or revise the indicated wording.
+  roles, scope or delivery-unit questions and actual required choices. Set
+  review_focus=requirements; use wording_only for a bounded real wording gap.
+  Preserve that exact focus and gap through Discovery context-return.
 - full_intake_required: coverage insufficient or change impact cannot be bounded.
-  Original Discovery -> Clarify -> Wording -> current_issue Readiness consumes
+  Original Discovery -> Clarify -> current_issue Readiness consumes
   the original actual Sync transition and Issue change_input.
 - refresh_issue_baseline: the selected source really became unusable/inapplicable.
   Original Sync gets a dedicated Issue/continuation return identity. A read source
@@ -52,11 +52,10 @@ invoke consumes that exact receipt. Local digests bind adjacent bytes only.
 - blocked: name the unmet prerequisite, real unresolved choice or unavailable
   necessary evidence, and the condition/owner for recovery. Do not create a Task.
 
-Choose the earliest necessary gap in context -> requirements -> wording order.
+Choose the earliest necessary gap in context -> applicable Clarify coverage order.
 Each completed supplement returns here; do not automatically run remaining owners.
 If investigation proves behavior unchanged, it can be ready immediately. After a
-requirement change, request wording only where the previous wording coverage lost
-applicability. Reuse unaffected coverage. Time, Agent/session changes and unrelated
+requirement change, refresh only affected original content and readiness judgments. Reuse unaffected coverage. Time, Agent/session changes and unrelated
 HEAD movement are not refresh triggers. Missing call-local material returns to its
 original producer; never invent receipts or create a durable coverage ledger.
 

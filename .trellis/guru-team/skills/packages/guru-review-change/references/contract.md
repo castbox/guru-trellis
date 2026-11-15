@@ -49,7 +49,7 @@ request or discard its implementation review.
 
 | Actual object and purpose | Entry boundary |
 | --- | --- |
-| Issue content, requirement clarification, Issue readiness or Issue wording | Leave to the existing `guru-clarify-requirements`, `guru-review-change-request` or `guru-review-contract-wording` owner according to its scope and prerequisites. |
+| Issue content, requirement clarification, Issue readiness or Issue wording | Leave to the existing `guru-clarify-requirements`, `guru-review-change-request` owner according to its scope and prerequisites. |
 | Completeness or reasonableness of requirements themselves, including full product or technical requirement documents | Leave to the existing requirement process and applicable `requirement-review` or `technical-requirement-review` specialist. |
 | An initiative, 动议 or proposal itself | Leave to the original project's upstream initiative or requirements process. If no dedicated owner exists, report that gap to the caller for its existing entry; do not invent a Skill or owner. |
 
@@ -85,6 +85,7 @@ wire contract. Public input contains intentional caller selections only:
 | Profile | Required selections | Optional selection |
 | --- | --- | --- |
 | `working_tree` | `mode=standalone`, `repository` | `paths` |
+| `explicit_files` | `mode=standalone`, `repository`, exact nonempty Markdown `paths`, `review_focus=wording_only` | none |
 | `committed_range` | `mode=standalone`, `repository`, `base`, `head` | `paths` |
 
 `repository` selects the Git repository to review and may be an absolute root
@@ -131,6 +132,13 @@ An unchanged selected diff cannot prove that an independently changed consumer
 or required external contract remains applicable.
 
 ## Forward Behavior
+
+For explicit_files/wording_only, execute [the bounded full-text method](wording-review.md)
+and return its actual terminal user response. This profile does not inherit the
+range profiles' implementation-completeness, test or three-perspective protocol.
+The remainder of this Forward Behavior and its range AI Gate applies to
+working_tree and committed_range. Their full method and independence remain.
+
 
 Read `review-method.md` completely, including its provider resolution. Apply
 its mandatory original-owner source reads, independent Architecture order and

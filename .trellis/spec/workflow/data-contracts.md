@@ -93,9 +93,8 @@ object:
 | --- | --- | --- |
 | `base_current` | transition/mode/repository identity plus source-preserving base provenance | `guru-discover-change-context` |
 | `context_current` | current base identity, target locator, context continuation and authoritative-content freshness | `guru-clarify-requirements` |
-| `clarity_current` | current context identity, target disposition, scope/authority content identity and clarity checker token | `guru-review-contract-wording` |
-| `wording_current` | current clarity identity, fixed wording profile, target content identity and wording checker token | `guru-review-change-request` |
-| `readiness_current` | current wording identity, ready scope projection, target/content/linkage identity | `guru-task-intake-router` (current Issue/task creation route) |
+| `clarity_current` | current context/disposition and semantic identities plus the distinct source title/body token | `guru-review-change-request` |
+| `readiness_current` | current Clarity and source identity, ready scope projection, target/content/linkage identity | `guru-task-intake-router` (current Issue/task creation route) |
 
 The synchronized base provenance is a closed source-preserving value containing resolution
 source, selected base, remote, ordered candidates, decision HEAD, local base
@@ -121,7 +120,7 @@ transitions carry `schema_version=2.0`; the preserved sync variant carries
 Discovery's caller-owned `pre_task` 4.0 and `context_request` 2.0 inputs may
 name a `candidate_file` for a file-backed draft body. The fixed Git tree owns
 baseline Docs/code/tests/archive bytes. The separate candidate locator/body
-identity is reread by the actual Clarify, Wording and Readiness consumers.
+identity is reread by the actual Clarify and Readiness consumers.
 An ordinary candidate change refreshes affected results; it never rewrites the
 baseline or establishes committed Review/publication eligibility. Current
 private Discovery result 4.0 separates Git-object repository/observation fields
@@ -137,14 +136,13 @@ stage; refresh/re-entry discards stale state and starts from a fresh
 and writes nothing below `.trellis/tasks/**`, `.trellis/workspace/**`, or
 `.trellis/.runtime/**`.
 
-For `guru-review-contract-wording:change_request:pass`, the checked wording
-scope contains exactly one title item and one body item. The producer sets both
-the top-level and nested `wording_current` target content fields to the canonical
-JSON digest of `{"title_sha256": <title item content SHA-256>,
-"body_sha256": <body item content SHA-256>}`. Missing or duplicate title/body
-items fail closed before transition projection. Change-request readiness uses
-that public transition value directly for its current-content linkage; it does
-not read or recompute identity from the wording owner's private scope.
+Clarify's current 6.0 private owner result binds the caller-captured
+owner_context.change_request to its actual reviewed object/body/update identity.
+The neutral title_body_identity(title, body) function derives the separate
+source_content_sha256; the raw source snapshot remains call-local. Current
+clarity-current-4.0 carries that source token alongside unchanged semantic
+content/disposition domains. Readiness compares it with its actual title/body
+identity; no source token or digest supplies a semantic pass.
 
 The invocation contract uses separate closed call-local envelopes for
 deterministic sync, semantic owner invocation, and confirmed workspace
@@ -845,19 +843,18 @@ evidence.
 
 ### Change request readiness result
 
-Schema `guru-change-request-review-2.0` defines the portable
+Schema `guru-change-request-review-4.0` defines the portable
 `issue-review.json` result owned by `guru-review-change-request`. Before task
 creation the recorder and checker return JSON on stdout only. The normalized
 target is exactly one existing issue, side-effect-free proposed draft, or
 side-effect-free standalone request, with title/body, identity, content, and
 source authority hashes. `prerequisites` is derived only from the public
-`wording_current` transition, or the original `clarity_current` / `context_current`
-transition for a missing-prerequisite reroute. It never accepts complete
+`clarity_current` 4.0 transition, or the original `context_current`
+transition for a missing-Clarity reroute. It never accepts complete
 producer-private results, caller-authored flat projections, or invented pass
 fields. Unconsumed upstream payload hashes are absent from result 2.0.
-`evidence_linkage` keeps target identity/content, clarity facts/disposition, and
-wording facts distinct. Clarification `content_sha256` hashes its semantic
-content, not the target title/body; the wording target-content digest alone
+`evidence_linkage` keeps target identity/content, clarity facts/disposition distinct. Clarification `content_sha256` hashes its semantic
+content, not the target title/body; the separate source_content_sha256
 binds the canonical title/body pair. The two disposition digest domains retain
 their producer definitions rather than being equated by field name.
 
@@ -888,8 +885,7 @@ Readiness creates no task, workspace journal, cache, index, sidecar, or tracked
 artifact. Owner result 1.0 and the old prerequisite-payload CLI are retired by
 the explicit #386 direct migration; no legacy reduction path remains active.
 
-The production regression suite must pass actual Discovery, Clarification and
-Wording public outputs into the next input and consume the resulting transition
+The production regression suite must pass actual Discovery and Clarification public outputs into the next input and consume the resulting transition
 in Readiness record/check/invoke. It covers wrong stages, missing prerequisites,
 target mismatch, real title/body drift and draft source-authority mismatch.
 Handwritten flat projections cannot prove this chain. Shape errors fail with

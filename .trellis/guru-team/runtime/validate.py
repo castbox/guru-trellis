@@ -17,6 +17,7 @@ APPROVED_KERNEL_FILES = {
     "__init__.py",
     "command.py",
     "base_selection.py",
+    "content_identity.py",
     "bootstrap.py",
     "bootstrap_check.py",
     "bootstrap_transport.py",

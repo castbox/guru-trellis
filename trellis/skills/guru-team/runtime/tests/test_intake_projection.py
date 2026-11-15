@@ -87,17 +87,9 @@ class IntakeProjectionTests(unittest.TestCase):
                     self.assertFalse((projected / "schemas/public-input.schema.json").exists())
                 self.assertFalse((projection / "schemas/public-ready-output.schema.json").exists())
                 self.assertFalse((projection / "schemas/public-proposed-draft-input.schema.json").exists())
-                for skill in INTAKE_SKILLS[-2:]:
+                for skill in INTAKE_SKILLS[-1:]:
                     projected = projection if skill == INTAKE_SKILLS[-1] else projection / "flow-packages" / skill
                     self.assertIn(str(projected / "schemas/review-invocation.schema.json"), inventory["skill_contract"])
-                wording_schema = json.loads((projection / "flow-packages" / INTAKE_SKILLS[3] /
-                                             "schemas/review-invocation.schema.json").read_text())
-                validate_json({
-                    "profile": "change_request", "mode": "workflow", "owner_result": {},
-                    "change_request": {"source_kind": "issue", "identity": fixture["source"]["url"],
-                                       "title": fixture["source"]["title"], "body": fixture["source"]["body"],
-                                       "updated_at": fixture["source"]["updated_at"]},
-                }, projection / "flow-packages" / INTAKE_SKILLS[3] / "schemas/review-invocation.schema.json", "projected_wording")
                 args = [sys.executable, "-B", protocol["helper_path"]]
                 for flag, field in (("trace", "trace_path"), ("request-sha256", "request_sha256"),
                         ("projection-root", "projection_root"), ("repository-root", "repository_projection_root"),

@@ -143,7 +143,7 @@ and conditions still apply; resolve evidence-answerable gaps from those facts
 before asking another product question. Do not repeat an interview for an
 already clear same-scope fact or rebuild Discovery's private result. This owner
 still personally judges current intent, source roles, duplicate disposition
-and scope, then produces its own result for Wording or the original Author.
+and scope, then produces its own result for Readiness or the original Author.
 Changed or unavailable authority returns to the affected original context or
 scope owner; an old-target pass cannot supply the current judgment.
 
@@ -323,7 +323,7 @@ result stores only the final disposition and objective candidate facts.
 `retarget_existing_issue` owns one validated `select_existing_issue` action
 and returns `retarget_context`. Its unique
 consumer is `guru-sync-base`; the complete sync, context discovery,
-clarification, wording and change-request review chain reruns for the selected
+clarification and change-request review chain reruns for the selected
 issue. No target-specific evidence from the old target transfers.
 
 `reopen_closed_issue` owns one completed `reopen_issue` GitHub
@@ -562,8 +562,7 @@ not under an Agent discovery projection. Scripts use the managed interpreter;
 do not import an eval helper or run a package module with system Python.
 
 The clear router validates `invocation_context.resume_target` without making a
-new semantic decision: initial issue/draft uses `guru-review-contract-wording`
-(staged #114), standalone uses `guru-standalone-caller`, scope_ready uses the fixed Author projection above, and a non-current active
+new semantic decision: initial issue/draft uses `guru-review-change-request`, standalone uses `guru-standalone-caller`, scope_ready uses the fixed Author projection above, and a non-current active
 classification uses the exact declared interrupted Phase 1/2/3/Branch Review
 target. Any kind/target mismatch fails closed.
 
@@ -575,19 +574,26 @@ For the normal initial Issue path, copy Discovery's actual invoke stdout:
 equal the canonical issue URL originating in `live_change.identity`; do not
 replace it with `#N`. Copy the complete snapshot, including its opaque digest,
 rather than manually rebuilding it from an example. This also preserves the
-target identity for the next Wording consumer.
+target identity for the next Readiness consumer.
 
 For `standard_intake`, load the envelope referenced by
 `interface.json` at `public_contracts.invocation.call_local.envelope`.
-The [shared invocation-envelope schema](../../../consumers/workflow/stage0/invocations/semantic-owner.schema.json)
+The [shared invocation-envelope schema](../../../consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json)
 is installed at
-`.trellis/guru-team/skills/consumers/workflow/stage0/invocations/semantic-owner.schema.json`.
+`.trellis/guru-team/skills/consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json`.
 The [standard intake input example](../examples/public-standard-intake-input.json)
 describes only the profile's `public_input`. Place the current public input
 in the outer envelope's `public_input` field.
-For this profile, set `owner_context` to `{}`. Preserve the actual transition
+For each nonactive full-chain profile using private owner 6.0, set `owner_context.change_request` to the actual captured
+kind/repo/number or draft_id/title/body/updated_at snapshot. Record/check receive
+that same owner_context with owner_result through the unchanged --input carrier.
+The 6.0 recorder binds the distinct source_content_sha256 without storing raw
+source bytes; invoke checks the same snapshot and actual original transition. Preserve the actual transition
 and the checked owner result unchanged. Use the shared schema for the complete
-envelope shape. This `owner_context` guidance applies only to `standard_intake`.
+envelope shape. This source binding also applies to reviewed_plan_intake and
+standalone_review; private confirmation 5.0 and active-task 4.0 retain their
+original contracts. The current complete source example is
+[clarification-source.json](../examples/clarification-source.json).
 
 The original public profile families are `standard_intake`, `reviewed_plan_intake`,
 `active_task_scope_change`, `standalone_review`,
@@ -630,7 +636,7 @@ the AI correctly judged that the product conflict should block.
 
 Clarify alone owns user intent, requirement authority, source classification,
 Issue intent and real unresolved choices. Discovery supplies repository/history
-evidence and coverage; Wording and readiness retain their independent judgments.
+evidence and coverage; Readiness retains its independent judgment.
 Read Direct Source, explicitly selected comments and introduced requirements or
 design sections fresh. Distinguish normative interfaces, mechanisms, order and
 compatibility constraints from advisory candidates; the presence of a design
@@ -666,7 +672,7 @@ entry is only `locator`, `section`, and `authority_kind` (`requirement`,
 irreducible choice of which comment/section and its authority role. Empty is
 legal when there is no introduced source. No full text, final design disposition,
 history, source matrix or authorization belongs here. `clear` or `scope_ready` hands it to the
-clear router; the transition relays it through current Wording/readiness to
+clear router; the transition relays it through current Readiness to
 current Planning. Planning rereads sources and owns final retain/change/reject
 only in `design.md`. A lost selection re-enters this owner instead of guessing
 from task metadata or introducing a persistent cache.

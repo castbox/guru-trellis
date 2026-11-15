@@ -1,0 +1,11 @@
+{
+  "profile": "standalone_wording_review",
+  "mode": "standalone",
+  "target": {
+    "kind": "draft",
+    "caller_locator": "request:draft",
+    "title": "保留正常建议",
+    "body": "默认使用当前配置。只有配置不可用时报告缺口。"
+  },
+  "review_request": "只读审核条件与表述，保留原义。"
+}

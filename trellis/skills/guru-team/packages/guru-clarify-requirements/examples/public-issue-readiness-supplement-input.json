@@ -12,5 +12,6 @@
   },
   "continuation_id": "issue-review-27",
   "source_exit": "supplement_requirements",
-  "gap": "Resolve the indicated current coverage gap."
+  "gap": "Resolve the indicated current coverage gap.",
+  "review_focus": "requirements"
 }

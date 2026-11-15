@@ -10,6 +10,8 @@ def run(package_root,command,argv):
     if payload.get("public_input",{}).get("profile")=="issue_readiness_supplement":
         from issue_review import execute
         return execute(package_root,{"public_input":payload["public_input"],"owner_result":payload},"record")
-    value=derive_owner(package_root,payload,authoring=True)
+    source = payload.get("owner_context", {}).get("change_request")
+    payload = payload.get("owner_result", payload)
+    value=derive_owner(package_root,payload,authoring=True,source=source)
     if value.get("mode")!=a.mode: raise CommandError("semantic_result_invalid","input.mode","Match the reviewed mode to the recorder mode.",3)
     return value

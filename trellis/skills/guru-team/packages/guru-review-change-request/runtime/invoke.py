@@ -20,17 +20,17 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   base=(up or {}).get("base",{});out={"exit_id":exit_id,"handoff_mode":owner["mode"],"handoff_repo_root":(up or {}).get("repo_locator","."),"handoff_route":"repo_change"};
   if base.get("selected_base"):out["handoff_base_branch"]=base["selected_base"]
   schema="public-refresh-context-output-2.0.schema.json"
- elif exit_id in {"clarify_requirements","review_wording"}:
+ elif exit_id == "clarify_requirements":
   required_stage="context_current" if exit_id=="clarify_requirements" else "clarity_current"
   if not isinstance(up,dict) or up.get("stage")!=required_stage:raise CommandError("stale_identity","transition",f"Provide current {required_stage} transition.",3)
   if exit_id=="clarify_requirements" and up.get("clarify_profile") not in {"standard_intake","reviewed_plan_intake"}:raise CommandError("stale_identity","transition.clarify_profile","Re-enter the original context owner with its current Clarify profile.",3)
   out={"exit_id":exit_id,"handoff_profile":up["clarify_profile"] if exit_id=="clarify_requirements" else "change_request","handoff_mode":owner["mode"],"handoff_target_locator":up["target_locator"],"handoff_continuation_id":public["continuation_id"],"transition":up};schema=f"public-{exit_id.replace('_','-')}-output.schema.json"
  else:
-  if not isinstance(up,dict) or up.get("stage")!="wording_current":raise CommandError("stale_identity","transition","Provide the current wording transition.",3)
+  if not isinstance(up,dict) or up.get("stage")!="clarity_current":raise CommandError("stale_identity","transition","Provide the current Clarity transition.",3)
   prereq=owner["prerequisites"]
   readiness={"payload_sha256":digest(owner),"facts_sha256":owner["facts_sha256"],"content_sha256":owner["target"]["content_sha256"],"linkage_sha256":owner["evidence_linkage"]["linkage_sha256"]}
   current=dict(up);current.update({"transition_id":"readiness_current:"+owner["facts_sha256"][:24],"stage":"readiness_current","readiness_facts_sha256":owner["facts_sha256"],"readiness_linkage_sha256":owner["evidence_linkage"]["linkage_sha256"],"target_content_sha256":owner["target"]["content_sha256"],"readiness":readiness,"target":public_target(owner["target"])})
-  out={"exit_id":"ready","mode":owner["mode"],"transition":current};schema="public-ready-output-5.0.schema.json"
+  out={"exit_id":"ready","mode":owner["mode"],"transition":current};schema="public-ready-output-6.0.schema.json"
  if exit_id=="clarify_requirements" and "source_locators" in up:out["source_locators"]=up["source_locators"]
  if exit_id=="refresh_context" and (up or {}).get("base",{}).get("kind")=="git_object":out.update(handoff_operation="read",handoff_base_ref=up["base"]["commit"])
  validate_json(out,package_root/"schemas"/schema,"stdout");return out

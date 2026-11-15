@@ -158,7 +158,7 @@ Issue 创建与修订共用原 Clarify package 的
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)
 与同 package 的 `templates/` 定义整体 Task PRD 和 Delivery 三正文；原 Clarify、
-Wording、Approval、实施、完整 Review、Delivery Review 与 Completion 在各自职责内实际
+原内容 owner、Approval、实施、完整 Review、Delivery Review 与 Completion 在各自职责内实际
 读取同源合同和必要引用。workflow 只编排和定位，不复制正文规则或改变公共 I/O。
 `examples/planning-body/` 是带来源与修订过程的去敏教学材料，不是实际 V1–V7
 执行证据。验收分别报告真实 Agent 写作/审核、确定性检查和安装投影；一个代表平台
@@ -504,7 +504,7 @@ current workflow and Clarify contract constrain method reuse and resume.
 
 The sole task-plan business writer is `guru-author-task-plan`. The global
 workflow invokes its requirements and solution exits around purpose-specific
-Architecture planning 3.0, then current Wording, final Architecture and Approval.
+Architecture planning 3.0, then current final Architecture and Approval.
 Step-local behavior stays in the selected packages; upstream brainstorm/start/
 continue and hooks remain upstream-owned. Install the matching complete preset
 and marketplace workflow together using the [version and in-flight migration](../../presets/guru-team/MIGRATION-292.md).

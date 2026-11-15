@@ -14,6 +14,7 @@ if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
 import verify_installed_phase0_transcript as transcript
+from installer_test_support import install_reviewed_delivery_candidate
 from test_discovery_stdin_integration import run_preset_install
 
 
@@ -58,18 +59,7 @@ def producers(installed: Path, chain: Path, source_selection=None):
     }
     source_path = chain / "source.json"
     source_path.write_text(json.dumps(source), encoding="utf-8")
-    wording_path = chain / "wording-source.json"
-    wording_path.write_text(json.dumps(transcript.wording_change_request_source(issue)), encoding="utf-8")
-    wording_owner, checked = transcript.wording_owner_for_issue(root, env, wording_path)
-    wording, _ = transcript.invoke_public(root, env, "guru-review-contract-wording", {
-        "schema_version": "1.0", "public_input": {
-            "profile": "change_request", "source_exit": "clear", "mode": "workflow",
-            "target_locator": clarity["transition"]["target_locator"],
-            "continuation_id": clarity["transition"]["continuation_id"],
-        }, "transition": clarity["transition"], "owner_context": {"change_request": source},
-        "owner_result": wording_owner, "validation_receipt": checked["validation_receipt"],
-    }, "pass")
-    return root, env, source, source_path, discovery, clarity, wording, clarity_owner, wording_owner
+    return root, env, source, source_path, discovery, clarity, clarity_owner
 
 
 class InstalledReadinessTransitionTests(unittest.TestCase):
@@ -79,7 +69,7 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
             installed = work / "installed"
             (installed / ".trellis").mkdir(parents=True)
             shutil.copy2(SOURCE / "trellis/workflows/guru-team/workflow.md", installed / ".trellis/workflow.md")
-            shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            install_reviewed_delivery_candidate(installed)
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
                     applied = run_preset_install(installed)
@@ -88,12 +78,12 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
                     self.check_chain(installed, work / phase)
 
     def check_chain(self, installed: Path, chain: Path):
-        root, env, source, source_path, discovery, clarity, wording, clarity_owner, wording_owner = producers(installed, chain)
+        root, env, source, source_path, discovery, clarity, clarity_owner = producers(installed, chain)
         before = snapshot(root)
         siblings = {str(p.relative_to(chain)) for p in chain.rglob("*")}
         worktrees = transcript.run(["git", "worktree", "list", "--porcelain"], cwd=root).stdout
-        transitions = (wording["transition"], clarity["transition"], discovery["transition"])
-        exits = ("ready", "review_wording", "clarify_requirements")
+        transitions = (clarity["transition"], discovery["transition"])
+        exits = ("ready", "clarify_requirements")
         for transition, exit_id in zip(transitions, exits):
             recorded, checked = transcript.checked_readiness_owner_for_issue(root, env, transition, source_path, exit_id)
             envelope = transcript.readiness_invocation(transition, source, recorded)
@@ -105,10 +95,9 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
                 self.assertEqual(actual["exit_id"], "ready")
                 self.assertEqual(actual["mode"], "workflow")
                 self.assertEqual(actual["transition"]["clarity"], clarity["transition"]["clarity"])
-                self.assertEqual(actual["transition"]["target_content_sha256"], wording["transition"]["target_content_sha256"])
+                self.assertEqual(actual["transition"]["target_content_sha256"], clarity["transition"]["source_content_sha256"])
                 self.assertNotEqual(actual["transition"]["clarity"]["content_sha256"], actual["transition"]["target_content_sha256"])
                 self.assertNotIn("payload_sha256", recorded["prerequisites"]["clarity"])
-                self.assertNotIn("payload_sha256", recorded["prerequisites"]["wording"])
                 ready_envelope = {key: value for key, value in envelope.items() if key != "validation_receipt"}
             else:
                 self.assertEqual(actual["transition"], transition)
@@ -129,10 +118,10 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
                 self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
             finally:
                 authority_path.write_text(old)
-        authored = transcript.readiness_owner_for_issue(root, env, {**wording["transition"], "readiness_source": source})
+        authored = transcript.readiness_owner_for_issue(root, env, {**clarity["transition"], "readiness_source": source})
         legacy = copy.deepcopy(authored)
-        legacy["prerequisite_payloads"] = {"clarity": clarity_owner, "wording": wording_owner}
-        legacy_envelope = transcript.readiness_invocation(wording["transition"], source, legacy)
+        legacy["prerequisite_payloads"] = {"clarity": clarity_owner}
+        legacy_envelope = transcript.readiness_invocation(clarity["transition"], source, legacy)
         rejected = self.call(root, env, "record-change-request-review.sh", legacy_envelope)
         self.assertEqual(rejected.returncode, 2, rejected.stdout + rejected.stderr)
         self.assertEqual(json.loads(rejected.stdout)["code"], "schema_mismatch")

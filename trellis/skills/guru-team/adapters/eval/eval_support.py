@@ -628,8 +628,8 @@ def intake_repository_assets(source: Path) -> set[Path]:
 def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
     from adapters.eval.intake_authoring import COMMANDS, INTAKE_SKILLS
 
-    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "standard_intake", "change_request", "current_issue")))
-    owners = dict(zip(INTAKE_SKILLS, (None, "change_context_owner_result", "clarification_result", "wording_review", "change_request_review")))
+    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "standard_intake", "current_issue")))
+    owners = dict(zip(INTAKE_SKILLS, (None, "change_context_owner_result", "clarification_result", "change_request_review")))
     skill = interface["id"]
     contracts = interface["public_contracts"]
     assets = {Path("SKILL.md"), Path("references/contract.md"), Path("interface.json")}
@@ -640,7 +640,7 @@ def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
         assets.add(Path(profile["schema"]["path"]))
         owner = next(item for item in contracts["private_artifacts"] if item["id"] == owners[skill])
         assets.add(Path(owner["schema"]["path"]))
-    if skill in {"guru-review-contract-wording", "guru-review-change-request"}:
+    if skill == "guru-review-change-request":
         review = next(item for item in interface["schemas"] if item["id"] == "review_invocation")
         assets.add(Path(review["path"]))
     call_input = contracts["invocation"].get("call_local", {}).get("public_input", {}).get("schema")

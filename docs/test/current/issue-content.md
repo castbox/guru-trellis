@@ -1,5 +1,7 @@
 # Issue 内容的测试策略与观察
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
 Identity：`RDT-TST-ISSUE-CONTENT`；状态：`current`。导航别名：`T153`、`T153-01..05`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 历史 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md)与 #818 的实际 old/new、正常返修、分发及目标采用观察。
@@ -74,3 +76,11 @@ reapply 后再次比较3,345个 Task/session/AGENTS/配置文件，differences={
 纯只读Clarify零comment mutation；本次发布/更新结果不明时先沿原owner找回唯一已成功对象，不重复Issue或评论。Create部分完成/输出丢失与Clarify原source_action恢复分别观察，不借人工改hash/state构造排除场景。实际GitHub创建/评论的目标和payload先明确，live readback与mock分开；没有外部执行就保持未验证。原Readiness消费及三补审/来源/安装证据见local-fix-intake的T819-03/04/05。
 
 本次实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)单写。#153/#818的旧案例、失败、未验证边界保原截止；本提案不把新评论或分流机制宣称为既有已验证能力。
+
+## T850-01 / SC850-CONTENT：实际有界语义审核
+
+实际Agent经Clarify standalone_wording_review审核正常草稿与完整来源，指出义务弱化、条件/返回遗漏或验收不明，标位置/影响/原修订owner；预期不入被测上下文。原writer正常返修后再审，保首稿/首错；合法建议/default/quote/history/literal不因词面阻塞。必要来源缺失实际blocked。显式文件经review-change explicit_files/wording_only捕获并审核完整Markdown，含Git未变文件；核snapshot、正式invoke和无对象/Task/session写入，不以进程exit0代替判断。对应R850-01/D850-01。
+
+## T850-04 / SC850-ADOPTION：匹配采用及退役
+
+原tools owner安装/reapply后读回resolver、installed/native、三平台bytes/mode、退役资产、sidecar及Task/session/配置/peer。普通模式偏差保原观察及恢复，不手改manifest/checkpoint，不把准备当成功。源码、Agent、安装、外部层分开；formal_source_lock、完整Release矩阵与未执行外部效果保持未验证。对应R850-04/D850-04；实际观察由#850贡献test.md单写。

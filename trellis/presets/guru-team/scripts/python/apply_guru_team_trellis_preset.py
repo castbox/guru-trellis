@@ -209,6 +209,10 @@ MANAGED_SPEC_PATHS = (
 )
 MANAGED_SOURCE_PATHS = (
     (
+        Path("trellis/presets/guru-team/MIGRATION-850.md"),
+        Path(".trellis/guru-team/MIGRATION-850.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/source/trellis-source.json"),
         Path(".trellis/guru-team/trellis-source.json"),
     ),
@@ -248,8 +252,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-context-discovery.sh"),
     Path("scripts/bash/record-requirements-clarification.sh"),
     Path("scripts/bash/check-requirements-clarification.sh"),
-    Path("scripts/bash/record-contract-wording-review.sh"),
-    Path("scripts/bash/check-contract-wording-review.sh"),
     Path("scripts/bash/record-change-request-review.sh"),
     Path("scripts/bash/check-change-request-review.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
@@ -270,6 +272,8 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-review-gate.sh"),
 ]
 LEGACY_MANAGED_ASSET_HASHES = {
+    Path("scripts/bash/record-contract-wording-review.sh"): frozenset({"d352b349d39502feb198191c54f16ab00eee438b36171e04045cf577bf4674ec"}),
+    Path("scripts/bash/check-contract-wording-review.sh"): frozenset({"8d752a46dd642a6a05d35e3e6b222f3d0a02543b35987908a56c62ce04c84a8f"}),
     Path("scripts/bash/check-finalization-gate.sh"): frozenset({
         "8bf8108a140dd83b85c76e6d11e60ed8456bd6ccfcf44e14e4d65729c8e0b197",
         "959f0aa5990ea800f9eaba37a2d40ec86578bb8e1a58e1fd5a8ed730f5ba796e",

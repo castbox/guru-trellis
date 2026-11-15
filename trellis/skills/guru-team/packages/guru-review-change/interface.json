@@ -76,6 +76,10 @@
     {
       "id": "reviewed_invocation",
       "path": "examples/reviewed-invocation.json"
+    },
+    {
+      "id": "public_explicit_files_input",
+      "path": "examples/public-explicit-files-input.json"
     }
   ],
   "schemas": [
@@ -110,6 +114,18 @@
     {
       "id": "snapshot",
       "path": "schemas/snapshot.schema.json"
+    },
+    {
+      "id": "public_input_2_0_schema",
+      "path": "schemas/public-input-2.0.schema.json"
+    },
+    {
+      "id": "public_explicit_files_input_1_0_schema",
+      "path": "schemas/public-explicit-files-input-1.0.schema.json"
+    },
+    {
+      "id": "invocation_2_0_schema",
+      "path": "schemas/invocation-2.0.schema.json"
     }
   ],
   "validators": [
@@ -181,8 +197,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-review-change-input-aggregate-1.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-review-change-input-aggregate-2.0",
+        "path": "schemas/public-input-2.0.schema.json"
       },
       "profiles": [
         {
@@ -214,6 +230,21 @@
             "field": "profile",
             "value": "committed_range"
           }
+        },
+        {
+          "id": "explicit_files",
+          "schema": {
+            "schema_id": "guru-review-change-input-explicit-files-1.0",
+            "path": "schemas/public-explicit-files-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "public_explicit_files_input",
+            "path": "examples/public-explicit-files-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "explicit_files"
+          }
         }
       ]
     },
@@ -240,8 +271,8 @@
         "flag": "--invocation",
         "stdin": "-",
         "envelope": {
-          "schema_id": "guru-review-change-invocation-1.0",
-          "path": "schemas/invocation.schema.json"
+          "schema_id": "guru-review-change-invocation-2.0",
+          "path": "schemas/invocation-2.0.schema.json"
         }
       },
       "example_argv": [

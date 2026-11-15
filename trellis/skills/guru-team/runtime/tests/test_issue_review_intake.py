@@ -17,7 +17,6 @@ from runtime.schema import validate_json
 R = 'guru-review-change-request'
 D = 'guru-discover-change-context'
 C = 'guru-clarify-requirements'
-W = 'guru-review-contract-wording'
 DIMENSIONS = ('requirement_completeness','delivery_unit_consistency','implementation_target_evidence','claimed_behavior_current','current_implementation_gap','docs_code_tests_consistency','archived_history_constraints','duplicate_reuse_validity','target_authority_current','prerequisite_hash_linkage')
 
 
@@ -90,9 +89,10 @@ print(result if isinstance(result,str) else json.dumps(result))
             validate_json(value,SKILLS/consumer['contract']['path'],'sync_consumer')
         return value['result'] if value.get('formal_exit') is False else value
 
-    def readiness(self,public,exit_id):
+    def readiness(self,public,exit_id,focus="requirements"):
         owner={'public_input':public,'typed_exit':exit_id,'result_summary':'Actual fixture review conclusion.','source_refs':[],'source_selection':[], 'dimensions':[{'id':x,'conclusion':'Reviewed within this original dimension.'} for x in DIMENSIONS],'ai_review_gate':{'status':'passed' if exit_id=='ready' else 'blocked' if exit_id=='blocked' else 'reroute','summary':'Fixture semantic authoring, not native AI evidence.'}}
         if exit_id.startswith('supplement_'):owner['gap']='The indicated coverage is missing.'
+        if exit_id == 'supplement_requirements':owner['review_focus']=focus
         e={'schema_version':'1.0','public_input':public,'owner_context':{'change_request':self.source},'owner_result':owner}
         e['owner_result']=self.call(R,'record-change-request-review.sh',e)
         checked=self.call(R,'check-change-request-review.sh',e)
@@ -100,7 +100,7 @@ print(result if isinstance(result,str) else json.dumps(result))
         return self.call(R,'invoke.sh',e)
 
     def test_ready_and_all_requested_routes_use_real_sync_source_without_chain_receipts(self):
-        for route in ['ready','supplement_context','supplement_requirements','supplement_wording','full_intake_required','refresh_issue_baseline','blocked']:
+        for route in ['ready','supplement_context','supplement_requirements','full_intake_required','refresh_issue_baseline','blocked']:
             with self.subTest(route=route):
                 out=self.readiness(self.public,route)
                 self.assertEqual(route,out['exit_id'])
@@ -165,6 +165,7 @@ print(result if isinstance(result,str) else json.dumps(result))
         import hashlib
         auth=json.loads((SKILLS/'packages'/C/'examples/requirements-clarification.json').read_text())
         auth.pop('content_identity')
+        auth.pop('source_content_sha256', None)
         auth['mode']='workflow';auth['schema_version']='1.0'
         for field in ('invocation_context','target_disposition','active_task_evidence','consumer','error'):
             auth.pop(field)
@@ -216,12 +217,12 @@ print(result if isinstance(result,str) else json.dumps(result))
         requested=self.readiness(self.public,'supplement_requirements')
         public={'profile':'issue_readiness_supplement',**{k:v for k,v in requested.items() if k!='exit_id'},'source_exit':requested['exit_id']}
         missing=self.local_clarification(public,missing=True)
-        context={'profile':missing['handoff_profile'],'source_exit':missing['exit_id'],'mode':missing['handoff_mode'],'issue':missing['issue'],'base_source':missing['base_source'],'continuation_id':missing['handoff_continuation_id'],'gap':missing['gap'],'return_identity':missing['return_identity']}
+        context={'profile':missing['handoff_profile'],'source_exit':missing['exit_id'],'mode':missing['handoff_mode'],'issue':missing['issue'],'base_source':missing['base_source'],'continuation_id':missing['handoff_continuation_id'],'gap':missing['gap'],'review_focus':missing['review_focus'],'return_identity':missing['return_identity']}
         owner={'public_input':context,'typed_exit':'context_ready','result_summary':'The requested repository fact is established.','source_refs':['source.txt'],'ai_review_gate':{'status':'passed','summary':'Resolved the original fact gap.'}}
         e={'schema_version':'1.0','public_input':context,'owner_context':{},'owner_result':owner}
         e['owner_result']=self.call(D,'record-context-discovery.sh',e,flags=['--root',str(self.repo),'--invocation','-'])
         actual=self.call(D,'invoke.sh',e,flags=['--root',str(self.repo),'--invocation','-'])
-        resumed={'profile':actual['handoff_profile'],'source_exit':actual['exit_id'],'mode':actual['handoff_mode'],'issue':actual['handoff_issue'],'base_source':actual['handoff_base_source'],'continuation_id':actual['handoff_continuation_id'],'gap':actual['handoff_gap'],'context_result':actual['context_result'],'source_refs':actual['source_refs']}
+        resumed={'profile':actual['handoff_profile'],'source_exit':actual['exit_id'],'mode':actual['handoff_mode'],'issue':actual['handoff_issue'],'base_source':actual['handoff_base_source'],'continuation_id':actual['handoff_continuation_id'],'gap':actual['handoff_gap'],'review_focus':actual['handoff_review_focus'],'context_result':actual['context_result'],'source_refs':actual['source_refs']}
         supplemented=self.local_clarification(resumed)
         returned={'profile':'issue_review_return','source_exit':supplemented['exit_id'],**{k:v for k,v in supplemented.items() if k not in ['exit_id','result_summary']},'requirements_result':supplemented['result_summary']}
         self.assertEqual('ready',self.readiness(returned,'ready')['exit_id'])
@@ -303,23 +304,18 @@ print(result if isinstance(result,str) else json.dumps(result))
         self.assertEqual(1,len(state['comments']))
         self.assertEqual(1,sum('POST' in row for row in state['calls']))
 
-    def test_wording_scanner_result_returns_or_reports_requirement_gap(self):
-        requested=self.readiness(self.public,'supplement_wording')
-        public={'profile':'issue_readiness_supplement',**{k:v for k,v in requested.items() if k!='exit_id'},'source_exit':requested['exit_id']}
-        review=json.loads((SKILLS/'packages'/W/'examples/contract-wording-review.json').read_text())['semantic_review']
-        review['typed_exit']='pass';review['generated_at']='2026-11-14T00:00:00Z';review['ai_review_gate'].pop('reviewed_scan_sha256');review['ai_review_gate'].pop('planning_checked_dimensions')
-        change={'source_kind':'issue','identity':'https://github.com/example/repo/issues/27','title':self.source['title'],'body':self.source['body'],'updated_at':self.source['updated_at']}
-        e={'profile':'change_request','mode':'workflow','change_request':change,'owner_result':review}
-        recorded=self.call(W,'record-contract-wording-review.sh',e)
-        e['owner_result']=recorded;checked=self.call(W,'check-contract-wording-review.sh',e)
-        for exit_id in ['supplemented','requirements_gap']:
-            owner={'public_input':public,'typed_exit':exit_id,'result_summary':'Complete title/body wording review.','source_refs':[],'wording_review':recorded,'ai_review_gate':{'status':'reroute' if exit_id=='requirements_gap' else 'passed','summary':'Reviewed this local wording scope.'}}
-            if exit_id=='requirements_gap':owner['gap']='The Issue describes two conflicting product outcomes.'
-            out=self.call(W,'invoke.sh',{'schema_version':'1.0','public_input':public,'owner_context':{},'owner_result':owner,'validation_receipt':checked['validation_receipt']})
-            key='wording_result' if exit_id=='supplemented' else 'requirements_gap'
-            ret={'profile':'issue_review_return','source_exit':out['exit_id'],**{k:v for k,v in out.items() if k not in ['exit_id','result_summary','gap']},key:out['result_summary'] if exit_id=='supplemented' else out['gap']}
-            actual=self.readiness(ret,'ready' if exit_id=='supplemented' else 'supplement_requirements')
-            self.assertEqual('ready' if exit_id=='supplemented' else 'supplement_requirements',actual['exit_id'])
+    def test_wording_gap_uses_bounded_clarify_and_returns_to_same_readiness(self):
+        requested = self.readiness(self.public, 'supplement_requirements', focus='wording_only')
+        self.assertEqual('wording_only', requested['review_focus'])
+        public = {'profile':'issue_readiness_supplement', **{k:v for k,v in requested.items() if k!='exit_id'}, 'source_exit':requested['exit_id']}
+        out = self.local_clarification(public)
+        self.assertEqual('supplemented', out['exit_id'])
+        returned = {'profile':'issue_review_return', 'source_exit':out['exit_id'], **{k:v for k,v in out.items() if k not in ['exit_id','result_summary']}, 'requirements_result':out['result_summary']}
+        actual = self.readiness(returned, 'ready')
+        for field in ('issue','base_source','continuation_id'):
+            self.assertEqual(self.public[field], actual[field])
+        self.assertFalse(any('--method' in x for x in json.loads(self.state.read_text())['calls']))
+
 
     def creation_input(self):
         from datetime import datetime,timezone

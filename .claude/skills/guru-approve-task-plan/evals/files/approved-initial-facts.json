@@ -9,7 +9,7 @@
   },
   "workflow_consumer_authority": [
     "Only a clear whole-plan affirmative after the current presentation activates; equivalent wording is accepted without a fixed phrase.",
-    "Questions remain paused after an unchanged-plan answer. Revision requests require plan revision, wording review, planning semantic review, and a new presentation before activation.",
+    "Questions remain paused after an unchanged-plan answer. Revision requests require plan revision, final Architecture, planning semantic review, and a new presentation before activation.",
     "Phase 0 confirmation cannot accept Phase 1. Material plan changes invalidate an older acceptance and require affected reviews plus a new presentation.",
     "An open planning finding prevents an activatable presentation.",
     "Current-request explicit autonomous execution omits only the ordinary unchanged-plan pause; scope or authority change still pauses and enters the existing change route."

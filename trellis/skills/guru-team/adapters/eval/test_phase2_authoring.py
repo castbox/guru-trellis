@@ -718,7 +718,7 @@ class CandidateFinalTransportTests(unittest.TestCase):
         from adapters.eval.phase2_candidate_final import check_stage_sequence
         with tempfile.TemporaryDirectory() as temporary:
             _, _, _, relay = self.stage(temporary)
-            response = relay.forward({'skill_id': 'guru-review-contract-wording',
+            response = relay.forward({'skill_id': 'guru-clarify-requirements',
                 'command': 'invoke', 'arguments': ['--help'], 'stdin': ''})
             self.assertEqual(response['returncode'], 0, response)
             self.assertIn('usage:', response['stdout'])
