@@ -38,8 +38,43 @@ def _constraint_diagnostic(error: Any) -> tuple[list[Any], str]:
     return path, f"{rule} constraint is not satisfied"
 
 
+def _branch_const_declarations(schema: Any, errors: list[Any], path: Any) -> list[dict[str, Any]]:
+    """Read same-object declarations from the validator's existing branch context."""
+    same_object = [error for error in errors if error.absolute_path == path]
+    declarations = []
+    for candidate in [schema, *(error.schema for error in same_object)]:
+        if not isinstance(candidate, dict):
+            continue
+        declaration = {
+            name: rule["const"] for name, rule in candidate.get("properties", {}).items()
+            if isinstance(rule, dict) and "const" in rule
+        }
+        if declaration and declaration not in declarations:
+            declarations.append(declaration)
+    if declarations:
+        # Different object schemas here are not known alternatives. Do not
+        # merge partial or conflicting declarations into an invented signature.
+        return declarations if len(declarations) == 1 else []
+    alternatives = []
+    for error in same_object:
+        if error.validator not in {"oneOf", "anyOf"} or not error.context:
+            continue
+        groups: dict[int, list[Any]] = {}
+        for child in error.context:
+            branch = next(iter(child.schema_path), None)
+            if not isinstance(branch, int):
+                return []
+            groups.setdefault(branch, []).append(child)
+        for branch, group in groups.items():
+            declared = _branch_const_declarations(error.schema[error.validator][branch], group, path)
+            if not declared:
+                return []
+            alternatives.extend(declared)
+    return alternatives
+
+
 def _diagnostic_error(errors: list[Any]) -> Any:
-    """Prefer a declared exit or uniquely closest branch, without changing validity."""
+    """Prefer a declared or uniquely closest branch, without changing validity."""
     from jsonschema.exceptions import best_match
 
     selected = best_match(errors)
@@ -55,27 +90,18 @@ def _diagnostic_error(errors: list[Any]) -> Any:
             if not isinstance(branch, int):
                 return selected
             branches.setdefault(branch, []).append(child)
-        if isinstance(root.instance, dict) and "exit_id" in root.instance:
-            # Object-level errors retain the resolved branch schema, including
-            # declarations loaded through the validator's existing relative refs.
+        if isinstance(root.instance, dict):
             matching = []
             declarations_known = True
-            for group in branches.values():
-                declarations = []
-                pending = list(group)
-                while pending:
-                    child = pending.pop()
-                    if child.absolute_path != root.absolute_path:
-                        continue
-                    if isinstance(child.schema, dict):
-                        declaration = child.schema.get("properties", {}).get("exit_id", {})
-                        if isinstance(declaration, dict) and "const" in declaration:
-                            declarations.append(declaration["const"])
-                    if child.validator in {"oneOf", "anyOf"}:
-                        pending.extend(child.context)
+            for branch, group in branches.items():
+                declarations = _branch_const_declarations(
+                    root.schema[root.validator][branch], group, root.absolute_path,
+                )
                 if not declarations:
                     declarations_known = False
-                if root.instance["exit_id"] in declarations:
+                if any(all(name in root.instance and root.instance[name] == expected
+                           for name, expected in declaration.items())
+                       for declaration in declarations):
                     matching.append(group)
             if declarations_known and len(matching) == 1:
                 return _diagnostic_error(matching[0])

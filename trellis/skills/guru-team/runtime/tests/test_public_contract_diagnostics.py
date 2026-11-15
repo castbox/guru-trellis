@@ -20,6 +20,49 @@ PACKAGES = ROOT / "packages"
 
 
 class PublicContractDiagnosticsTests(unittest.TestCase):
+    def _planning_input(self, purpose):
+        package = PACKAGES / "guru-maintain-architecture-baseline"
+        value = json.loads((package / "examples/public-input-final-plan-3.0.json").read_text())
+        delivery = json.loads((package / "examples/public-input-delivery-task-impact-sync-4.0.json").read_text())
+        value.update(
+            schema_version="delivery-1.0", profile="delivery_task_impact_sync",
+            planning_purpose=purpose, delivery_key=delivery["delivery_key"],
+            planning_root=delivery["planning_root"],
+        )
+        if purpose == "candidate_assessment":
+            value["candidate"] = {"design_locator": value.pop("design_locator")}
+        return value, package / "schemas/public-input-delivery-task-impact-sync-4.0.schema.json"
+
+    def test_final_plan_misplaced_design_names_the_field_without_changing_purpose(self):
+        value, schema = self._planning_input("final_plan")
+        validate_json(value, schema, "input")
+        value["candidate"] = {"design_locator": value.pop("design_locator")}
+        with self.assertRaises(CommandError) as raised:
+            validate_json(value, schema, "input")
+        error = raised.exception
+        self.assertEqual(error.code, "schema_mismatch")
+        self.assertEqual(error.exit_status, 2)
+        self.assertIn(error.field_path, ("input.candidate", "input.design_locator"))
+        self.assertNotIn("candidate_assessment", error.remediation)
+        self.assertNotIn(value["candidate"]["design_locator"], error.remediation)
+        value["design_locator"] = value.pop("candidate")["design_locator"]
+        validate_json(value, schema, "input")
+
+    def test_candidate_assessment_misplaced_design_names_the_field_without_changing_purpose(self):
+        value, schema = self._planning_input("candidate_assessment")
+        validate_json(value, schema, "input")
+        value["design_locator"] = value.pop("candidate")["design_locator"]
+        with self.assertRaises(CommandError) as raised:
+            validate_json(value, schema, "input")
+        error = raised.exception
+        self.assertEqual(error.code, "schema_mismatch")
+        self.assertEqual(error.exit_status, 2)
+        self.assertIn(error.field_path, ("input.candidate", "input.design_locator"))
+        self.assertNotIn("final_plan", error.remediation)
+        self.assertNotIn(value["design_locator"], error.remediation)
+        value["candidate"] = {"design_locator": value.pop("design_locator")}
+        validate_json(value, schema, "input")
+
     def test_author_scope_union_error_names_extra_mode_in_the_declared_exit(self):
         package = PACKAGES / "guru-author-task-plan"
         value = json.loads((package / "examples/semantic-result-2.0.json").read_text())
@@ -123,12 +166,12 @@ class PublicContractDiagnosticsTests(unittest.TestCase):
         source = value["creation"]["reviewed_source"]
         source["relation"] = source.pop("disposition")
         with self.assertRaises(CommandError) as raised:
-            validate_json(value, package / "schemas/public-input.schema.json", "input")
+            validate_json(value, package / "schemas/public-input-2.0.schema.json", "input")
         error = raised.exception
         self.assertEqual(error.code, "schema_mismatch")
         self.assertEqual(error.field_path, "input.creation.reviewed_source.relation")
         self.assertIn("field is not declared", error.remediation)
-        self.assertIn("packages/guru-create-task/schemas/public-input.schema.json", error.remediation)
+        self.assertIn("packages/guru-create-task/schemas/public-input-2.0.schema.json", error.remediation)
         self.assertIn("rerun this original command", error.remediation)
         self.assertNotIn(source["repo_ref"], error.remediation)
 
@@ -137,7 +180,7 @@ class PublicContractDiagnosticsTests(unittest.TestCase):
         value = json.loads((package / "examples/public-create-issue-input.json").read_text())
         value["creation"]["reviewed_source"].pop("disposition")
         with self.assertRaises(CommandError) as raised:
-            validate_json(value, package / "schemas/public-input.schema.json", "input")
+            validate_json(value, package / "schemas/public-input-2.0.schema.json", "input")
         self.assertEqual(raised.exception.field_path, "input.creation.reviewed_source.disposition")
         self.assertIn("required field is missing", raised.exception.remediation)
 
@@ -146,7 +189,7 @@ class PublicContractDiagnosticsTests(unittest.TestCase):
         value = json.loads((package / "examples/public-create-issue-input.json").read_text())
         value["creation"]["reviewed_source"]["disposition"] = "ordinary-invalid-choice"
         with self.assertRaises(CommandError) as raised:
-            validate_json(value, package / "schemas/public-input.schema.json", "input")
+            validate_json(value, package / "schemas/public-input-2.0.schema.json", "input")
         self.assertEqual(raised.exception.field_path, "input.creation.reviewed_source.disposition")
         self.assertIn("exact_source", raised.exception.remediation)
         self.assertIn("reference_only", raised.exception.remediation)
