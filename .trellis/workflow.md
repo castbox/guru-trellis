@@ -282,6 +282,11 @@ its Planning. A Scope Change Gate uses original Clarify and its mapped router.
 
 ## Phase Index
 
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
+
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
 in full. This applies to no-Task, formal Task, task-free, independent Git/GitHub,
 standalone Skill, resumed and compacted sessions. Until loading succeeds, use
@@ -787,6 +792,11 @@ manual disposition without bridging old DTOs.
 ## Guru Continuation
 
 [trellis-continuation]
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
+
 Before substantive output, load the complete current
 `.trellis/spec/workflow/clear-technical-writing.md`. Read it again after context
 loss when its complete current body is unavailable.
@@ -838,6 +848,11 @@ maintenance owner; normal continuation does not load its historical details.
 ## Continuation details
 
 ### Caller entry details
+
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
 
 Before substantive output on continuation, load the full
 `.trellis/spec/workflow/clear-technical-writing.md` under the Phase Index loading

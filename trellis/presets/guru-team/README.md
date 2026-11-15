@@ -145,6 +145,14 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 验收，一个代表平台结果也不证明其他平台实际行为。历史归档不追溯改写，完整
 多平台升级及 Release 矩阵仍归专门 Issue。
 
+[必需正文读取方法](./spec/workflow/companion-scripts.md#reading-required-contracts-in-full)
+由原共享小节维护。AGENTS、workflow 和现有平台入口在首次长文前定位该短节；
+直接独立 Review 入口先解析完整 provider，再读同源短节及必需长文。
+预算是调用请求值，实际显示仍须核验；截断后按原小节补显或补读。
+源码修订不更新已有安装：通过原 tools owner 同步完整匹配来源，再验证
+source/installed、受影响平台投影、reapply/drift、用户内容及 sidecar。
+分发检查与无继承 Agent 的实际采用分别证明，不据此声明宿主容量已修复。
+
 [清晰技术写作规范](./spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
 `.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
 Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。

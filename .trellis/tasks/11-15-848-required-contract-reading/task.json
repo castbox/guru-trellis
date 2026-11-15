@@ -1,0 +1,123 @@
+{
+  "schema_version": "2.0",
+  "id": "848-required-contract-reading",
+  "name": "848-required-contract-reading",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 848,
+    "disposition": "exact_source"
+  },
+  "title": "完善长文读取合同：显式配置两层预算并减少截断返工",
+  "description": "完成 #848 共享长文读取方法、首读导航、实际 transport 与新 Agent 采用验证及定向受管同步。",
+  "dev_type": null,
+  "scope": "仅承接 castbox/guru-trellis#848 当前正文和接受评论。保持完整必需正文、两层预算与实际容量核验、原内存补显/连续补读、receipt 和 mutation 原恢复合同；不新增读取器、schema、持久 ledger，不承接 #847 或完整多平台升级/发布矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-15",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-15-848-required-contract-reading/prd.md",
+    "revision": "sha256:a922f8c7e39c567fb2f954087826c16ddfe57888e7875d7df9bad65941eee3de"
+  },
+  "deliveries": [
+    {
+      "id": "b3838f70-f6bc-490a-8269-4b749bad2639",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-15-848-required-contract-reading/prd.md",
+          "revision": "sha256:a922f8c7e39c567fb2f954087826c16ddfe57888e7875d7df9bad65941eee3de"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6"
+        ]
+      },
+      "planning_root": "deliveries/b3838f70-f6bc-490a-8269-4b749bad2639",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-15-848-required-contract-reading/deliveries/b3838f70-f6bc-490a-8269-4b749bad2639/design.md",
+        "revision": "sha256:e605ffece9be7783d58e19280fe4f89792aaf62929d19659223c2668dd09d215"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:1fa68ee1-0c3d-411a-b856-0e51b67335ad",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-848-required-contract-reading/prd.md",
+              "revision": "sha256:a922f8c7e39c567fb2f954087826c16ddfe57888e7875d7df9bad65941eee3de"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-848-required-contract-reading/deliveries/b3838f70-f6bc-490a-8269-4b749bad2639/design.md",
+            "revision": "sha256:e605ffece9be7783d58e19280fe4f89792aaf62929d19659223c2668dd09d215"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-848-required-contract-reading/deliveries/b3838f70-f6bc-490a-8269-4b749bad2639/prd.md",
+              "revision": "sha256:e1143008ea101631c590a8331594b6bb0d06f7b8d357a30ea0a8052f36ffabc5"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-848-required-contract-reading/deliveries/b3838f70-f6bc-490a-8269-4b749bad2639/design.md",
+              "revision": "sha256:e605ffece9be7783d58e19280fe4f89792aaf62929d19659223c2668dd09d215"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-848-required-contract-reading/deliveries/b3838f70-f6bc-490a-8269-4b749bad2639/implement.md",
+              "revision": "sha256:1f202bff3e1db4cf73e22c5b4c244db0d4206d183f5243698425d5daf04b65c4"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

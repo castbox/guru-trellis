@@ -169,6 +169,14 @@ consumers。原递归 package 分发安装合同、模板和示例；已有业�
 继续使用原 apply/reapply、受管哈希与 sidecar 冲突路径，保留用户内容；历史归档
 不追溯改写。完整多平台升级与 Release 矩阵仍由专门 Issue 负责。
 
+[必需正文读取方法](../../presets/guru-team/spec/workflow/companion-scripts.md#reading-required-contracts-in-full)
+由原共享小节维护。Phase Index/continuation 和现有平台入口在首次长文前
+定位 installed 短节；直接独立 Review 入口先解析完整 provider，再读同源材料。
+正文要求仍为实际完整获得和理解，预算请求不保证显示容量。
+采用修订时由原 tools owner 更新完整匹配 workflow、preset 和投影，保留用户
+内容并处理 sidecar；定向分发检查和无继承 Agent 实际采用各报告其观察层级。
+本项不替代完整多平台升级或 Release 矩阵。
+
 [清晰技术写作规范](../../presets/guru-team/spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
 `.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
 Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。
