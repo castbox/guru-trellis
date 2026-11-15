@@ -86,6 +86,21 @@ empty per-principle verdicts. Use the adopted-mechanism review below for the
 complete candidate, including public contracts and abstractions. This package
 does not own or restate principle prose.
 
+Treat baseline technical decisions as reviewable choices as well as current
+constraints. CURRENT describes implemented facts; its presence does not prove
+that a mechanism deserves continued adoption. An accepted ADR preserves a
+decision's original rationale, not an exemption when its premises fail.
+Establish a concrete defect or invalid premise from current consumers,
+responsibilities or external constraints; a preference or missing explanation
+alone does not disprove an existing decision. Preserve valid behavior and
+external contracts while the original owners revise the technical choice.
+Use the existing conflict/revision and maintenance routes; never silently
+ignore authority or rewrite CURRENT first to manufacture conformity. Correct
+the affected normative definition and replacement boundary at the lawful
+integration point, while accurately retaining any still-existing implementation
+facts. Apply current-knowledge's Migration and retirement to actual adopters;
+a GAP or later-work link alone cannot establish that the correction is complete.
+
 Distinguish a current requirement whose mechanism needs revision from a
 requirement-authority conflict. For the former, the current stage's qualification
 owner consumes `mechanism_revision_required` through its existing mechanism
@@ -112,6 +127,16 @@ coordination, failure handling or lifecycle. Reuse can bring those constraints
 into a new path even when the original utility has no diff. Ordinary helpers
 and causally unrelated dependencies do not each require a review unit. No actual
 Architecture impact retains the original lightweight route.
+
+Cover the smallest independently consequential choices, including fields,
+versions, cursors, tokens, checkpoints, configuration/defaults/fallbacks,
+interfaces, guards, retries, runtime/deployment units, tests, diagnostics and
+current guidance. Group choices only when their consumer, responsibility and
+lifecycle genuinely share one rationale; do not hide an independent state,
+cost or failure effect inside that grouping. Trace whether each adopted
+dependency can remain local or forces unrelated startup, readiness, release,
+worker or operator lifecycles to participate. Local replaceability must serve
+a present boundary, not a speculative future extension.
 
 First reconstruct supported observable completion and its necessary business,
 data, permission and external constraints. Derive a direct feasible completion
@@ -147,6 +172,28 @@ Compare removal, narrowing, replacement or retention using risk-matched evidence
 These are focused reasoning questions, not a required questionnaire, a new
 approval stage, a global optimization exercise or a performance benchmark for
 every helper. Finally check effects on legitimate normal requests.
+
+At Planning, the author supplies the candidate and simpler alternatives;
+candidate_assessment judges their actual constraints before solution planning,
+and final_plan checks the complete resulting design and consumers. At committed
+Review, independently challenge both mechanism necessity and the baseline
+decision being adopted, rather than checking design/code/test agreement alone.
+For each finding and repair, distinguish a missing necessary mechanism from an
+unnecessary one; reject new state, guards or fallbacks that merely mask the
+original coupling. Judge tests and diagnostics by the real behavior or consumer
+they protect, not by assertions that preserve the chosen implementation.
+These are responsibilities inside existing entries, not extra assessments.
+
+For each substantive decision, architecture finding or repair, state concisely
+in the existing design, contribution or review evidence: retained, narrowed,
+replaced or removed; the direct consumer and necessary responsibility; the
+removal consequence and feasible alternatives; coupling removed and retained;
+normal-request, deployment, recovery and maintenance costs; and the owner,
+remaining debt, deletion or reconsideration conditions. Explain unique necessity
+for retained choices, not uniqueness of their current implementation. Expose
+cost tradeoffs and uncertainty rather than inventing a single score or a
+performance measurement. Reuse applicable rationale; add no per-field records,
+public DTO fields, mandatory table, durable ledger or empty no-impact result.
 
 Use applicable complete RDT and Architecture units under the shared
 current-knowledge contract. Sufficient documentation can establish capability,
