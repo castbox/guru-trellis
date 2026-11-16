@@ -1189,11 +1189,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-16T12:45:47Z",
+  "installed_at": "2026-11-16T16:31:32Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "79c25b5eaafdbcf415393535a16a7b1c0d281284",
-    "commit": "79c25b5eaafdbcf415393535a16a7b1c0d281284",
+    "ref": "2938801829c8b8862e71d522891c79e8efb2d47a",
+    "commit": "2938801829c8b8862e71d522891c79e8efb2d47a",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
@@ -1419,7 +1419,7 @@
       {
         "id": "guru-discover-change-context",
         "interface_sha256": "d622101bc5e8c4c30c68ae1c420f985f17b71118356673adb73a403cc57cd5d9",
-        "tree_sha256": "09b87f9525ac784ead17ce8958ffbab088a5ba63e92d7ff36680e9d619e43782"
+        "tree_sha256": "5a5e51681d34a22ed0bc539a2e15dbec87b33c50012049a13c246137b3e8fc93"
       },
       {
         "id": "guru-ensure-task-checkout",
@@ -8902,7 +8902,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/commands.json",
-        "sha256": "2c2c16a56944da8f27ba5dd58b8343d0ec2a5edbdcbbea61dc2788bcae036c52",
+        "sha256": "6e6b73a7f64728838e1c0d0d5f5f5f2e30db6f272349d237940739ccd0a6d0d2",
         "executable": false,
         "action": "installed"
       },
@@ -37350,7 +37350,7 @@
       {
         "path": ".agents/skills/guru-discover-change-context/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/commands.json",
-        "sha256": "2c2c16a56944da8f27ba5dd58b8343d0ec2a5edbdcbbea61dc2788bcae036c52",
+        "sha256": "6e6b73a7f64728838e1c0d0d5f5f5f2e30db6f272349d237940739ccd0a6d0d2",
         "executable": false,
         "action": "installed"
       },
@@ -37749,7 +37749,7 @@
       {
         "path": ".claude/skills/guru-discover-change-context/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/commands.json",
-        "sha256": "2c2c16a56944da8f27ba5dd58b8343d0ec2a5edbdcbbea61dc2788bcae036c52",
+        "sha256": "6e6b73a7f64728838e1c0d0d5f5f5f2e30db6f272349d237940739ccd0a6d0d2",
         "executable": false,
         "action": "installed"
       },
@@ -38148,7 +38148,7 @@
       {
         "path": ".cursor/skills/guru-discover-change-context/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/commands.json",
-        "sha256": "2c2c16a56944da8f27ba5dd58b8343d0ec2a5edbdcbbea61dc2788bcae036c52",
+        "sha256": "6e6b73a7f64728838e1c0d0d5f5f5f2e30db6f272349d237940739ccd0a6d0d2",
         "executable": false,
         "action": "installed"
       },
