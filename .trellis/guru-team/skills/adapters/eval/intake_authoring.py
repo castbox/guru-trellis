@@ -4,7 +4,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import shutil
 from pathlib import Path
 import subprocess
 from typing import Any
@@ -19,6 +18,19 @@ INTAKE_SKILLS = (
     "guru-review-change-request",
 )
 FACTS_PATH = "docs/intake/public-source-facts.json"
+# Exact public methods required by the retained Intake owners. This inventory
+# supplies their existing read contracts; it grants no additional commands.
+PUBLIC_METHOD_PATHS = frozenset({
+    *(f".trellis/spec/workflow/{name}.md" for name in (
+        "clear-technical-writing", "review-sufficiency", "quality-guidelines",
+        "semantic-retrieval", "companion-scripts", "workflow-contract",
+        "causal-completion-semantics",
+    )),
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+    ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+    *(f".trellis/guru-team/skills/packages/guru-qualify-{name}/references/applicability.md"
+      for name in ("normal-scenario", "solution-mechanism", "root-cause")),
+})
 COMMANDS = {
     INTAKE_SKILLS[0]: ("invoke",),
     INTAKE_SKILLS[1]: ("preview-change-context-history", "record-context-discovery", "check-context-discovery", "invoke"),
@@ -54,10 +66,12 @@ def stage_intake_facts(request: dict[str, Any], execution_root: Path,
     if set(facts) != {"source", "repository_files"}:
         raise ValueError("Intake fixture contains non-source fields")
     source = facts["source"]
-    retrieval = Path(request["runtime_target"]).parents[4] / ".trellis/spec/workflow/semantic-retrieval.md"
-    target_retrieval = fixture / ".trellis/spec/workflow/semantic-retrieval.md"
-    target_retrieval.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(retrieval, target_retrieval)
+    for relative in sorted(PUBLIC_METHOD_PATHS):
+        # The original staging owner has already installed the complete
+        # selected source/installed provider. Preserve those matching bytes.
+        method = fixture / relative
+        if method.is_symlink() or not method.is_file():
+            raise ValueError(f"Intake public method is unavailable: {relative}")
     package = fixture / ".trellis/guru-team/skills/packages" / INTAKE_SKILLS[-1]
     for name in ("interface.json", "evals/evals.json"):
         if (package / name).read_bytes() != (Path(request["package_root"]) / name).read_bytes():

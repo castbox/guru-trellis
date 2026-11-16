@@ -357,8 +357,10 @@ exact action scope. A pure read-only request performs no GitHub mutation.
 For Issue/draft writing, revision, and requirements review, actually read
 [the shared Issue content specification](issue-content.md) and the installed
 writing specification before the applicable work. That body owns necessity,
-content organization, acceptance and complete review methods; apply them within
-this owner's writing and requirements review responsibility. This contract
+responsibility-boundary selection, result/evidence separation, minimal acceptance
+before creation, and complete review before each body writeback. Apply those
+methods and their shared validation reference within this owner's writing and
+requirements review responsibility, including later rounds and resumed sessions. This contract
 retains source actions and their execution order.
 When the user requests creation or improvement, organize necessary confirmed
 content into the final body under that specification. Ordinary discussion may

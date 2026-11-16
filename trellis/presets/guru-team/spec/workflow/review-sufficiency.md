@@ -72,7 +72,11 @@ order. Use [Semantic Retrieval](semantic-retrieval.md) for retrieval sufficiency
 [Specialist Review Standards](quality-guidelines.md#specialist-review-standards)
 for selecting professional methods, and
 [Test And Validation Value](quality-guidelines.md#test-and-validation-value)
-for test effectiveness and proof boundaries. Apply
+for test effectiveness, responsibility boundaries, minimal evidence and each
+round's proposed acceptance or verification obligations. Read that section and
+apply its boundary, deduplication and reuse method before forming review output;
+this common loading point covers later reviews within their original scope.
+Apply
 [Causal Completion Semantics](causal-completion-semantics.md) when judging causal
 claims. These sources retain their topic rules; this file does not copy them.
 

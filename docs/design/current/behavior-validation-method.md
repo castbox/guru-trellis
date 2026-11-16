@@ -17,3 +17,13 @@ Identity：RDT-DES-BEHAVIOR-VALIDATION；别名：D735/CON735。原语义 owner�
 ## 关系
 
 需求：docs/requirements/current/behavior-validation-method.md R735-01..03；测试：docs/test/current/behavior-validation-method.md T735-01..07。Architecture 当前 no impact 使用原独立结果，不制造贡献/ADR。quality/root/Author canonical 精确合同保持唯一来源。
+
+## #868 本次整合与关系
+
+原RDT owner在批准规划、实际实现及真实工程结果后，于固定前驱Git `b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec` 的Task隔离checkout完成final_integration和读回。状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review；不产生质量或Completion通过。来源和替代范围见[#868追踪](../../requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md)。既有来源、完整条件及旧观察截止保持。
+
+## D868-03 / CON868-VALIDATION：共用验证及实际观察
+
+承接R868-04。quality-guidelines Test And Validation Value单写跨阶段边界、停止外推、去重、复用与每轮必要性；review-sufficiency在原覆盖职责中实际加载，不复制规则。现有native eval确定性公开方法投影补齐Skill必读正文及传递依赖，隔离预期和私有runtime；不扩flow状态机/命令/生产schema，不替代AI判断。维护事实case及transport测试；关键创建/修订由匹配原Skill真实会话另行观察。对应T868-02/03/04。
+
+对应[R868-04](../../requirements/current/behavior-validation-method.md)、[T868-03及关联观察](../../test/current/behavior-validation-method.md)；Issue原入口D868-01/02见[Issue内容设计](issue-content.md)。

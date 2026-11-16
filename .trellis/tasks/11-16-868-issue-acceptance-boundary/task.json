@@ -1,0 +1,101 @@
+{
+  "schema_version": "2.0",
+  "id": "868-issue-acceptance-boundary",
+  "name": "868-issue-acceptance-boundary",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 868,
+    "disposition": "exact_source"
+  },
+  "title": "#868 按 Issue 权责边界精简验收与持续去重",
+  "description": "落实当前 #868 全部要求：创建前最小充分验收、责任边界内最外沿切面、禁止调用链外推、任意后续审核去重及原生行为验证与受管采用。",
+  "dev_type": null,
+  "scope": "修订共享 Issue 内容与验证规范、原创建及审核 owner、必要入口/投影、教学例子和原 Skill eval；不新增语义脚本、阶段、字段或完整安装矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-16",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+    "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+  },
+  "deliveries": [
+    {
+      "id": "96a94470-7ce9-487d-989e-594d4933e4bb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+          "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/96a94470-7ce9-487d-989e-594d4933e4bb",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+        "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:1ea61b0c-13e0-49dc-a753-60d45a143f74",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+              "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+            "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/prd.md",
+              "revision": "sha256:2c93243515c2315a360d47e21901553f5cb115876d0815318534e8aabc4d7de3"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+              "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/implement.md",
+              "revision": "sha256:5be453207b6a49b7d03e06eac7b6f145c52454cbe54f7afa9e3ba3a84bc2ded3"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

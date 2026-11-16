@@ -17,3 +17,13 @@ Author、实现者和审核者从当前需求、设计或已确认缺陷取得�
 ## 归属与关系
 
 不新增 Skill、阶段、公共I/O、证据账本或审批。原 Author、root qualification、实施协调、Check、Branch Review 保持自己的判断与出口；脚本仅执行和校验事实。设计 D735/CON735 位于 docs/design/current/behavior-validation-method.md；测试 T735/SC735 位于 docs/test/current/behavior-validation-method.md。现有工程事实适用性和审核充分性沿各自唯一源；本项不改生产完成语义或 #734预算范围。
+
+## #868 本次整合与关系
+
+原RDT owner在批准规划、实际实现及真实工程结果后，于固定前驱Git `b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec` 的Task隔离checkout完成final_integration和读回。状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review；不产生质量或Completion通过。来源和替代范围见[#868追踪](../../requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md)。既有来源、完整条件及旧观察截止保持。
+
+## R868-04 / BEH868-EVIDENCE：共用最小充分证据
+
+各原owner在accepted responsibility内选择最外沿有效观察，不沿调用链追到消费方接入、E2E、生产采用或联合验收。仅在有效需求包含联合交付，或自身承诺须经集成证明时保留最小相应验证，指出承诺与现有证据缺口。外沿充分证据已覆盖时不逐层复制单元/集成/E2E/联合验收；内部明确条件缺口只补定向证据。替身只隔离边界外依赖，不制造被测组件结果。对象/版本、条件、路径和结论仍适用的证据复用，阶段、reviewer或信心变化不要求重跑。原owner独立判断当前充分性。唯一跨阶段方法为quality-guidelines Test And Validation Value，共同review-sufficiency薄引用，不新建表/账本/阶段。对应D868-03、T868-02/03。
+
+对应[设计D868-03](../../design/current/behavior-validation-method.md)、[测试T868-03及关联T868-02/04](../../test/current/behavior-validation-method.md)；Issue-specific R868-01..03由[Issue内容单元](issue-content.md)拥有。

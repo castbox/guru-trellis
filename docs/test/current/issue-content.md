@@ -84,3 +84,21 @@ reapply 后再次比较3,345个 Task/session/AGENTS/配置文件，differences={
 ## T850-04 / SC850-ADOPTION：匹配采用及退役
 
 原tools owner安装/reapply后读回resolver、installed/native、三平台bytes/mode、退役资产、sidecar及Task/session/配置/peer。普通模式偏差保原观察及恢复，不手改manifest/checkpoint，不把准备当成功。源码、Agent、安装、外部层分开；formal_source_lock、完整Release矩阵与未执行外部效果保持未验证。对应R850-04/D850-04；实际观察由#850贡献test.md单写。
+
+## #868 本次整合与关系
+
+原RDT owner在批准规划、实际实现及真实工程结果后，于固定前驱Git `b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec` 的Task隔离checkout完成final_integration和读回。状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review；不产生质量或Completion通过。来源和替代范围见[#868追踪](../../requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md)。既有来源、完整条件及旧观察截止保持。
+
+## T868-01 / SC868-WRITING
+
+R868-01/02 → D868-01/02。以两个目标及混合候选的正常请求，经原Clarify形成完整正文。独立核必要结果、工程证据、重复义务与合法技术承诺；保留首次输出及普通返修，不以条数证明精简。
+
+## T868-02 / SC868-CONTINUING
+
+R868-02/03/04 → D868-02/03。真实原owner首次创建前核最终稿，不合规先修订；后续独立/恢复审核面对跨界E2E、层级叠加、改名风险与真实内部条件/明确联合交付，核本轮输出、完整postimage、原出口和动作顺序。既拒绝扩张又保实际缺口。预期不传给被测Agent，不以exit0或预填pass证明行为。provider替身与live效果分开。
+
+## T868-04 / SC868-ADOPTION
+
+R868-02/03/04 → D868-02/03。现有Issue-content和review-sufficiency分发测试执行真实writer/reapply、声明平台、用户保留及sidecar。原tools owner核resolver/installed/native/drift/mode及Task/session/peer保留；local_candidate不证明formal_fork_source_lock。不扩完整矩阵、Release或外仓采用。
+
+实际观察由[#868 Test](../../requirements-design-test-contributions/868-issue-acceptance-boundary/test.md)拥有：真实创建链完成完整草稿精简、原clear/ready和创建前核对；后续原native审核拒绝扩张并复用E1/E2，只补E3；分发及本目标采用已完成。外部GitHub写入/读回、正式source-lock、完整安装/Release矩阵未执行。原生方法投影T868-03见[验证方法测试单元](behavior-validation-method.md)，不将静态传递或安装结果代替行为。对应R868-01..03、D868-01/02及跨阶段R868-04/D868-03。
