@@ -31,7 +31,9 @@ recorder/validator, then return exactly one declared typed exit.
 The executing AI checks Sync's public transition against the contract's
 read-only Git facts before semantic retrieval. Record/check later reobserve
 those facts and derive `base_observation`. Use those existing actions in order.
-For an unbound local draft, the contract gives a source-capture example.
+For an unbound local draft, read the contract's
+[Related Issue Clues And Draft Binding](references/contract.md#related-issue-clues-and-draft-binding)
+before using its source-capture example or authoring retrieval clues.
 
 Run commands from the reviewed repository root. The full execution package is
 `.trellis/guru-team/skills/packages/guru-discover-change-context`; `scripts/`,

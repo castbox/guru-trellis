@@ -438,6 +438,31 @@ Use ordinary JSON/SHA-256 APIs on the facts already read, not a private runtime
 helper or another live request. An issue has `issue_binding=null`; a draft
 retains the complete source shape required by the referenced schema.
 
+### Related Issue Clues And Draft Binding
+
+Related Issues can supply background and retrieval clues without being the
+same-content source bound to a draft. For `live_change.kind=draft`, the existing
+owner-result contract requires a real `issue_binding` object when
+`change_input.issue_refs` is non-empty. When that array is empty, the draft's
+`issue_binding` must be `null`. The source fragment below does not make `null`
+valid for every draft input. A live `issue` source keeps its separate contract.
+
+For a new unbound draft whose related Issues are background only, keep
+`change_input.issue_refs=[]` and `live_change.issue_binding=null`. Preserve the
+related numbers and applicable topic clues in the existing `change_input.terms`,
+for example `terms=["#123", "#456", "Discovery draft binding"]`. Keep their
+background purpose clear in the reviewed scope and observations. Complete the
+other clue arrays and required owner fields from the actual investigation;
+these assignments are not a complete invocation or semantic Gate result.
+
+This expression retains the related clues for retrieval. `terms` and
+`issue_refs` use different matching and scoring rules, so it does not promise
+the same scores, ranking or returned candidates. Review the actual preview
+under the original history method. Do not delete the clues to satisfy the
+schema or invent an Issue binding from a background relationship. A genuinely
+bound draft retains its actual open, same-content Issue and source facts under
+the existing consistency checks.
+
 For a new local text-only draft with no external Issue binding, the caller can
 capture its complete UTF-8 body as the source evidence. In that supported
 capture, `body_sha256` and `facts_sha256` both hash those exact body bytes;
@@ -512,6 +537,7 @@ the actual `typed_exit` still determines whether context can continue.
 
 | Field/evidence class | Current owner's recovery |
 | --- | --- |
+| Draft `live_change.issue_binding` with non-empty `change_input.issue_refs` | Reread Related Issue Clues And Draft Binding and the actual source. If the references are background only, keep their numbers and topics in `terms`, empty `issue_refs`, retain `issue_binding=null`, and rerun the complete record/check/invoke sequence. A real same-content binding retains its actual object and source facts; do not fabricate one to clear the error. |
 | `owner_result.mode`, `change_input` or `base_observation` difference | Reread current public input and the actual Sync transition; rebuild this owner's complete result through record/check/invoke. Nested equality failures identify the first differing key or array position. |
 | `owner_result.history_preview` difference | Reread current preview, review selection and affected evidence, then rebuild through the same original sequence. |
 | `owner_result.result_identity` binding difference | Reread current source evidence and complete recorder output, then rebuild. A digest only identifies the binding/evidence class; it does not locate a source byte or establish a UTF-8 root cause. |
