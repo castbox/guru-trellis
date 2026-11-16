@@ -11,6 +11,8 @@
 | S5 | `trellis/guru-team-extension.json`；`trellis/presets/guru-team/source/trellis-source.json`；`.trellis/.version` | 当前事实 | 区分 Guru 版本和 Fork CLI/source lock |
 | S6 | `README.md`；`trellis/workflows/guru-team/README.md`；`trellis/presets/guru-team/README.md` | 当前事实 | 正式安装入口、同源 ref 和版本说明 |
 | S7 | `trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`；`verify_trellis_compatibility_matrix.py`；`verify_native_platform_load.py`（后两者同目录） | 失败证据及当前实现 | Stage 2 已确认的退役测试、AGENTS 替换及平台选择消费者缺口 |
+| S8 | `trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py:NormalPhase0AuthoringTests`；同目录 `verify_installed_phase0_transcript.py:clarification_owner_for_issue` | 当前代码与正常失败证据 | 当前 helper 的 owner envelope 与既有测试消费不一致 |
+| S9 | `trellis/skills/guru-team/packages/guru-discover-change-context/{commands.json,interface.json,runtime/issue_review.py}`；该包 context-request 2.0 与 supplement 1.0 schema | 当前公开合同与正常复现 | 四个命令帮助的 context-request 引用过期；supplement 1.0 仍是当前合法合同 |
 
 “准备完成”表示本 Task 的全部交付及收尾完成；不表示 tag、smoke 或 Release 已完成。“真实采用”指原 tools owner 对准备 checkout 完成 `source_locked` 更新并验证；临时安装不替代它。正式发布后的本地目标仅为保留主目录 `/Users/wumengye/Documents/GoProjects/guru-trellis`，由 Stage 2 处理。
 
@@ -20,7 +22,9 @@
 
 固定 Fork 的 CLI 为 `0.7.0-castbox.6`。本次 Guru 发版不单独提升 Fork 版本；复核 manifest、lock、实际构建和 CLI 记录的一致性。版本说明与实际安装必须共同准备，不能只改版本号或用验证器通过代替真实采用。
 
-原准备的两次交付已分别合入 PR #865、#866，终态簿记经 PR #867 合入 main。随后 Stage 2 完整候选审核确认两个 P2：installer 测试仍要求退役 Wording 资产；合法 AGENTS 受管区块替换被前驱升级验证器误判为 template-hash drift。实际 Claude focused 安装还暴露平台检查器错误要求两个 Codex-only Skills。本轮后继准备修复这三个必要消费者，并收敛原真实安装验收发现的 current input schema inventory 差额。当前 canonical manifest 比42个 active Interface 的有效 JSON input 声明多11项历史输入，typed output 集合无差额。原交付及其终态结论保留历史身份，不作为修复或新候选通过证据。
+gen0 准备的两次交付已分别合入 PR #865、#866，终态簿记经 PR #867 合入 main。随后 Stage 2 完整候选审核确认两个 P2：installer 测试仍要求退役 Wording 资产；合法 AGENTS 受管区块替换被前驱升级验证器误判为 template-hash drift。实际 Claude focused 安装还暴露平台检查器错误要求两个 Codex-only Skills。gen1 后继准备修复这三个必要消费者，并收敛原真实安装验收发现的 current input schema inventory 差额。当时 canonical manifest 比42个 active Interface 的有效 JSON input 声明多11项历史输入，typed output 集合无差额。原交付及其终态结论保留历史身份，不作为修复或新候选通过证据。
+
+上述 gen1 准备已通过 PR #871、#875 交付，终态簿记 PR #876 合并。其后从最新 main 冻结的 `5dc0708a1d817fb9fb02edb64419b7b3c3f7cc10` 完整发布审核确认两项后继缺陷：Phase 0 authoring helper 已使用 `{owner_result, owner_context}`，现有测试仍按 flat owner 读取，四例中一例报 `KeyError: review_target`；Discovery runtime/Interface 的 context_request 已采用 input 2.0，而四个命令的帮助仍引用 closed input 1.0，按该声明装配的正常输入与实际入口不一致。该包自己的 issue_readiness_supplement 仍采用合法 input 1.0，不能与 Clarify 同名 profile 的 2.0 混用。gen2 只修复这两项及其直接回归、分发和实际采用责任。前一候选的其余工程结果保留原身份，不作为新候选发布通过证明。
 
 ## 3. 目标与非目标
 
@@ -53,6 +57,9 @@
 
 - **R11 当前清单与采用**：canonical `public_api.skill_contracts.public_input_schema_ids` 精确承接 active Interface 的当前结构化输入；保留 instruction-only 不贡献 JSON I/O、历史 schema 文件及原固定 provider 恢复边界，不将历史 schema 继续宣告为当前可调用输入。核清并纠正11项旧登记，提供明确兼容迁移说明，同批适配真实安装测试及直接能力消费者。修改可分发 manifest 后，原准备 checkout 必须通过原 `guru-upgrade-tools(source_locked)` 从本批已交付的完整干净源实际采用；该采用依赖前一批实际 delivered，在同Task的后继独立Delivery执行。不得手改installed清单或用临时安装替代真实采用。
 
+- **R12 Phase 0 envelope 消费**：既有 authoring 回归必须消费当前 `{owner_result, owner_context}`，继续检查 owner 不预填 recorder 派生字段、duplicate 事实来自原输入、checker 接收同一 recorded owner 及匹配来源上下文。不得恢复旧生产 shape、删去原绑定断言或用 mock 自证代替实际 helper 执行。
+- **R13 Discovery 命令输入合同**：record、check、invoke、read-source 四个既有命令的 context_request 声明改为 runtime/Interface 已采用的 2.0；该包 issue_readiness_supplement 的当前合法 1.0 引用保持。context_request 的正常 review_focus 与返回身份，以及 supplement 1.0 原有 profile/mode/issue/base_source/continuation_id/source_exit/gap 形状，分别能按公开帮助进入原验证入口。保留历史 schema 文件与原固定 provider 恢复边界，不新增 profile/schema/API、不改变实际业务路由。修复后的受管投影及真实准备 checkout 采用按 R3–R5 的有序责任完成。
+
 ## 6. 约束与依赖
 
 复用当前 Markdown workflow、私有发布合同和原公共 Skill API；不修改上游或全局包，不模拟审批链，不写共享 journal，不持久化授权。当前流程没有默认独立 Wording 关卡；表达和语义保持由原写作、审核 owner 在其职责内完成。
@@ -61,7 +68,9 @@ D2 只依赖本 Task 内实际完成的 D1 完整源交付。这不是对其它 
 
 准备 checkout 的采用属于本 Task；正式发布后保留主目录的安装收敛属于 Stage 2。两者的目标、来源和证据分别核实，不互相代替。
 
-后继修复复用原 canonical installer、平台选择及验证入口，不新增公共 Skill、schema、发布状态或持久校验账本。当前切片同批包含验证器/测试及必要canonical manifest清单修复和明确兼容说明；分发改变触发的真实 source_locked 采用属于同Task剩余责任，由当前切片实际交付后原Completion/Creation分配后继，不预建或选中第二Delivery。正常用户正文变化、受支持平台选择及真实前驱升级属于验证范围；不扩张到对抗输入或累计完整矩阵。
+后继修复复用原 canonical installer、平台选择及验证入口，不新增公共 Skill、schema、发布状态或持久校验账本。gen1 源切片已同批包含验证器/测试、必要 canonical manifest 清单修复和明确兼容说明。后继分发改变触发的真实 source_locked 采用仍属于同 Task 剩余责任，由完整源切片实际交付后原 Completion/Creation 分配，不预建或选中第二 Delivery。正常用户正文变化、受支持平台选择及真实前驱升级属于验证范围；不扩张到对抗输入或累计完整矩阵。
+
+gen2 的完整源切片覆盖 R12–R13 及其适用 R1–R7：只迁移测试断言、修正现有命令 schema 引用并补足必要正常回归。Guru 目标仍为尚未正式发布的 `.10`，Fork lock/CLI 不变。实际准备 checkout 的 tools 采用不能从 dirty 或未交付源启动；D1 delivered 后才由 Completion/Creation 分配 D2。主目录仍是正式发布后唯一最终本地安装目标，本准备切片不将它变为工具采用目标。
 
 ## 7. 可观察验收与验证方式
 
@@ -76,7 +85,9 @@ D2 只依赖本 Task 内实际完成的 D1 完整源交付。这不是对其它 
 | AC7 | R9 / SC5 | 受管区块替换回归验证旧正文到新正文及区块外保留；真实 `.9` 前驱 existing 原入口完成其完整校验 | `tools_upgraded` 单独不能代替 existing 验证通过；原失败输出保留 |
 | AC8 | R10 / SC5 | 混合 shared/Codex-only registry 的定向回归，以及 Claude/Cursor clean/update/reapply 原入口覆盖平台集合 | 投影检查不声称真实客户端 Agent 或生产行为通过；三平台替代证据仍须最终发布 owner 审查 |
 | AC9 | R11 / SC5 | 原真实安装测试对current JSON input/output与active Interface作exact比较，11项旧登记退出current但历史schema保持；本批delivered后，后继采用Delivery从完整干净交付源验证实际source_locked及全量受管内容 | 当前输入支持范围不新增，历史恢复不混装；完整existing在新源实际采用后、Whole Completion前完成 |
+| AC10 | R12 / SC5 | 执行现有 `NormalPhase0AuthoringTests`；实际 helper 调用的 recorder/checker envelope 能完成派生字段与来源绑定断言，四例无该 KeyError | 测试适配不证明真实 GitHub 或客户端 Agent 流程完成 |
+| AC11 | R13 / SC5 | 从四个实际命令帮助取得 current 声明，使用两个受支持 profile 的正常输入验证与 runtime/Interface 一致；完整 source/临时 installed 投影无旧 current 声明，后继实际采用验证同一合同 | 不恢复历史 schema 为 current；临时安装不替代准备 checkout 的实际采用 |
 
 ## 8. 实际未决项
 
-没有阻塞整体准备需求的未决产品选择。当前修复 Delivery 同批承担 R8–R11 的source/consumer修复及相关原 R5–R7 责任；实际采用作为有序后继责任，不将必要修复延期到发布后。各 Delivery 的实际文件集合、验证命令、Docs 策略和 Architecture 承接由原规划 owner 在相应切片展开；它们不降低以上整体责任。正式发布候选和发布结果只在 Stage 2 从 live main 与真实结果取得，不在本文件预填。
+没有阻塞整体准备需求的未决产品选择。R8–R11 保留其原交付及历史结果；gen2 当前完整源切片承担 R12–R13 和适用的 R1–R7，实际采用作为其有序后继责任，不提前创建 D2，也不将必要修复延期到发布后。各 Delivery 的实际文件集合、验证命令、Docs 策略和 Architecture 承接由原规划 owner 在相应切片展开；它们不降低以上整体责任。正式发布候选和发布结果只在 Stage 2 从 live main 与真实结果取得，不在本文件预填。
