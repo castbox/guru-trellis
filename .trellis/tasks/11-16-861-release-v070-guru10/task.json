@@ -3,7 +3,7 @@
   "artifact_origin": ".trellis/tasks/11-16-861-release-v070-guru10",
   "id": "744a637b-a044-46cd-8cdd-77ddd85ded8e",
   "name": "861-release-v070-guru10",
-  "lifecycle_generation": 1,
+  "lifecycle_generation": 2,
   "source": {
     "kind": "issue",
     "repo_ref": "castbox/guru-trellis",
@@ -26,7 +26,7 @@
   "meta": {},
   "accepted_scope": {
     "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
-    "revision": "sha256:287ca06d18f878e858c70b703c39ef3643084e5aca9df1e41409f842c2e6869d"
+    "revision": "sha256:0b58a6f33c687290d842d6de14e74ed6b77e52d49106a328c2161080382ec12c"
   },
   "deliveries": [
     {
@@ -1748,6 +1748,95 @@
         "merge_commit": "e9f3be4b97ad1e8afb8db4d51c2f2be04a3ff531",
         "target_ref": "main"
       },
+      "stop_result": null
+    },
+    {
+      "id": "bb916153-bffa-4961-a06f-4a54b9bdef2f",
+      "lifecycle_generation": 2,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+          "revision": "sha256:0b58a6f33c687290d842d6de14e74ed6b77e52d49106a328c2161080382ec12c"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R5",
+          "R6",
+          "R7",
+          "R12",
+          "R13",
+          "AC1",
+          "AC2",
+          "AC4",
+          "AC10",
+          "AC11"
+        ]
+      },
+      "planning_root": "deliveries/bb916153-bffa-4961-a06f-4a54b9bdef2f",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/bb916153-bffa-4961-a06f-4a54b9bdef2f/design.md",
+        "revision": "sha256:2c9e52859a0d78836fc055067e7d4257672aa70d7cf0c4d9c61aadda4f45296e"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:6a6491f9-723a-4c92-ab64-5f110885c1e9",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+              "revision": "sha256:0b58a6f33c687290d842d6de14e74ed6b77e52d49106a328c2161080382ec12c"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R5",
+              "R6",
+              "R7",
+              "R12",
+              "R13",
+              "AC1",
+              "AC2",
+              "AC4",
+              "AC10",
+              "AC11"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/bb916153-bffa-4961-a06f-4a54b9bdef2f/design.md",
+            "revision": "sha256:2c9e52859a0d78836fc055067e7d4257672aa70d7cf0c4d9c61aadda4f45296e"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/bb916153-bffa-4961-a06f-4a54b9bdef2f/prd.md",
+              "revision": "sha256:8c63245eb5cc25ce65bf23fa9450007bc1f813fafbffbecd0afe9d3b72dd93c5"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/bb916153-bffa-4961-a06f-4a54b9bdef2f/design.md",
+              "revision": "sha256:2c9e52859a0d78836fc055067e7d4257672aa70d7cf0c4d9c61aadda4f45296e"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/bb916153-bffa-4961-a06f-4a54b9bdef2f/implement.md",
+              "revision": "sha256:74df1300655be442e704340fe53e0c01ba7c780da2c1b55d38e2a3901626dbad"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
       "stop_result": null
     }
   ],

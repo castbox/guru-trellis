@@ -117,7 +117,7 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-context-request-input-2.0.schema.json",
         "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
         "schemas/public-issue-context-ready-output-2.0.schema.json",
         "schemas/issue-review-owner-1.0.schema.json"
@@ -185,7 +185,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-context-request-input-2.0.schema.json",
         "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
         "schemas/public-issue-context-ready-output-2.0.schema.json",
         "schemas/issue-review-owner-1.0.schema.json"
@@ -245,7 +245,7 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-context-request-input-2.0.schema.json",
         "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
         "schemas/public-issue-context-ready-output-2.0.schema.json",
         "schemas/issue-review-owner-1.0.schema.json"
@@ -289,7 +289,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-issue-context-request-input-1.0.schema.json",
+        "schemas/public-issue-context-request-input-2.0.schema.json",
         "schemas/public-issue-readiness-supplement-input-1.0.schema.json",
         "schemas/public-issue-context-ready-output-2.0.schema.json",
         "schemas/issue-review-owner-1.0.schema.json"

@@ -85,14 +85,23 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
              mock.patch.object(self.helper, "record_semantic", side_effect=[recorded, checked]) as call:
             self.assertEqual(self.helper.clarification_owner_for_issue(
                 Path("/fixture"), {}, transition, snapshot), (recorded, checked))
-        authored = call.call_args_list[0].args[-1]
+        record_envelope = call.call_args_list[0].args[-1]
+        authored = record_envelope["owner_result"]
         self.assertNotIn("content_identity", authored)
         self.assertNotIn("facts_sha256", authored["review_target"])
         self.assertNotIn("disposition_digest", authored["target_disposition"])
         self.assertEqual(authored["target_disposition"]["duplicate_facts_sha256"], "d" * 64)
         self.assertNotIn("payload_sha256", authored["source_actions"][0])
         self.assertNotIn("action_digest", authored["source_actions"][0])
-        self.assertIs(call.call_args_list[1].args[-1], recorded)
+        expected_source = {
+            "kind": "issue", "repo": "example/guru-extension", "number": 145,
+            "title": self.issue()["title"], "body": self.issue()["body"],
+            "updated_at": self.issue()["updatedAt"],
+        }
+        self.assertEqual(record_envelope["owner_context"], {"change_request": expected_source})
+        check_envelope = call.call_args_list[1].args[-1]
+        self.assertIs(check_envelope["owner_result"], recorded)
+        self.assertEqual(check_envelope["owner_context"], {"change_request": expected_source})
 
     def test_readiness_all_routes_author_only_semantic_gate_fields(self):
         with mock.patch.object(self.helper, "live_issue", return_value=self.issue()):

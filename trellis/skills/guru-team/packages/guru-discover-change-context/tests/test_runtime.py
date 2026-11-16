@@ -22,6 +22,7 @@ import common as discovery_common
 from common import active_task,bind_owner_to_public,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
 from check import run as check_run
 from invoke import run as invoke_run
+from issue_review import execute as execute_issue_review
 
 class PackageLocalRuntimeTest(unittest.TestCase):
  def test_command_and_error_contract_close(self):
@@ -45,6 +46,47 @@ class PackageLocalRuntimeTest(unittest.TestCase):
     self.assertEqual(0,main(PACKAGE,[command["id"],"--help"]))
    after=subprocess.run(["git","status","--porcelain=v1"],cwd=SKILLS.parents[2],text=True,stdout=subprocess.PIPE).stdout
    self.assertEqual(before,after)
+
+ def test_issue_help_contracts_accept_normal_inputs_and_preserve_returns(self):
+  identity={"mode":"workflow","issue":{"repo_ref":"example/repo","number":27},
+            "base_source":{"kind":"git_object","selected_ref":"origin/main","commit":"1"*40},
+            "continuation_id":"issue-review-27"}
+  gap="Resolve the indicated current coverage gap."
+  supplement={"profile":"issue_readiness_supplement",**identity,
+              "source_exit":"supplement_context","gap":gap}
+  inputs=[supplement]
+  for focus in ("requirements","wording_only"):
+   inputs.append({"profile":"context_request",**identity,"source_exit":"needs_context",
+                  "gap":gap,"review_focus":focus,
+                  "return_identity":{"profile":"issue_readiness_supplement",**identity,
+                                     "gap":gap,"review_focus":focus}})
+  for command_id in ("record-context-discovery","check-context-discovery",
+                     "invoke-guru-discover-change-context","read-change-context-source"):
+   help_output=io.StringIO()
+   with patch("sys.stdout",help_output):
+    self.assertEqual(0,main(PACKAGE,[command_id,"--help"]))
+   contracts=help_output.getvalue().split("command contracts:\n",1)[1].split("\n\n",1)[0]
+   schemas=[json.loads((PACKAGE/line.strip()).read_text()) for line in contracts.splitlines()]
+   for public in inputs:
+    with self.subTest(command=command_id,profile=public["profile"],focus=public.get("review_focus")):
+     declared=[schema for schema in schemas
+               if schema.get("properties",{}).get("profile",{}).get("const")==public["profile"]]
+     self.assertEqual(1,len(declared))
+     Draft202012Validator(declared[0]).validate(public)
+     owner={"public_input":public,"typed_exit":"context_ready" if public.get("return_identity") else "supplemented",
+            "result_summary":"Current repository context is available.","source_refs":["README.md"],
+            "ai_review_gate":{"status":"passed","summary":"The requested context is covered."}}
+     envelope={"schema_version":"1.0","public_input":public,"owner_context":{},"owner_result":owner}
+     output=execute_issue_review(PACKAGE,envelope,"invoke")
+     if public.get("return_identity"):
+      returned={key.removeprefix("handoff_"):value for key,value in output.items() if key.startswith("handoff_")}
+      self.assertEqual(public["return_identity"],returned)
+      self.assertEqual("context_ready",output["exit_id"])
+     else:
+      self.assertEqual("supplemented",output["exit_id"])
+      self.assertEqual(identity,{key:output[key] for key in identity})
+     self.assertEqual(owner["result_summary"],output.get("context_result",output.get("result_summary")))
+     self.assertEqual(owner["source_refs"],output["source_refs"])
 
  def test_runtime_and_launchers_do_not_reference_monolith(self):
   for root in (PACKAGE/"runtime",PACKAGE/"scripts"):
