@@ -1,0 +1,22 @@
+task_id: 868-issue-acceptance-boundary
+source: https://github.com/castbox/guru-trellis/issues/868
+status: integrated_pending_review
+strategy: delta_first
+preimage: b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec
+authority:
+  locator: docs
+  identity: guru-trellis-rdt
+  version: b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  requirements: [docs/requirements/current/issue-content.md, docs/requirements/current/behavior-validation-method.md]
+  design: [docs/design/current/issue-content.md, docs/design/current/behavior-validation-method.md]
+  test: [docs/test/current/issue-content.md, docs/test/current/behavior-validation-method.md]

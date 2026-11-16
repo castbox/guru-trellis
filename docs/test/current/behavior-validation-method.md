@@ -15,3 +15,13 @@ R735-03 → D735-03。命中 package contract/runtime、source/installed/实际�
 ## 结果定位与关系
 
 本批实际输入、动作、结论和证据边界唯一由 TaskId 735-behavior-causal-validation、generation0、DeliveryId 51cf3d42-d210-4938-a20a-da800f158795 的 validation 正文承担，Task 活动或归档路径由原身份解析；本单元不复制执行记录为第二结果authority，不预填最终pass或自身最终HEAD。需求R735位于 docs/requirements/current/behavior-validation-method.md，设计D735位于 docs/design/current/behavior-validation-method.md。正式 Check、Review、Delivery、Completion 仍读取原公共结果与实际 Git/PR事实。
+
+## #868 本次整合与关系
+
+原RDT owner在批准规划、实际实现及真实工程结果后，于固定前驱Git `b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec` 的Task隔离checkout完成final_integration和读回。状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review；不产生质量或Completion通过。来源和替代范围见[#868追踪](../../requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md)。既有来源、完整条件及旧观察截止保持。
+
+## T868-03 / SC868-TRANSPORT
+
+R868-04 → D868-03。原native staging装配固定public正文及必要依赖，测试真实投影/allowlist读取、字节与私有目录排除；只证明传递边界。Readiness native corpus由原runner执行，独立判断完整轨迹。
+
+关联[Issue内容测试](issue-content.md)的T868-02/04：观察明确联合交付与边界外调用链的区别、已有充分覆盖复用和真实内层缺口定向补证。实际原runner standard-intake-authoring-acceptance-boundary取得ready，主协调器独立grade后正式passed；投影、传输和真实语义分层说明见[#868 Test](../../requirements-design-test-contributions/868-issue-acceptance-boundary/test.md)。对应R868-04、D868-03；沿原T735停止及因果方法，无新固定矩阵或实验门槛。

@@ -17,10 +17,12 @@ request when available. No additional approval is needed for that recovery.
 Before the existing creation semantic gate, read the shared
 [Issue content specification](../guru-clarify-requirements/references/issue-content.md)
 in full, together with the writing specification above and necessary current
-sources. Apply its methods for necessity, review of complete rules and acceptance within
-this gate. Confirm the final complete title/body meets that common baseline,
-the prior reviews still apply, and the exact pending content matches the
-reviewed draft. An omission follows the original `refresh_review` route to
+sources. Within this original gate, apply its responsibility-boundary,
+result/evidence and minimal-acceptance methods before the first provider creation
+write, for every supported entry and draft origin. Confirm the final complete
+title/body meets that common baseline, the prior reviews still apply, and the
+exact pending content matches the reviewed draft. A content gap, excess or
+duplicated obligation follows the original `refresh_review` route to
 Sync/fresh Intake and the affected original owner; do not create first or
 become a second writer. After creation, use the original live readback to
 verify actual title/body against the reviewed content, preserving the existing
