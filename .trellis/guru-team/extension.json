@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.7.0-guru.9",
+    "version": "0.7.0-guru.10",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.7.0-castbox.6",
@@ -1200,11 +1200,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-15T21:09:50Z",
+  "installed_at": "2026-11-16T00:48:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "9697e04d66cf5958f507f340116b4aa3b6ab2f39",
-    "commit": "9697e04d66cf5958f507f340116b4aa3b6ab2f39",
+    "ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+    "commit": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1225,6 +1225,7 @@
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
       ".trellis/guru-team/references/legacy.md",
+      ".trellis/guru-team/references/routing.md",
       ".trellis/guru-team/schemas/finish-summary.schema.json",
       ".trellis/guru-team/scripts/bash/check-agent-recovery.sh",
       ".trellis/guru-team/scripts/bash/check-base-sync.sh",
@@ -1559,7 +1560,7 @@
       {
         "id": "guru-upgrade-installation",
         "interface_sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
-        "tree_sha256": "b568c9b2ac03744caa4c077e22c461a1c16b3f5363721366b85552320dfcb18c"
+        "tree_sha256": "4b733d4be924240c08bb3364ae94d6ae18a96e6a0c1fe1ef5505682081af533e"
       },
       {
         "id": "guru-upgrade-tools",
@@ -2451,7 +2452,7 @@
       {
         "path": ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
         "source": "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
-        "sha256": "923a0f12d8fdc58cc9e2dff4db3e62b2cc0ffe2a9803e2f9d2b0755a905020f1",
+        "sha256": "50cc2fd23ada4d1eb6c0cd3678477044bca8bd38a9c06faff3c124692a37cdf7",
         "executable": false,
         "action": "installed"
       },
@@ -21589,7 +21590,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
-        "sha256": "923a0f12d8fdc58cc9e2dff4db3e62b2cc0ffe2a9803e2f9d2b0755a905020f1",
+        "sha256": "50cc2fd23ada4d1eb6c0cd3678477044bca8bd38a9c06faff3c124692a37cdf7",
         "executable": false,
         "action": "installed"
       },
@@ -21680,7 +21681,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
-        "sha256": "8971cbf39665760ea8c3ee27e2e0261ee9cf05958916d463fe64a65aaf7e7d83",
+        "sha256": "065d1910501a8731202a61148e7ef859dc94ccae042d897a956e2a696182359e",
         "executable": false,
         "action": "installed"
       },
@@ -21743,7 +21744,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
-        "sha256": "3dc6f8ac6e8dcffd6b85b7e62915edbab1e054b27811df163f9757e78dd03e4b",
+        "sha256": "3a876df9fd3d42920d427f578bcee07ae66e16ccbd43f18eb15a4ccf244b7c5b",
         "executable": false,
         "action": "installed"
       },
@@ -21862,7 +21863,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
-        "sha256": "1ff5de827c3172320fb7828b765dba1aa89c142e4bc7feabf8b1345e0e5e1d3c",
+        "sha256": "0683d61e6d693df35776c689060a8150f9ff11361691359bcd670559f43348b9",
         "executable": false,
         "action": "installed"
       },
@@ -68867,7 +68868,7 @@
       {
         "path": ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
-        "sha256": "923a0f12d8fdc58cc9e2dff4db3e62b2cc0ffe2a9803e2f9d2b0755a905020f1",
+        "sha256": "50cc2fd23ada4d1eb6c0cd3678477044bca8bd38a9c06faff3c124692a37cdf7",
         "executable": false,
         "action": "installed"
       },
@@ -68951,7 +68952,7 @@
       {
         "path": ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
-        "sha256": "8971cbf39665760ea8c3ee27e2e0261ee9cf05958916d463fe64a65aaf7e7d83",
+        "sha256": "065d1910501a8731202a61148e7ef859dc94ccae042d897a956e2a696182359e",
         "executable": false,
         "action": "installed"
       },
@@ -69077,7 +69078,7 @@
       {
         "path": ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
-        "sha256": "1ff5de827c3172320fb7828b765dba1aa89c142e4bc7feabf8b1345e0e5e1d3c",
+        "sha256": "0683d61e6d693df35776c689060a8150f9ff11361691359bcd670559f43348b9",
         "executable": false,
         "action": "installed"
       },
@@ -69119,7 +69120,7 @@
       {
         "path": ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
-        "sha256": "923a0f12d8fdc58cc9e2dff4db3e62b2cc0ffe2a9803e2f9d2b0755a905020f1",
+        "sha256": "50cc2fd23ada4d1eb6c0cd3678477044bca8bd38a9c06faff3c124692a37cdf7",
         "executable": false,
         "action": "installed"
       },
@@ -69203,7 +69204,7 @@
       {
         "path": ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
-        "sha256": "8971cbf39665760ea8c3ee27e2e0261ee9cf05958916d463fe64a65aaf7e7d83",
+        "sha256": "065d1910501a8731202a61148e7ef859dc94ccae042d897a956e2a696182359e",
         "executable": false,
         "action": "installed"
       },
@@ -69329,7 +69330,7 @@
       {
         "path": ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
-        "sha256": "1ff5de827c3172320fb7828b765dba1aa89c142e4bc7feabf8b1345e0e5e1d3c",
+        "sha256": "0683d61e6d693df35776c689060a8150f9ff11361691359bcd670559f43348b9",
         "executable": false,
         "action": "installed"
       },
@@ -69371,7 +69372,7 @@
       {
         "path": ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
-        "sha256": "923a0f12d8fdc58cc9e2dff4db3e62b2cc0ffe2a9803e2f9d2b0755a905020f1",
+        "sha256": "50cc2fd23ada4d1eb6c0cd3678477044bca8bd38a9c06faff3c124692a37cdf7",
         "executable": false,
         "action": "installed"
       },
@@ -69455,7 +69456,7 @@
       {
         "path": ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
-        "sha256": "8971cbf39665760ea8c3ee27e2e0261ee9cf05958916d463fe64a65aaf7e7d83",
+        "sha256": "065d1910501a8731202a61148e7ef859dc94ccae042d897a956e2a696182359e",
         "executable": false,
         "action": "installed"
       },
@@ -69581,7 +69582,7 @@
       {
         "path": ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
-        "sha256": "1ff5de827c3172320fb7828b765dba1aa89c142e4bc7feabf8b1345e0e5e1d3c",
+        "sha256": "0683d61e6d693df35776c689060a8150f9ff11361691359bcd670559f43348b9",
         "executable": false,
         "action": "installed"
       },

@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "正文与审查的唯一语言规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "四类规划正文和来源承接规则"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批完整需求模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计与唯一来源处置模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批步骤、Policy、Docs计划模板"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md", "reason": "从完整canonical source加载实际tools owner"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "source_locked、prepare一次、保留和同operation恢复完整合同"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "完整source后真实采用与发布副作用边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value及Validation Scope Ownership"}
+{"file": "docs/architecture/04-integrations/distribution.md", "reason": "ARCH-INT-006/014/015来源、平台和采用边界"}
+{"file": "docs/design/current/codex-skill-distribution.md", "reason": "D724现有工具维护、共享发现根和目标选择"}

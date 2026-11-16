@@ -45,12 +45,32 @@
       },
       "planning_root": "deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0",
       "profile": "pull_request",
-      "phase": "implementing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/design.md",
         "revision": "sha256:26a531cb9a9b93f984c5ecb83eb3dda74dab1e7076ed49b8d78ef4ab8da0db39"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "f52ebfdc6954543d88eca5837dc1bd4dcc9767ab",
+        "content_ref": "sha256:abaa87cc24c5f8c7d4aa01eb116e8406a24b51cefcf30407acdcd6be9b972599",
+        "head_ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/release-guru-trellis-version/references/contract.md",
+          ".claude/skills/release-guru-trellis-version/references/contract.md",
+          ".codex/skills/release-guru-trellis-version/references/contract.md",
+          ".cursor/skills/release-guru-trellis-version/references/contract.md",
+          "README.md",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          "trellis/workflows/guru-team/README.md"
+        ]
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:2445759d-cc68-4bd2-a34c-52fd1bdcb5a8",
@@ -88,6 +108,306 @@
             {
               "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/implement.md",
               "revision": "sha256:2ada9b1a92d66658d6e5d761cce06da4f5a884032e0c519c206cf84c613b65f2"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:ef8e1ee54d4516c497b82329c6fb17c753efe829368b1532c1acc22d7205d01a",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+              "revision": "sha256:66862ed96338b66cc4adeccf7ad1b359b484cdff64fa2e381995d9d505729b47"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R5",
+              "AC1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/design.md",
+            "revision": "sha256:26a531cb9a9b93f984c5ecb83eb3dda74dab1e7076ed49b8d78ef4ab8da0db39"
+          },
+          "candidate": {
+            "base_ref": "f52ebfdc6954543d88eca5837dc1bd4dcc9767ab",
+            "content_ref": "sha256:abaa87cc24c5f8c7d4aa01eb116e8406a24b51cefcf30407acdcd6be9b972599",
+            "head_ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/release-guru-trellis-version/references/contract.md",
+              ".claude/skills/release-guru-trellis-version/references/contract.md",
+              ".codex/skills/release-guru-trellis-version/references/contract.md",
+              ".cursor/skills/release-guru-trellis-version/references/contract.md",
+              "README.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:2445759d-cc68-4bd2-a34c-52fd1bdcb5a8",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/implement.md",
+              "revision": "sha256:2ada9b1a92d66658d6e5d761cce06da4f5a884032e0c519c206cf84c613b65f2"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:ef8e1ee54d4516c497b82329c6fb17c753efe829368b1532c1acc22d7205d01a",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+              "revision": "sha256:66862ed96338b66cc4adeccf7ad1b359b484cdff64fa2e381995d9d505729b47"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R5",
+              "AC1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/design.md",
+            "revision": "sha256:26a531cb9a9b93f984c5ecb83eb3dda74dab1e7076ed49b8d78ef4ab8da0db39"
+          },
+          "candidate": {
+            "base_ref": "f52ebfdc6954543d88eca5837dc1bd4dcc9767ab",
+            "content_ref": "sha256:abaa87cc24c5f8c7d4aa01eb116e8406a24b51cefcf30407acdcd6be9b972599",
+            "head_ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/release-guru-trellis-version/references/contract.md",
+              ".claude/skills/release-guru-trellis-version/references/contract.md",
+              ".codex/skills/release-guru-trellis-version/references/contract.md",
+              ".cursor/skills/release-guru-trellis-version/references/contract.md",
+              "README.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "check:ef8e1ee54d4516c497b82329c6fb17c753efe829368b1532c1acc22d7205d01a",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/implement.md",
+              "revision": "sha256:2ada9b1a92d66658d6e5d761cce06da4f5a884032e0c519c206cf84c613b65f2"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:c64282e018529f4d928d5d399c7aa0622e0c7b5b9424023e3be033973a411a1d",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+              "revision": "sha256:66862ed96338b66cc4adeccf7ad1b359b484cdff64fa2e381995d9d505729b47"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R5",
+              "AC1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/design.md",
+            "revision": "sha256:26a531cb9a9b93f984c5ecb83eb3dda74dab1e7076ed49b8d78ef4ab8da0db39"
+          },
+          "candidate": {
+            "base_ref": "f52ebfdc6954543d88eca5837dc1bd4dcc9767ab",
+            "content_ref": "sha256:abaa87cc24c5f8c7d4aa01eb116e8406a24b51cefcf30407acdcd6be9b972599",
+            "head_ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/release-guru-trellis-version/references/contract.md",
+              ".claude/skills/release-guru-trellis-version/references/contract.md",
+              ".codex/skills/release-guru-trellis-version/references/contract.md",
+              ".cursor/skills/release-guru-trellis-version/references/contract.md",
+              "README.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:ef8e1ee54d4516c497b82329c6fb17c753efe829368b1532c1acc22d7205d01a",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/implement.md",
+              "revision": "sha256:2ada9b1a92d66658d6e5d761cce06da4f5a884032e0c519c206cf84c613b65f2"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:2b117c30cc3d94ec828dfade310b9c7bf237f33902bec93e8c273d8dd2af5296",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/865",
+            "revision": "sha256:a53d92c10f430693154b00a3a54d0969b68a817756b99195c18c1974a06aa064"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "f52ebfdc6954543d88eca5837dc1bd4dcc9767ab",
+          "content_ref": "sha256:abaa87cc24c5f8c7d4aa01eb116e8406a24b51cefcf30407acdcd6be9b972599",
+          "head_ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/release-guru-trellis-version/references/contract.md",
+            ".claude/skills/release-guru-trellis-version/references/contract.md",
+            ".codex/skills/release-guru-trellis-version/references/contract.md",
+            ".cursor/skills/release-guru-trellis-version/references/contract.md",
+            "README.md",
+            "trellis/guru-team-extension.json",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 865,
+        "reviewed_head": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/865",
+          "revision": "sha256:a53d92c10f430693154b00a3a54d0969b68a817756b99195c18c1974a06aa064"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:dc300d26ed638d97a303753958f85eaa645f2067",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/865",
+            "revision": "dc300d26ed638d97a303753958f85eaa645f2067"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "f52ebfdc6954543d88eca5837dc1bd4dcc9767ab",
+          "content_ref": "sha256:abaa87cc24c5f8c7d4aa01eb116e8406a24b51cefcf30407acdcd6be9b972599",
+          "head_ref": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/release-guru-trellis-version/references/contract.md",
+            ".claude/skills/release-guru-trellis-version/references/contract.md",
+            ".codex/skills/release-guru-trellis-version/references/contract.md",
+            ".cursor/skills/release-guru-trellis-version/references/contract.md",
+            "README.md",
+            "trellis/guru-team-extension.json",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+            "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 865,
+        "reviewed_head": "b3525d4b052f79f7d9cb4a18f827ff7c990f1983",
+        "merge_commit": "dc300d26ed638d97a303753958f85eaa645f2067",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    },
+    {
+      "id": "26fc4284-00db-4347-b5df-35ad7845905c",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+          "revision": "sha256:66862ed96338b66cc4adeccf7ad1b359b484cdff64fa2e381995d9d505729b47"
+        },
+        "anchors": [
+          "R3",
+          "R4",
+          "R5",
+          "AC2",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/26fc4284-00db-4347-b5df-35ad7845905c",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/26fc4284-00db-4347-b5df-35ad7845905c/design.md",
+        "revision": "sha256:025d1e86ce3b1050075bc3e3b64f979a7dad1ac2680bf92120579e33bba5dc6c"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:07f89dfc-fa54-4e8d-a612-e881c68899fd",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/prd.md",
+              "revision": "sha256:66862ed96338b66cc4adeccf7ad1b359b484cdff64fa2e381995d9d505729b47"
+            },
+            "anchors": [
+              "R3",
+              "R4",
+              "R5",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/26fc4284-00db-4347-b5df-35ad7845905c/design.md",
+            "revision": "sha256:025d1e86ce3b1050075bc3e3b64f979a7dad1ac2680bf92120579e33bba5dc6c"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/26fc4284-00db-4347-b5df-35ad7845905c/prd.md",
+              "revision": "sha256:ef93123cf9e0fa3903dc86463798deef557f5c5f8e8316dea90fbd1e00d1f90c"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/26fc4284-00db-4347-b5df-35ad7845905c/design.md",
+              "revision": "sha256:025d1e86ce3b1050075bc3e3b64f979a7dad1ac2680bf92120579e33bba5dc6c"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/26fc4284-00db-4347-b5df-35ad7845905c/implement.md",
+              "revision": "sha256:dc5bfdba575f4a4ad418cf25f0b95f03f6f29aa9e18fb45173d214109e70c059"
             }
           ]
         },
