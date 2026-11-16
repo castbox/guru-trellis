@@ -1,0 +1,13 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批规划正文与来源承接合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批独立需求和验收边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "完整方案及唯一来源设计处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "有序执行、验证与唯一Policy/Docs计划"}
+{"file": ".agents/skills/guru-upgrade-tools/references/contract.md", "reason": "完整source_locked单目标与一次prepare/恢复"}
+{"file": ".agents/skills/guru-sync-base/references/contract.md", "reason": "来源取得仅clean primary Git同步"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "完整source先交付与真实采用后继、发布边界"}
+{"file": "trellis/presets/guru-team/MIGRATION-861.md", "reason": "current清单纠正及历史schema保留"}
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "完整existing及目标源验证入口"}
+{"file": "docs/architecture/04-integrations/distribution.md", "reason": "ARCH-INT-006/014/015来源与实际采用分层"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "最小有效验证、责任边界与证据适用性"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_native_install.py", "reason": "区分真实reapply与complete后resume验证"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py", "reason": "AC7必要verifier阶段前像修复与完整existing；保原hash/renderer及声明测试边界"}

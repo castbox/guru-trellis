@@ -491,8 +491,24 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertEqual((root / "install/project/installed-marker").read_text(), "installed")
 
     def test_existing_cell_seeds_before_command_then_calls_public_tools_owner(self) -> None:
+        for maintenance_exit in ("tools_upgraded", "upgraded"):
+            with self.subTest(maintenance_exit=maintenance_exit):
+                self._assert_existing_cell_maintenance_preimage(maintenance_exit)
+
+    def _assert_existing_cell_maintenance_preimage(self, maintenance_exit: str) -> None:
+        import apply_guru_team_trellis_preset as preset
+
+        # Exercise coordinator handoff and the real hash/renderer gate. External
+        # installation and maintenance are isolated; this is not writer evidence.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
+            self.template_fixture(root)
+            init_agents = (root / "AGENTS.md").read_bytes()
+            maintenance_agents = (
+                init_agents + (preset.AGENTS_AI_FIRST_START_MARKER
+                + "\npredecessor guidance\n" + preset.AGENTS_AI_FIRST_END_MARKER
+                + "\n").encode()
+            )
             before = ("node", "/before/bin/trellis.js")
             target = ("node", "/target/packages/cli/bin/trellis.js")
             projection = {
@@ -538,13 +554,33 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 if path.name == ".template-hashes.json":
                     return json.loads(path.read_text())
                 return {"extension": predecessor_extension}
+            def apply_preset(_source, project, _platform, log, **unused):
+                original = (project / "AGENTS.md").read_bytes()
+                (project / "AGENTS.md").write_bytes(
+                    maintenance_agents if log.name == "preset-initial.log"
+                    else preset.render_agents_ai_first_principles(original)
+                )
+                return {}
+            def maintain(_source, project, *unused):
+                self.assertEqual((project / "AGENTS.md").read_bytes(), maintenance_agents)
+                baseline = maintenance_agents if maintenance_exit == "tools_upgraded" else init_agents
+                # Model the external writer's baseline update and renderer output.
+                self.template_fixture(project, baseline)
+                (project / "AGENTS.md").write_bytes(preset.render_agents_ai_first_principles(baseline))
+                return {"exit_id": maintenance_exit}
+            def validate(project, *unused, agents_preimage):
+                expected = maintenance_agents if maintenance_exit == "tools_upgraded" else init_agents
+                self.assertEqual(agents_preimage, expected)
+                gate = self.matrix._assert_template_hashes(project, root, agents_preimage)
+                self.assertEqual(gate["known_preset_projection_paths"], ["AGENTS.md"])
+                return {}
             with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
                  mock.patch.object(self.matrix, "_init_git_repo"), \
                  mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.17"]), \
                  mock.patch.object(self.matrix, "_checkout_predecessor_source", side_effect=export_tree), \
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow) as init, \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
-                 mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "_apply_preset", side_effect=apply_preset), \
                  mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
@@ -553,11 +589,11 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
                  mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
-                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture", return_value={"exit_id": "tools_upgraded"}) as upgrade, \
+                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture", side_effect=maintain) as upgrade, \
                  mock.patch.object(self.matrix, "_assert_docs_authority"), \
                  mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
                  mock.patch.object(self.matrix, "_assert_projection_consistency"), \
-                 mock.patch.object(self.matrix, "validate_cell", return_value={}):
+                 mock.patch.object(self.matrix, "validate_cell", side_effect=validate):
                 result = self.matrix._run_cell(repo_root=root, cell_root=root / "cell", platform="codex",
                     scenario="existing", workflow_source="fixture", before_tag="before",
                     before_cli="0.6.16", target_cli="0.6.17", allow_local_sample=False,
@@ -567,8 +603,10 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             switch.assert_not_called()
             self.assertEqual(upgrade.call_args.args[:4],
                              (root, root / "cell/project", root / "fork", "fixture"))
-            self.assertEqual(result["update_mode"], "source_locked_tools_upgrade")
-            self.assertEqual(result["workflow_sample"], "source_locked_tools_upgrade")
+            expected_mode = ("source_locked_tools_upgrade" if maintenance_exit == "tools_upgraded"
+                             else "source_locked_installation_upgrade")
+            self.assertEqual(result["update_mode"], expected_mode)
+            self.assertEqual(result["workflow_sample"], expected_mode)
 
     def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
         predecessor_extension = {

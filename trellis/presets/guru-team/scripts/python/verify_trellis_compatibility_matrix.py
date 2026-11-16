@@ -2494,9 +2494,12 @@ def _run_cell(
             raise MatrixError(
                 "existing cell candidate workflow is unpublished; exact remote source is required"
             )
+        maintenance_agents_preimage = (target / "AGENTS.md").read_bytes()
         maintenance = _upgrade_bootstrap_fixture(
             repo_root, target, fork_source, workflow_source, cell_root, env,
         )
+        if maintenance.get("exit_id") == "tools_upgraded":
+            agents_preimage = maintenance_agents_preimage
         update_mode = ("source_locked_tools_upgrade" if maintenance.get("exit_id") == "tools_upgraded"
                        else "source_locked_installation_upgrade")
         reapplied_preset = _apply_preset(
