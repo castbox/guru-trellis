@@ -245,7 +245,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();summary_relative=summary.relative_to(repo).as_posix()
    base={"kind":"git_object","source":"explicit","selected_ref":"refs/heads/main","commit":head};base["identity_sha256"]=digest(base)
    transition={"schema_version":"2.0","transition_id":"base_current:git-object-recovery","stage":"base_current","mode":"workflow","repo_locator":str(repo.resolve()),"base":base}
-   change_input={"issue_refs":[],"pr_refs":[],"branches":[],"paths":["docs/requirements.md","trellis/runtime.py","trellis/test_runtime.py"],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":["context"],"queries":[]}
+   change_input={"issue_refs":[],"pr_refs":[],"branches":[],"paths":["docs/requirements.md","trellis/runtime.py","trellis/test_runtime.py"],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":["#123","#456","context"],"queries":[]}
    public_input={"profile":"pre_task","source_exit":"baseline_ready","mode":"workflow","change_input":change_input,"continuation_id":"git-object-recovery","clarify_profile":"standard_intake"}
    body_sha=hashlib.sha256(b"Correct the current Discovery authoring input.\n").hexdigest()
    owner=json.loads((PACKAGE/"examples/change-context-owner-result-4.0.json").read_text())
@@ -264,6 +264,12 @@ class PackageLocalRuntimeTest(unittest.TestCase):
     before=snapshot();result=subprocess.run([str(wrapper),"--root",str(repo),"--invocation","-"],cwd=repo,input=json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env={key:value for key,value in os.environ.items() if key!="PYTHONDONTWRITEBYTECODE"})
     self.assertEqual(result.returncode,code,(result.stdout,result.stderr));self.assertEqual(snapshot(),before);self.assertEqual(list(repo.rglob("__pycache__")),[]);return json.loads(result.stdout)
    recorder=installed_package/"scripts/record-context-discovery.sh";checker=installed_package/"scripts/check-context-discovery.sh";invoker=installed_package/"scripts/invoke.sh"
+   # Related background Issues do not establish a same-content draft binding.
+   related_envelope={"schema_version":"1.0","public_input":copy.deepcopy(public_input),"transition":transition,"owner_context":{},"owner_result":copy.deepcopy(owner)}
+   related_envelope["public_input"]["change_input"]["issue_refs"]=["#123","#456"]
+   related_error=call(recorder,related_envelope,2)
+   self.assertEqual((related_error["code"],related_error["field_path"]),("schema_mismatch","owner_result.live_change.issue_binding"))
+   related_envelope["public_input"]["change_input"]["issue_refs"]=[]
    source_error_owner=copy.deepcopy(owner);source_error_owner["history_review"]["deep_reads"]=[{"candidate_id":"a"*64,"source_kind":"task_artifact","locator":summary_relative,"purpose":"Read the selected history.","conclusion":"The history remains relevant."}]
    with patch.object(discovery_common,"preview") as preview_reader,patch.object(discovery_common,"source_blob") as source_reader:
     with self.assertRaises(CommandError) as guarded:
@@ -276,8 +282,11 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    missing_observation=copy.deepcopy(owner);missing_observation["duplicate_search"]["candidates"][0].pop("observation")
    observation_error=call(recorder,{"schema_version":"1.0","public_input":public_input,"transition":transition,"owner_context":{},"owner_result":missing_observation},2)
    self.assertEqual((observation_error["code"],observation_error["field_path"]),("schema_mismatch","owner_result.duplicate_search.candidates.0.observation"))
-   envelope={"schema_version":"1.0","public_input":public_input,"transition":transition,"owner_context":{},"owner_result":owner}
+   envelope=related_envelope
    recorded=project_intermediate_receipt(call(recorder,envelope,0),SKILLS/"schemas");envelope["owner_result"]=recorded
+   self.assertEqual(recorded["change_input"]["terms"],["#123","#456","context"])
+   self.assertEqual(recorded["canonical_query"]["terms"],["#123","#456","context"])
+   self.assertIsNone(recorded["live_change"]["issue_binding"])
    checked=project_intermediate_receipt(call(checker,envelope,0),SKILLS/"schemas");self.assertEqual(checked["typed_exit"],"context_ready")
    output=call(invoker,envelope,0);self.assertEqual(output["exit_id"],"context_ready");self.assertEqual(output["transition"]["schema_version"],"2.0");self.assertEqual(output["transition"]["base"]["kind"],"git_object")
    self.assertEqual(snapshot(),initial)
