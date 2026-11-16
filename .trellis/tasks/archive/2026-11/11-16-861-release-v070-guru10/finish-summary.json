@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-16T01:50:57Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-16-861-release-v070-guru10",
+    "title": "#861 准备 v0.7.0-guru.10 正式发布",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-16-861-release-v070-guru10",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/861-release-v070-guru10",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "#861 准备 v0.7.0-guru.10 正式发布",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10",
+          ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/prd.md",
+          ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#861"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/861-release-v070-guru10"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10",
+        ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/prd.md",
+        ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#861 准备 v0.7.0-guru.10 正式发布；#861；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
