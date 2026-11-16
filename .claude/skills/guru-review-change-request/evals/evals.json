@@ -10,9 +10,9 @@
       "native_execution_mode": "semantic_authoring",
       "native_authoring_flow": "standard_intake",
       "native_execution_adapter": "codex",
-      "model_id": "gpt-5.6-sol",
+      "model_id": "gpt-6.1-sol",
       "expected_exit": "ready",
-      "expected_output": "The same native Agent authors all four semantic owners and the actual Readiness wrapper returns ready, using real predecessor outputs.",
+      "expected_output": "The same native Agent authors the current semantic owners and the actual Readiness wrapper returns ready, using real predecessor outputs.",
       "files": [
         "evals/files/standard-intake-source.json"
       ],
@@ -38,7 +38,7 @@
           {
             "id": "native-four-owner-review",
             "evidence_selector": "transcript",
-            "criterion": "Independently read this run's full native transcript, source facts and command receipts. The same native AI actually performs Discovery, Clarification, Wording and Readiness semantic review from the authority before authoring each result; it neither waits for an external owner nor refuses or defers its own responsibility. Actual public outputs are consumed in sequence as context_ready, clear, pass and ready, without invented predecessors or workspace execution. Command order alone is not semantic evidence."
+            "criterion": "Independently read this run's full native transcript, source facts and command receipts. The same native AI actually performs Discovery, Clarification and Readiness semantic review from the authority before authoring each result; it neither waits for an external owner nor refuses or defers its own responsibility. Actual public outputs are consumed in sequence as context_ready, clear and ready, without invented predecessors or workspace execution. Command order alone is not semantic evidence."
           }
         ]
       }
@@ -49,7 +49,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_authoring_flow": "standard_intake",
       "native_execution_adapter": "codex",
-      "model_id": "gpt-5.6-sol",
+      "model_id": "gpt-6.1-sol",
       "expected_exit": "blocked",
       "expected_output": "Clarification identifies the unresolved mutually exclusive delivery scope, emits its actual blocked DTO, and no downstream owner or workspace command runs.",
       "files": [
@@ -77,7 +77,51 @@
           {
             "id": "native-conflict-review",
             "evidence_selector": "transcript",
-            "criterion": "Independently read this run's full native transcript, source facts and command receipts. The native AI identifies the actual mutually exclusive delivery requirements and unresolved product choice, authors the Clarification blocker and returns its actual blocked public output. It does not invent a user answer, refuse or defer its own review, wait for an external owner, or execute Wording, Readiness or workspace after the blocker. A blocked DTO or command order alone is not semantic evidence."
+            "criterion": "Independently read this run's full native transcript, source facts and command receipts. The native AI identifies the actual mutually exclusive delivery requirements and unresolved product choice, authors the Clarification blocker and returns its actual blocked public output. It does not invent a user answer, refuse or defer its own review, wait for an external owner, or execute Readiness or workspace after the blocker. A blocked DTO or command order alone is not semantic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "id": "standard-intake-authoring-acceptance-boundary",
+      "prompt": "Review the current Issue and the supplied repository evidence through the current standard Intake owners. Repository notes include review material with its source role. Use the original contracts and actual predecessor outputs. This is a read-only review: do not edit the Issue, create resources or run a workspace step. Return the actual terminal public output.",
+      "native_execution_mode": "semantic_authoring",
+      "native_authoring_flow": "standard_intake",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-6.1-sol",
+      "expected_exit": "ready",
+      "expected_output": "The original owners judge the current complete Issue and review material within its component and declared CLI boundary. The expectation is readiness without adopting unsupported consumer E2E or repeated acceptance. An actual earlier stop remains evidence to inspect, not an automatic pass.",
+      "files": [
+        "evals/files/issue-acceptance-boundary-source.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-boundary-and-evidence",
+            "evidence_selector": "transcript",
+            "criterion": "Read the complete actual transcript, source body, repository notes and receipts independently. Verify that the native owners distinguish effective requirements from ordinary review suggestions. They retain component API and explicit CLI joint delivery, ordered paging, the pre-load invalid-input rejection promise and compatibility. They do not adopt consumer application integration, business E2E, production adoption, repeated test layers or coverage thresholds as acceptance, findings, risks, mandatory follow-ups or gates. Goal attribution alone must not justify those additions. A ready DTO alone is insufficient."
+          },
+          {
+            "id": "reuse-and-targeted-gap",
+            "evidence_selector": "transcript",
+            "criterion": "Verify actual reasoning about the supplied evidence: existing page/CLI evidence remains reusable when its object, conditions and path apply; reviewer or stage change alone does not trigger reruns. The early rejection before source loading is an explicit internal promise that the supplied response-only observations do not establish. The owners retain a minimal directed observation for that promise, and retain the explicitly scoped CLI-to-component joint check. They do not delete legitimate technical results merely because source, tests or internal state observe them. Distinguish readiness from implementation completion; do not claim that the missing implementation evidence ran."
           }
         ]
       }

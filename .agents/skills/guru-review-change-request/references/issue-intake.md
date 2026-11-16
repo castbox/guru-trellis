@@ -6,6 +6,10 @@ necessary prerequisite deliveries and code changes that affect prior conclusions
 Judge actual coverage, currency, independent delivery and remaining conditions.
 A comment's presence, format, author, age or count never establishes readiness.
 Clear historical comments can suffice; no comment alone is not a blocker.
+Apply the original [Issue content method](../../guru-clarify-requirements/references/issue-content.md)
+and its shared validation reference within those ten dimensions, including
+responsibility boundaries, minimal acceptance and later-round evidence reuse.
+An ordinary content gap uses this profile's original supplement exits below.
 
 ## Input and local recording
 

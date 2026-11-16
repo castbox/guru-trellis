@@ -214,6 +214,68 @@ detail public. Apply this policy within the current accepted scope and the
 validation ownership below; it does not require historical test cleanup across
 business repositories or a new full-chain gate for every change.
 
+### Responsibility boundary, minimal evidence and later reviews
+
+Apply this method within every original writing and review owner's current
+scope, including requirements, solution, Architecture, Planning Approval,
+implementation, Check, independent review, Branch Review, Delivery Review and
+Completion. Workflow or standalone mode, a different Agent, session recovery,
+another review round and draft provenance create no exemption. Issue-specific
+authoring, creation and body revisions use the complete original Issue content
+method from the same provider. Its source locator is
+`trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md`;
+after installation its locator is
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
+
+Determine the accepted goals, actual consumers, the Issue's independently
+deliverable responsibility and responsibilities outside it. Choose the
+outermost effective observation surface **inside that boundary**. A result may
+be an API, CLI, workflow, document, code, configuration, protocol or data state;
+it need not be an end-user interface or a production business outcome. Consumer
+perspective identifies the promised contract; it does not require running the
+real consumer. Different promised entries need only their necessary differences.
+Do not use a coarse outer result to omit an explicit internal promise.
+
+Stop at that responsibility boundary. The existence of callers, downstream
+dependencies or a final business use does not authorize consumer integration,
+E2E, production adoption or joint acceptance. Missing consumer adoption or E2E
+alone is neither a provider defect nor a completion prerequisite. Defensive
+confidence, general risk or a desire for complete coverage supplies no authority.
+Keep cross-component proof only when an effective requirement includes joint
+delivery, or a current promise itself needs that integration to be proved.
+Identify that promise and the actual gap in boundary-local evidence; an untested
+call chain is not a gap by itself. Use the smallest sufficient check. Substitutes
+may isolate dependencies outside the declared boundary, but must not manufacture
+the result that the tested component itself must produce or omit real dependencies
+needed to prove its own contract.
+
+Distinguish delivery results from supporting evidence and unsupported expansion.
+Unit, integration, E2E and joint checks are alternative evidence methods, not a
+fixed stack of required acceptance layers. When effective outer evidence already
+proves a promise, do not reproduce it at every internal layer. Add a targeted
+internal check only for an explicit condition that the existing evidence cannot
+prove; it supports the same acceptance rather than creating another layer.
+Require independent defect-detection value from additional verification. Test
+counts, coverage percentages and customary layer checklists supply no obligation.
+Reuse evidence whose object/version, conditions, path and conclusion remain
+applicable. A stage, reviewer, session or confidence change alone does not require
+rerunning it. Each original owner still judges its current sufficiency.
+
+Before adding, restoring or strengthening any verification or acceptance
+obligation, compare current effective authority, supported behavior, responsibility,
+existing acceptance and applicable evidence. Establish the current promise or
+actual defect, the uncovered condition and the necessity of the smallest addition.
+Design, test and review records cannot authorize new requirements by themselves.
+If that basis is absent, remove the candidate before this round's output; do not
+emit it as a blocking Finding, rework, risk, dependency, mandatory follow-up or
+gate. Do not move it to another stage or restore it under a different name.
+Remove unsupported or duplicate obligations together with their derived tests
+and blocking consequences, rather than requesting repeated scope expansion.
+Keep real original-scope omissions, implementation defects, invalid evidence and
+explicit safety or compatibility promises; repair or supplement only their actual
+gaps. A real scope change returns to original Clarify. These judgments use the
+existing owner and conversation, not a new gate, proof table or evidence ledger.
+
 ### Behavior, evidence and experiment selection
 
 Derive assertions from the conditions, actions and observable results required

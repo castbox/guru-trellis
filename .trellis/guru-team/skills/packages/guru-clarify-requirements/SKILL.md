@@ -43,8 +43,10 @@ For Issue or draft authoring, revision, and requirements review, read the shared
 applicable writing or semantic gate, together with the writing specification
 above and current necessary sources. The full installed content body is
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
-Use its methods for necessity, body organization, acceptance and complete review
-within this owner's existing writing and requirements review responsibility.
+Use its necessity, body-organization, responsibility-boundary and result/evidence
+methods when forming the draft, and its complete-body review before each proposed Issue writeback.
+Apply its continuing minimal-acceptance rules within this owner's existing
+writing and requirements review, using the referenced shared validation method.
 Preserve review-only scope and the original source
 actions, refresh, and typed exits; a content gap does not authorize a write.
 
