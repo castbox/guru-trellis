@@ -79,3 +79,21 @@ Issue 验收按唯一正文第3节优先证明主要结果，并覆盖与实际�
 ## R850-04 / BEH850-ADOPTION：完整迁移与分层证明
 
 当前producer/consumer、profile、schema及在途按匹配版本切换。固定旧provider已开始的副作用由原完整provider恢复同一操作后再更新，旧结果不改标签为新通过。原installer退役未改managed资产，用户修改/sidecar保原owner处理；Task/Delivery/scope/阶段/规划/session/配置/peer保持。源码、机械检查、实际Agent、目标安装与外部效果分层证明。真实不足保持未验证，local_candidate不证明formal_fork_source_lock或完整Release矩阵。对应D850-04/T850-04，历史原结果保其截止。
+
+## #868 本次整合与关系
+
+原RDT owner在批准规划、实际实现及真实工程结果后，于固定前驱Git `b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec` 的Task隔离checkout完成final_integration和读回。状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review；不产生质量或Completion通过。来源和替代范围见[#868追踪](../../requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md)。既有来源、完整条件及旧观察截止保持。
+
+## R868-01 / BEH868-BOUNDARY：Issue结果与边界
+
+原Clarify从有效来源确定目标、消费者、自身可独立交付及验证的边界，再在边界内最外沿有效切面表达必要结果。API、CLI、workflow、文档、代码、配置、协议或数据状态均为合法交付。候选分成结果、支撑证据和无依据扩张；能映射目标不证明有独立验收价值。删除后不影响必要承诺判断的条目合并或删除，不固定条数、一目标一条或多义务挤一条。必要失败、安全、兼容和规范性技术承诺仍保留。唯一内容方法由Clarify-owned issue-content承载，跨阶段验证只引用原quality-guidelines。对应D868-01、T868-01。
+
+## R868-02 / BEH868-PREWRITE：所有创建入口首次写前
+
+受支持Agent创建入口不因Task、阶段、Issue-only或草稿来源豁免。原Clarify、Readiness和Create Issue在各自门禁实际判断最终完整正文；上游通过、现成草稿与创建意图不能替代。未合理精简先沿原owner回程，修订通过前不创建，不先创建后补救。实质变化刷新直接受影响判断，执行器仍原文提交；成功后的输出丢失恢复原对象。对应D868-01/02、T868-01/02/04。
+
+## R868-03 / BEH868-CONTINUING：每轮审核及正文写回
+
+所有相关原写作/审核owner在本轮输出前按共同验证方法判断拟新增、恢复或强化义务；无依据或重复候选不能成为Finding、风险、返工、依赖、强制follow-up或gate，不改名或转移。每次写回前核完整postimage及受影响安排。模式、阶段、换Agent或恢复会话不豁免；真实原范围缺陷与失效证据仍定向修复，真正范围变化回Clarify。对应D868-02、T868-02。
+
+跨阶段R868-04/BEH868-EVIDENCE由[原验证方法单元](behavior-validation-method.md)拥有；本单元不另立方法。对应[D868-01/02](../../design/current/issue-content.md)、[T868-01/02/04](../../test/current/issue-content.md)。

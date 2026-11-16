@@ -67,3 +67,17 @@ Clarify standalone_wording_review消费完整当前Issue/draft与必要来源，
 ## D850-04 / CON850-ADOPTION：匹配分发与历史退出
 
 MIGRATION-850单写前代path/id保留、后继版本及当前consumer映射，旧schema存在不激活双读。原tools owner以完整matching source执行preview/prepare/invoke/readback/reapply，不手抄managed副本或改manifest隐藏差额。原managed removal退役包/命令/wrappers；resolver、installed/native、平台bytes/mode、sidecar与Task/session/peer分别读回。不增加状态模型、collector或授权持久化；安装不等于业务完成或Review pass。对应R850-04/T850-04。
+
+## #868 本次整合与关系
+
+原RDT owner在批准规划、实际实现及真实工程结果后，于固定前驱Git `b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec` 的Task隔离checkout完成final_integration和读回。状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review；不产生质量或Completion通过。来源和替代范围见[#868追踪](../../requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md)。既有来源、完整条件及旧观察截止保持。
+
+## D868-01 / CON868-CONTENT：唯一Issue方法
+
+承接R868-01/02。在原Clarify-owned issue-content正文直接修改整理、结果/证据分类、责任边界和完整修订方法，原教学增加去敏复合例。保留Author来源与clear-writing加载；不新增平行SSOT、映射字段或裁剪执行器。维护成本为原正文与必要引用，无长期状态。来源角色或支持边界变化时原owner重审。对应T868-01/02。
+
+## D868-02 / CON868-OWNERS：原门禁执行
+
+承接R868-02/03。Clarify SKILL/contract、Readiness SKILL/contract/issue-intake和Create Issue SKILL只定位同一方法与原执行点。Readiness保十维/原出口；Create首次provider写前亲自核完整稿，不合规refresh_review，不成第二writer。复用正确workflow与声明平台创建路由。managed副本由原tools owner匹配同步，Task/session及用户修改保留。对应T868-01/02/04。
+
+共用D868-03/CON868-VALIDATION由[原验证方法设计单元](behavior-validation-method.md)拥有。对应[R868-01..03](../../requirements/current/issue-content.md)、[T868-01/02/04](../../test/current/issue-content.md)。

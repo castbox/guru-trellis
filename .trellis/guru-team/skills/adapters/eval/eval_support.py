@@ -612,15 +612,16 @@ def qualification_prompt_sha256(
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 def intake_repository_assets(source: Path) -> set[Path]:
-    from adapters.eval.intake_authoring import FACTS_PATH
+    from adapters.eval.intake_authoring import FACTS_PATH, PUBLIC_METHOD_PATHS
 
     facts = json.loads((source / FACTS_PATH).read_text())
-    assets = {Path(FACTS_PATH), *(Path(path) for path in facts["required_reads"])}
+    assets = {Path(FACTS_PATH), *(Path(path) for path in facts["required_reads"]),
+              *(Path(path) for path in PUBLIC_METHOD_PATHS)}
     for relative in assets:
         if (relative.is_absolute() or ".." in relative.parts
                 or any(part in {"examples", "evals", ".runtime", ".git"} for part in relative.parts)
                 or not (relative.parts[0] in {"docs", "src", "tests"}
-                        or relative == Path(".trellis/spec/workflow/semantic-retrieval.md"))):
+                        or relative.as_posix() in PUBLIC_METHOD_PATHS)):
             raise ValueError("Intake repository asset is outside declared evidence")
     return assets
 
@@ -633,6 +634,8 @@ def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
     skill = interface["id"]
     contracts = interface["public_contracts"]
     assets = {Path("SKILL.md"), Path("references/contract.md"), Path("interface.json")}
+    if skill == "guru-clarify-requirements":
+        assets.add(Path("references/issue-content.md"))
     assets.update(Path(f"scripts/{command}.sh") for command in COMMANDS[skill])
     selected = profiles[skill]
     if selected is not None:
