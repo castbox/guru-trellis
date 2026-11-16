@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-16T13:37:01Z",
+  "generated_at": "2026-11-16T17:21:39Z",
   "generator": "guru-team.finalize-task",
   "task": {
     "slug": "11-16-861-release-v070-guru10",
@@ -11,7 +11,7 @@
   },
   "git": {
     "base_branch": "main",
-    "branch": "codex/861-release-v070-guru10-repair",
+    "branch": "codex/861-release-v070-guru10-gen2",
     "commits": [],
     "changed_paths": []
   },
@@ -47,7 +47,7 @@
       ],
       "pr_refs": [],
       "branches": [
-        "codex/861-release-v070-guru10-repair"
+        "codex/861-release-v070-guru10-gen2"
       ],
       "paths": [
         ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10",
