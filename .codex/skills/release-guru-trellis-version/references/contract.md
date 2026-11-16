@@ -63,9 +63,12 @@ one merged slice or a local installation does not establish whole-Task completio
 For every actual preparation Delivery, execute this current owner chain:
 
 1. The original Author completes the slice's stable `prd.md`, `design.md`,
-   `implement.md`, Delivery Policy and Docs SSOT Plan. Wording, independent
-   Architecture candidate/final assessments, Approval and Activation retain
-   their original order and conditions.
+   `implement.md`, Delivery Policy and Docs SSOT Plan. Author requirements enter
+   independent Architecture candidate assessment before solution writing;
+   `plan_ready` enters independent Architecture final-plan assessment, then
+   Approval and the current plan presentation/acceptance before Activation.
+   Original writers and reviewers judge wording and meaning within their own
+   scope; the current workflow has no default independent Wording gate.
 2. Phase 2 implements the complete selected slice and its necessary engineering
    checks. Original RDT and Architecture owners integrate every necessary
    complete target and perform readback before the local task commit.

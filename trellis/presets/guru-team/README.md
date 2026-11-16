@@ -262,8 +262,8 @@ pending 新远端动作回当前审核/readiness。完整版本、退休入口�
 新仓安装前，先将 `GURU_SOURCE` 设置为所选 Guru tag 或完整 candidate SHA 的
 checkout，设置 `FORK_SOURCE` 为本机 Fork 源码目录。下列命令读取该 checkout
 自身的 source lock，不使用本页历史正文中的 SHA。已有 Fork checkout 会复用；
-尚未取得源码时才 clone。先安装 Fork `package.json` 要求的 Node.js，以及
-source lock 声明的 package-manager 版本。
+尚未取得源码时才 clone。先安装 Fork `package.json` 要求的 Node.js，并使用当前 pnpm。
+source lock 保留来源的 package-manager 声明，不据此固定执行版本或修改声明。
 
 ```bash
 (
@@ -273,8 +273,7 @@ source lock 声明的 package-manager 版本。
   SOURCE_LOCK="$GURU_SOURCE/trellis/presets/guru-team/source/trellis-source.json"
   FORK_REPOSITORY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repository"])' "$SOURCE_LOCK")"
   FORK_COMMIT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit"])' "$SOURCE_LOCK")"
-  FORK_PACKAGE_MANAGER="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["package_manager"])' "$SOURCE_LOCK")"
-  test "pnpm@$(pnpm --version)" = "$FORK_PACKAGE_MANAGER"
+  pnpm --version
   if ! git -C "$FORK_SOURCE" rev-parse --git-dir >/dev/null 2>&1; then
     git clone "$FORK_REPOSITORY" "$FORK_SOURCE"
   fi
@@ -299,17 +298,21 @@ source lock 声明的 package-manager 版本。
 
 ## Apply And Verify
 
-`v0.7.0-guru.8` 是本轮发布准备起点的正式前驱，peeled commit 为
+`v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，peeled commit 为
+`ac1c823857ad6695c106daeedd25aafce4c50934`。安装该版本时，workflow marketplace 与
+preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身的 Fork lock。
+
+`v0.7.0-guru.8` 是更早的正式版本，peeled commit 为
 `2ab135ed2d3908966785bb23ad42ada0790f0c81`。安装该历史版本时，使用同一 immutable
 `.8` tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前 canonical extension 与 maintenance target 为 `0.7.0-guru.9`。
-仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.9` 的非 draft、
-非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.9`
-与同一 `.9` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.10`。
+仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.10` 的非 draft、
+非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.10`
+与同一 `.10` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](source/trellis-source.json)。
 本页不另存当前 SHA/CI 对照表；按[构建所选 Fork](#构建所选-fork)核验实际构建。
@@ -328,7 +331,7 @@ Guru 消费公共家族/key 及目标 native 前驱关系；AI 仍审核原安�
 authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 本次 Guru 目标更新保持 CLI/Core `0.7.0-castbox.6` 与原 source lock 不变。
-package-manager 版本采用所选 checkout 自身 source lock 声明的值。
+构建使用当前 pnpm，保留所选 checkout 的 package-manager 声明。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
 不证明当前 lock 的匹配构建。使用干净 source workspace 的正常 CLI/Core 依赖布局，
@@ -341,12 +344,16 @@ Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包�
 完整 canonical 来源经 Delivery 交付后，目标 checkout 从该干净来源加载
 `guru-upgrade-tools`，经 `source_locked` 实际采用并验证完整受管投影及保留行为。
 本地来源样本只验证来源自身安装可用性；目标采用须由目标自身的 resolver、installed
-与 native 检查证明。两者均不证明远端 `.9` marketplace 或正式 Release 通过。
+与 native 检查证明。两者均不证明远端 `.10` marketplace 或正式 Release 通过。
 各 Delivery 保留完整质量与交付责任；
 只有全部准备业务及实际采用完成，才可能通过 Task Completion 并进入终态收尾。
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
+
+本轮 `.10` 发布内容以正式前驱 `v0.7.0-guru.9` 到最终候选的完整 diff 为准。
+准备交付和终态簿记合入后，从届时最新 main 冻结候选；发布前 main 若推进，重新冻结并刷新受影响验证。
+不以其他 Issue 的完成、关闭、合并或归档为前置。以下 `.8` 说明保留其历史截止，不代表本轮验证结果。
 
 已发布 `.8` 的准备集合由 `v0.7.0-guru.7` 到该 Release candidate 的完整 diff 确定。
 该准备差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
@@ -390,7 +397,7 @@ For current-source validation, read the selected Guru checkout's own
 [source lock](source/trellis-source.json), verify its source and CI identity,
 and build that exact Fork commit. Use its CLI with that same reviewed Guru source.
 Historical `.8` installation uses its original source pair described above.
-Install `.9` only when its non-draft, non-prerelease Release exists, using the same
+Install `.10` only when its non-draft, non-prerelease Release exists, using the same
 immutable tag for workflow and preset. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. For a target meeting the ordinary current-only installation
