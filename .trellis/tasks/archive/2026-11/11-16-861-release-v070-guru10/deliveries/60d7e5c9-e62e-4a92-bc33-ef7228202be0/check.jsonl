@@ -1,6 +1,6 @@
-{"file": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/prd.md", "reason": "本批行为和独立验收边界"}
-{"file": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/design.md", "reason": "版本直接消费者、唯一来源处置及来源样本完整映射"}
-{"file": ".trellis/tasks/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/implement.md", "reason": "执行顺序、验证入口、唯一Policy和Docs Plan"}
+{"file": ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/prd.md", "reason": "本批行为和独立验收边界"}
+{"file": ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/design.md", "reason": "版本直接消费者、唯一来源处置及来源样本完整映射"}
+{"file": ".trellis/tasks/archive/2026-11/11-16-861-release-v070-guru10/deliveries/60d7e5c9-e62e-4a92-bc33-ef7228202be0/implement.md", "reason": "执行顺序、验证入口、唯一Policy和Docs Plan"}
 {"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "全部写作和原范围审核的完整语言规范"}
 {"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value与最小定向验证边界"}
 {"file": ".trellis/spec/docs/public-docs.md", "reason": "三README职责、正式与候选来源、历史证据分层"}
