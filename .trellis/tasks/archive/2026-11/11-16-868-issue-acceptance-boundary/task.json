@@ -1,0 +1,733 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-16-868-issue-acceptance-boundary",
+  "id": "868-issue-acceptance-boundary",
+  "name": "868-issue-acceptance-boundary",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 868,
+    "disposition": "exact_source"
+  },
+  "title": "#868 按 Issue 权责边界精简验收与持续去重",
+  "description": "落实当前 #868 全部要求：创建前最小充分验收、责任边界内最外沿切面、禁止调用链外推、任意后续审核去重及原生行为验证与受管采用。",
+  "dev_type": null,
+  "scope": "修订共享 Issue 内容与验证规范、原创建及审核 owner、必要入口/投影、教学例子和原 Skill eval；不新增语义脚本、阶段、字段或完整安装矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-16",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+    "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+  },
+  "deliveries": [
+    {
+      "id": "96a94470-7ce9-487d-989e-594d4933e4bb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+          "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/96a94470-7ce9-487d-989e-594d4933e4bb",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+        "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+      },
+      "candidate": {
+        "base_ref": "b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec",
+        "content_ref": "sha256:e21d7103a5abcdf0e4944491dc415b48c3c4ae0a0210c2f7a32bb7974aafd76a",
+        "head_ref": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-clarify-requirements/SKILL.md",
+          ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".agents/skills/guru-clarify-requirements/references/contract.md",
+          ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+          ".agents/skills/guru-create-issue/SKILL.md",
+          ".agents/skills/guru-review-change-request/SKILL.md",
+          ".agents/skills/guru-review-change-request/evals/evals.json",
+          ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".agents/skills/guru-review-change-request/references/contract.md",
+          ".agents/skills/guru-review-change-request/references/issue-intake.md",
+          ".claude/skills/guru-clarify-requirements/SKILL.md",
+          ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".claude/skills/guru-clarify-requirements/references/contract.md",
+          ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+          ".claude/skills/guru-create-issue/SKILL.md",
+          ".claude/skills/guru-review-change-request/SKILL.md",
+          ".claude/skills/guru-review-change-request/evals/evals.json",
+          ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".claude/skills/guru-review-change-request/references/contract.md",
+          ".claude/skills/guru-review-change-request/references/issue-intake.md",
+          ".cursor/skills/guru-clarify-requirements/SKILL.md",
+          ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+          ".cursor/skills/guru-create-issue/SKILL.md",
+          ".cursor/skills/guru-review-change-request/SKILL.md",
+          ".cursor/skills/guru-review-change-request/evals/evals.json",
+          ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".cursor/skills/guru-review-change-request/references/contract.md",
+          ".cursor/skills/guru-review-change-request/references/issue-intake.md",
+          ".trellis/guru-team/skills/adapters/eval/eval_support.py",
+          ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+          ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/references/issue-intake.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/review-sufficiency.md",
+          "docs/design/current/behavior-validation-method.md",
+          "docs/design/current/issue-content.md",
+          "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/design.md",
+          "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/manifest.yaml",
+          "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/requirements.md",
+          "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+          "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md",
+          "docs/requirements/current/behavior-validation-method.md",
+          "docs/requirements/current/issue-content.md",
+          "docs/test/current/behavior-validation-method.md",
+          "docs/test/current/issue-content.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+          "trellis/skills/guru-team/adapters/eval/eval_support.py",
+          "trellis/skills/guru-team/adapters/eval/intake_authoring.py",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+          "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-change-request/references/issue-intake.md",
+          "trellis/skills/guru-team/runtime/tests/test_intake_projection.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:1ea61b0c-13e0-49dc-a753-60d45a143f74",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+              "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+            "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/prd.md",
+              "revision": "sha256:2c93243515c2315a360d47e21901553f5cb115876d0815318534e8aabc4d7de3"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+              "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+            },
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/implement.md",
+              "revision": "sha256:5be453207b6a49b7d03e06eac7b6f145c52454cbe54f7afa9e3ba3a84bc2ded3"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:dc0e30924fbf7b121e2b6fd1b0c8e592e42234bcd4f33a21e8ebcc8b289f4e24",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+              "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+            "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+          },
+          "candidate": {
+            "base_ref": "b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec",
+            "content_ref": "sha256:e21d7103a5abcdf0e4944491dc415b48c3c4ae0a0210c2f7a32bb7974aafd76a",
+            "head_ref": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-create-issue/SKILL.md",
+              ".agents/skills/guru-review-change-request/SKILL.md",
+              ".agents/skills/guru-review-change-request/evals/evals.json",
+              ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".agents/skills/guru-review-change-request/references/contract.md",
+              ".agents/skills/guru-review-change-request/references/issue-intake.md",
+              ".claude/skills/guru-clarify-requirements/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-create-issue/SKILL.md",
+              ".claude/skills/guru-review-change-request/SKILL.md",
+              ".claude/skills/guru-review-change-request/evals/evals.json",
+              ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".claude/skills/guru-review-change-request/references/contract.md",
+              ".claude/skills/guru-review-change-request/references/issue-intake.md",
+              ".cursor/skills/guru-clarify-requirements/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-create-issue/SKILL.md",
+              ".cursor/skills/guru-review-change-request/SKILL.md",
+              ".cursor/skills/guru-review-change-request/evals/evals.json",
+              ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".cursor/skills/guru-review-change-request/references/contract.md",
+              ".cursor/skills/guru-review-change-request/references/issue-intake.md",
+              ".trellis/guru-team/skills/adapters/eval/eval_support.py",
+              ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/issue-intake.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/review-sufficiency.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/issue-content.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/design.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/manifest.yaml",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/requirements.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/issue-content.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/issue-content.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+              "trellis/skills/guru-team/adapters/eval/eval_support.py",
+              "trellis/skills/guru-team/adapters/eval/intake_authoring.py",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/issue-intake.md",
+              "trellis/skills/guru-team/runtime/tests/test_intake_projection.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:1ea61b0c-13e0-49dc-a753-60d45a143f74",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/implement.md",
+              "revision": "sha256:5be453207b6a49b7d03e06eac7b6f145c52454cbe54f7afa9e3ba3a84bc2ded3"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:dc0e30924fbf7b121e2b6fd1b0c8e592e42234bcd4f33a21e8ebcc8b289f4e24",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+              "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+            "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+          },
+          "candidate": {
+            "base_ref": "b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec",
+            "content_ref": "sha256:e21d7103a5abcdf0e4944491dc415b48c3c4ae0a0210c2f7a32bb7974aafd76a",
+            "head_ref": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-create-issue/SKILL.md",
+              ".agents/skills/guru-review-change-request/SKILL.md",
+              ".agents/skills/guru-review-change-request/evals/evals.json",
+              ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".agents/skills/guru-review-change-request/references/contract.md",
+              ".agents/skills/guru-review-change-request/references/issue-intake.md",
+              ".claude/skills/guru-clarify-requirements/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-create-issue/SKILL.md",
+              ".claude/skills/guru-review-change-request/SKILL.md",
+              ".claude/skills/guru-review-change-request/evals/evals.json",
+              ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".claude/skills/guru-review-change-request/references/contract.md",
+              ".claude/skills/guru-review-change-request/references/issue-intake.md",
+              ".cursor/skills/guru-clarify-requirements/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-create-issue/SKILL.md",
+              ".cursor/skills/guru-review-change-request/SKILL.md",
+              ".cursor/skills/guru-review-change-request/evals/evals.json",
+              ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".cursor/skills/guru-review-change-request/references/contract.md",
+              ".cursor/skills/guru-review-change-request/references/issue-intake.md",
+              ".trellis/guru-team/skills/adapters/eval/eval_support.py",
+              ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/issue-intake.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/review-sufficiency.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/issue-content.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/design.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/manifest.yaml",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/requirements.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/issue-content.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/issue-content.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+              "trellis/skills/guru-team/adapters/eval/eval_support.py",
+              "trellis/skills/guru-team/adapters/eval/intake_authoring.py",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/issue-intake.md",
+              "trellis/skills/guru-team/runtime/tests/test_intake_projection.py"
+            ]
+          },
+          "predecessor_result_id": "check:dc0e30924fbf7b121e2b6fd1b0c8e592e42234bcd4f33a21e8ebcc8b289f4e24",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/implement.md",
+              "revision": "sha256:5be453207b6a49b7d03e06eac7b6f145c52454cbe54f7afa9e3ba3a84bc2ded3"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:05b56f93d0420db0a01ddb07e659fe8c2cb4caae33990bba731265be498aeadf",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+              "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/design.md",
+            "revision": "sha256:10455b1ecd476675a53371407864f5c77ecf3bdff5fb067abcd6baa9513bcdd0"
+          },
+          "candidate": {
+            "base_ref": "b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec",
+            "content_ref": "sha256:e21d7103a5abcdf0e4944491dc415b48c3c4ae0a0210c2f7a32bb7974aafd76a",
+            "head_ref": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-create-issue/SKILL.md",
+              ".agents/skills/guru-review-change-request/SKILL.md",
+              ".agents/skills/guru-review-change-request/evals/evals.json",
+              ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".agents/skills/guru-review-change-request/references/contract.md",
+              ".agents/skills/guru-review-change-request/references/issue-intake.md",
+              ".claude/skills/guru-clarify-requirements/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-create-issue/SKILL.md",
+              ".claude/skills/guru-review-change-request/SKILL.md",
+              ".claude/skills/guru-review-change-request/evals/evals.json",
+              ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".claude/skills/guru-review-change-request/references/contract.md",
+              ".claude/skills/guru-review-change-request/references/issue-intake.md",
+              ".cursor/skills/guru-clarify-requirements/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-create-issue/SKILL.md",
+              ".cursor/skills/guru-review-change-request/SKILL.md",
+              ".cursor/skills/guru-review-change-request/evals/evals.json",
+              ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".cursor/skills/guru-review-change-request/references/contract.md",
+              ".cursor/skills/guru-review-change-request/references/issue-intake.md",
+              ".trellis/guru-team/skills/adapters/eval/eval_support.py",
+              ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/issue-intake.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/review-sufficiency.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/issue-content.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/design.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/manifest.yaml",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/requirements.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+              "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/issue-content.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/issue-content.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+              "trellis/skills/guru-team/adapters/eval/eval_support.py",
+              "trellis/skills/guru-team/adapters/eval/intake_authoring.py",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/issue-intake.md",
+              "trellis/skills/guru-team/runtime/tests/test_intake_projection.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:dc0e30924fbf7b121e2b6fd1b0c8e592e42234bcd4f33a21e8ebcc8b289f4e24",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/deliveries/96a94470-7ce9-487d-989e-594d4933e4bb/implement.md",
+              "revision": "sha256:5be453207b6a49b7d03e06eac7b6f145c52454cbe54f7afa9e3ba3a84bc2ded3"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:692ce9cb6a0539a876f4dfe4ec616ba2c2557572502246571640d56e23aa880b",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/869",
+            "revision": "sha256:881087f922423631564b250c77148bb4fba2b2c2666617b040f3c1284a3ae163"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec",
+          "content_ref": "sha256:e21d7103a5abcdf0e4944491dc415b48c3c4ae0a0210c2f7a32bb7974aafd76a",
+          "head_ref": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/SKILL.md",
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-create-issue/SKILL.md",
+            ".agents/skills/guru-review-change-request/SKILL.md",
+            ".agents/skills/guru-review-change-request/evals/evals.json",
+            ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".agents/skills/guru-review-change-request/references/contract.md",
+            ".agents/skills/guru-review-change-request/references/issue-intake.md",
+            ".claude/skills/guru-clarify-requirements/SKILL.md",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-create-issue/SKILL.md",
+            ".claude/skills/guru-review-change-request/SKILL.md",
+            ".claude/skills/guru-review-change-request/evals/evals.json",
+            ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".claude/skills/guru-review-change-request/references/contract.md",
+            ".claude/skills/guru-review-change-request/references/issue-intake.md",
+            ".cursor/skills/guru-clarify-requirements/SKILL.md",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-create-issue/SKILL.md",
+            ".cursor/skills/guru-review-change-request/SKILL.md",
+            ".cursor/skills/guru-review-change-request/evals/evals.json",
+            ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".cursor/skills/guru-review-change-request/references/contract.md",
+            ".cursor/skills/guru-review-change-request/references/issue-intake.md",
+            ".trellis/guru-team/skills/adapters/eval/eval_support.py",
+            ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/references/issue-intake.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            ".trellis/spec/workflow/review-sufficiency.md",
+            "docs/design/current/behavior-validation-method.md",
+            "docs/design/current/issue-content.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/design.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/manifest.yaml",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/requirements.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md",
+            "docs/requirements/current/behavior-validation-method.md",
+            "docs/requirements/current/issue-content.md",
+            "docs/test/current/behavior-validation-method.md",
+            "docs/test/current/issue-content.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+            "trellis/skills/guru-team/adapters/eval/eval_support.py",
+            "trellis/skills/guru-team/adapters/eval/intake_authoring.py",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+            "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/references/issue-intake.md",
+            "trellis/skills/guru-team/runtime/tests/test_intake_projection.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 869,
+        "reviewed_head": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/869",
+          "revision": "sha256:881087f922423631564b250c77148bb4fba2b2c2666617b040f3c1284a3ae163"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:869001e5f63f8ba0ffca0ea31fe503eeb94acbf3",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/869",
+            "revision": "869001e5f63f8ba0ffca0ea31fe503eeb94acbf3"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "b85ea7bdf80db97ba8aceb1298dd61ed5f1ebeec",
+          "content_ref": "sha256:e21d7103a5abcdf0e4944491dc415b48c3c4ae0a0210c2f7a32bb7974aafd76a",
+          "head_ref": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/SKILL.md",
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-create-issue/SKILL.md",
+            ".agents/skills/guru-review-change-request/SKILL.md",
+            ".agents/skills/guru-review-change-request/evals/evals.json",
+            ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".agents/skills/guru-review-change-request/references/contract.md",
+            ".agents/skills/guru-review-change-request/references/issue-intake.md",
+            ".claude/skills/guru-clarify-requirements/SKILL.md",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-create-issue/SKILL.md",
+            ".claude/skills/guru-review-change-request/SKILL.md",
+            ".claude/skills/guru-review-change-request/evals/evals.json",
+            ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".claude/skills/guru-review-change-request/references/contract.md",
+            ".claude/skills/guru-review-change-request/references/issue-intake.md",
+            ".cursor/skills/guru-clarify-requirements/SKILL.md",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-create-issue/SKILL.md",
+            ".cursor/skills/guru-review-change-request/SKILL.md",
+            ".cursor/skills/guru-review-change-request/evals/evals.json",
+            ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".cursor/skills/guru-review-change-request/references/contract.md",
+            ".cursor/skills/guru-review-change-request/references/issue-intake.md",
+            ".trellis/guru-team/skills/adapters/eval/eval_support.py",
+            ".trellis/guru-team/skills/adapters/eval/intake_authoring.py",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/references/issue-intake.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            ".trellis/spec/workflow/review-sufficiency.md",
+            "docs/design/current/behavior-validation-method.md",
+            "docs/design/current/issue-content.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/design.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/manifest.yaml",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/requirements.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+            "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/traceability.md",
+            "docs/requirements/current/behavior-validation-method.md",
+            "docs/requirements/current/issue-content.md",
+            "docs/test/current/behavior-validation-method.md",
+            "docs/test/current/issue-content.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/presets/guru-team/spec/workflow/review-sufficiency.md",
+            "trellis/skills/guru-team/adapters/eval/eval_support.py",
+            "trellis/skills/guru-team/adapters/eval/intake_authoring.py",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+            "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/references/issue-intake.md",
+            "trellis/skills/guru-team/runtime/tests/test_intake_projection.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 869,
+        "reviewed_head": "00b13a606ab7e3160c556ef07aafe0941b8e269c",
+        "merge_commit": "869001e5f63f8ba0ffca0ea31fe503eeb94acbf3",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:868-0b5b7966-9859-4d2b-b6b3-029c32606a1a",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+          "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/868-issue-acceptance-boundary/test.md",
+          "revision": "sha256:f99c61e57cdabe4c8c3a884daa31d4fb279d22aa34fdcd659eae226c08b1fcfa"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/869",
+          "revision": "869001e5f63f8ba0ffca0ea31fe503eeb94acbf3"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/prd.md",
+        "revision": "sha256:a038296a32b5a78b474d5ac9dd1d8e9a381aff6ecd02679014120d927d67aad0"
+      },
+      "delivery_result_ids": [
+        "delivery:869001e5f63f8ba0ffca0ea31fe503eeb94acbf3"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:996c8bbb5733f40a9a97d1b1",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/868",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-16-868-issue-acceptance-boundary/closeout/closure/Y2xvc3VyZTo5OTZjOGJiYjU3MzNmNDBhOWE5N2QxYjE.json",
+          "revision": "sha256:ee69488f110dfd33f831d3e39584d71064044e285e6b3b62c445de94950a5bcd"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:868-0b5b7966-9859-4d2b-b6b3-029c32606a1a",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/868",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
