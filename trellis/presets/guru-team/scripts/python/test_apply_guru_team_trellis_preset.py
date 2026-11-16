@@ -551,24 +551,6 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
         self.assertNotIn('envelope["typed_output"]', transcript)
         self.assertNotIn('envelope[\'typed_output\']', transcript)
 
-    def test_projects_live_issue_for_wording_recorder(self) -> None:
-        source = self.verifier.wording_change_request_source({
-            "number": 145,
-            "url": "https://github.com/example/repo/issues/145",
-            "state": "OPEN",
-            "title": "Current title",
-            "body": "Current body",
-            "updatedAt": "2026-08-12T00:00:00Z",
-        })
-
-        self.assertEqual(source, {
-            "source_kind": "issue",
-            "identity": "https://github.com/example/repo/issues/145",
-            "title": "Current title",
-            "body": "Current body",
-            "updated_at": "2026-08-12T00:00:00Z",
-        })
-
     def test_failed_transcript_command_reports_json_stdout(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             script = Path(raw) / "fail.py"
@@ -1342,8 +1324,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
         for retired in ("prepare-task.sh", "finish-work.sh", "preview-finalization.sh",
                         "record-task-workspace-plan.sh", "record-task-publication-review.sh",
-                        "invoke-task-pr-merge.sh"):
+                        "invoke-task-pr-merge.sh", "record-contract-wording-review.sh",
+                        "check-contract-wording-review.sh"):
             self.assertNotIn(Path("scripts/bash") / retired, preset.MANAGED_ASSET_PATHS)
+            self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / retired).exists())
         self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
@@ -1351,8 +1335,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/check-context-discovery.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/record-contract-wording-review.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/check-contract-wording-review.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-change-request-review.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-change-request-review.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
@@ -2136,11 +2118,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
         )
         self.assertEqual(installed["extension"]["version"], canonical["version"])
-        self.assertIn(
+        self.assertNotIn(
             "contract-wording-review.json",
             canonical["public_api"]["artifact_contracts"],
         )
-        self.assertIn("contract-wording-review.json", public_api["artifact_contracts"])
+        self.assertNotIn("contract-wording-review.json", public_api["artifact_contracts"])
         self.assertIn("issue-review.json", public_api["artifact_contracts"])
         self.assertNotIn("agent-assignment.json", public_api["artifact_contracts"])
         self.assertNotIn("reviews/*.md", public_api["artifact_contracts"])
@@ -2185,8 +2167,12 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["private_artifact_schema_ids"],
         )
 
+        check_schema = json.loads((
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json"
+        ).read_text(encoding="utf-8"))
         self.assertIn(
-            "guru-phase2-check-5.0",
+            check_schema["$id"].rsplit("/", 1)[-1].removesuffix(".json"),
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         task_interface = json.loads((
@@ -2245,6 +2231,12 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                     self.guru_root / "trellis/skills/guru-team/packages" / skill_id / "interface.json"
                 ).read_text(encoding="utf-8"))
                 contracts = interface["public_contracts"]
+                if contracts["input"]["kind"] == "conversation":
+                    self.assertNotIn("aggregate_schema", contracts["input"])
+                    self.assertNotIn("profiles", contracts["input"])
+                    for output in contracts["outputs"]:
+                        self.assertNotIn("schema", output)
+                    continue
                 if field == "public_input_schema_ids":
                     input_contract = contracts["input"]
                     if "aggregate_schema" in input_contract:
@@ -2284,10 +2276,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
             architecture_input_schema_ids,
         )
-        self.assertIn(
-            "guru-normal-scenario-input-implementation-discovery-1.0",
-            public_input_schema_ids,
-        )
         solution_mechanism_interface = json.loads(
             (
                 self.guru_root
@@ -2310,7 +2298,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
             public_input_schema_ids,
         )
-        self.assertIn("guru-merge-task-delivery-input-delivery-aggregate-1.0", public_input_schema_ids)
         self.assertNotIn(
             "guru-merge-task-pr-input-ready-for-merge-1.0",
             public_input_schema_ids,
@@ -2345,10 +2332,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             for output in solution_mechanism_interface["public_contracts"]["outputs"]
         }
         self.assertTrue(solution_mechanism_output_ids <= set(typed_output_schema_ids))
-        self.assertIn(
-            "guru-stage0-discover-change-context-output-context-ready-5.0",
-            typed_output_schema_ids,
-        )
         self.assertNotIn(
             "guru-stage0-discover-change-context-output-context-ready-2.0",
             typed_output_schema_ids,
@@ -2401,12 +2384,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_evals"]["run_schema_ids"],
-            [
-                "guru-team-skill-eval-run-1.0",
-                "guru-team-skill-eval-run-2.0",
-                "guru-team-skill-eval-run-3.0",
-                "guru-team-skill-eval-run-4.0",
-            ],
+            canonical["public_api"]["skill_evals"]["run_schema_ids"],
         )
         self.assertEqual(
             public_api["skill_evals"]["control_map_schema_id"],
@@ -2460,8 +2438,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-context-discovery", public_api["companion_scripts"])
         self.assertIn("record-requirements-clarification", public_api["companion_scripts"])
         self.assertIn("check-requirements-clarification", public_api["companion_scripts"])
-        self.assertIn("record-contract-wording-review", public_api["companion_scripts"])
-        self.assertIn("check-contract-wording-review", public_api["companion_scripts"])
+        self.assertNotIn("record-contract-wording-review", public_api["companion_scripts"])
+        self.assertNotIn("check-contract-wording-review", public_api["companion_scripts"])
         self.assertIn("record-change-request-review", public_api["companion_scripts"])
         self.assertIn("check-change-request-review", public_api["companion_scripts"])
         self.assertIn("record-solution-mechanism-qualification", public_api["companion_scripts"])
@@ -2522,7 +2500,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-requirements-clarification-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        self.assertIn(
+        self.assertNotIn(
             "guru-contract-wording-review-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
@@ -2554,14 +2532,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertEqual(
             public_api["skill_contracts"]["interface_schema_ids"],
-            [
-                "guru-team-skill-interface-1.4",
-                "guru-team-skill-interface-1.5",
-                "guru-team-skill-interface-1.6",
-                "guru-team-skill-interface-1.7",
-                "guru-team-skill-interface-1.8",
-                "guru-team-skill-interface-1.9",
-            ],
+            canonical["public_api"]["skill_contracts"]["interface_schema_ids"],
         )
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")

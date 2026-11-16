@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "原AGENTS受管区块、目标平台选择及用户内容保护合同"}
+{"file": "docs/design/current/codex-skill-distribution.md", "reason": "每root supported_platforms适用性与当前共享发现根"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批正文深度、来源保义与唯一Policy/Docs计划"}
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "原existing/focused调用链、template hash与瞬时preimage直接消费者"}
+{"file": "trellis/presets/guru-team/scripts/python/verify_native_platform_load.py", "reason": "受影响平台预期集合及既有后继检查"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "current JSON input/output精确清单与conversation不贡献schema的已有合同"}
+{"file": "trellis/guru-team-extension.json", "reason": "current input登记唯一source及真实安装消费者"}
+{"file": "trellis/presets/guru-team/MIGRATION-812.md", "reason": "qualifier current输入与历史schema/原provider恢复"}
+{"file": "trellis/presets/guru-team/MIGRATION-813.md", "reason": "Create Task current2.0与原共享Creation/历史恢复"}
+{"file": "trellis/presets/guru-team/MIGRATION-819.md", "reason": "Sync current3.0仍引用2.0分支，不能误删当前消费者"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前切片完整需求、source与后继采用责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前设计与唯一来源设计处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "验证、partial Policy与Docs Plan"}

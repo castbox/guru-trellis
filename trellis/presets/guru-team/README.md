@@ -4,6 +4,7 @@
 局部补审返回同次 Readiness。Create Issue 的完成结果包括准确的最小审核评论及读回；
 只读审核不发布评论。讨论、仅创建、创建并开工和 no_issue 保持各自终点。
 当前公开合同、来源投影与旧操作恢复见 [MIGRATION-819](MIGRATION-819.md)。
+当前 manifest 的 schema 登记修正与旧输入接续见 [MIGRATION-861](MIGRATION-861.md)。
 源码/fixture 验证不代替 live 评论或实际安装采用证据。
 
 受管 manifest 的正常 Git 冲突由原

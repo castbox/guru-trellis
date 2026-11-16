@@ -1900,26 +1900,29 @@ def _template_hash_state(root: Path) -> dict[str, Any]:
     }
 
 
-def _known_agents_projection(target: Path) -> bool:
-    from apply_guru_team_trellis_preset import AGENTS_AI_FIRST_BLOCK
-
-    data = (target / "AGENTS.md").read_bytes()
-    block = AGENTS_AI_FIRST_BLOCK.encode("utf-8")
+def _capture_agents_preimage(target: Path) -> bytes:
+    path = target / "AGENTS.md"
+    if not path.is_file():
+        raise MatrixError("AGENTS.md template preimage is missing")
+    original = path.read_bytes()
     expected = _load_json(target / ".trellis/.template-hashes.json")["hashes"].get("AGENTS.md")
-    if not data.endswith(block):
+    if hashlib.sha256(original).hexdigest() != expected:
+        raise MatrixError("AGENTS.md preimage does not match its original template hash")
+    return original
+
+
+def _known_agents_projection(target: Path, original: bytes | None) -> bool:
+    from apply_guru_team_trellis_preset import render_agents_ai_first_principles
+
+    expected = _load_json(target / ".trellis/.template-hashes.json")["hashes"].get("AGENTS.md")
+    if original is None or hashlib.sha256(original).hexdigest() != expected:
         return False
-    prefix = data[:-len(block)]
-    # The installer appends only the canonical block and at most two LF bytes.
-    for separator in (b"", b"\n", b"\n\n"):
-        if separator and not prefix.endswith(separator):
-            continue
-        original = prefix[:-len(separator)] if separator else prefix
-        if hashlib.sha256(original).hexdigest() == expected:
-            return True
-    return False
+    return (target / "AGENTS.md").read_bytes() == render_agents_ai_first_principles(original)
 
 
-def _assert_template_hashes(target: Path, source_root: Path) -> dict[str, Any]:
+def _assert_template_hashes(
+    target: Path, source_root: Path, agents_preimage: bytes | None = None,
+) -> dict[str, Any]:
     target_state = _template_hash_state(target)
     if target_state["missing"]:
         raise MatrixError(
@@ -1929,11 +1932,9 @@ def _assert_template_hashes(target: Path, source_root: Path) -> dict[str, Any]:
     allowed_mismatches = set(source_state["mismatched"]) - {"AGENTS.md"}
     known_projections = []
     if "AGENTS.md" in target_state["mismatched"]:
-        if _known_agents_projection(target):
+        if _known_agents_projection(target, agents_preimage):
             allowed_mismatches.add("AGENTS.md")
             known_projections.append("AGENTS.md")
-        elif (target / "AGENTS.md").read_bytes() == (source_root / "AGENTS.md").read_bytes():
-            allowed_mismatches.add("AGENTS.md")
     unknown = sorted(
         set(target_state["mismatched"]) - allowed_mismatches,
         key=lambda item: item.encode("utf-8"),
@@ -2127,6 +2128,7 @@ def validate_cell(
     work_root: Path,
     before_cli: str = DEFAULT_BEFORE_CLI,
     run_cumulative_smokes: bool = True,
+    agents_preimage: bytes | None = None,
 ) -> dict[str, Any]:
     if platform not in PLATFORM_BY_FLAG or scenario not in SCENARIOS:
         raise MatrixError(f"invalid cell identity: {platform}/{scenario}")
@@ -2156,7 +2158,7 @@ def validate_cell(
             )
     _assert_installed_file_modes(target, installed, source_root)
     _assert_platform_projection(target, platform)
-    template_hashes = _assert_template_hashes(target, source_root)
+    template_hashes = _assert_template_hashes(target, source_root, agents_preimage)
     sidecars = _sidecars(target)
     if sidecars:
         raise MatrixError(f"unresolved cell sidecars: {sidecars}")
@@ -2455,6 +2457,7 @@ def _run_cell(
                 "existing cell did not install the immutable before-tag workflow"
             )
     before_docs = _docs_authority_snapshot(target)
+    agents_preimage = _capture_agents_preimage(target)
     initial_preset = _apply_preset(
         source_root,
         target,
@@ -2530,6 +2533,7 @@ def _run_cell(
         cell_root,
         before_cli,
         run_cumulative_smokes,
+        agents_preimage=agents_preimage,
     )
     result.update(
         {
@@ -2594,9 +2598,10 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
                                source["cli_version"],
                                work / "init.log")
     before_docs = _docs_authority_snapshot(target)
+    agents_preimage = _capture_agents_preimage(target)
     initial = _apply_preset(root, target, args.platform, work / "preset-initial.log")
     assert_installed_lock()
-    _assert_template_hashes(target, root)
+    _assert_template_hashes(target, root, agents_preimage)
     reapplied = []
     for iteration in (1, 2):
         iteration_root = work / f"update-{iteration}"
@@ -2611,7 +2616,7 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
             root, target, args.platform, iteration_root / "preset-reapply.log",
             previous_root=root))
         assert_installed_lock()
-        hashes = _assert_template_hashes(target, root)
+        hashes = _assert_template_hashes(target, root, agents_preimage)
     _assert_docs_authority(target, before_docs)
     if _sidecars(target):
         raise MatrixError(f"unresolved focused sidecars: {_sidecars(target)}")
