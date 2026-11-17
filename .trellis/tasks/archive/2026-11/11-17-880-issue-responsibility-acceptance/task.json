@@ -1,0 +1,531 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-17-880-issue-responsibility-acceptance",
+  "id": "11-17-880-issue-responsibility-acceptance",
+  "name": "880-issue-responsibility-acceptance",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 880,
+    "disposition": "exact_source"
+  },
+  "title": "#880 区分 Issue 责任层并收敛验收场景",
+  "description": "更新时间共享 Issue 规则，明确组件、联合交付、验证证据与目标环境发布边界，并将验收场景按独立风险去重。",
+  "dev_type": null,
+  "scope": "完成 Issue #880 的完整 accepted scope，包括共享规范、原 owner 引用、现有 eval/fixture、RDT/current、canonical/dogfood、声明平台与安装投影。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-17",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+    "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+  },
+  "deliveries": [
+    {
+      "id": "ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+          "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+        "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+      },
+      "candidate": {
+        "base_ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+        "content_ref": "sha256:3664c6875950278263305fe17b7c80744524097f4439d75d751f5aab6a0edd6c",
+        "head_ref": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+          ".agents/skills/guru-review-change-request/evals/evals.json",
+          ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+          ".claude/skills/guru-review-change-request/evals/evals.json",
+          ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+          ".cursor/skills/guru-review-change-request/evals/evals.json",
+          ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          "docs/design/current/behavior-validation-method.md",
+          "docs/design/current/issue-content.md",
+          "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/design.md",
+          "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/manifest.yaml",
+          "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/requirements.md",
+          "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+          "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md",
+          "docs/requirements/current/behavior-validation-method.md",
+          "docs/requirements/current/issue-content.md",
+          "docs/test/current/behavior-validation-method.md",
+          "docs/test/current/issue-content.md",
+          "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+          "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:50ba4e3c-4e84-458f-a2fd-eef8adff3da9",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+              "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+            "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/prd.md",
+              "revision": "sha256:a86373f89a3780b9b4100bf0a7f3f81dea0932227a588b30c623fab53e71766f"
+            },
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+              "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+            },
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/implement.md",
+              "revision": "sha256:18fe8cc0ad99f86de33a11733e22c07b3c6ffec4f5148c35efd732c1d3868a47"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:e2659314840fc3102717e88ee602309dcab5c98ff6cdaa0328abcd0871324567",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+              "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+            "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+          },
+          "candidate": {
+            "base_ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+            "content_ref": "sha256:3664c6875950278263305fe17b7c80744524097f4439d75d751f5aab6a0edd6c",
+            "head_ref": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-review-change-request/evals/evals.json",
+              ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-review-change-request/evals/evals.json",
+              ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-review-change-request/evals/evals.json",
+              ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/issue-content.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/design.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/manifest.yaml",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/requirements.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/issue-content.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/issue-content.md",
+              "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:50ba4e3c-4e84-458f-a2fd-eef8adff3da9",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/implement.md",
+              "revision": "sha256:18fe8cc0ad99f86de33a11733e22c07b3c6ffec4f5148c35efd732c1d3868a47"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:e2659314840fc3102717e88ee602309dcab5c98ff6cdaa0328abcd0871324567",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+              "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+            "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+          },
+          "candidate": {
+            "base_ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+            "content_ref": "sha256:3664c6875950278263305fe17b7c80744524097f4439d75d751f5aab6a0edd6c",
+            "head_ref": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-review-change-request/evals/evals.json",
+              ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-review-change-request/evals/evals.json",
+              ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-review-change-request/evals/evals.json",
+              ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/issue-content.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/design.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/manifest.yaml",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/requirements.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/issue-content.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/issue-content.md",
+              "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json"
+            ]
+          },
+          "predecessor_result_id": "check:e2659314840fc3102717e88ee602309dcab5c98ff6cdaa0328abcd0871324567",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/implement.md",
+              "revision": "sha256:18fe8cc0ad99f86de33a11733e22c07b3c6ffec4f5148c35efd732c1d3868a47"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:e67a6afbc5edec5ce07dd3b7b2bbad53622f26802c4b751d557ad844742d9938",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+              "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+            "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+          },
+          "candidate": {
+            "base_ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+            "content_ref": "sha256:3664c6875950278263305fe17b7c80744524097f4439d75d751f5aab6a0edd6c",
+            "head_ref": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-review-change-request/evals/evals.json",
+              ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-review-change-request/evals/evals.json",
+              ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-review-change-request/evals/evals.json",
+              ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              "docs/design/current/behavior-validation-method.md",
+              "docs/design/current/issue-content.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/design.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/manifest.yaml",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/requirements.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+              "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md",
+              "docs/requirements/current/behavior-validation-method.md",
+              "docs/requirements/current/issue-content.md",
+              "docs/test/current/behavior-validation-method.md",
+              "docs/test/current/issue-content.md",
+              "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+              "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json"
+            ]
+          },
+          "predecessor_result_id": "full-review:e2659314840fc3102717e88ee602309dcab5c98ff6cdaa0328abcd0871324567",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/implement.md",
+              "revision": "sha256:18fe8cc0ad99f86de33a11733e22c07b3c6ffec4f5148c35efd732c1d3868a47"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:65554eae44556dc9e2c804ec4569ecb245acedede61a8b8fc170fd8181f2ac8f",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/881",
+            "revision": "sha256:bcc5f707493def698fec944724c4eab49859ec1ee50d9dfd0b3b569a4019aaf6"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+          "content_ref": "sha256:3664c6875950278263305fe17b7c80744524097f4439d75d751f5aab6a0edd6c",
+          "head_ref": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-review-change-request/evals/evals.json",
+            ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-review-change-request/evals/evals.json",
+            ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-review-change-request/evals/evals.json",
+            ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            "docs/design/current/behavior-validation-method.md",
+            "docs/design/current/issue-content.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/design.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/manifest.yaml",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/requirements.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md",
+            "docs/requirements/current/behavior-validation-method.md",
+            "docs/requirements/current/issue-content.md",
+            "docs/test/current/behavior-validation-method.md",
+            "docs/test/current/issue-content.md",
+            "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 881,
+        "reviewed_head": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/881",
+          "revision": "sha256:bcc5f707493def698fec944724c4eab49859ec1ee50d9dfd0b3b569a4019aaf6"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:889ed721dcc05875a5931d6de56ff90be4344f81",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/881",
+            "revision": "889ed721dcc05875a5931d6de56ff90be4344f81"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+          "content_ref": "sha256:3664c6875950278263305fe17b7c80744524097f4439d75d751f5aab6a0edd6c",
+          "head_ref": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-review-change-request/evals/evals.json",
+            ".agents/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-review-change-request/evals/evals.json",
+            ".claude/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-review-change-request/evals/evals.json",
+            ".cursor/skills/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/evals.json",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            "docs/design/current/behavior-validation-method.md",
+            "docs/design/current/issue-content.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/design.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/manifest.yaml",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/requirements.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+            "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md",
+            "docs/requirements/current/behavior-validation-method.md",
+            "docs/requirements/current/issue-content.md",
+            "docs/test/current/behavior-validation-method.md",
+            "docs/test/current/issue-content.md",
+            "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json",
+            "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 881,
+        "reviewed_head": "a870cbce4e76ef939e94b61112c3e6281c392bb2",
+        "merge_commit": "889ed721dcc05875a5931d6de56ff90be4344f81",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:11-17-880-issue-responsibility-acceptance:0",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "docs/requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md",
+          "revision": "git:889ed721dcc05875a5931d6de56ff90be4344f81:sha256:a54a8e7e3d8453258e1699d6b42a849f78a14b528465702b433d721ec0cfb4ce"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/881",
+          "revision": "merged:a870cbce4e76ef939e94b61112c3e6281c392bb2:889ed721dcc05875a5931d6de56ff90be4344f81:targeted-native-ci-3-of-3-passed"
+        },
+        {
+          "locator": "eval:standard-intake-authoring-acceptance-boundary",
+          "revision": "passed:current-boundary-and-evidence+reuse-and-targeted-gap:candidate-a870cbce4e76ef939e94b61112c3e6281c392bb2"
+        },
+        {
+          "locator": "architecture:task_impact_sync:acceptance_finish",
+          "revision": "baseline_current:no_architecture_impact:no_change:sha256:19773f7c1980f5d9cc8ac210c7a3495384911136262f0e56d3daaaed255e8eec"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/880",
+          "revision": "sha256:e19f8e5db15339117b2d253175d737c4de6b87feb46fa3f3015f1b2c0743f336"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+        "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+      },
+      "delivery_result_ids": [
+        "delivery:889ed721dcc05875a5931d6de56ff90be4344f81"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:de4d862a34d7428a85b2dbc7",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/880",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/closeout/closure/Y2xvc3VyZTpkZTRkODYyYTM0ZDc0MjhhODViMmRiYzc.json",
+          "revision": "sha256:bfa07b09b30230d83ab9c0988a8fe0fa890d39f3140c395683bfd49bfa2806e1"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:11-17-880-issue-responsibility-acceptance:0",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/880",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
