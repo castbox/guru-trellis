@@ -1189,11 +1189,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-17T11:55:43Z",
+  "installed_at": "2026-11-17T12:37:52Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
-    "commit": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+    "ref": "5f0724755763a3adc2b1c4637c14cbc42cb4b780",
+    "commit": "5f0724755763a3adc2b1c4637c14cbc42cb4b780",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1384,7 +1384,7 @@
       {
         "id": "guru-clarify-requirements",
         "interface_sha256": "4cc92e4871a418d221f2ecc5c6eefdfaa8850cd926ad3e8fb3090b911129a5e1",
-        "tree_sha256": "a2abf5babc47026bdc544daac272ecf728a7370cb95d5a1e434aaf8eb538565a"
+        "tree_sha256": "2244389a61281814bef622b804d6c6f8f18b8471ffa9df2d07bae442dd948459"
       },
       {
         "id": "guru-cleanup-task-resources",
@@ -6340,7 +6340,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
-        "sha256": "62187382624fd0d5d28d314163413194fa10b759400fd65bf7215eb3ab66c1e7",
+        "sha256": "2f36a14bb82e15daaff8ec07e90cbd7197058c5be59a30f8edc79101565003a2",
         "executable": false,
         "action": "installed"
       },
@@ -30805,7 +30805,7 @@
       {
         "path": ".agents/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
-        "sha256": "62187382624fd0d5d28d314163413194fa10b759400fd65bf7215eb3ab66c1e7",
+        "sha256": "2f36a14bb82e15daaff8ec07e90cbd7197058c5be59a30f8edc79101565003a2",
         "executable": false,
         "action": "installed"
       },
@@ -31596,7 +31596,7 @@
       {
         "path": ".claude/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
-        "sha256": "62187382624fd0d5d28d314163413194fa10b759400fd65bf7215eb3ab66c1e7",
+        "sha256": "2f36a14bb82e15daaff8ec07e90cbd7197058c5be59a30f8edc79101565003a2",
         "executable": false,
         "action": "installed"
       },
@@ -32387,7 +32387,7 @@
       {
         "path": ".cursor/skills/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md",
-        "sha256": "62187382624fd0d5d28d314163413194fa10b759400fd65bf7215eb3ab66c1e7",
+        "sha256": "2f36a14bb82e15daaff8ec07e90cbd7197058c5be59a30f8edc79101565003a2",
         "executable": false,
         "action": "installed"
       },
