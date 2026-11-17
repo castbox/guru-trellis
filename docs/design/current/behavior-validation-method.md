@@ -27,3 +27,7 @@ Identity：RDT-DES-BEHAVIOR-VALIDATION；别名：D735/CON735。原语义 owner�
 承接R868-04。quality-guidelines Test And Validation Value单写跨阶段边界、停止外推、去重、复用与每轮必要性；review-sufficiency在原覆盖职责中实际加载，不复制规则。现有native eval确定性公开方法投影补齐Skill必读正文及传递依赖，隔离预期和私有runtime；不扩flow状态机/命令/生产schema，不替代AI判断。维护事实case及transport测试；关键创建/修订由匹配原Skill真实会话另行观察。对应T868-02/03/04。
 
 对应[R868-04](../../requirements/current/behavior-validation-method.md)、[T868-03及关联观察](../../test/current/behavior-validation-method.md)；Issue原入口D868-01/02见[Issue内容设计](issue-content.md)。
+
+## D880-02 / CON880-ENVIRONMENT：跨阶段边界落点
+
+承接 R880-02/03。`quality-guidelines.md#test-and-validation-value` 在原责任边界段区分服务版本部署、共享 test 部署、目标环境执行和业务发布配置，不复制 Issue 专属场景集合定义。`issue-content.md` 继续拥有 Issue 结果、证据、责任层和场景集合；review-sufficiency 只按原职责加载跨阶段方法，不新增环境 Gate、证明表或部署 owner。

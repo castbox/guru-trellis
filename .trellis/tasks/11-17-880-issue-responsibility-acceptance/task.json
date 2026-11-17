@@ -1,0 +1,101 @@
+{
+  "schema_version": "2.0",
+  "id": "11-17-880-issue-responsibility-acceptance",
+  "name": "880-issue-responsibility-acceptance",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 880,
+    "disposition": "exact_source"
+  },
+  "title": "#880 区分 Issue 责任层并收敛验收场景",
+  "description": "更新时间共享 Issue 规则，明确组件、联合交付、验证证据与目标环境发布边界，并将验收场景按独立风险去重。",
+  "dev_type": null,
+  "scope": "完成 Issue #880 的完整 accepted scope，包括共享规范、原 owner 引用、现有 eval/fixture、RDT/current、canonical/dogfood、声明平台与安装投影。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-17",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+    "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+  },
+  "deliveries": [
+    {
+      "id": "ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+          "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+        "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:50ba4e3c-4e84-458f-a2fd-eef8adff3da9",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/prd.md",
+              "revision": "sha256:b724b601e15e851fb09bed836fa5fb0358ce9953cd4bfd2129c1746d82ec26c3"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+            "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/prd.md",
+              "revision": "sha256:a86373f89a3780b9b4100bf0a7f3f81dea0932227a588b30c623fab53e71766f"
+            },
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/design.md",
+              "revision": "sha256:8cbb08eacdc9fa1da30e68322621f3057ea663e0df13e6fde5df19bf8d4f9f1e"
+            },
+            {
+              "locator": ".trellis/tasks/11-17-880-issue-responsibility-acceptance/deliveries/ebed2ee9-2ddc-457a-9f17-a7dc8e0e490f/implement.md",
+              "revision": "sha256:18fe8cc0ad99f86de33a11733e22c07b3c6ffec4f5148c35efd732c1d3868a47"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

@@ -25,3 +25,7 @@ R735-03 → D735-03。命中 package contract/runtime、source/installed/实际�
 R868-04 → D868-03。原native staging装配固定public正文及必要依赖，测试真实投影/allowlist读取、字节与私有目录排除；只证明传递边界。Readiness native corpus由原runner执行，独立判断完整轨迹。
 
 关联[Issue内容测试](issue-content.md)的T868-02/04：观察明确联合交付与边界外调用链的区别、已有充分覆盖复用和真实内层缺口定向补证。实际原runner standard-intake-authoring-acceptance-boundary取得ready，主协调器独立grade后正式passed；投影、传输和真实语义分层说明见[#868 Test](../../requirements-design-test-contributions/868-issue-acceptance-boundary/test.md)。对应R868-04、D868-03；沿原T735停止及因果方法，无新固定矩阵或实验门槛。
+
+## T880-02/03 / SC880-ENVIRONMENT
+
+R880-02/03 → D880-02。实际更新后的 `standard-intake-authoring-acceptance-boundary` 在同一 native run 中保留明确目标 runtime 4.2 与业务配置更新/revision，同时拒绝逐 Issue 共享 test 部署、服务部署和消费方 E2E；两条 semantic assertions 经独立 transcript 读取后通过。`test_review_sufficiency_distribution.py` 与 `test_issue_content_distribution.py` 的真实 writer/reapply 和 sidecar 检查通过，分别证明跨阶段薄引用与传播边界；不新增环境矩阵。

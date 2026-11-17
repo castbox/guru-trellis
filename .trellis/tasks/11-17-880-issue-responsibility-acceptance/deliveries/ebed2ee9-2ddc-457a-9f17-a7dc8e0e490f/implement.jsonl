@@ -1,0 +1,13 @@
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md", "reason": "sole Issue content rule owned by Clarify"}
+{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "shared cross-stage validation ownership and project verification rules"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/acceptance-boundary/process.md", "reason": "existing teaching scenario to extend without duplicating the rule"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json", "reason": "actual mixed Issue fixture for target-environment, deployment and scenario-deduplication behavior"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json", "reason": "native semantic criteria for the existing fixture"}
+{"file": "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py", "reason": "managed projection and reapply test for the Issue content assets"}
+{"file": "docs/requirements/current/issue-content.md", "reason": "current Issue-content requirement authority and stable identities"}
+{"file": "docs/design/current/issue-content.md", "reason": "current Issue-content design authority and owner relationships"}
+{"file": "docs/test/current/issue-content.md", "reason": "current Issue-content test strategy and evidence boundaries"}
+{"file": "docs/requirements/current/behavior-validation-method.md", "reason": "current cross-stage validation requirement authority"}
+{"file": "docs/design/current/behavior-validation-method.md", "reason": "current cross-stage validation design authority"}
+{"file": "docs/test/current/behavior-validation-method.md", "reason": "current cross-stage validation test authority"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "required clear technical writing contract"}
