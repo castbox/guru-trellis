@@ -249,6 +249,18 @@ may isolate dependencies outside the declared boundary, but must not manufacture
 the result that the tested component itself must produce or omit real dependencies
 needed to prove its own contract.
 
+Treat service-version deployment, shared-test environment deployment,
+target-environment execution and business publish/config operations as distinct
+responsibilities. Ordinary work does not default to a per-change shared-test
+deployment. Require target- or shared-environment evidence only when effective
+authority explicitly promises it or only that environment can establish the
+required contract, and retain the exact environment and unverified boundary in
+that result. A business operation named publish, config or sync does not by
+itself create a service deployment obligation. Conversely, minimal evidence
+cannot delete an explicit target-environment promise, and deployment success
+cannot substitute for a component contract that the deployment does not
+exercise.
+
 Distinguish delivery results from supporting evidence and unsupported expansion.
 Unit, integration, E2E and joint checks are alternative evidence methods, not a
 fixed stack of required acceptance layers. When effective outer evidence already

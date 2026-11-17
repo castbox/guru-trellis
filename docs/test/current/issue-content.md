@@ -4,7 +4,9 @@
 
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
-Identity：`RDT-TST-ISSUE-CONTENT`；状态：`current`。导航别名：`T153`、`T153-01..05`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 历史 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md)与 #818 的实际 old/new、正常返修、分发及目标采用观察。
+#880由原RDT owner在真实 Agent eval、package、分发和工具采用后完成整合与读回；状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review。固定前驱 Git `76198a53b4da989b66d2e5f135ff4d2b703ca3cf`；实际结果见[#880 Test](../../requirements-design-test-contributions/880-issue-responsibility-acceptance/test.md)。
+
+Identity：`RDT-TST-ISSUE-CONTENT`；状态：`current`。导航别名：`T153`、`T153-01..05`、`T880`、`SC880`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 历史 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md)、#818 的实际 old/new、正常返修、分发及目标采用观察，以及[#880](https://github.com/castbox/guru-trellis/issues/880) AC1–AC2。
 
 本单元由原 RDT owner 在 #818 批准 Planning、实际实现及工程结果完成后，于 `codex/818-issue-minimal-sufficiency` 的 final_integration 实际整合。整合前重读真实目标、适用来源及必要关系，写后逐项 readback；整合状态为 `integrated_pending_review`，尚待 TaskCommit 与独立 committed Review。该事实不产生 Check/Review pass 或 Task Completion。原基线为 Git `fd0ee32618433a92ae934e29afb5b72e7136b4f7`；本次来源及精确替代范围见 [#818 贡献](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)，普通当前读取无需拼接提案。
 
@@ -102,3 +104,23 @@ R868-02/03/04 → D868-02/03。真实原owner首次创建前核最终稿，不�
 R868-02/03/04 → D868-02/03。现有Issue-content和review-sufficiency分发测试执行真实writer/reapply、声明平台、用户保留及sidecar。原tools owner核resolver/installed/native/drift/mode及Task/session/peer保留；local_candidate不证明formal_fork_source_lock。不扩完整矩阵、Release或外仓采用。
 
 实际观察由[#868 Test](../../requirements-design-test-contributions/868-issue-acceptance-boundary/test.md)拥有：真实创建链完成完整草稿精简、原clear/ready和创建前核对；后续原native审核拒绝扩张并复用E1/E2，只补E3；分发及本目标采用已完成。外部GitHub写入/读回、正式source-lock、完整安装/Release矩阵未执行。原生方法投影T868-03见[验证方法测试单元](behavior-validation-method.md)，不将静态传递或安装结果代替行为。对应R868-01..03、D868-01/02及跨阶段R868-04/D868-03。
+
+## T880-01 / SC880-NATIVE：真实 Agent mixed scenario
+
+R880-01..05/07 → D880-01/03/04。现有 `standard-intake-authoring-acceptance-boundary` native case 使用更新后的 mixed source，预期和 grade 不进入被测 Agent。实际 run 在 323.399 秒后返回 `ready`；完整 Clarify/Readiness owner results、command receipts 与 public output 经独立读取后，两条 semantic assertions 均通过并由原 runner 正式记为 `passed`。结果保留组件、CLI、目标 runtime 4.2 与业务配置更新/revision，拒绝共享 test 部署、服务部署、消费方 E2E 及重复 CLI 场景。
+
+## T880-02 / SC880-PACKAGE：eval 发现与合同
+
+R880-07 → D880-04。managed Python 执行 `guru-review-change-request` contract/runtime 27 tests 通过；source 与 installed eval discovery 均识别该 case，corpus digest 一致。该证据只证明 package 与传输合同。
+
+## T880-03 / SC880-DISTRIBUTION：真实 writer/reapply
+
+R880-06 → D880-04。`test_issue_content_distribution.py` 通过，189.574 秒；`test_review_sufficiency_distribution.py` 通过，67.845 秒。覆盖声明平台字节、`acceptance-boundary` 示例、owner 引用、用户文件保留、reapply 与零 sidecar。
+
+## T880-04 / SC880-ADOPTION：本 checkout 受管采用
+
+R880-06 → D880-04。原 `guru-upgrade-tools` 以 local_candidate 和冻结 operation 返回 `tools_upgraded`，版本 `0.7.0-guru.10`，recovery ref `53e33269-ca2f-47f2-9330-7a9173877f6d`，保留 `formal_fork_source_lock` 未验证。目标 installed validation 通过 42 active packages、123 commands、9,938 managed files，conflict/sidecar 均为 0；source validation、dogfood drift、ownership 与 native continuation 通过。3,370 个 Task 文件、现有 config/AGENTS bytes/mode 与缺失 session 状态保持。
+
+## T880-05 / SC880-ENGINEERING：定向工程完整性
+
+Task context validation 通过（13 implement / 11 check）；404 个 Guru Python 文件内存语法检查、shell 语法、marketplace/affected JSON 与 `git diff --check` 通过。长文注入和 code-file context warnings 保留为非阻塞提示。

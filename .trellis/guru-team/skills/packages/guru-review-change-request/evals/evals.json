@@ -90,7 +90,7 @@
       "native_execution_adapter": "codex",
       "model_id": "gpt-6.1-sol",
       "expected_exit": "ready",
-      "expected_output": "The original owners judge the current complete Issue and review material within its component and declared CLI boundary. The expectation is readiness without adopting unsupported consumer E2E or repeated acceptance. An actual earlier stop remains evidence to inspect, not an automatic pass.",
+      "expected_output": "The original owners judge the current complete Issue and review material within its component, declared CLI, explicit target-runtime and business-config boundaries. The expectation is readiness without adopting unsupported shared-test deployment, service deployment, consumer E2E or repeated scenarios. An actual earlier stop remains evidence to inspect, not an automatic pass.",
       "files": [
         "evals/files/issue-acceptance-boundary-source.json"
       ],
@@ -116,12 +116,12 @@
           {
             "id": "current-boundary-and-evidence",
             "evidence_selector": "transcript",
-            "criterion": "Read the complete actual transcript, source body, repository notes and receipts independently. Verify that the native owners distinguish effective requirements from ordinary review suggestions. They retain component API and explicit CLI joint delivery, ordered paging, the pre-load invalid-input rejection promise and compatibility. They do not adopt consumer application integration, business E2E, production adoption, repeated test layers or coverage thresholds as acceptance, findings, risks, mandatory follow-ups or gates. Goal attribution alone must not justify those additions. A ready DTO alone is insufficient."
+            "criterion": "Read the complete actual transcript, source body, repository notes and receipts independently. Verify that the native owners distinguish effective requirements from ordinary review suggestions and recognize that component, caller, cross-component and environment responsibilities can combine. They retain the component API, explicit CLI joint delivery, ordered paging, the pre-load invalid-input rejection promise and compatibility. Because the source explicitly requires it, they also retain the target-runtime 4.2 result and the business publish-pagination-config result. They distinguish business configuration publication from service-version deployment and do not adopt per-Issue shared-test deployment, consumer application integration, business E2E, production adoption or coverage thresholds as acceptance, findings, risks, mandatory follow-ups or gates. Goal attribution alone must not justify those additions. A ready DTO alone is insufficient."
           },
           {
             "id": "reuse-and-targeted-gap",
             "evidence_selector": "transcript",
-            "criterion": "Verify actual reasoning about the supplied evidence: existing page/CLI evidence remains reusable when its object, conditions and path apply; reviewer or stage change alone does not trigger reruns. The early rejection before source loading is an explicit internal promise that the supplied response-only observations do not establish. The owners retain a minimal directed observation for that promise, and retain the explicitly scoped CLI-to-component joint check. They do not delete legitimate technical results merely because source, tests or internal state observe them. Distinguish readiness from implementation completion; do not claim that the missing implementation evidence ran."
+            "criterion": "Verify actual reasoning about the supplied evidence and the scenario collection. Existing page/CLI evidence remains reusable when its object, conditions and path apply; reviewer or stage change alone does not trigger reruns. The early rejection before source loading is an explicit internal promise that the supplied response-only observations do not establish, while the target-runtime 4.2 compatibility result remains required and cannot be replaced by source inspection or service deployment. The owners retain the explicit CLI-to-component joint check and the business config update/revision result without turning the word publish into a deployment obligation. Each scenario must correspond to a distinct observable result or risk; the same CLI behavior is not split into create, review and validation-method scenarios. The owners do not delete legitimate technical results merely because source, tests or internal state observe them. Distinguish readiness from implementation completion; do not claim that the missing implementation evidence ran."
           }
         ]
       }

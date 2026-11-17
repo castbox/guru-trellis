@@ -27,3 +27,7 @@ Author、实现者和审核者从当前需求、设计或已确认缺陷取得�
 各原owner在accepted responsibility内选择最外沿有效观察，不沿调用链追到消费方接入、E2E、生产采用或联合验收。仅在有效需求包含联合交付，或自身承诺须经集成证明时保留最小相应验证，指出承诺与现有证据缺口。外沿充分证据已覆盖时不逐层复制单元/集成/E2E/联合验收；内部明确条件缺口只补定向证据。替身只隔离边界外依赖，不制造被测组件结果。对象/版本、条件、路径和结论仍适用的证据复用，阶段、reviewer或信心变化不要求重跑。原owner独立判断当前充分性。唯一跨阶段方法为quality-guidelines Test And Validation Value，共同review-sufficiency薄引用，不新建表/账本/阶段。对应D868-03、T868-02/03。
 
 对应[设计D868-03](../../design/current/behavior-validation-method.md)、[测试T868-03及关联T868-02/04](../../test/current/behavior-validation-method.md)；Issue-specific R868-01..03由[Issue内容单元](issue-content.md)拥有。
+
+## R880-02/03 / BEH880-ENVIRONMENT：环境、部署与业务发布边界
+
+服务版本部署、共享 test 环境部署、目标环境执行和业务发布配置操作是不同责任。普通工作不默认逐变更部署共享 test 环境；只有有效需求明确承诺，或只有该环境才能建立所需合同时，才要求目标或共享环境证据，并保留准确环境与未验证边界。业务操作名称包含 publish、config 或 sync 不自动产生服务部署义务。反之，最小验证不能删除明确目标环境承诺，部署成功也不能替代部署未实际覆盖的组件合同。
