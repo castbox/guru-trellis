@@ -67,3 +67,9 @@ DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、�
 保留所有原有依赖、槽位、原 owner gate、当前对话行动边界及整体完成证明。常规进展通过继续工具执行保持静默，不用进度 final 或 heartbeat XML 结束监督。旧run已有timer只通过支持入口停止并验证；新run无需制造timer停止证据。
 
 本轮来源：2026-11-15 的 task-free 原生监督修订。当前宿主禁止用 automation 跟踪具体工作直至完成，因此在原 Markdown owner 内直接替换 timer 前置；未变更 #847/#848 的实现范围，也不声明这两项已交付。
+
+## R883-01 / BEH883-LOCAL-DISPOSITION：局部授权处置
+
+来源：[Issue #883](https://github.com/castbox/guru-trellis/issues/883)，2026-11-19T07:01:56Z。选定 DAG 节点的原 owner 提出具体动作时，协调者应用现有委托与目标规则。已覆盖动作及时安排并回读。确需用户确认的动作只暂停自身及依赖；仍有合法独立工作或有效有界等待时，协调者发出不结束轮次的请求，再继续观察并承接实际结果。
+
+当前节点的限定失效 Git 注册清理和已收敛的 Issue 正文修订可按各自条件直接安排原 owner；其他动作继续遵守原权限和用户本人确认边界。实际中断后仍恢复同一节点和原操作。资格、顺序及所有例外条件以 [共享编排方法](../../../trellis/presets/guru-team/spec/workflow/issue-orchestration.md#dag-action-authorization-and-handoff) 为唯一运行定义。设计与验收见 D883-01、T883-01..04。

@@ -1,0 +1,107 @@
+{
+  "schema_version": "2.0",
+  "id": "883-issue-dag-local-confirmation",
+  "name": "883-issue-dag-local-confirmation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 883,
+    "disposition": "exact_source"
+  },
+  "title": "#883 修复 Issue DAG 在单个动作待授权时停止观察",
+  "description": "从公开 DAG 入口建立现行版本基线，验证两类权限边界下的真实协调 Agent 行为。",
+  "dev_type": null,
+  "scope": "保留原 Issue 验收、权限、持续观察、恢复和证据边界；先建立现行版本证据，再决定修订方案或如实记录不复现。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-19",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/prd.md",
+    "revision": "sha256:f9218922f46085cb6d801c9657064d24ae975d92df8c84e82268eb3744f3b59b"
+  },
+  "deliveries": [
+    {
+      "id": "a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/prd.md",
+          "revision": "sha256:f9218922f46085cb6d801c9657064d24ae975d92df8c84e82268eb3744f3b59b"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "R3",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/deliveries/a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac/design.md",
+        "revision": "sha256:96dc5e5009e8764f7d077f5f4216d1a0288cf050cb6dc99dbb9dc02863626485"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:54479c1d-64e5-4b24-b107-6f33782950ff",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/prd.md",
+              "revision": "sha256:f9218922f46085cb6d801c9657064d24ae975d92df8c84e82268eb3744f3b59b"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "R3",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/deliveries/a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac/design.md",
+            "revision": "sha256:96dc5e5009e8764f7d077f5f4216d1a0288cf050cb6dc99dbb9dc02863626485"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/deliveries/a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac/prd.md",
+              "revision": "sha256:870dbd3c17d8fd8180e4e4e3d0c1be10bcb19cdb3f46a38d3a4ee125e606e2fb"
+            },
+            {
+              "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/deliveries/a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac/design.md",
+              "revision": "sha256:96dc5e5009e8764f7d077f5f4216d1a0288cf050cb6dc99dbb9dc02863626485"
+            },
+            {
+              "locator": ".trellis/tasks/11-19-883-issue-dag-local-confirmation/deliveries/a700dbf6-0310-4c4f-b8e3-ed0c5bc44eac/implement.md",
+              "revision": "sha256:1aa2d98753d9d7281760d6a4893f99b1c218d8094ed91640b849621c6d479d32"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

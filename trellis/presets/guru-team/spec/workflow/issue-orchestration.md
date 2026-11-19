@@ -88,6 +88,85 @@ permission. Send a later concrete instruction such as `合并PR`
 within actual delegation without attaching “the user already authorized this.”
 Repository rules expressly requiring direct human confirmation still apply.
 
+## DAG Action Authorization And Handoff
+
+Apply this section to actions for nodes in the selected DAG. The coordinator
+first identifies the exact action and target. Read the current proposal,
+actual delegation, target rules, and the original step's prerequisites.
+If delegation covers the action, the prerequisites pass, and the target rules
+do not require direct human confirmation, send the exact instruction to the
+original owner and read back its actual result. A child's “awaiting approval”
+label alone does not require another user question.
+
+The two cases below need no separate confirmation when all their conditions
+hold. Apply them only to the current node and keep any explicit execution
+limit or target rule requiring direct human confirmation. The coordinator
+arranges the work; the original owner checks live facts and executes it.
+
+### Stale worktree registrations
+
+Use this disposition when a node's original step is blocked by stale worktree
+registrations in its shared Git repository. The original executor uses Git to
+preview the exact set its supported cleanup command would remove. For each
+entry, verify that the worktree directory is absent and that no Task or running
+operation needs that registration. Apply the same checks to registrations left
+by other completed Issues.
+
+Execute only if the command would remove exactly the verified set. If the
+preview includes an extra entry, or any required fact is unknown, stop the
+cleanup and recheck. Do not delete an existing worktree, branch, commit, Task
+record, or remote resource under this rule. Read the registrations again and
+verify that only the reviewed set was removed. Then resume the same node at
+its original blocked step and observe the result.
+
+### Converged Issue body revisions
+
+Use this disposition when the original reviewer of a selected node proposes
+the exact revised body for its Issue. Verify the Issue identity, the full text
+to write, and the authority and repository evidence that establish the
+editorial correction. The user's goal, scope, acceptance, and execution limits
+must remain the same. Evidence that an identifier has no collision does not
+establish a decision on an open option.
+
+Send the exact amendment to the original Issue owner. That owner rereads the
+live body, checks the text to be replaced, uses the existing body-edit entry,
+and verifies the written body by reading it back. If the live body changed,
+review the new body before any write. On success the original owner refreshes
+the affected Intake and review conclusions for the same node. An unresolved
+product or technical choice, material change, or direct-human rule stays at
+the original confirmation boundary.
+
+### Confirmation While Independent Work Remains
+
+When the coordinator knows the exact action and determines that human
+confirmation is required, hold that action and the work that depends on it.
+If independent work can advance or has an owned bounded wait, send the exact
+confirmation request in a user-visible message that leaves this turn active.
+Send it as soon as the proposal and confirmation boundary are established,
+before another event wait or continuation instruction. Then immediately
+continue the existing native observation cycle. After each wait, reread the
+original independent operation, even if its owner sent no new message.
+Use the current result to keep waiting or direct the original owner to the next
+permitted step. Read the actual result before reporting its status. While the
+request is unanswered, leave the affected action on hold.
+
+Use a nonterminal user-facing confirmation channel that the current host
+supports and permits for this action. Include the affected node, the exact
+proposed effect, and an explicit request for confirmation. A progress message
+that reports the hold does not ask for confirmation. In a Codex CLI session
+that permits confirmation questions in assistant commentary, use that
+channel. If the current host forbids questions in commentary, use another
+supported and permitted nonterminal confirmation channel only when one exists.
+
+If no permitted nonterminal confirmation channel is available, report that
+limit and keep observing permitted independent work. When the original
+settlement rules allow a handback, give the exact remaining confirmation
+request. A final response ends the turn, so do not use it just to wait for an
+answer while independent work remains observable.
+Deduplicate the request without skipping observations. The original settlement
+conditions and [interruption recovery](#observation-after-an-interruption)
+still apply.
+
 ## Selected Base
 
 Resolve one selected base branch per target repository from the human's explicit choice;
@@ -365,8 +444,10 @@ Every cycle:
 3. Read the newest actual assistant output when changed, idle or terminal and
    the wait result did not provide it. Summaries, previews and status labels
    are discovery hints.
-4. Judge all remaining obligations and give each actionable idle child one
-   useful valid continuation within current execution limits. Recheck actual
+4. Judge all remaining obligations. For a DAG action that requires human
+   confirmation, apply [Confirmation While Independent Work Remains](#confirmation-while-independent-work-remains).
+   Give each actionable idle child one useful valid continuation within
+   current execution limits. Recheck actual
    external wait conditions even without new text. Follow the chosen action
    to its result; a sent instruction does not resolve the obligation.
 5. Verify candidate stage/completion results, apply package scheduling and fill
@@ -447,7 +528,8 @@ condition needing human action; or when the whole selected run reaches a
 verified terminal result. Give the exact affected work, action or minimum
 condition. Deduplicate an unchanged request while preserving observations and
 useful continuations. A necessary human handback retains the remaining work
-and exact resume condition; it is not a completion claim.
+and exact resume condition; it is not a completion claim. For DAG confirmations, apply
+[Confirmation While Independent Work Remains](#confirmation-while-independent-work-remains).
 
 Show the initial precise prospective effects and necessary setup choices under
 preflight. Answer an explicit status question directly, then continue permitted

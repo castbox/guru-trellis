@@ -228,7 +228,8 @@ Temporary model capacity, ordinary gate rework, and an owned bounded external
 wait retain their existing owner; they are not permanent node failure.
 Use the shared active-unblocking and wait-validity judgments before accepting
 a node's block. A failed step or missing recommendation does not by itself
-establish a node block or a terminal DAG result.
+establish a node block or a terminal DAG result. For action authorization,
+use `DAG Action Authorization And Handoff` in the same-provider shared method.
 
 For a genuine block, identify the node, failed requirement, and transitive
 completion descendants. Those descendants cannot start. Apply contract failures

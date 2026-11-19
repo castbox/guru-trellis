@@ -63,3 +63,9 @@ canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话
 原public skill id、输入与typed exit id及consumer保留。auto_started由child绑定与即时观察条件承接，不再输出heartbeat身份；终局以child/operation安全收口承接。此变化是现有provider的直接合同迁移：完整更新共享方法、两package及投影；已有旧timer仅恢复和停止，不重建或激活。中断后复用原chat/Task/Delivery并补观察，不声称未执行期间持续在线。
 
 本轮来源：2026-11-15 的 task-free 原生监督修订。当前宿主禁止用 automation 跟踪具体工作直至完成，因此在原 Markdown owner 内直接替换 timer 前置；未变更 #847/#848 的实现范围，也不声明这两项已交付。
+
+## D883-01 / CON883-LOCAL-DISPOSITION：处置与观察的责任交接
+
+R883-01 由 [共享编排方法](../../../trellis/presets/guru-team/spec/workflow/issue-orchestration.md#dag-action-authorization-and-handoff) 定义运行条件和顺序。DAG 入口引用它，由现有协调者作出语义判断并复用原生消息、观察和回读。消息需要确认且独立工作尚未收妥时，协调者使用宿主已有的非终结消息，然后回到同一轮观察。DAG 的依赖、槽位和失败传播仍由本地合同拥有，Sequence 保持串行。
+
+原节点执行者拥有 Git 预览、限定清理与恢复；原 Issue 审核与写入 owner 拥有正文读写及 Intake 刷新。工具提供事实或执行，不赋予业务权限。保留既有目标仓规则；新增边界不引入公共字段、持久授权或调度器。关联架构：ARCH-DOM-DAG-LOCAL-DISPOSITIONS、ADR-DAG-LOCAL-DISPOSITIONS。实际验收由 T883-01..04 承担。
