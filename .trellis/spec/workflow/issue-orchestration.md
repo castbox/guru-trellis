@@ -142,20 +142,27 @@ When the coordinator knows the exact action and determines that human
 confirmation is required, hold that action and the work that depends on it.
 If independent work can advance or has an owned bounded wait, send the exact
 confirmation request in a user-visible message that leaves this turn active.
-Send it before the next event wait. The independent work does not have to reach
-a safe boundary first. Then immediately continue the existing native
-observation cycle. Read changed results and act on them in this turn. While the
+Send it as soon as the proposal and confirmation boundary are established,
+before another event wait or continuation instruction. Then immediately
+continue the existing native observation cycle. After each wait, reread the
+original independent operation, even if its owner sent no new message.
+Use the current result to keep waiting or direct the original owner to the next
+permitted step. Read the actual result before reporting its status. While the
 request is unanswered, leave the affected action on hold.
 
-In Codex, send the request as an assistant commentary message. Include the
-affected node, the exact proposed effect, and an explicit request for the user
-to confirm it. A progress message that only reports the hold does not ask for
-confirmation. Once a current owner proposal and live facts establish the
-confirmation boundary, send the request before another wait or independent
-owner continuation. Use the equivalent nonterminal message on other hosts.
-If the host cannot deliver one, report that limit and keep observing as far
-as the host allows. A final response containing the request ends the turn; do not use it
-just to wait for the answer while independent work remains observable.
+Use a nonterminal user-facing confirmation channel that the current host
+supports and permits for this action. Include the affected node, the exact
+proposed effect, and an explicit request for confirmation. A progress message
+that reports the hold does not ask for confirmation. In a Codex CLI session
+that permits confirmation questions in assistant commentary, use that
+channel. If the current host forbids questions in commentary, use another
+supported and permitted nonterminal confirmation channel only when one exists.
+
+If no permitted nonterminal confirmation channel is available, report that
+limit and keep observing permitted independent work. When the original
+settlement rules allow a handback, give the exact remaining confirmation
+request. A final response ends the turn, so do not use it just to wait for an
+answer while independent work remains observable.
 Deduplicate the request without skipping observations. The original settlement
 conditions and [interruption recovery](#observation-after-an-interruption)
 still apply.
