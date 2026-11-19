@@ -38,7 +38,8 @@ require another file read.
 The shared method exclusively defines selected-base continuity, endpoint
 interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
 native waiting, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
-it at startup, resume and child continuation alike.
+it at startup, resume and child continuation alike. For node actions, use
+the shared method’s `DAG Action Authorization And Handoff` section.
 The local contract owns graph normalization, eligibility, slots, exclusion,
 failure propagation, stage settlement and this Skill's public I/O.
 
@@ -72,6 +73,8 @@ when bindings change and whenever supervision resumes.
    Fill available slots without creating blocked descendants or duplicate owners.
 4. Apply the shared progress and active-unblocking method each cycle, following
    owner actions to their actual results and rechecking real wait conditions.
+   Apply the shared `Confirmation While Independent Work Remains` section
+   when a live owner proposal requires direct human confirmation.
    Recheck contract readiness for waiting and admitted consumers. When a usable
    contract permits work, dispatch or continue its frontend owner with Mock
    development as soon as slots permit, without waiting for backend completion.

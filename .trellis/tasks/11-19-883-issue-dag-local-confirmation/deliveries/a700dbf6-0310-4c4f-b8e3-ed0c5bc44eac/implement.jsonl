@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "使用当前写作规范理解与产出实施或审核文字。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "三份规划正文合同、范围及验收承接。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "加载当前切片规划的对应模板及正文条件。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "加载当前切片规划的对应模板及正文条件。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "加载当前切片规划的对应模板及正文条件。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "选择与审查真实 Agent、受管分发和验证范围。"}
+{"file": "docs/architecture/contributions/883-dag-local-dispositions/contribution.md", "reason": "新版 target_native 架构职责、拟晋升目标和证据边界。"}
+{"file": "trellis/presets/guru-team/spec/workflow/issue-orchestration.md", "reason": "共享授权、消息、观察及两项 DAG 局部处置的唯一运行规则。"}
