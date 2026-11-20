@@ -29,3 +29,9 @@ R868-04 → D868-03。原native staging装配固定public正文及必要依赖�
 ## T880-02/03 / SC880-ENVIRONMENT
 
 R880-02/03 → D880-02。实际更新后的 `standard-intake-authoring-acceptance-boundary` 在同一 native run 中保留明确目标 runtime 4.2 与业务配置更新/revision，同时拒绝逐 Issue 共享 test 部署、服务部署和消费方 E2E；两条 semantic assertions 经独立 transcript 读取后通过。`test_review_sufficiency_distribution.py` 与 `test_issue_content_distribution.py` 的真实 writer/reapply 和 sidecar 检查通过，分别证明跨阶段薄引用与传播边界；不新增环境矩阵。
+
+## T747-D1-01 / SC747-JOURNEY
+
+R747-D1-01 → D747-D1-01。V1 在本批的完整候选 provider 上，经实际原生 Agent 入口使用冻结的去敏材料。Clarify 和 Author 的观察覆盖上传等待中再次操作、局部确认后退出、恢复和最终保存。读取实际输出，核对它是否区分已确认行为、未决产品选择和设计职责。用同一素材的独立审核记录检查是否从交出者释放唯一引用而接收者尚未接管的顺序推导出空档，并把技术缺口交给原 owner。
+
+原评价者在执行前冻结判据，保留实际输入、工具动作及输出。按 [T747-D1-02](review-sufficiency.md) 核对独立审核与分发，区分已观察到的行为、失败和未执行范围。观察对应 JQ-AC1、AC2 及本批 AC8，结论限于实际素材和方法入口。
