@@ -35,7 +35,7 @@ class PlanningBodyDistributionTest(unittest.TestCase):
             "templates/delivery-implement.md",
         ]
         assets = [source / name for name in required]
-        for kind in ("detailed", "brief"):
+        for kind in ("detailed", "brief", "journey"):
             example = source / "examples/planning-body" / kind
             self.assertTrue(example.is_dir(), f"missing process example: {example}")
             assets.extend(path for path in example.rglob("*") if path.is_file())

@@ -22,3 +22,9 @@ Create 包 17 项、Clarify 包 39 项、Readiness 包 27 项及运行期 Intake
 源码与安装包校验通过。三平台 dogfood drift 通过。Tools owner 在现有 checkout 采用 local_candidate，保留了用户配置、Task 和 session。formal_fork_source_lock 与发布矩阵尚未验证。本记录的创建写入和回读来自有状态替身。
 
 另运行了 6 项现行 Intake 安装集成测试，4 项错误可在相同的固定基线内容复现。三项旧 fixture 仍按 9 个值读取当前 7 字段结果。一项引用已经退役的措辞扫描测试方法。
+
+## 独立审核后的补证
+
+首次 Branch Review 验证了本机缺少 gh 的场景。修正后的首次创建入口提示恢复 gh 并继续原写前检查。Create 包 18 项测试通过。
+
+另一次真实 Codex 会话通过隔离的 GitHub CLI 替身，先展示完整草稿和评论，然后接收对应的创建及开工请求。Agent 重新查重，写入一次 Issue 和一次评论，并回读两对象。同一个 #27 的正式 created 接续原 Sync 得到 baseline_ready，再进入既有 existing_issue_intake 并返回 ready。该观察由原公开命令与会话结果获得。真实远端 GitHub 写入未用于实验。

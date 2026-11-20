@@ -1,0 +1,115 @@
+{
+  "schema_version": "2.0",
+  "id": "747-user-journey-method",
+  "name": "747-user-journey-method",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 747,
+    "disposition": "exact_source"
+  },
+  "title": "提升正常用户旅程、阶段交接与验证有效性的 Guru 方法",
+  "description": "交付 #747 的连续操作与阶段交接、旅程验证顺序与证据有效性两个切片。",
+  "dev_type": null,
+  "scope": "落实 JQ-R1 至 R6 和适用 JQ-AC1 至 AC8，保留当前流程、职责与公共合同；包含 V1 至 V6、现有 RDT/Architecture 正文及受管分发。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-20",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-20-747-user-journey-method/prd.md",
+    "revision": "sha256:7f9994da7008a77fb6e4c79a485deda1ec1ab120b26882a5f3e091301f085782"
+  },
+  "deliveries": [
+    {
+      "id": "1779c2d0-7a1e-4e45-806f-03a7c54d83ec",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-20-747-user-journey-method/prd.md",
+          "revision": "sha256:7f9994da7008a77fb6e4c79a485deda1ec1ab120b26882a5f3e091301f085782"
+        },
+        "anchors": [
+          "JQ-R1",
+          "JQ-R2",
+          "JQ-R5",
+          "JQ-R6",
+          "JQ-AC1",
+          "JQ-AC2",
+          "JQ-AC6",
+          "JQ-AC7",
+          "JQ-AC8"
+        ]
+      },
+      "planning_root": "deliveries/1779c2d0-7a1e-4e45-806f-03a7c54d83ec",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-20-747-user-journey-method/deliveries/1779c2d0-7a1e-4e45-806f-03a7c54d83ec/design.md",
+        "revision": "sha256:768b288ac63e6ffa2f0d3647a3f629ddbdd4f3335810a4900bffa978ca3fc570"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:ae55d325-aa04-43a4-8637-ac094dd42907",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-20-747-user-journey-method/prd.md",
+              "revision": "sha256:7f9994da7008a77fb6e4c79a485deda1ec1ab120b26882a5f3e091301f085782"
+            },
+            "anchors": [
+              "JQ-R1",
+              "JQ-R2",
+              "JQ-R5",
+              "JQ-R6",
+              "JQ-AC1",
+              "JQ-AC2",
+              "JQ-AC6",
+              "JQ-AC7",
+              "JQ-AC8"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-20-747-user-journey-method/deliveries/1779c2d0-7a1e-4e45-806f-03a7c54d83ec/design.md",
+            "revision": "sha256:768b288ac63e6ffa2f0d3647a3f629ddbdd4f3335810a4900bffa978ca3fc570"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-20-747-user-journey-method/deliveries/1779c2d0-7a1e-4e45-806f-03a7c54d83ec/prd.md",
+              "revision": "sha256:6fd512079a6b63b0ff3c772f49a6bda11c67520692b0392f7ae3faecc8415fb4"
+            },
+            {
+              "locator": ".trellis/tasks/11-20-747-user-journey-method/deliveries/1779c2d0-7a1e-4e45-806f-03a7c54d83ec/design.md",
+              "revision": "sha256:768b288ac63e6ffa2f0d3647a3f629ddbdd4f3335810a4900bffa978ca3fc570"
+            },
+            {
+              "locator": ".trellis/tasks/11-20-747-user-journey-method/deliveries/1779c2d0-7a1e-4e45-806f-03a7c54d83ec/implement.md",
+              "revision": "sha256:9dc065b7e63f1be7c087db57749a78d8ba57069aee65be7afe459bef5efe326a"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

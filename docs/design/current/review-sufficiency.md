@@ -23,3 +23,9 @@ canonical provider 的 workflow-spec root 是 `trellis/presets/guru-team/spec/wo
 沿现有 managed-spec/package/preset 机制分发；已有 checkout 使用原 tools maintenance owner 保护 Task/session 和用户内容。源、安装投影和模型行为各自提供本层证据。新配置、公共字段、兼容双读或状态协调不属于该设计。
 
 完整架构归属由 [ARCH-REVIEW-SUFFICIENCY](../../architecture/03-domains/review-sufficiency.md) 定义；本单元不复制宪法或原 Architecture 判断方法。历史固定版本沿其原适用合同使用，不向旧 current 双写新能力。
+
+## D747-D1-02 / CON747-REVIEW
+
+承接 R747-D1-02。共用 `review-sufficiency.md` 的 Form and cross-check coverage 承接从来源或职责权威形成关键问题的共用方法。原 reviewer 对照候选时检查阶段、交接顺序和消费者前提。Architecture 保持独立首读 baseline、constitution 和 change contract。Approval 在原规划审核内消费共用方法。各原 owner 保留实际通过条件、证据复用和修订路由。
+
+本批沿用 [ARCH-REVIEW-SUFFICIENCY](../../architecture/03-domains/review-sufficiency.md) 和既有 managed-spec/package 分发。结果写回所属 PRD、design 或 implement，验证见 [T747-D1-02](../../test/current/review-sufficiency.md)。

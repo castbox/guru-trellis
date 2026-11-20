@@ -74,7 +74,13 @@ def _gh(*arguments: str, step: str) -> str:
     try:
         completed = subprocess.run(["gh", *arguments], text=True, capture_output=True, check=False)
     except FileNotFoundError as exc:
-        raise CommandError("stale_identity", step, f"GitHub CLI is unavailable. Install gh. {recovery}", 3) from exc
+        remediation = recovery
+        if step == "github_issue.create":
+            remediation = (
+                "This create attempt did not start. Restore gh and retry the original "
+                "create input via invoke.sh --input -. Follow any returned review refresh."
+            )
+        raise CommandError("stale_identity", step, f"GitHub CLI is unavailable. {remediation}", 3) from exc
     if completed.returncode:
         raise CommandError(
             "stale_identity", step, f"GitHub CLI exited with status {completed.returncode}. {recovery}", 3,

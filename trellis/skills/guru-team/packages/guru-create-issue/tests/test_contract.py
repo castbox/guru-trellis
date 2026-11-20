@@ -74,6 +74,21 @@ class CreateIssueTests(unittest.TestCase):
         create = next(args for args in calls if args[:2] == ("issue", "create"))
         self.assertEqual(create[create.index("--body") + 1], self.issue["body"])
 
+    def test_missing_gh_at_create_reports_safe_retry(self) -> None:
+        payload = MODULE.prepare({
+            "draft_id": "draft-not-yet-created",
+            "draft": self.draft,
+            "reviewed_at": self.request["reviewed_at"],
+            "review_comment_body": self.request["review_comment_body"],
+        })
+        with patch.object(MODULE.subprocess, "run", side_effect=FileNotFoundError("gh")) as run:
+            with self.assertRaises(MODULE.CommandError) as failed:
+                MODULE.invoke(payload)
+        self.assertEqual(failed.exception.field_path, "github_issue.create")
+        self.assertIn("retry the original create input", failed.exception.remediation)
+        self.assertNotIn("recover_created_issue_result", failed.exception.remediation)
+        run.assert_called_once()
+
     def test_recovery_rejects_ambiguous_or_changed_issue(self) -> None:
         with patch.object(MODULE, "_gh", side_effect=[
             json.dumps([{"number": 654}, {"number": 655}]),
