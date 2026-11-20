@@ -8,7 +8,7 @@
 
 来源处理实际加载原 Author [规划正文合同第2节](../../guru-author-task-plan/references/planning-body.md#2-从来源到正文)及必要关联条件，只复用其完整读取、来源角色、语义保留与必要引用规则。该节是这些规则的唯一公共来源；其 Planning 章节、模板和接受边界不变成 Issue 格式要求。
 
-在采用本规范的受支持入口中，所有由 Agent 创建的 Issue 都须在首次 GitHub 创建写入前满足本规范。草稿由用户提供、从旧材料复制、拆分或续接，以及 Issue-only、已有 Task 或阶段内创建，均使用原 Clarify／Readiness／Create Issue 路径，不豁免最终正文审核。第4节的持续约束适用于后续每轮相关审核和每次正文写回。
+在采用本规范的受支持入口中，所有由 Agent 创建的 Issue 都须在首次 GitHub 创建写入前满足本规范。所有草稿来源和创建入口都须审核最终正文。资料齐备的只建单请求由 Create Issue 的直接入口执行完整内容审核。出现需求、范围或交付依赖缺口时，原 Clarify 或 Readiness 承接；需要完整 Intake 的请求继续使用原链。第4节的持续约束适用于后续每轮相关审核和每次正文写回。
 
 本规范不改变现有 scope authority、Skill Interface、typed exits、确认、freshness、写入或恢复合同。独立操作与 workflow 使用同一内容基线。普通状态查询、只读审核、需求讨论和过程评论不自动触发正文写入。也不要求所有简略 Issue 先改写成完整 Issue 才能进入 Planning；正文整理适用于用户实际请求的创建或完善，原 Author 对简略来源的调查、澄清及 PRD 写作保持。
 

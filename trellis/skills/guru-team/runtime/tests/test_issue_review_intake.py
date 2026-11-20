@@ -359,6 +359,57 @@ print(result if isinstance(result,str) else json.dumps(result))
         self.assertEqual(1,sum('--method' in x and 'POST' in x for x in state['calls']))
         self.assertEqual(1,sum(x[:2]==['issue','create'] for x in state['calls']))
 
+    def test_direct_creation_prepares_refreshes_and_recovers_the_same_issue_and_comment(self):
+        from datetime import datetime, timedelta, timezone
+
+        preparation = {
+            "draft_id": "direct-draft-27",
+            "draft": {
+                "repo_ref": "example/repo",
+                "title": "精确的待写标题",
+                "body": "Reviewed scope.\n\nAcceptance: read back the exact scope.",
+                "labels": [],
+                "duplicate_disposition": "create_new",
+            },
+            "review_comment_body": "已审核原正文和验收范围。",
+            "reviewed_at": (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat(),
+        }
+        skill = "guru-create-issue"
+        flags = ["--input", "-"]
+        prepared = self.call(skill, "prepare-issue-creation.sh", preparation, flags=flags)
+        self.assertEqual("issue_creation_direct", prepared["profile"])
+        self.assertEqual(
+            {"exit_id": "direct_review_refresh", "reason_code": "reviewed_time_not_current"},
+            self.call(skill, "invoke.sh", prepared, flags=flags),
+        )
+        state = json.loads(self.state.read_text())
+        self.assertEqual([], state["calls"])
+
+        # Supply a fresh duplicate-review observation for the same exact draft.
+        preparation["reviewed_at"] = datetime.now(timezone.utc).isoformat()
+        prepared = self.call(skill, "prepare-issue-creation.sh", preparation, flags=flags)
+        state["lose_comment_response"] = True
+        self.state.write_text(json.dumps(state))
+        failure = self.call(skill, "invoke.sh", prepared, flags=flags, ok=False)
+        self.assertEqual("github_issue.review_comment_create", failure["field_path"])
+        self.assertIn("action=recover_created_issue_result", failure["remediation"])
+
+        original = {**prepared, "action": "recover_created_issue_result"}
+        self.assertEqual(
+            {"exit_id": "created", "repo_ref": "example/repo", "number": 27,
+             "url": "https://github.com/example/repo/issues/27"},
+            self.call(skill, "invoke.sh", original, flags=flags),
+        )
+        state = json.loads(self.state.read_text())
+        calls = state["calls"]
+        self.assertEqual(1, sum(call[:2] == ["issue", "create"] for call in calls))
+        self.assertEqual(1, sum("POST" in call for call in calls))
+        self.assertEqual(["issue", "view"], calls[1][:2])
+        self.assertEqual(["api", "repos/example/repo/issues/comments/701"], calls[-1])
+        self.assertEqual(preparation["draft"]["title"], state["issue"]["title"])
+        self.assertEqual(preparation["draft"]["body"], state["issue"]["body"].split("\n\n<!--")[0])
+        self.assertEqual(preparation["review_comment_body"], state["comments"][0]["body"].split("\n\n<!--")[0])
+
     def test_real_sync_preserves_synced_source_kind(self):
         remote=self.root/'origin.git'
         subprocess.run(['git','clone','--bare','--quiet',str(self.repo),str(remote)],check=True)

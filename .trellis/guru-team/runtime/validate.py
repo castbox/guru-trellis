@@ -26,6 +26,7 @@ APPROVED_KERNEL_FILES = {
     "eval_runner.py",
     "installed.py",
     "io.py",
+    "issue_snapshot.py",
     "git_object_batch.py",
     "git_merge.py",
     "lifecycle_helpers.py",

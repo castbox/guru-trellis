@@ -49,8 +49,9 @@ maintenance condition. Ordinary Task readers remain current-only.
 A user request to create/open/file a GitHub Issue must explicitly load
 `guru-create-issue`, including equivalent Chinese intent such as “新建 issue”,
 “创建 Issue”, “新增 Issue”, and contextual “同意新建 issue”. The Skill owns
-its entry preconditions and creation behavior; missing upstream review enters
-the current Intake/applicable scope route and returns to that owner. Do not
+its entry and creation behavior. For an Issue-only request, invoke that
+owner before starting Intake. If the owner actually needs the full Intake
+chain or the applicable active-scope route, follow that route and return to it. Do not
 classify Issue creation as an independent manual Git/GitHub operation or
 create it directly with a CLI/provider. Preserve the requested Issue-only
 scope and existing Task/resource confirmation boundaries.
@@ -65,12 +66,15 @@ an Issue or implementation.
 An explicit GitHub Issue content review request must load its semantic owner:
 “审核 Issue” / “审查 Issue” / “评审 Issue” / “review Issue” and Issue
 requirements-completeness checks load
-`guru-clarify-requirements` for the existing independent review profile;
-explicit readiness or independent-deliverability review loads
-`guru-review-change-request`; explicit Issue/draft wording review loads
+`guru-clarify-requirements:standalone_issue_requirements`. Explicit readiness
+or independent-deliverability review loads
+`guru-review-change-request:standalone_issue_readiness`. An explicit request to
+publish or edit retains the applicable original source-action entry. Explicit
+Issue/draft wording review loads
 `guru-clarify-requirements:standalone_wording_review`; explicit Markdown wording review loads
 `guru-review-change:explicit_files` with review_focus=wording_only. Each Skill owns its prerequisites and review
-behavior; use the existing entry/context graph when prerequisites are missing.
+behavior. The independent Issue review starts at its selected owner. Start
+context work only for the owner's actual evidence gap.
 Review-only intent is distinct from a status lookup or a request to implement
 or revise the Issue. It grants no mutation or Task/resource-creation authority;
 keep existing profile consumers and side-effect boundaries.
@@ -130,16 +134,17 @@ Classify the initial request before repository or network semantic reads:
   express change intent even when the user defers file writes or resource
   creation. “讨论需求”, “设计新功能”, and “先做规划” enter the current Guru owner
   route; deferring mutation does not turn them into information-only requests;
-- change-intent requests that are not already inside an active-task route first
-  invoke `guru-select-workflow-mode`, whether or not an Issue exists or the
-  user mentioned task-free. The selector retains its standard/task-free choice;
+- Issue-only creation first invokes `guru-create-issue` as above. Remaining
+  change-intent requests outside an active-task route first invoke
+  `guru-select-workflow-mode`, whether or not an Issue exists or the user
+  mentioned task-free. The selector retains its standard/task-free choice;
   active-task change intent enters its existing phase/scope-change owner.
   Respect deferred side effects throughout the selected route;
 - `standard_intake` enters guru-sync-base and the existing mapped graph, while
   `task_free` invokes `guru-execute-task-free-change`;
 - new Task intake enters whole-scope Author only through guru-create-task:created;
   existing active Tasks use the bound Task/Delivery continuation and actual owner.
-  Issue creation returns to fresh Intake;
+  a created Issue returns to fresh Intake when the user also requests work;
 - `guru-select-workflow-mode` owns the semantic choice. The shortest explicit
   request is `这次走 task-free` and routes directly. Without explicit intent,
   high-confidence bounded, reversible, low-risk work routes automatically to
@@ -199,8 +204,9 @@ and invokes Author; do not repeat completed Clarify interviews, ask routine
 planning consent, reset task identity or let the method write business docs. Invoke
 `guru-clarify-requirements` with `standard_intake` for ordinary initial Intake
 or `reviewed_plan_intake` for explicitly selected existing requirements/design.
-Initial requests first complete the mandatory selector → Sync → Discovery
-graph and use actual `context_ready` as Clarify entry; loading a method alone
+Initial requests selecting these full Intake profiles first complete the
+mandatory selector → Sync → Discovery graph and use actual `context_ready`
+as Clarify entry; loading a method alone
 does not permit a product question before that entry. Deferred writes or
 resource creation remain deferred throughout the graph.
 Its declared profiles and context loop are package-owned; method loading does not
@@ -249,7 +255,11 @@ Invoke guru-review-change-request and consume only its declared exit.
 
 #### 0.5 Issue and task creation
 
-The normal route starts with actual Sync -> `guru-issue-intake-base-router`.
+An Issue-only request enters `guru-create-issue` directly. Consume
+`direct_review_refresh` through its original-owner return. `created` ends an
+Issue-only request after Issue and review comment readback.
+
+Formal start-work Intake begins with actual Sync -> `guru-issue-intake-base-router`.
 For an existing Issue, explicitly invoke `guru-review-change-request` using
 existing_issue_intake. Consume ready, supplement_context, supplement_requirements,
 full_intake_required, refresh_issue_baseline or blocked only
@@ -262,11 +272,11 @@ Discovery context_request to that same Clarify; Clarify completes only the reque
 remaining dependency after every return. Necessary full Intake retains actual
 Sync -> Discovery -> Clarify -> current_issue Readiness.
 
-Without an Issue, keep Sync -> Discovery -> Clarify. A discussion/draft-only
-request ends at its requested result. Creation intent continues proposed_draft Readiness -> original Create Issue, including formal content
-and comment readback. An Issue-only request ends there. A request to start work
-then uses the formal Issue and actual live comment at Sync -> existing-Issue
-Readiness; it does not repeat unaffected draft reviews or convert their receipts.
+For discussion, draft-only work or a creation request that needs full Intake,
+use Sync -> Discovery -> Clarify. Discussion and draft-only work end at the
+requested result. Full Intake for creation continues through proposed_draft
+Readiness -> original Create Issue. A request to start work uses the formal
+Issue and actual live comment at Sync -> existing-Issue Readiness.
 The legal standalone_request/no_issue full chain still enters original Create Task.
 
 Only original `guru-create-task:created` establishes the Task. It retains scope,
@@ -1014,9 +1024,7 @@ continuation above before taking this route; it is not a Task-creation gate.
 For Issue creation intent (新建 / 创建 / 新增 Issue, including contextual
 confirmation), explicitly load `guru-create-issue` and follow its entry contract;
 do not bypass it as a manual GitHub operation.
-For general Issue review intent (审核 / 评审 Issue), explicitly load
-`guru-clarify-requirements`. Explicit readiness review loads
-`guru-review-change-request`; Issue/draft wording review loads `guru-clarify-requirements:standalone_wording_review`; explicit Markdown wording review loads `guru-review-change:explicit_files` with review_focus=wording_only.
+For independent Issue reviews, use the Guru Team Gate entry above.
 Follow the selected Skill's entry contract and preserve review-only scope.
 A status lookup remains an information query.
 For 审核 / 审查 / 评审 / 复审 / review, first use the Guru Team Gate's object
@@ -1031,8 +1039,8 @@ reviews use applicable specialist methods. Do not enter change Intake solely
 for independent review or substitute a formal pass for its report.
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
 in this workflow; missing context is not proof of no task.
-Every change-intent request first resolves task identity for the current
-workspace and requested Issue. Unrelated active tasks in the repository
+For a request involving Task work, first resolve task identity for the
+current workspace and requested Issue. Unrelated active tasks in the repository
 inventory are not current-task conflicts, even for the same user; do not ask
 the user to select one or switch to task-free because they exist. A checkout
 path alone does not bind its task identity to that checkout.

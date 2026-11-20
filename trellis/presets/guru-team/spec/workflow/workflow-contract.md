@@ -425,8 +425,11 @@ or adds baseline prose solely to record final Review/HEAD.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
-Classify the user request before repository/network semantic reads. A
-change-intent request that has not already entered an active-task route invokes
+Classify the user request before repository/network semantic reads. Route an
+Issue-only creation request directly to Create Issue. Route independent Issue
+requirements and readiness reviews to their selected semantic owners. Those
+owners decide whether current evidence needs more context. A remaining
+change-intent request outside an active-task route invokes
 `guru-select-workflow-mode`, including proposed-change requirements discussion,
 feature design and planning with deferred writes/resources. Method loading
 does not replace the actual selection or Clarify entry from current Discovery. An Issue-backed or task-like request that only asks
@@ -462,8 +465,10 @@ request to start work continues through Sync and existing-Issue Readiness; `exis
 `guru-create-task`. Only that checked created result enters a newly created
 Task's first whole-scope Author step; an existing active Task follows its
 current identity/binding/checkout and actual continuation owner.
-Issue creation is not task creation. Identity, branch binding, checkout and
-session owners resolve the exact TaskId/generation for subsequent phases.
+A direct creation refresh returns to the original Create owner for the same
+pending draft. An independent Issue review's `issue_reviewed` ends at the user
+response. Identity, branch binding, checkout and session owners resolve the
+exact TaskId/generation for subsequent Task phases.
 
 The producer's actual checked stdout is projected into the next stage and then
 combined only with that consumer's current semantic authoring input. Normal

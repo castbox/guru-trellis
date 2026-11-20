@@ -126,7 +126,9 @@
         "schemas/public-issue-review-return-input-2.0.schema.json",
         "schemas/public-existing-issue-intake-input-1.0.schema.json",
         "schemas/issue-review-owner-2.0.schema.json",
-        "schemas/public-issue-ready-output-1.0.schema.json"
+        "schemas/public-issue-ready-output-1.0.schema.json",
+        "schemas/public-standalone-issue-readiness-input-1.0.schema.json",
+        "schemas/public-issue-reviewed-output-1.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

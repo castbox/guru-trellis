@@ -124,3 +124,15 @@ R880-06 → D880-04。原 `guru-upgrade-tools` 以 local_candidate 和冻结 ope
 ## T880-05 / SC880-ENGINEERING：定向工程完整性
 
 Task context validation 通过（13 implement / 11 check）；404 个 Guru Python 文件内存语法检查、shell 语法、marketplace/affected JSON 与 `git diff --check` 通过。长文注入和 code-file context warnings 保留为非阻塞提示。
+
+## T887-01 / SC887-AGENT
+
+以相同只建单材料和 #887 的当前 Issue 为对象，通过 Codex 标准入口成对观察。记录进程时限、首个可审阅结果、实际阶段调用及重试。创建预览停在确认处，进程内等待用户时间为零。对应 R887-01、R887-02。证据与环境限制见 [#887 实测](../../requirements-design-test-contributions/887-issue-entry-streamline/test.md)。
+
+## T887-02 / SC887-REFRESH
+
+从真实 Skill wrapper 发起两类独立审核，验证同一 Issue 的正文或讨论变化触发重审。以受控 GitHub CLI 替身验证写前查重过期、同内容继续、写入回读及评论响应丢失后的同对象恢复。此处的写入证据限于实际包装器与有状态替身。正式已有 Issue 的开工场景继续依源码测试覆盖。对应 R887-01..03、D887-01/02。
+
+## T887-03 / SC887-ADOPTION
+
+运行源码与安装合同校验、平台投影、sidecar 和 drift 检查。记录完整工具更新的实际结论。普通任务验证范围以本轮入口为准。对应 D887-01/02。

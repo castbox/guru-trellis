@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-issue-direct-review-refresh-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "reason_code"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "direct_review_refresh"
+    },
+    "reason_code": {
+      "enum": [
+        "reviewed_time_not_current",
+        "reviewed_draft_stale"
+      ]
+    }
+  }
+}

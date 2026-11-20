@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-issue-prepare-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "draft_id",
+    "draft",
+    "reviewed_at",
+    "review_comment_body"
+  ],
+  "properties": {
+    "draft_id": {
+      "$ref": "public-input-2.0.schema.json#/properties/reviewed_target/properties/draft_id"
+    },
+    "draft": {
+      "$ref": "public-input-2.0.schema.json#/properties/draft"
+    },
+    "reviewed_at": {
+      "$ref": "public-input-2.0.schema.json#/properties/reviewed_at"
+    },
+    "review_comment_body": {
+      "$ref": "public-input-2.0.schema.json#/properties/review_comment_body"
+    }
+  }
+}

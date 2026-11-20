@@ -78,6 +78,7 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"blocked","consumer":{"kind":"stop","id":"change-context-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"reviewed","consumer":{"kind":"stop","id":"wording-review-response"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"issue_reviewed","consumer":{"kind":"stop","id":"issue-review-response"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"supplemented","consumer":{"kind":"skill","id":"guru-review-change-request"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"scope_ready","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
@@ -92,12 +93,14 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"supplement_requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"supplement_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"workflow","id":"guru-task-intake-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"issue_reviewed","consumer":{"kind":"stop","id":"issue-review-response"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"clarify_requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-create-issue","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"created","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"direct_review_refresh","consumer":{"kind":"workflow","id":"guru-issue-only-review-refresh-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"blocked","consumer":{"kind":"stop","id":"issue-creation-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-create-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task","exit":"created","consumer":{"kind":"workflow","id":"guru-task-created"}} -->
@@ -472,6 +475,14 @@ Accept the independent existing-Issue ready shape or the original complete-chain
 <!-- guru-workflow-target: {"id":"guru-sync-base"} -->
 
 Re-enter `guru-sync-base` and then the object-specific base router. An Issue-only created request ends after comment readback. When work was requested, `guru-create-issue:created` supplies the newly created exact source Issue to Sync and existing_issue_intake, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target.
+
+### guru-issue-only-review-refresh-router
+
+<!-- guru-workflow-target: {"id":"guru-issue-only-review-refresh-router"} -->
+
+Return the actual `direct_review_refresh` reason to `guru-create-issue` for the
+same pending draft. Keep the original plan in the current conversation.
+Invoke the original Create owner to decide and complete the affected refresh.
 
 ### guru-task-created
 
@@ -1207,6 +1218,14 @@ as base_ref and exact commit as base_commit. For synced_branch, operation=sync
 uses its normalized branch as base_branch. Only genuinely stale source judgment
 selects refresh; missing facts alone use Discovery. Actual Sync output returns to
 the base router, which preserves identity and calls the same Readiness owner.
+
+### issue-review-response
+
+<!-- guru-stop-target: {"id":"issue-review-response"} -->
+
+Return the checked independent Issue review to the user. Present the reported
+coverage, conclusion, findings and remaining questions in the selected review's
+scope. End the request here.
 
 ### wording-review-response
 
