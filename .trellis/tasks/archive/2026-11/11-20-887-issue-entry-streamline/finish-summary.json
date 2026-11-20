@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-20T16:06:25Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-20-887-issue-entry-streamline",
+    "title": "缩短 Issue 创建和独立审核流程",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-20-887-issue-entry-streamline",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/887-issue-entry-streamline",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "缩短 Issue 创建和独立审核流程",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline",
+          ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline/prd.md",
+          ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#887"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/887-issue-entry-streamline"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline",
+        ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline/prd.md",
+        ".trellis/tasks/archive/2026-11/11-20-887-issue-entry-streamline/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "缩短 Issue 创建和独立审核流程；#887；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
