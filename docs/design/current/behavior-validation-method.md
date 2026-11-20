@@ -31,3 +31,9 @@ Identity：RDT-DES-BEHAVIOR-VALIDATION；别名：D735/CON735。原语义 owner�
 ## D880-02 / CON880-ENVIRONMENT：跨阶段边界落点
 
 承接 R880-02/03。`quality-guidelines.md#test-and-validation-value` 在原责任边界段区分服务版本部署、共享 test 部署、目标环境执行和业务发布配置，不复制 Issue 专属场景集合定义。`issue-content.md` 继续拥有 Issue 结果、证据、责任层和场景集合；review-sufficiency 只按原职责加载跨阶段方法，不新增环境 Gate、证明表或部署 owner。
+
+## D747-D1-01 / CON747-JOURNEY
+
+承接 R747-D1-01。Clarify 的 `references/contract.md` 在 Discover the actual choices 承接连续动作与可见结果。Author 的 `references/planning-body.md` 第 3 节承接阶段语义和资源交接。PRD 定义适用阶段与可见行为。Design 定义实际 writer、reader、交接前后保持的条件、动作顺序与失败归属。设计以候选的真实交接步骤为核对对象。原 Architecture 和 Approval 在既有职责内检查交接条件，按原修订路线处理缺口。
+
+沿原 Markdown 和受管分发入口送达。去敏示例说明怎样从中性事实推导，期待结果由观察方单独持有。变更在原正文落地，保留简单任务按需裁剪。独立审核的读取方法见 [D747-D1-02](review-sufficiency.md)。测试见 [T747-D1-01](../../test/current/behavior-validation-method.md)。

@@ -206,6 +206,23 @@ material risk; do not require an unrelated matrix or ask a quota of questions.
 Identify what changes and what must remain unchanged. A missing screen state in a
 design does not alone authorize removing its existing business behavior.
 
+When the current request spans several stages of a normal operation, start
+from the supported entry the caller actually uses. Trace the caller's starting
+state, the events that move the operation forward and the actions available
+at each stage. If work continues after a local confirmation, check what the
+caller can do while it is pending, including another edit or invocation when
+supported. Describe what the caller can observe on success, failure or
+abandonment, including what is retained or available when they return, where
+applicable. For a noninteractive operation, use its real caller and observable
+result.
+
+Use source commitments and checked entry and consumer facts to distinguish
+existing behavior from requested behavior. Apply the existing qualification
+rules before treating a newly observed scenario as a requirement or question.
+If the facts still leave a real choice about caller behavior, resolve it through
+this Clarify entry. Leave the mechanism for preserving an agreed outcome to
+the technical owner.
+
 Separate evidence-answerable facts, existing constraints/decisions, unresolved
 requirement choices and routine implementation details. Verify what a backend or
 platform actually does; the user chooses the product response, not the external
