@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-invocation-semantic-owner-4.0",
+  "oneOf": [
+    {
+      "$ref": "semantic-owner-3.0.schema.json"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "public_input",
+        "owner_context",
+        "owner_result"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "public_input": {
+          "type": "object",
+          "required": [
+            "profile"
+          ],
+          "properties": {
+            "profile": {
+              "enum": [
+                "standalone_issue_requirements",
+                "standalone_issue_readiness"
+              ]
+            }
+          }
+        },
+        "owner_context": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "issue_snapshot"
+              ],
+              "properties": {
+                "issue_snapshot": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "number",
+                    "url",
+                    "state",
+                    "title",
+                    "body",
+                    "updatedAt",
+                    "comments"
+                  ],
+                  "properties": {
+                    "number": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "url": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "state": {
+                      "enum": [
+                        "OPEN",
+                        "CLOSED"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "body": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "comments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "owner_result": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "typed_exit",
+                "report"
+              ],
+              "properties": {
+                "typed_exit": {
+                  "const": "issue_reviewed"
+                },
+                "report": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "coverage",
+                    "conclusion",
+                    "findings",
+                    "open_items"
+                  ],
+                  "properties": {
+                    "coverage": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "conclusion": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "findings": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "open_items": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "typed_exit"
+              ],
+              "properties": {
+                "typed_exit": {
+                  "const": "blocked"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "owner_result": {
+                "properties": {
+                  "typed_exit": {
+                    "const": "issue_reviewed"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "owner_context": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "issue_snapshot"
+                ],
+                "properties": {
+                  "issue_snapshot": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "number",
+                      "url",
+                      "state",
+                      "title",
+                      "body",
+                      "updatedAt",
+                      "comments"
+                    ],
+                    "properties": {
+                      "number": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "url": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "state": {
+                        "enum": [
+                          "OPEN",
+                          "CLOSED"
+                        ]
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "body": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "comments": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "owner_context": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

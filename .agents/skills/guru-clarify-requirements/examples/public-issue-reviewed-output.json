@@ -1,0 +1,11 @@
+{
+  "exit_id": "issue_reviewed",
+  "report": {
+    "coverage": [
+      "Issue 正文、当前讨论和引用的验收约束。"
+    ],
+    "conclusion": "当前问题和验收表述清楚。",
+    "findings": [],
+    "open_items": []
+  }
+}

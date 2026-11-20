@@ -13,7 +13,8 @@
         "runtime_dependency",
         "review_target",
         "clarity_evidence",
-        "invocation_freshness"
+        "invocation_freshness",
+        "standalone_issue_review"
       ]
     },
     "standalone": {
@@ -22,7 +23,8 @@
         "runtime_dependency",
         "review_target",
         "clarity_evidence",
-        "invocation_freshness"
+        "invocation_freshness",
+        "standalone_issue_review"
       ]
     }
   },
@@ -50,6 +52,12 @@
       "evidence": "mode, target identity, prerequisite projections, linkage digest, AI review and typed consumer",
       "binding": "one current readiness review round",
       "freshness": "checker recomputes the complete objective projection from current prerequisite bytes"
+    },
+    {
+      "id": "standalone_issue_review",
+      "evidence": "one existing Issue and its current discussion, plus any evidence needed for the requested review",
+      "binding": "the direct read-only profile binds the exact reviewed Issue snapshot and returns the resulting report",
+      "freshness": "review the effect of changed materials and validate the current Issue snapshot in one public invocation"
     }
   ],
   "runtime_dependency": {
@@ -301,6 +309,18 @@
     {
       "id": "current_public_supplement_requirements_output_2_0_schema_json",
       "path": "schemas/public-supplement-requirements-output-2.0.schema.json"
+    },
+    {
+      "id": "current_issue_review_aggregate",
+      "path": "schemas/public-input-4.0.schema.json"
+    },
+    {
+      "id": "standalone_issue_readiness_schema",
+      "path": "schemas/public-standalone-issue-readiness-input-1.0.schema.json"
+    },
+    {
+      "id": "public_issue_reviewed_output_schema",
+      "path": "schemas/public-issue-reviewed-output-1.0.schema.json"
     }
   ],
   "validators": [
@@ -387,6 +407,14 @@
         "kind": "workflow",
         "id": "guru-issue-baseline-refresh-router"
       }
+    },
+    {
+      "id": "issue_reviewed",
+      "evidence": "completed independent Issue readiness review and objective live Issue snapshot check",
+      "consumer": {
+        "kind": "stop",
+        "id": "issue-review-response"
+      }
     }
   ],
   "reentry": {
@@ -426,8 +454,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-review-change-request-input-aggregate-3.0",
-        "path": "schemas/public-input-3.0.schema.json"
+        "schema_id": "guru-stage0-review-change-request-input-aggregate-4.0",
+        "path": "schemas/public-input-4.0.schema.json"
       },
       "profiles": [
         {
@@ -504,6 +532,21 @@
             "field": "profile",
             "value": "issue_review_return"
           }
+        },
+        {
+          "id": "standalone_issue_readiness",
+          "schema": {
+            "schema_id": "guru-review-change-request-input-standalone-issue-readiness-1.0",
+            "path": "schemas/public-standalone-issue-readiness-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "standalone_issue_readiness_input",
+            "path": "examples/public-standalone-issue-readiness-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standalone_issue_readiness"
+          }
         }
       ]
     },
@@ -527,8 +570,8 @@
         "flag": "--invocation",
         "stdin": "-",
         "envelope": {
-          "schema_id": "guru-stage0-invocation-semantic-owner-3.0",
-          "path": "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json"
+          "schema_id": "guru-stage0-invocation-semantic-owner-4.0",
+          "path": "consumers/workflow/stage0/invocations/semantic-owner-4.0.schema.json"
         }
       },
       "example_argv": [
@@ -647,6 +690,20 @@
         },
         "consumer_use_ids": [
           "issue_review_refresh_issue_baseline"
+        ]
+      },
+      {
+        "exit_id": "issue_reviewed",
+        "schema": {
+          "schema_id": "guru-review-change-request-output-issue-reviewed-1.0",
+          "path": "schemas/public-issue-reviewed-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "issue_reviewed_output",
+          "path": "examples/public-issue-reviewed-output.json"
+        },
+        "consumer_use_ids": [
+          "issue_review_response"
         ]
       }
     ],
@@ -791,6 +848,19 @@
           "kind": "json_schema",
           "schema_id": "issue_review_refresh_issue_baseline-consumer-1.0",
           "path": "consumers/workflow/stage0/review-change-request-refresh_issue_baseline.schema.json"
+        }
+      },
+      {
+        "id": "issue_review_response",
+        "consumer": {
+          "kind": "stop",
+          "id": "issue-review-response"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-issue-review-response-1.0",
+          "path": "consumers/stop/issue-review-response-1.0.schema.json"
         }
       }
     ],
@@ -954,6 +1024,12 @@
         "id": "issue_review_refresh_issue_baseline",
         "exit_id": "refresh_issue_baseline",
         "consumer_input_id": "issue_review_refresh_issue_baseline",
+        "operation": "direct"
+      },
+      {
+        "id": "issue_review_response",
+        "exit_id": "issue_reviewed",
+        "consumer_input_id": "issue_review_response",
         "operation": "direct"
       }
     ],

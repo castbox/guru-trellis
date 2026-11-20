@@ -177,7 +177,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertEqual(workflow["entry_precondition_ids"], standalone["entry_precondition_ids"])
         self.assertEqual(
             workflow["entry_precondition_ids"],
-            ["runtime_dependency", "review_target", "context_evidence", "source_authority", "invocation_freshness"],
+            ["runtime_dependency", "review_target", "context_evidence", "source_authority", "invocation_freshness", "standalone_issue_review"],
         )
         self.assertEqual(
             self.interface["ordered_stages"],
@@ -193,7 +193,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],
-            ["clear", "scope_ready", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked", "supplemented", "reviewed"],
+            ["clear", "scope_ready", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked", "supplemented", "reviewed", "issue_reviewed"],
         )
         self.assertEqual(
             [item["consumer"] for item in self.interface["external_exits"]],
@@ -207,6 +207,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                 {"kind": "stop", "id": "requirements-clarification-blocked"},
                 {"kind": "skill", "id": "guru-review-change-request"},
                 {"kind": "stop", "id": "wording-review-response"},
+                {"kind": "stop", "id": "issue-review-response"},
             ],
         )
 
