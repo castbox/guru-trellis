@@ -15,3 +15,7 @@ Guru 的共同审核覆盖与完成语义由 canonical `trellis/presets/guru-tea
 Clarify 从当前来源和真实入口推导正常连续操作与可见结果。Author 在现有 PRD 和 design 中分别承接行为与阶段交接。跨阶段业务条件、动作顺序和责任归属由所属设计说明。Architecture 与 Approval 在各自职责内核对条件能否成立。
 
 共同规范要求原独立审核负责人在既有首读顺序和隔离范围内先从其职责来源推导关键行为与关系问题，再核对候选与论证。Architecture 按原顺序先读架构权威。各阶段保留原通过条件、正常场景资格和证据复用规则。管理这些方法的仍是现有 package 和 managed spec。
+
+## 旅程验证的顺序与证据
+
+现有验证方法由 `quality-guidelines.md` 的 Test And Validation Value 单写。Author 与 Implement 根据承诺、实际入口及依赖选择验证顺序。Check 和原独立审核者判断证据实际触达的入口、替身保留的语义与交付构建支持的输入组合。运行和安装工具记录事实，证据结论仍由原负责人判断。现有产品交付边界决定所需验证层级。
