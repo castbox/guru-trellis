@@ -1189,11 +1189,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-19T09:17:07Z",
+  "installed_at": "2026-11-20T11:25:17Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "5f58dbc30884e0fd71a6467992625dc727d2e810",
-    "commit": "5f58dbc30884e0fd71a6467992625dc727d2e810",
+    "ref": "707864713e362f8232e9230a468573cc6203b4ac",
+    "commit": "707864713e362f8232e9230a468573cc6203b4ac",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1384,7 +1384,7 @@
       {
         "id": "guru-clarify-requirements",
         "interface_sha256": "4cc92e4871a418d221f2ecc5c6eefdfaa8850cd926ad3e8fb3090b911129a5e1",
-        "tree_sha256": "2244389a61281814bef622b804d6c6f8f18b8471ffa9df2d07bae442dd948459"
+        "tree_sha256": "cbd8411ee05fd43e2d8d1d35713f8bcc90f6b7d51cc68f5f9c52946079807f55"
       },
       {
         "id": "guru-cleanup-task-resources",
@@ -6613,7 +6613,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
-        "sha256": "0f2fc65e949a52c670df8bb5f7c69e5e5ee94b3153a83f0945c0352f4980934c",
+        "sha256": "33aaf3708ac3990fff317594cb6055bf90896ef4226d453cab310df799ca9461",
         "executable": false,
         "action": "installed"
       },
@@ -31008,7 +31008,7 @@
       {
         "path": ".agents/skills/guru-clarify-requirements/references/issue-content.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
-        "sha256": "0f2fc65e949a52c670df8bb5f7c69e5e5ee94b3153a83f0945c0352f4980934c",
+        "sha256": "33aaf3708ac3990fff317594cb6055bf90896ef4226d453cab310df799ca9461",
         "executable": false,
         "action": "installed"
       },
@@ -31799,7 +31799,7 @@
       {
         "path": ".claude/skills/guru-clarify-requirements/references/issue-content.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
-        "sha256": "0f2fc65e949a52c670df8bb5f7c69e5e5ee94b3153a83f0945c0352f4980934c",
+        "sha256": "33aaf3708ac3990fff317594cb6055bf90896ef4226d453cab310df799ca9461",
         "executable": false,
         "action": "installed"
       },
@@ -32590,7 +32590,7 @@
       {
         "path": ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
-        "sha256": "0f2fc65e949a52c670df8bb5f7c69e5e5ee94b3153a83f0945c0352f4980934c",
+        "sha256": "33aaf3708ac3990fff317594cb6055bf90896ef4226d453cab310df799ca9461",
         "executable": false,
         "action": "installed"
       },
