@@ -56,7 +56,7 @@ class CreateIssueTests(unittest.TestCase):
     def test_creation_rereads_live_identity_and_recovery_is_read_only(self) -> None:
         calls = []
 
-        def gh(*args):
+        def gh(*args, step):
             calls.append(args)
             if args[:2] == ("issue", "create"):
                 return self.issue["url"]
@@ -73,6 +73,21 @@ class CreateIssueTests(unittest.TestCase):
         self.assertEqual(sum(args[:2] == ("issue", "create") for args in calls), 1)
         create = next(args for args in calls if args[:2] == ("issue", "create"))
         self.assertEqual(create[create.index("--body") + 1], self.issue["body"])
+
+    def test_missing_gh_at_create_reports_safe_retry(self) -> None:
+        payload = MODULE.prepare({
+            "draft_id": "draft-not-yet-created",
+            "draft": self.draft,
+            "reviewed_at": self.request["reviewed_at"],
+            "review_comment_body": self.request["review_comment_body"],
+        })
+        with patch.object(MODULE.subprocess, "run", side_effect=FileNotFoundError("gh")) as run:
+            with self.assertRaises(MODULE.CommandError) as failed:
+                MODULE.invoke(payload)
+        self.assertEqual(failed.exception.field_path, "github_issue.create")
+        self.assertIn("retry the original create input", failed.exception.remediation)
+        self.assertNotIn("recover_created_issue_result", failed.exception.remediation)
+        run.assert_called_once()
 
     def test_recovery_rejects_ambiguous_or_changed_issue(self) -> None:
         with patch.object(MODULE, "_gh", side_effect=[
@@ -161,7 +176,7 @@ class CreateIssueTests(unittest.TestCase):
 
     def test_changed_labels_refresh_before_creation_or_recovery(self) -> None:
         changed = {**self.request, "draft": {**self.draft, "labels": ["bug"]}}
-        self.assertEqual(MODULE._reviewed_target(changed["draft"], changed["reviewed_target"]),
+        self.assertEqual(MODULE._reviewed_target(changed["draft"], changed["reviewed_target"]["draft_id"]),
                          self.request["reviewed_target"])
         for action in ("create_issue", "recover_created_issue_result"):
             with self.subTest(action=action), patch.object(MODULE, "_gh") as gh:
@@ -207,7 +222,7 @@ class CreateIssueTests(unittest.TestCase):
         schema = PACKAGE / "schemas/public-input-2.0.schema.json"
         self.assertEqual(json.loads(schema.read_text())["$id"], "guru-create-issue-input-2.0")
         self.assertEqual(interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
-                         "guru-create-issue-input-2.0")
+                         "guru-create-issue-input-3.0")
         manifest = json.loads((root / "trellis/guru-team-extension.json").read_text())
         self.assertIn("guru-create-issue-input-2.0", manifest["public_api"]["skill_contracts"]["public_input_schema_ids"])
         for name in ("public-create-input.json", "public-recover-input.json"):
@@ -224,6 +239,21 @@ class CreateIssueTests(unittest.TestCase):
             consumer = next(row for row in interface["public_contracts"]["consumer_inputs"]
                             if row["id"] == projection["consumer_input_id"])
             MODULE.validate_json(example, PACKAGE / consumer["contract"]["path"], exit_id)
+
+    def test_direct_content_change_stops_before_provider_access(self) -> None:
+        request = MODULE.prepare({
+            "draft_id": self.request["reviewed_target"]["draft_id"],
+            "draft": self.draft,
+            "review_comment_body": self.request["review_comment_body"],
+            "reviewed_at": self.request["reviewed_at"],
+        })
+        changed = {**request, "review_comment_body": "Changed comment after preview."}
+        with patch.object(MODULE, "_gh") as gh:
+            self.assertEqual(MODULE.invoke(changed),
+                             {"exit_id": "direct_review_refresh", "reason_code": "reviewed_draft_stale"})
+            self.assertEqual(MODULE.invoke({**changed, "action": "recover_created_issue_result"}),
+                             {"exit_id": "blocked", "reason_code": "original_attempt_payload_mismatch"})
+        gh.assert_not_called()
 
     def test_changed_reviewed_draft_refreshes_before_any_provider_call(self) -> None:
         changed = {**self.request, "draft": {**self.draft, "body": "Changed after review."}}

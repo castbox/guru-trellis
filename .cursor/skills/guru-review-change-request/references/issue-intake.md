@@ -66,3 +66,24 @@ original producer; never invent receipts or create a durable coverage ledger.
 No mutation follows merely from a local review. Only real choices and exact
 Git/GitHub side effects use the original interaction boundary. `ready` itself
 does not authorize creation. Unknown exits or mismatched identities stop.
+
+## Independent readiness review
+
+For `standalone_issue_readiness`, use the [direct review method](../../guru-clarify-requirements/references/standalone-issue-review.md).
+Apply the original [readiness dimensions](contract.md#semantic-review) to the
+actual material. Check the requirements and acceptance, the independent delivery
+unit, the actual target, dependencies, current behavior and open prerequisites.
+Use the issue, discussion and specific linked sources when they answer those
+questions. Look up only the relevant repository paths, successor work, duplicate
+candidates or history needed for a missing conclusion. Explain which dimensions
+could affect the conclusion and what remains open. Verify current source identity
+with the direct review wrapper. That profile has no upstream transition or
+prerequisite hashes to assemble.
+
+When a requirements finding affects readiness, explain the affected requirement
+and the prerequisite it creates. If the Issue already establishes the needed
+facts, continue your review directly. A specific material gap can require a
+targeted source read or original owner's advice. If the gap cannot be resolved
+within the request, report it as unmet or undetermined. Keep any earlier
+still-applicable coverage. The direct profile returns `issue_reviewed` for a
+completed independent review regardless of the readiness conclusion.

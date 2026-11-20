@@ -843,3 +843,16 @@ validation only; current migrated installations fresh re-enter the proper
 scope/Delivery owner. Do not convert an old pass by appending a key. History
 and committed clean content remain facts. This complete installation migration
 is the only switch; no old status writer or reader fallback is added.
+
+## Direct independent Issue requirements review
+
+Use `standalone_issue_requirements` for a new independent read-only request
+about an existing Issue. The [direct review method](standalone-issue-review.md)
+owns live reading, bounded supplementation and re-review reuse. Apply the
+[Issue content specification](issue-content.md) to goals, boundaries, supported
+scenarios, source roles, conditions and observable acceptance. Where linked
+sources establish accepted design, verify the exact affected commitments. Report
+what can be concluded, any finding and any missing evidence. Return
+`issue_reviewed` once the review itself is complete. Use the original
+`standalone_review` path for calls already in that profile and for the existing
+authorized comment workflow.

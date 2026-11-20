@@ -499,8 +499,11 @@ DeliveryKey，并复用原身份和当前选择校验。原 caller 持有本次�
 
 ## Current Intake migration (#250)
 
-Existing Issues now enter Readiness after Sync under #819. Discussion, draft
-and necessary full Intake retain Sync → Discovery → Clarify. Clarify owns
+Formal work on an existing Issue enters Readiness after Sync. Issue-only
+creation and independent Issue reviews enter their own Skills first. These
+Skills request additional context when the current evidence needs it. See the
+[entry and adoption contract](../../presets/guru-team/MIGRATION-887.md). Discussion, draft-only work and necessary
+full Intake retain Sync → Discovery → Clarify. Clarify owns
 selected requirement/design source authority; context requests preserve
 the original caller. Install/reapply the complete current preset and controlled
 callers together; see the canonical Clarify

@@ -27,7 +27,7 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/public-input-2.0.schema.json"
+        "schemas/public-input-3.0.schema.json"
       ],
       "validator_id": "record_plan",
       "runtime_role": "invoke"
@@ -57,8 +57,8 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input-2.0.schema.json",
-        "schemas/public-output.schema.json"
+        "schemas/public-input-3.0.schema.json",
+        "schemas/public-output-2.0.schema.json"
       ],
       "validator_id": "create_issue",
       "runtime_role": "invoke"
@@ -88,7 +88,7 @@
       ],
       "side_effect": "github_read",
       "schema_bindings": [
-        "schemas/public-output.schema.json"
+        "schemas/public-output-2.0.schema.json"
       ],
       "validator_id": "check_result",
       "runtime_role": "invoke"
@@ -118,8 +118,8 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input-2.0.schema.json",
-        "schemas/public-output.schema.json"
+        "schemas/public-input-3.0.schema.json",
+        "schemas/public-output-2.0.schema.json"
       ],
       "validator_id": "recover_result",
       "runtime_role": "invoke"
@@ -149,10 +149,41 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input-2.0.schema.json",
-        "schemas/public-output.schema.json"
+        "schemas/public-input-3.0.schema.json",
+        "schemas/public-output-2.0.schema.json"
       ],
       "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "prepare-issue-creation",
+      "owner": "guru-create-issue",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Exact reviewed draft and comment. Use - for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [
+        "schemas/prepare-input-1.0.schema.json",
+        "schemas/public-input-direct-1.0.schema.json"
+      ],
+      "validator_id": "prepare_creation",
       "runtime_role": "invoke"
     }
   ]

@@ -167,7 +167,9 @@
         "schemas/public-scope-ready-output-2.0.schema.json",
         "schemas/public-issue-readiness-supplement-input-2.0.schema.json",
         "schemas/public-issue-needs-context-output-2.0.schema.json",
-        "schemas/issue-review-owner-2.0.schema.json"
+        "schemas/issue-review-owner-2.0.schema.json",
+        "schemas/public-standalone-issue-requirements-input-1.0.schema.json",
+        "schemas/public-issue-reviewed-output-1.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

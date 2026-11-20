@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-change-request-input-standalone-issue-readiness-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "issue"
+  ],
+  "properties": {
+    "profile": {
+      "const": "standalone_issue_readiness"
+    },
+    "mode": {
+      "const": "standalone"
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "number"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

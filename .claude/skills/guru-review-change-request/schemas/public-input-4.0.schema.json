@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-change-request-input-aggregate-4.0",
+  "oneOf": [
+    {
+      "$ref": "public-current-issue-input-2.0.schema.json"
+    },
+    {
+      "$ref": "public-proposed-draft-input-2.0.schema.json"
+    },
+    {
+      "$ref": "public-standalone-request-input-2.0.schema.json"
+    },
+    {
+      "$ref": "public-existing-issue-intake-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-issue-review-return-input-2.0.schema.json"
+    },
+    {
+      "$ref": "public-standalone-issue-readiness-input-1.0.schema.json"
+    }
+  ]
+}

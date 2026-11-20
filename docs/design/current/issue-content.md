@@ -99,3 +99,11 @@ MIGRATION-850单写前代path/id保留、后继版本及当前consumer映射，�
 ## D880-04 / CON880-EVIDENCE：现有 eval 与受管分发
 
 承接 R880-06/07。扩展现有 `issue-acceptance-boundary-source.json` 和原 native eval case，使同一去敏 mixed scenario 包含组件、CLI、明确目标 runtime、业务配置发布及无依据环境／部署／重复场景建议。`test_issue_content_distribution.py` 将 `acceptance-boundary` 教学例纳入真实 writer/reapply 检查。受管 dogfood 与声明平台投影由原 `guru-upgrade-tools`／installer 同步，不手工覆盖。对应 T880-01..05。
+
+## D887-01 / CON887-ISSUE-ONLY
+
+创建直接入口由原 Create Issue 承担。其预备命令从准确的草稿、评论和当前查重时间生成 issue_creation_direct。原执行器消费该结果并负责创建、回读和恢复。写前过期或草稿失配返回 direct_review_refresh，原 Create 根据原因重审或刷新。写入结果未知时使用原尝试恢复。原 issue_creation 和 refresh_review 继续服务完整链消费者。对应 R887-01、R887-03、T887-02。详细入口和兼容见 [MIGRATION-887](../../../trellis/presets/guru-team/MIGRATION-887.md)。
+
+## D887-02 / CON887-INDEPENDENT-REVIEW
+
+Clarify 和 Readiness 各自决定审核和补查。共用的客观检查使用实际 Issue 快照核对当前正文和讨论，完成后以 issue_reviewed 交用户回复节点。复审依据留在当前对话。用户要求开工、编辑或评论时，继续使用相应正式流程。对应 R887-02、R887-03、T887-01、T887-02。本节窄替代 D868-02、D880-03 的入口条件。完整共用内容规则继续适用。

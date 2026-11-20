@@ -4,12 +4,30 @@ from pathlib import Path
 from common import check_receipt,check_result,digest,invocation
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.issue_snapshot import check_issue_snapshot
 def public_target(target):
  keys={"kind","repo","title_sha256","body_sha256","identity_sha256","content_sha256"}
  keys|={"issue_number","url","updated_at"} if target["kind"]=="existing_issue" else ({"draft_id","source_request_sha256"} if target["kind"]=="proposed_draft" else {"caller_locator","request_id","source_request_sha256"})
  return {key:target[key] for key in keys}
+
+def standalone_issue_review(package_root: Path, envelope: dict) -> dict:
+    envelope_schema = package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-4.0.schema.json"
+    validate_json(envelope, envelope_schema, "invocation")
+    public = envelope["public_input"]
+    validate_json(public, package_root / "schemas/public-standalone-issue-readiness-input-1.0.schema.json", "public_input")
+    result = envelope["owner_result"]
+    if result["typed_exit"] == "blocked":
+        return {"exit_id": "blocked"}
+    check_issue_snapshot(public["issue"], envelope["owner_context"]["issue_snapshot"])
+    output = {"exit_id": "issue_reviewed", "report": result["report"]}
+    validate_json(output, package_root / "schemas/public-issue-reviewed-output-1.0.schema.json", "stdout")
+    return output
+
+
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  e,target,prerequisites=invocation(package_root,argv,final=True)
+ if e["public_input"]["profile"] == "standalone_issue_readiness":
+  return standalone_issue_review(package_root, e)
  if target is None:
   from issue_review import execute
   return execute(package_root,e,"invoke")

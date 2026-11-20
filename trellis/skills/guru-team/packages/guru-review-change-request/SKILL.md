@@ -59,6 +59,13 @@ General “审核 Issue” without that purpose enters `guru-clarify-requirement
 for requirements review. A status lookup or discussion of these trigger
 phrases does not itself request readiness review.
 
+For a new independent, read-only readiness review or re-review, use
+`standalone_issue_readiness`. Follow the [direct review method](../guru-clarify-requirements/references/standalone-issue-review.md)
+and [readiness criteria](references/issue-intake.md#independent-readiness-review).
+Read the Issue and effective discussion first. Judge independent delivery,
+implementation target, dependencies and prerequisites with the actual applicable
+evidence. Report the conclusion through `issue_reviewed` to the user.
+
 Loading is distinct from a valid public invocation. For an existing Issue after Sync, use `existing_issue_intake`; a local result
 returns through `issue_review_return`. Read [Issue intake](references/issue-intake.md)
 for those independent inputs. Full-chain profiles retain their actual predecessor

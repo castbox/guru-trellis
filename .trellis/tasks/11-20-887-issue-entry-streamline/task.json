@@ -1,0 +1,103 @@
+{
+  "schema_version": "2.0",
+  "id": "887-issue-entry-streamline",
+  "name": "887-issue-entry-streamline",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 887,
+    "disposition": "exact_source"
+  },
+  "title": "缩短 Issue 创建和独立审核流程",
+  "description": "完成 castbox/guru-trellis #887",
+  "dev_type": null,
+  "scope": "按已有证据分流只建 Issue、独立需求审核、独立开工就绪审核和复审。保留内容审核、写入回读、结果恢复与既有开工合同，完成同材料真实 Agent 对照。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-20",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/prd.md",
+    "revision": "sha256:9fab81e1902a812b25ac855394708b957fea11da74d1b7eff5ddf377d8ede3a5"
+  },
+  "deliveries": [
+    {
+      "id": "d04ab09f-4768-4279-b224-aba82f373843",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/prd.md",
+          "revision": "sha256:9fab81e1902a812b25ac855394708b957fea11da74d1b7eff5ddf377d8ede3a5"
+        },
+        "anchors": [
+          "AC01",
+          "AC02",
+          "AC03"
+        ]
+      },
+      "planning_root": "deliveries/d04ab09f-4768-4279-b224-aba82f373843",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/deliveries/d04ab09f-4768-4279-b224-aba82f373843/design.md",
+        "revision": "sha256:c93319bf2bc0c76ceff137137f81aa8a098047a1b978f494638d6a9ba10d0c21"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:ec75c8ef-d9b7-430f-8033-3e984856135d",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/prd.md",
+              "revision": "sha256:9fab81e1902a812b25ac855394708b957fea11da74d1b7eff5ddf377d8ede3a5"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/deliveries/d04ab09f-4768-4279-b224-aba82f373843/design.md",
+            "revision": "sha256:c93319bf2bc0c76ceff137137f81aa8a098047a1b978f494638d6a9ba10d0c21"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/deliveries/d04ab09f-4768-4279-b224-aba82f373843/prd.md",
+              "revision": "sha256:7e519b5ae0b8636c13d7971d996dcbf52e15fb4d991531744a102363134bc96f"
+            },
+            {
+              "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/deliveries/d04ab09f-4768-4279-b224-aba82f373843/design.md",
+              "revision": "sha256:c93319bf2bc0c76ceff137137f81aa8a098047a1b978f494638d6a9ba10d0c21"
+            },
+            {
+              "locator": ".trellis/tasks/11-20-887-issue-entry-streamline/deliveries/d04ab09f-4768-4279-b224-aba82f373843/implement.md",
+              "revision": "sha256:73cc1b89d16c865e34d6bb4e686cdb10912acac74f09a2066376240748ed29f1"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

@@ -4,6 +4,7 @@ from pathlib import Path
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 from runtime.io import CommandError,read_json
 from runtime.schema import validate_json
+from runtime.issue_snapshot import check_issue_snapshot
 from runtime.base_selection import source_ref, check_candidate
 from common import validate_owner
 from confirmation import CONFIRMATION_PROFILES, confirmation_identity, bind_confirmation
@@ -180,12 +181,29 @@ def typed_output(package_root, public, transition, owner):
     return output
 
 
+
+def standalone_issue_review(package_root: Path, envelope: dict) -> dict:
+    envelope_schema = package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-4.0.schema.json"
+    validate_json(envelope, envelope_schema, "invocation")
+    public = envelope["public_input"]
+    validate_json(public, package_root / "schemas/public-standalone-issue-requirements-input-1.0.schema.json", "public_input")
+    result = envelope["owner_result"]
+    if result["typed_exit"] == "blocked":
+        return {"exit_id": "blocked"}
+    check_issue_snapshot(public["issue"], envelope["owner_context"]["issue_snapshot"])
+    output = {"exit_id": "issue_reviewed", "report": result["report"]}
+    validate_json(output, package_root / "schemas/public-issue-reviewed-output-1.0.schema.json", "stdout")
+    return output
+
+
 def run(package_root,command,argv):
     p=argparse.ArgumentParser(add_help=False);p.add_argument("--json",action="store_true");p.add_argument("--invocation",required=True)
     try:a=p.parse_args(argv)
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
     envelope=read_json(a.invocation,"invocation")
     public=envelope.get("public_input",{})
+    if public.get("profile") == "standalone_issue_requirements":
+        return standalone_issue_review(package_root, envelope)
     if public.get("profile") == "standalone_wording_review":
         from wording_review import execute
         return execute(package_root, envelope)
