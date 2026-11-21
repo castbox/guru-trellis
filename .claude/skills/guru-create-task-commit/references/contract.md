@@ -35,6 +35,13 @@ match actual original committed blobs/modes, with the explicitly selected
 markdown_relative_links_v1 relocation only when the original owner reviewed it.
 No empty commit restores output. A genuine new increment uses exact prepare.
 
+Committed clean checks honor `preserved_worktree_paths` from
+`.trellis/guru-team/config.yml` (omitted or `[]` means no exemptions).
+Only exact tracked paths are excluded from that check; other dirty content
+still blocks. Candidate paths and verification remain unchanged. Review the
+complete B..H, including any listed path changed there, and judge dependency
+and test validity against the preserved worktree projection.
+
 ## Dirty transaction and recovery
 
 The two calls remain prepare-task-commit.sh and invoke.sh --candidate-artifact.

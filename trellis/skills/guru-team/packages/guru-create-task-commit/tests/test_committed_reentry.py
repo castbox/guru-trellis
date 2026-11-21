@@ -24,6 +24,7 @@ class CommittedReentryTest(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         self.fixture = module.DeliveryFlow()
+        self.fixture.delivery_profile = getattr(self, "delivery_profile", "local_commit")
         self.fixture.setUp()
         self.addCleanup(self.fixture.doCleanups)
         self.repo, self.key, self.task_ref = self.fixture.repo, self.fixture.key, self.fixture.task_ref
@@ -102,10 +103,10 @@ class CommittedReentryTest(unittest.TestCase):
         for skill in skills:
             shutil.copytree(SKILLS / 'packages' / skill, installed / 'skills/packages' / skill, dirs_exist_ok=True)
         source_repo = next(parent for parent in PACKAGE.parents if (parent / '.git').exists())
-        common = subprocess.run(['git','rev-parse','--path-format=absolute','--git-common-dir'], cwd=source_repo, capture_output=True, text=True, check=True).stdout.strip()
-        pointer = self.repo / '.git/guru-team/python/active.json'
+        from runtime.bootstrap import active_pointer_path
+        pointer = active_pointer_path(self.repo, for_write=True)
         pointer.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(Path(common) / 'guru-team/python/active.json', pointer)
+        shutil.copy2(active_pointer_path(source_repo), pointer)
         return installed
 
     def test_real_reconcile_fresh_check_and_first_full_review(self):

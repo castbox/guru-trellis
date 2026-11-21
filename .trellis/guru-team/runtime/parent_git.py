@@ -21,13 +21,18 @@ def _git(root: Path, *args: str, allow_missing: bool = False) -> bytes:
     return result.stdout
 
 
-def index_entries(root: Path) -> dict[str, dict[str, str]]:
+def index_entries(root: Path, *, paths: list[str] | None = None) -> dict[str, dict[str, str]]:
     """Return unique stage-0 path/mode/OID entries; absence means untracked."""
     entries = {}
-    for raw in filter(None, _git(root, "ls-files", "--stage", "-z").split(b"\0")):
+    command = ["ls-files", "--stage", "-z"]
+    if paths is not None:
+        command = ["--literal-pathspecs", *command, "--", *paths]
+    for raw in filter(None, _git(root, *command).split(b"\0")):
         metadata, path = raw.split(b"\t", 1)
         mode, oid, stage = metadata.decode("ascii").split()
         name = path.decode("utf-8", "strict")
+        if paths is not None and name not in paths:
+            continue
         if stage != "0" or name in entries:
             raise ParentGitError("Resolve every parent index entry before capture.")
         if not re.fullmatch(r"[0-9a-f]{40,64}", oid):
@@ -36,15 +41,20 @@ def index_entries(root: Path) -> dict[str, dict[str, str]]:
     return entries
 
 
-def head_entries(root: Path, commit: str = "HEAD") -> dict[str, dict[str, str]]:
+def head_entries(root: Path, commit: str = "HEAD", *, paths: list[str] | None = None) -> dict[str, dict[str, str]]:
     """Read the parent tree; an unborn HEAD has no committed entries."""
     if commit == "HEAD" and not _git(root, "rev-parse", "--verify", "HEAD", allow_missing=True):
         return {}
     entries = {}
-    for raw in filter(None, _git(root, "ls-tree", "-r", "-z", "--full-tree", commit).split(b"\0")):
+    command = ["ls-tree", "-r", "-z", "--full-tree", commit]
+    if paths is not None:
+        command = ["--literal-pathspecs", *command, "--", *paths]
+    for raw in filter(None, _git(root, *command).split(b"\0")):
         metadata, path = raw.split(b"\t", 1)
         mode, _kind, oid = metadata.decode("ascii").split()
         name = path.decode("utf-8", "strict")
+        if paths is not None and name not in paths:
+            continue
         entries[name] = {"path": name, "mode": mode, "oid": oid}
     return entries
 
@@ -112,3 +122,49 @@ def parent_status_records(root: Path) -> list[dict[str, str | None]]:
         rows[path] = {"status_text": status[:1].decode("ascii") + worktree,
                       "path": path, "renamed_from": None, "copied_from": None}
     return sorted(rows.values(), key=lambda row: str(row["path"]).encode("utf-8"))
+
+
+def preserved_worktree_paths(root: Path) -> set[str]:
+    """Read exact tracked paths exempted only from committed clean checks."""
+    from runtime.base_selection import _scalar
+    from runtime.io import CommandError
+
+    config = root / ".trellis/guru-team/config.yml"
+    values = []
+    active = False
+    if config.is_file():
+        for raw in config.read_text(encoding="utf-8").splitlines():
+            # Comments outside quotes follow the existing config scalar subset.
+            quote = None
+            for index, char in enumerate(raw):
+                if char in {"'", '"'}:
+                    quote = None if quote == char else char if quote is None else quote
+                if char == "#" and quote is None and (index == 0 or raw[index - 1].isspace()):
+                    raw = raw[:index]
+                    break
+            if not raw.strip():
+                continue
+            text = raw.strip()
+            if active and text.startswith("- "):
+                if values is not None:
+                    values.append(_scalar(text[2:]))
+            elif not raw[:1].isspace():
+                key, _, value = text.partition(":")
+                active = key == "preserved_worktree_paths"
+                if active:
+                    value = value.strip()
+                    values = [] if value in {"", "[]"} else None
+            elif active:
+                values = None
+    field = "config.preserved_worktree_paths"
+    if not isinstance(values, list):
+        raise CommandError("invalid_arguments", field, "Use a block list of exact repository-relative tracked file paths, or [].")
+    for value in values:
+        if (not isinstance(value, str) or not value or value != value.strip()
+                or value.startswith("/") or any(part in {"", ".", ".."} for part in value.split("/"))
+                or any(char in value for char in "*?[]\\")):
+            raise CommandError("invalid_arguments", field, "Use exact repository-relative file paths without glob or directory matching.")
+    if not values:
+        return set()
+    tracked = set(index_entries(root, paths=values)) | set(head_entries(root, paths=values))
+    return set(values) & tracked

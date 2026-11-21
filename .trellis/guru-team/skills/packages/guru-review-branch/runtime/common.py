@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 
 from runtime.io import CommandError
-from runtime.parent_git import ParentGitError, parent_status_records
+from runtime.parent_git import ParentGitError, parent_status_records, preserved_worktree_paths
 from runtime.reviewed_content import (
     REVIEWED_CONTENT_ALGORITHM,
     ReviewedContentError,
@@ -261,11 +261,12 @@ def parent_changes(repo):
 
 def dirty_paths(repo, _task_ref):
     paths = []
+    preserved = preserved_worktree_paths(repo)
     for row in parent_changes(repo):
         paths.append(row["path"])
         if row["renamed_from"] is not None:
             paths.append(row["renamed_from"])
-    return [path for path in paths if not reviewed_content_metadata_path(path)]
+    return [path for path in paths if not reviewed_content_metadata_path(path) and path not in preserved]
 
 
 def content_identity(repo, commit):

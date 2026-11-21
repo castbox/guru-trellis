@@ -80,3 +80,10 @@ created_issue_labels: []
 closeout_markers:
   - "最终收口口径"
   - "Final Closeout"
+
+# Exact tracked repository-relative files to preserve during committed reentry
+# and Review clean checks. Omitted means []. Use a block list; no globs or
+# directory matching. This never removes paths from Candidate or bypasses its
+# content verification. The AI still reviews the complete B..H and judges
+# dependency and test validity against the preserved worktree projection.
+preserved_worktree_paths: []

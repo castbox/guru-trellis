@@ -1189,12 +1189,12 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-16T16:31:32Z",
+  "installed_at": "2026-11-21T17:31:27Z",
   "source": {
-    "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "2938801829c8b8862e71d522891c79e8efb2d47a",
-    "commit": "2938801829c8b8862e71d522891c79e8efb2d47a",
-    "tree_state": "clean",
+    "repo": "git@github.com:castbox/guru-trellis.git",
+    "ref": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+    "commit": "76198a53b4da989b66d2e5f135ff4d2b703ca3cf",
+    "tree_state": "dirty",
     "is_mutable_ref": false
   },
   "install": {
@@ -1414,7 +1414,7 @@
       {
         "id": "guru-create-task-commit",
         "interface_sha256": "f1e20881c4194fbc28694dce6a017f3296deebd699b3591a48281887fd724a8f",
-        "tree_sha256": "7fb16b3ecd43693863c75aa37b4089496e27421365bae12a51b5d6f5056d7480"
+        "tree_sha256": "fae9103fbad98ed5160b1fe1c06fe441512af502043535b6914c86dea31ce116"
       },
       {
         "id": "guru-discover-change-context",
@@ -1514,7 +1514,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "85136efad5bd22d75ea9d77a9afa2d04dfee3f660983fd20e4900a439c27ba20",
-        "tree_sha256": "513261a782d72132b4fc79302ca2a48284b9426ddde64e75a3b822615a8c7625"
+        "tree_sha256": "c39a7cc4457f155fbe5a0ca8b620ab00cfb40afbe595a341819b4ab922a249ce"
       },
       {
         "id": "guru-review-change",
@@ -8538,7 +8538,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
-        "sha256": "0c4fb2c07c16055fbef0f4c436b44ebd3f0ae63893dd9805c6e107db71fc7b18",
+        "sha256": "c111a54ddac5f25ee45a07dc0279efde7257f34f730ae02704a3986c51a70afd",
         "executable": false,
         "action": "installed"
       },
@@ -8559,7 +8559,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/delivery.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/delivery.py",
-        "sha256": "fc46d34dfada62bae202535da7d3d3db66ae9d0e2c353dccfb51e8a1b7fb60c3",
+        "sha256": "d7e1ba4d5eff6c0cc8f84a4cfff74d435022ece9dce9413ffbb917fa0f58387e",
         "executable": false,
         "action": "installed"
       },
@@ -18352,7 +18352,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "4294211f2e6d8af0ea11e30eea8b42a53641b3f6c7a50f9f53d209998f865f3e",
+        "sha256": "3b7129a06947ffbe18cf5ee9ba15c3227892ab2b95bf15d20e2a93d1a9655294",
         "executable": false,
         "action": "installed"
       },
@@ -18387,7 +18387,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
-        "sha256": "4ae7ed070d9061267c684901b0322931d00e9012bd465af4c9c10c43a109370a",
+        "sha256": "28267afc6e224c4dc4a391a5123be662d66d6b70c8359dd333a37bc88ad19bd0",
         "executable": false,
         "action": "installed"
       },
@@ -22713,7 +22713,7 @@
       {
         "path": ".trellis/guru-team/runtime/parent_git.py",
         "source": "trellis/skills/guru-team/runtime/parent_git.py",
-        "sha256": "61027cb4229d1d886666385e21bd06951d8533e23b1d2408e12cb784c39464b0",
+        "sha256": "b952b0a321ecafeb8b48a8e2a5ad2c9b5f5ce0d3b43e5edc68f28e2ebeef4a2c",
         "executable": false,
         "action": "installed"
       },
@@ -36209,7 +36209,7 @@
       {
         "path": ".agents/skills/guru-create-task-commit/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
-        "sha256": "0c4fb2c07c16055fbef0f4c436b44ebd3f0ae63893dd9805c6e107db71fc7b18",
+        "sha256": "c111a54ddac5f25ee45a07dc0279efde7257f34f730ae02704a3986c51a70afd",
         "executable": false,
         "action": "installed"
       },
@@ -36664,7 +36664,7 @@
       {
         "path": ".claude/skills/guru-create-task-commit/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
-        "sha256": "0c4fb2c07c16055fbef0f4c436b44ebd3f0ae63893dd9805c6e107db71fc7b18",
+        "sha256": "c111a54ddac5f25ee45a07dc0279efde7257f34f730ae02704a3986c51a70afd",
         "executable": false,
         "action": "installed"
       },
@@ -37119,7 +37119,7 @@
       {
         "path": ".cursor/skills/guru-create-task-commit/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
-        "sha256": "0c4fb2c07c16055fbef0f4c436b44ebd3f0ae63893dd9805c6e107db71fc7b18",
+        "sha256": "c111a54ddac5f25ee45a07dc0279efde7257f34f730ae02704a3986c51a70afd",
         "executable": false,
         "action": "installed"
       },
@@ -60205,7 +60205,7 @@
       {
         "path": ".agents/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "4294211f2e6d8af0ea11e30eea8b42a53641b3f6c7a50f9f53d209998f865f3e",
+        "sha256": "3b7129a06947ffbe18cf5ee9ba15c3227892ab2b95bf15d20e2a93d1a9655294",
         "executable": false,
         "action": "installed"
       },
@@ -61213,7 +61213,7 @@
       {
         "path": ".claude/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "4294211f2e6d8af0ea11e30eea8b42a53641b3f6c7a50f9f53d209998f865f3e",
+        "sha256": "3b7129a06947ffbe18cf5ee9ba15c3227892ab2b95bf15d20e2a93d1a9655294",
         "executable": false,
         "action": "installed"
       },
@@ -62221,7 +62221,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "4294211f2e6d8af0ea11e30eea8b42a53641b3f6c7a50f9f53d209998f865f3e",
+        "sha256": "3b7129a06947ffbe18cf5ee9ba15c3227892ab2b95bf15d20e2a93d1a9655294",
         "executable": false,
         "action": "installed"
       },

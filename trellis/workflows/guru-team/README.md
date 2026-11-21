@@ -620,3 +620,21 @@ AI 自行新建 linked worktree 时，先读取 live Git topology 与确证 prim
 当前完整 Review 对范围内规划修复传递真实 actions；原旧 Check rollback 仅通过显式恢复入口承接。
 完整 matching 采用、已回退旧现场、缺来源 blocked 及验证边界见
 [MIGRATION-775](../../presets/guru-team/MIGRATION-775.md)；恢复不生成 Planning 或 Check pass。
+
+### Preserved tracked worktree paths
+
+`preserved_worktree_paths` in `.trellis/guru-team/config.yml` defaults to `[]`.
+Use a YAML block list of exact repository-relative tracked file paths, for example:
+
+```yaml
+preserved_worktree_paths:
+  - pubspec.lock
+```
+
+Committed Task Commit reentry and Branch Review clean checks leave those files
+in place. Other dirty content still blocks. No glob or directory matching is
+performed. Candidate paths, content verification and complete B..H review stay
+unchanged, including a configured path changed in that range. The AI still
+judges dependency and test validity against the preserved worktree projection.
+Existing configuration is preserved during tools updates; configure the list
+in the selected checkout when needed.

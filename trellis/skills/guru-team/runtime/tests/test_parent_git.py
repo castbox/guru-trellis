@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from runtime.parent_git import ParentGitError, index_entries, parent_status_records
+from runtime.parent_git import ParentGitError, index_entries, parent_status_records, preserved_worktree_paths
 from runtime.reviewed_content import reviewed_content_identity
 
 
@@ -46,6 +46,49 @@ class ParentGitFactsTest(unittest.TestCase):
         tree = self.git(self.root, "write-tree")
         commit = self.git(self.root, "commit-tree", tree, "-p", "HEAD", input="projection\n")
         return reviewed_content_identity(self.root, commit=commit, include_worktree=False)
+
+    def test_preservation_is_optional_exact_and_tracked(self):
+        self.assertEqual(set(), preserved_worktree_paths(self.root))
+        config = self.root / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True)
+        config.write_text("preserved_worktree_paths: []\n")
+        self.assertEqual(set(), preserved_worktree_paths(self.root))
+        (self.root / "lock #1").write_text("tracked\n")
+        (self.root / "untracked.lock").write_text("untracked\n")
+        self.git(self.root, "add", "lock #1")
+        config.write_text("preserved_worktree_paths:\n  - 'lock #1' # exact path\n  - untracked.lock\n  - directory\nother_setting: value\n")
+        self.assertEqual({"lock #1"}, preserved_worktree_paths(self.root))
+
+    def test_preservation_queries_only_configured_paths_and_keeps_staged_deletion(self):
+        (self.root / "removed.lock").write_text("committed lock\n")
+        (self.root / "unrelated.txt").write_text("unrelated content\n")
+        self.git(self.root, "add", "removed.lock", "unrelated.txt")
+        self.git(self.root, "commit", "-qm", "tracked files")
+        self.git(self.root, "rm", "removed.lock")
+        (self.root / "added.lock").write_text("index-only lock\n")
+        self.git(self.root, "add", "added.lock")
+        config = self.root / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True)
+        paths = ["removed.lock", "added.lock", "untracked.lock"]
+        config.write_text("preserved_worktree_paths:\n" + "".join("- " + path + "\n" for path in paths))
+        original_run = subprocess.run
+        with patch("subprocess.run", wraps=original_run) as run:
+            self.assertEqual({"removed.lock", "added.lock"}, preserved_worktree_paths(self.root))
+        queries = [call.args[0] for call in run.call_args_list
+                   if "ls-files" in call.args[0] or "ls-tree" in call.args[0]]
+        self.assertEqual(2, len(queries))
+        for query in queries:
+            self.assertIn("--literal-pathspecs", query)
+            self.assertEqual(paths, query[query.index("--") + 1:])
+
+    def test_preservation_does_not_expand_globs_or_directories(self):
+        from runtime.io import CommandError
+        config = self.root / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True)
+        for path in ("*.lock", "directory/", "../lock"):
+            config.write_text("preserved_worktree_paths:\n  - '" + path + "'\n")
+            with self.assertRaises(CommandError):
+                preserved_worktree_paths(self.root)
 
     def test_child_state_is_irrelevant_but_parent_pointer_is_content(self):
         initial = reviewed_content_identity(self.root)
@@ -100,6 +143,11 @@ class ParentGitFactsTest(unittest.TestCase):
         self.git(self.root, "update-index", "--index-info", input=records)
         with self.assertRaises(ParentGitError):
             parent_status_records(self.root)
+        config = self.root / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True)
+        config.write_text("preserved_worktree_paths:\n- module\n")
+        with self.assertRaises(ParentGitError):
+            preserved_worktree_paths(self.root)
 
 
 if __name__ == "__main__":
