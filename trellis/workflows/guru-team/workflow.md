@@ -805,23 +805,38 @@ Before substantive output, load the complete current
 `.trellis/spec/workflow/clear-technical-writing.md`. Read it again after context
 loss when its complete current body is unavailable.
 
-Read this receiving chat's actual binding and current request. An explicit
-TaskId/generation and optional DeliveryKey from the request or a real producer
-enters [Explicit receiving-session continuation](#explicit-receiving-session-continuation).
-A missing binding for that explicit object is same-object recovery, not new
-Intake. With no explicit object and no relevant binding, use
-[No-Task entry](#no-task-entry). Invalid/stale/ambiguous facts stop at their
-original owner; inventory never selects a Task or Delivery.
+Read the current request. An explicit TaskId/generation and optional
+DeliveryKey from the request or a real producer enters
+[Explicit receiving-session continuation](#explicit-receiving-session-continuation).
+A missing required binding for that explicit object enters same-object recovery.
 
-For a bound formal Task, resolve current identity/checkout through the original
-owners and read the exact public Delivery current query. An adjacent actual
-Skill output enters only its declared consumer. Query that producer/exit with
+For ordinary current-session continuation, run the public read once:
+
+```bash
+bash .trellis/guru-team/scripts/bash/read-continuation-context.sh --root .
+```
+
+Use the verified Task and checkout and the exact Delivery locator from its
+result. To reuse facts from this same chat, pass the previous successful result
+as `previous` in a version 1.0 `continue_session` input via `--input -`.
+The command verifies current dependencies before adoption. If a result is
+unavailable, run the current read without it. `no_current_task` enters the
+original [No-Task entry](#no-task-entry). `binding_required` returns to the
+original Bind owner for that exact object. Other diagnostics retain the
+reported owner and condition. This read supplies facts for the workflow's
+next judgment.
+
+An adjacent actual Skill output enters only its declared consumer.
+Query that producer/exit with
 `discover-skill-contract --skill <producer> --exit <exit>` from the matching
 provider, then explicitly load and invoke the returned original Skill or
 execute its workflow target. The script does not choose conditional branches.
 Unknown, multiple, unmapped or mismatched results stop.
 
-Without an adjacent output, use only the current obligation's entry:
+Without an adjacent output, apply
+[Bound formal Task / Delivery continuation](#bound-formal-task--delivery-continuation)
+to any located Delivery before using the phase table. Use the confirmed
+phase, applicable gate results and the original Publication readback.
 
 | Public availability | Load the current entry |
 | --- | --- |
@@ -943,11 +958,16 @@ Load `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-co
 when continuing a changed candidate or recovering review output. Original
 owners apply that contract; this continuation does not copy their judgments.
 
-Resolve current TaskId/generation, C4 branch binding and unique checkout through
-`guru-ensure-task-checkout`, then use the installed public Delivery current query.
-Explicit-task mode requires a deliberately selected TaskId. Missing/stale/ambiguous
-binding, unsupported schema/API or missing workflow declaration stops at its
-original owner; inventory and directory names never select execution.
+Consume the same verified context result from the ordinary read. For an
+exact Delivery, use its TaskRef and checkout to read the corresponding public
+record and original gate applicability. Invoke
+`read-continuation-context.sh --root <verified-checkout> --delivery-record -`
+with version 1.0, the three Task identity fields and the Delivery ID taken
+from the first result. This exact lookup uses the located object directly.
+Verify its key, generation, profile, phase and planning root before consuming
+the result. If the relation changes or a read fails, follow the original
+diagnostic. An explicit recovery still uses its original receiving-session
+entry and original writers.
 
 The sole continuation is used by SessionStart, UserPromptSubmit, start/continue,
 natural-language and compressed/new-chat recovery. Execution mode changes the

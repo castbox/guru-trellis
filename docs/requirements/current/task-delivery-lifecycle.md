@@ -252,3 +252,9 @@ Author完成完整规划和自检后，独立Architecture final_plan直接进入
 - **R856-04 / BEH856-ADOPTION**：同一错误边界覆盖 Publish 的实际直接入口及原 migration/recover consumer。canonical 与受影响受管投影由原 tools owner 成套同步，定向验证 package/runtime、installed/reapply/drift、mode 和 sidecar。源码及 fixture 结果不证明旧业务安装、历史发布或生产效果；完整 Release 矩阵另属原 owner。
 
 职责 D856-01..03、验证 T856-01..05 位于对应生命周期单元。固定前驱为 Git `4f3d9069e0720ec94e39d1079154d2f7a7058935` 的本单元；来源和窄增加边界见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。本节保留全部未替代条件。
+
+## R899 标准续接上下文
+
+标准会话续接通过一次公开读取定位已验证的 Task、checkout 和适用 Delivery。区分当前、无 Delivery、终态、无 Task 和缺少必要绑定。原显式读取、权限、写入恢复及阶段门禁继续由既有入口处理。
+
+同会话可传回先前成功结果。只有仍满足当前依赖的部分可复用。TaskId、generation、绑定、checkout、当前 Delivery 或相关来源变化时刷新受影响事实。查询不写 Task、会话或 Git 资源。普通失配与旧记录保留诊断和原负责方。设计承接见 [D899](../../design/current/task-delivery-lifecycle.md#d899-一次解析与精确后续读取)，验证见 [T899](../../test/current/task-delivery-lifecycle.md#t899-续接行为验证)。

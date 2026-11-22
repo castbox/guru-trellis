@@ -56,6 +56,8 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("delivery_projection/__init__.py"),
     Path("delivery_projection/adapter.py"),
     Path("delivery_projection/candidate_cli.py"),
+    Path("delivery_projection/continuation.py"),
+    Path("delivery_projection/continuation_cli.py"),
     Path("delivery_projection/gates.py"),
     Path("delivery_projection/scope_revision.py"),
     Path("delivery_projection/withdrawal.py"),

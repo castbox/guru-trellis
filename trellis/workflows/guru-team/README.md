@@ -14,6 +14,39 @@
 [Publication 合同](../../skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action)。
 已有 checkout 经完整 matching tools 更新并验证目标后采用；开发同步不证明正式 source-lock 采用。
 
+## 读取当前续接对象
+
+标准续接从已安装的 Guru workflow 调用一次公开只读查询。前置条件是匹配的
+Guru workflow 和 preset，以及目标 checkout 的 Fixed Fork Task/Delivery API。
+默认读取本会话的实际绑定。
+
+```bash
+bash .trellis/guru-team/scripts/bash/read-continuation-context.sh --root .
+```
+
+`current` 和 `terminal_delivery` 返回已验证的 Task、checkout 和 Delivery 定位。
+`no_current_delivery` 返回 Task 定位，交原 Task 义务。 `no_current_task` 交原
+No-Task 入口。实际续接需要绑定时，`binding_required` 指向原 Bind 入口。
+`error` 保留原诊断，按返回的条件回原负责人。
+
+显式只读检查通过 `--input -` 接受以下对象。将示例身份替换为已知 Task。
+仅在原显式读取合同允许时指定 `delivery_id`。
+
+```json
+{"schema_version":"1.0","intent":"inspect_task","task":{"task_id":"example","lifecycle_generation":0,"task_ref":".trellis/tasks/11-22-example"}}
+```
+
+同一会话可通过版本 1.0 的 `continue_session` 输入传回完整上次成功结果
+`previous`。查询先核对当前会话与实际依赖。该结果仅在调用期使用。
+
+取得 Delivery 定位后，原 Workflow 在阶段分流前通过 `--delivery-record -` 读取精确
+记录及门禁适用性。以已核验 checkout 为 `--root`，向 stdin 传递
+`schema_version`、只包含三个身份字段的 `task` 和精确的 `delivery_id`。
+存在 Publication PR 时按原流程实时回读。已合并 PR 优先进入原合并恢复入口。
+
+已有项目按原 tools owner 的合同采用匹配 workflow 与 preset。旧版在途任务继续使用
+原完整匹配提供方及其恢复入口。新的只读命令保留现有 Task 与 Delivery API。
+
 ## 当前出口查询与按步骤加载
 
 正常会话先通过原 `get_context.py --mode phase` 或唯一 continuation 定位当前步骤，

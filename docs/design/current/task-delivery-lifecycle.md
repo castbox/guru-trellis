@@ -221,3 +221,9 @@ Author requirements_ready经candidate assessment回solution_planning，plan_read
 - **D856-03 / CON856-CONTINUITY** 承接 R856-02/04：保持原事务、digest、公共 DTO、成功域、生命周期与恢复资格。已完成动作回读、未知外部结果先核同事务，不新建恢复协议。原 tools owner 采用完整 matching source 同步受管投影；local_candidate 明确正式 source-lock 未验证边界。实现、安装与真实外部效果分别判断。
 
 采用原异常定义和一个 package 私有 unknown 边界，成本为静态映射、五个真实 consumer 及定向回归的维护。它不增加共享 catalog 读取、package 特判、状态或额外 I/O。实际需求若涉及跨 package 协议、owner、共享行为或新状态，返回原 Planning/Architecture 判断。来源为 #856；固定前驱及 R/D/T 关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。
+
+## D899 一次解析与精确后续读取
+
+承接 [R899](../../requirements/current/task-delivery-lifecycle.md#r899-标准续接上下文)。同一公开命令组合现有 Task、session、C4/C5、登记 checkout 和 Delivery 读取。前次事实由当次依赖逐项核对，依赖失配后重建相应定位。显式只读结果不改变会话选择。结果中的错误指向既有读取或恢复负责人。
+
+标准 Workflow 运行一次上下文解析。后续使用已定位对象读取精确官方 Delivery 和门禁适用性。存在 Publication PR 时通过原 repo-bound GitHub 读取核对状态。真实已合并先进入原恢复，实际 delivered 才能进入 Completion。可执行示例见 [Guru workflow 公开说明](../../../trellis/workflows/guru-team/README.md#读取当前续接对象)。
