@@ -1,5 +1,7 @@
 # Task / Delivery 生命周期设计
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 导航别名：`BEH-001..006`；`R531-01..05/08`；`R636/BEH636`；`R637/BEH637`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
 
 本次 #679 拟整合的完整前驱：Git `e6c3b8276d62ac174ab42cba5bca4d5784be2ca3:docs/design/current/task-delivery-lifecycle.md`。来源及窄补充见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
@@ -29,9 +31,9 @@ Source 关系与 Closure 意图分离：issue exact_source/reference_only/follow
 
 唯一 Author 写四种实际正文（Task PRD、Delivery PRD/design/implement）及本切片 manifests。`D154-01/02 / CON154-01/02` 拥有 source-sufficiency 调查、内容深度和来源承诺处置；详规由 [planning-body](../../../trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md) 及该 package templates 单写。RDT 当前正文不复制模板。每个承诺的 retain/refine/replace/defer/reject 处置在 design 唯一位置明确，技术展开不改变 source 目标。Policy/Docs Plan 同样只在 implement 唯一位置拥有。
 
-Architecture 候选评估先于 Author 实质 solution；最终 Wording-current facts 之后的 final_plan 紧邻 Approval。Wording 和 Approval 只审各自语义，不写 Author 文档。Activation 独占公共 planning role，消费真实 approved DTO 的局部 freshness，调用公共 record_gate 产生新的 planning-accepted result。该 receipt 交 implementation及合并Review的check predecessor；Approval freshness 不成为公共 Gate result identity 或跨阶段 authority。
+Architecture 候选评估先于 Author 实质 solution；Author完成当前方案后，原Architecture final_plan紧邻Approval。Author负责正文和自检；Architecture/Approval亲自判断、不代写文档，也不索取Wording-current事实。Activation 独占公共 planning role，消费真实 approved DTO 的局部 freshness，调用公共 record_gate 产生新的 planning-accepted result。该 receipt 交 implementation及合并Review的check predecessor；Approval freshness 不成为公共 Gate result identity 或跨阶段 authority。
 
-`D657-01/02 / CON657-ADMISSION/SELECTION`：初始 Task Creation checked created 只服务原创建区间；既有续接通过原身份/绑定/checkout owner 后，实际阶段 owner 承担写入资格。Delivery created wire 不变，原 workflow consumer 读取公共 current phase 和实际未完成义务后按唯一 continuation 进入原 owner；Planning 只有初始需求义务才进入 initial Author，已有工作恢复适用 Author/Wording/Architecture/Approval，当前 approved 进入 Activation。query 只提供客观可用性，scope/gate 充分性仍由原语义 owner判断；不新增 phase cache、router Skill、DTO 或状态 authority。初始创建精确 validator 不放宽。
+`D657-01/02 / CON657-ADMISSION/SELECTION`：初始 Task Creation checked created 只服务原创建区间；既有续接通过原身份/绑定/checkout owner 后，实际阶段 owner 承担写入资格。Delivery created wire 不变，原 workflow consumer 读取公共 current phase 和实际未完成义务后按唯一 continuation 进入原 owner；Planning 只有初始需求义务才进入 initial Author，已有工作恢复适用 Author/Architecture/Approval，当前 approved 进入 Activation。query 只提供客观可用性，scope/gate 充分性仍由原语义 owner判断；不新增 phase cache、router Skill、DTO 或状态 authority。初始创建精确 validator 不放宽。
 
 ## Scope、内容边界与恢复
 
@@ -119,15 +121,15 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 
 ## D679：接收者前置事实与原 owner 接续
 
-**D679-01 / CON679-RECEIVE** 承接 R679-01。普通执行的原 workflow created consumers、唯一 continuation 与 Planning 编排显式调用原 Identity/Ensure，然后按接收者自身事实进入原 Bind 和 Selection。五个 Planning Skills 在自己的 entry 中核相同前置；Architecture 在原 baseline-first 之后按 purpose 核接收事实；final_plan 按 D694-01 只读核对象，其他 purpose 保原恢复。workflow 只拥有跨 Skill 顺序，step-local Skills 仍拥有内部判断和写入。adapter.current 的有 context / 无 context 边界不变，不新增绑定 writer、wrapper、状态或全局映射。
+**D679-01 / CON679-RECEIVE** 承接 R679-01。普通执行的原 workflow created consumers、唯一 continuation 与 Planning 编排显式调用原 Identity/Ensure，然后按接收者自身事实进入原 Bind 和 Selection。当前各 Planning Skills 在自己的 entry 中核相同前置；Architecture 在原 baseline-first 之后按 purpose 核接收事实；final_plan 按 D694-01 只读核对象，其他 purpose 保原恢复。workflow 只拥有跨 Skill 顺序，step-local Skills 仍拥有内部判断和写入。adapter.current 的有 context / 无 context 边界不变，不新增绑定 writer、wrapper、状态或全局映射。
 
-**D679-02 / CON679-DIAGNOSTIC** 承接 R679-02。Author/Architecture 原 planning guard 按公共 kind、selected key、generation、phase、scope 顺序检查；更早的 resolve/API 首失败保原具体条件。外层 stale_identity/出口不变，session.task、session.delivery、delivery.phase、current.error/current.kind/current.key、delivery_key.lifecycle_generation 和 delivery.scope_ref.authority 定位实际条件。runtime 只报客观事实，不 bind/select 或决定语义 route。其余 Wording/Approval/Activation 保原 guard，由明确 caller 接续承担补缺与错误分流。
+**D679-02 / CON679-DIAGNOSTIC** 承接 R679-02。Author/Architecture 原 planning guard 按公共 kind、selected key、generation、phase、scope 顺序检查；更早的 resolve/API 首失败保原具体条件。外层 stale_identity/出口不变，session.task、session.delivery、delivery.phase、current.error/current.kind/current.key、delivery_key.lifecycle_generation 和 delivery.scope_ref.authority 定位实际条件。runtime 只报客观事实，不 bind/select 或决定语义 route。Approval/Activation 保原 guard，由明确 caller 接续承担补缺与错误分流。
 
-**D679-03 / CON679-PROJECTION** 承接 R679-03。原 Readiness recipe 从真实 Wording transition 投影 locator/mode/continuation，standalone 请求身份与 source 对齐，caller locator 保自己的合法值。normalization 保持；原 recorder 派生、checker receipt 和正式 invoke 唯一出口承接。原 native runner 从实际 public profile 选择提示，不替 Agent 构造身份、判断通过或修复 consumer。
+**D679-03 / CON679-PROJECTION** 承接 R679-03。当前Readiness recipe从真实Clarify transition投影locator/mode/continuation及源内容身份，standalone请求身份与source对齐，caller locator保自己的合法值。前驱Wording recipe保持固定旧provider的历史含义，不作当前fallback。normalization 保持；原 recorder 派生、checker receipt 和正式 invoke 唯一出口承接。原 native runner 从实际 public profile 选择提示，不替 Agent 构造身份、判断通过或修复 consumer。
 
 **D679-04 / CON679-PRESENTATION** 承接 R679-04。Human artifacts 调用方提供真实 TaskRef/key；原 Approval package-owned resolver 继续解析精确切片。Task-only 直接检查精确根 PRD；archive 使用实际归档 ref/key。原命中测试执行文档 argv 并观察实际路径/缺文件/不创建与不选择，而非仅断言字符串。
 
-上述变更不改公共 schema/typed exits/phase/helper 参数，不新增兼容双读或 Architecture authority。matching workflow、五 Planning packages、Readiness 与直接 consumers 成套采用，诊断迁移见 MIGRATION-679。历史归档不为工具安装转换；含旧数据的 checkout 沿原 tools-only owner维护工具，普通preset检查继续严格。RDT完整拟写先原final_integration/readback及TaskCommit，再完整committed candidate和一次独立质量链；source/package、installed、Agent 及外部采用分别证明。
+原#679当次不改公共schema/typed exits/phase/helper参数，不新增兼容双读或Architecture authority；当次workflow、五Planning packages、Readiness与直接consumers成套采用，历史诊断迁移见MIGRATION-679。#850当前后继与退役包退出改由MIGRATION-850及原packages定义，不保留五包作为当前安装前置。历史归档不为工具安装转换；含旧数据的 checkout 沿原 tools-only owner维护工具，普通preset检查继续严格。RDT完整拟写先原final_integration/readback及TaskCommit，再完整committed candidate和一次独立质量链；source/package、installed、Agent 及外部采用分别证明。
 
 ## D694：Architecture 本地只读对象入口
 
@@ -191,3 +193,25 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 - **D794-05 / CON794-ADOPTION** 承接R794-07：原tools/installer成套采用source/workflow/packages/spec/受影响平台，保Task/session/定制/sidecar；源码、组件、真实Agent、安装及外部层次分开。
 
 实际接口和内部步骤由原canonical owners单写，Architecture必要ADR由其原owner晋升；本设计不产生正式pass、安装或业务采用。
+
+
+## D815：原 owner 内的 manifest 接续
+
+- **D815-01 / CON815-PREIMAGE** 承接 R815-01：原 Reconcile 冲突步骤拥有固定 H/blob 的适用性、原字节和 mode 的工作文件恢复及停止条件；原 tools inventory 继续读旧前像。该前像不成为 canonical 或最终 stage-0，merge/index 与无关内容保持。
+- **D815-02 / CON815-INSTALLATION** 承接 R815-02/05：原 tools owner 从完整组合 canonical 使用原 preview/一次 prepare/invoke，AI 作逐路径判断；原 installer 生成最终 manifest/投影，目标自身 resolver、installed/native/drift 和 sidecar/mode 证明实际安装。原失败/源锁/受管 provenance 前置保持，不增加 parser、schema、公共 profile 或 owner。
+- **D815-03 / CON815-CONTINUITY** 承接 R815-03：原 resolved executor 核完整最终 tree、正确父序、零 unmerged，并保同 key/PR 和原当前 Task dirty metadata 例外；原工具事务保 Task/session/peer 和固定恢复身份。开发结果不改标正式 source_locked，clean H 后由原工具 owner 新操作采用。
+- **D815-04 / CON815-RETIREMENT** 承接 R815-04：原 Publication 后继 action 使用已有 `retire_completed`，核真实 terminal/PR/HEAD/payload 后只退役私有事务和其 gate；公共 PublicationFact 保留。未知或未完成动作仍由原 recovery 承接，无手工清理入口。
+
+原 [Reconcile 合同](../../../trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)、[tools 合同](../../../trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)、[Publication 合同](../../../trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action) 独占执行细节，README 只定位它们。直接补原合同的成本是 matching 分发及真实组合验证；避免第二恢复路径、长期状态与 hash 拼接维护。入口或必要 owner/API 发生真实变化时返回原规划/Architecture 重新判断。来源、前驱及关系见 [#815 追踪](../../requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md)，验证由 T815 承接。
+
+## D850-03 / CON850-PLANNING：原 writer 与直接 consumer
+
+Author requirements_ready经candidate assessment回solution_planning，plan_ready直接交Architecture final_plan，其实际结果紧邻Approval；默认链无Wording/receipt。Approval修订薄投影真实revision_actions到Author，由原owner按实际修订出口刷新依赖，不由脚本选择等义或实质route。delivery_content_revision承接原wording reentry的内容修订，保同Delivery/change_refs，不恢复退役字段/reader。原Activation、TaskCommit、committed Candidate及一次独立Check/fullReview顺序保持；token不作跨阶段批准或授权。精确版本由packages/MIGRATION-850单写。对应R850-03/T850-03。
+
+## D856：原 Publish 异常的单点接续
+
+- **D856-01 / CON856-CLASSIFIED** 承接 R856-01/02：原 Publish package 在 WorkflowError 定义处兼容接共享 CommandError，保原构造、code、内部 payload 和 except WorkflowError 消费。静态映射提供有依据的字段、安全提示和退出码；不从 message/payload/stderr 或任意异常属性生成公开数据。原抛错点明确 readiness_result_id 与 pr_body；缺乏具体字段依据时定位原步骤。catalog/commands 仅补真实 owner code 和实际 consumer。
+- **D856-02 / CON856-BOUNDARY** 承接 R856-02/03：package 私有单一命令边界由 invoke、check、record、execute、recover 五个实际 entry 复用；CommandError 原样传播，未分类 Exception 转安全 internal_error／runtime／70。原内部恢复在边界之前消费，不截断合法 typed route；不吞 SystemExit/KeyboardInterrupt。migration 传播安全原异常字段及正确退出码，移除原 str(exc) 和固定 exit 3。shared command/io 及其他 package 不变。
+- **D856-03 / CON856-CONTINUITY** 承接 R856-02/04：保持原事务、digest、公共 DTO、成功域、生命周期与恢复资格。已完成动作回读、未知外部结果先核同事务，不新建恢复协议。原 tools owner 采用完整 matching source 同步受管投影；local_candidate 明确正式 source-lock 未验证边界。实现、安装与真实外部效果分别判断。
+
+采用原异常定义和一个 package 私有 unknown 边界，成本为静态映射、五个真实 consumer 及定向回归的维护。它不增加共享 catalog 读取、package 特判、状态或额外 I/O。实际需求若涉及跨 package 协议、owner、共享行为或新状态，返回原 Planning/Architecture 判断。来源为 #856；固定前驱及 R/D/T 关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。

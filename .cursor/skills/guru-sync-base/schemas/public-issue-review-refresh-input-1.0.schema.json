@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-sync-issue-refresh-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_exit",
+    "mode",
+    "repo_root",
+    "route",
+    "operation",
+    "return_identity"
+  ],
+  "properties": {
+    "source_exit": {
+      "const": "refresh_issue_baseline"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "repo_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route": {
+      "const": "repo_change"
+    },
+    "operation": {
+      "enum": [
+        "read",
+        "sync"
+      ]
+    },
+    "return_identity": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-baseline-return-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "issue",
+        "continuation_id"
+      ],
+      "properties": {
+        "profile": {
+          "const": "existing_issue_intake"
+        },
+        "issue": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-issue-review-issue-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repo_ref",
+            "number"
+          ],
+          "properties": {
+            "repo_ref": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+            },
+            "number": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "continuation_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "base_branch": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "operation": {
+          "const": "read"
+        }
+      },
+      "required": [
+        "base_ref",
+        "base_commit"
+      ],
+      "not": {
+        "required": [
+          "base_branch"
+        ]
+      }
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "sync"
+        }
+      },
+      "required": [
+        "base_branch"
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "base_ref"
+            ]
+          },
+          {
+            "required": [
+              "base_commit"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

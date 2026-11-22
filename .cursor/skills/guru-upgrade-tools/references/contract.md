@@ -104,6 +104,38 @@ handles the concrete case before an overlapping new operation can proceed.
    checkpoint. Keep this plan for the same invocation; do not prepare another
    operation to recover a partial one.
 
+## Managed manifest preimage
+
+When the original Reconcile/Git conflict step supplies the complete fixed
+prior installer blob at `.trellis/guru-team/extension.json`, read that
+[original conflict contract](../../guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation).
+Establish that it represents the actual prior installation and retain its raw
+bytes, source/provenance and managed hashes. It is only the working inventory
+preimage. A parseable old manifest does not prove that the merge is resolved.
+
+Use the complete combined canonical source and this owner's existing
+preview/prepare/invoke sequence. Inspect relevant unfinished operations first.
+Judge each actual managed difference as preserve or replace against its real
+preimage; missing historical hashes require the exact original source. Keep
+ordinary workflow, AGENTS, public maintenance API, platform and pointer rules.
+Prepare once, retain the returned frozen plan and recover the same operation
+when necessary. Do not edit the old manifest to make differences disappear.
+
+The original installer generates the final manifest and projections. Verify
+both sides' canonical changes in that installed result, run the actual target
+resolver, installed/native/drift and sidecar/mode checks, then return to the
+original conflict-resolution step for final staging and resolved execution.
+Tools success remains an installation fact, not Check or full Review.
+
+Dirty combined canonical may use only the original isolated `local_candidate`
+boundary with `unverified=[formal_fork_source_lock]`. After a real clean
+canonical commit exists, formal adoption is a new original `source_locked`
+operation using its matching Fork. Never change the old plan/ref or relabel
+local-candidate evidence. Existing in-flight operations retain their fixed
+complete provider; this contract clarification changes no public I/O, parser,
+manifest field or recovery family. Existing installations adopt it through the
+complete matching tools update and actual target validation.
+
 ## AI Review Gate and write boundary
 
 Review the exact source, selected checkout, public tools/workflow and Guru

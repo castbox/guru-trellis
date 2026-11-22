@@ -1,6 +1,6 @@
 ---
 name: guru-review-change-request
-description: Use when the user asks to review GitHub Issue readiness, including 审核 Issue 是否可以开工、评审 Issue 是否可独立交付, or to assess a change request as one independently deliverable unit. Preserve linked prerequisite evidence, the AI readiness gate and declared typed exits.
+description: Use for Issue readiness and independent delivery review, including existing-Issue applicability, necessary local supplements and original complete-chain evidence.
 ---
 
 # Guru Review Change Request
@@ -41,9 +41,11 @@ current-stage judgment and all applicable non-passing routes remain required.
 For Issue and proposed-draft review, read the shared
 [Issue content specification](../guru-clarify-requirements/references/issue-content.md)
 in full before the existing readiness gate, together with the writing
-specification above and necessary current sources. Apply it within the ten
-existing dimensions to the complete final title/body, scope, delivery unit,
-and observable acceptance. Return ordinary omissions to the affected original
+specification above and necessary current sources. Within the ten existing
+dimensions, apply its responsibility-boundary, result/evidence and continuing
+minimal-acceptance methods to the complete final title/body, scope and delivery
+unit. Use its shared validation reference to judge repetition and evidence reuse.
+Return ordinary omissions to the affected original
 owner through existing exits; do not turn unsettled technical elaboration into
 a product requirement gap or silently expand a local revision. The full
 installed content body is
@@ -57,10 +59,17 @@ General “审核 Issue” without that purpose enters `guru-clarify-requirement
 for requirements review. A status lookup or discussion of these trigger
 phrases does not itself request readiness review.
 
-Loading is distinct from a valid public invocation. Obtain missing current
-Discovery, Clarify and Wording evidence through the existing workflow and
-original owners before invoking this review; never synthesize their results
-or treat a prior informal review as current prerequisite evidence.
+For a new independent, read-only readiness review or re-review, use
+`standalone_issue_readiness`. Follow the [direct review method](../guru-clarify-requirements/references/standalone-issue-review.md)
+and [readiness criteria](references/issue-intake.md#independent-readiness-review).
+Read the Issue and effective discussion first. Judge independent delivery,
+implementation target, dependencies and prerequisites with the actual applicable
+evidence. Report the conclusion through `issue_reviewed` to the user.
+
+Loading is distinct from a valid public invocation. For an existing Issue after Sync, use `existing_issue_intake`; a local result
+returns through `issue_review_return`. Read [Issue intake](references/issue-intake.md)
+for those independent inputs. Full-chain profiles retain their actual predecessor
+transitions. Never synthesize predecessor results.
 
 Review-only scope does not authorize Issue mutation, Task/resource creation
 or implementation. Preserve the existing typed exits and their consumers;
@@ -75,11 +84,10 @@ owner. Do not wait for another agent, agent ID, subagent evidence, or a
 pre-existing owner result. Real missing authority or prerequisites still
 follow this Skill's declared routes; runtime cannot supply your judgment.
 
-Use this Skill after `guru-review-contract-wording:change_request:pass` and
-before task workspace creation. Load
+Use the applicable existing-Issue or full-chain profile before task creation. Load
 [references/contract.md](references/contract.md) before acting.
 
-Reread the current target authority, then validate clarity and wording evidence. Review all
+Reread the current target authority, then validate current Clarity and source evidence. Review all
 ten readiness dimensions, record findings and one scope conclusion, complete
 the AI Review Gate, and call the recorder and checker only after the semantic
 judgment exists. Return exactly one declared typed exit.
@@ -110,7 +118,7 @@ task creation have separate owners. Fail closed when evidence is missing, stale,
 compatible Guru Team preset runtime is unavailable. This package is not
 self-contained or portable.
 
-All three commands use `--invocation -` and one JSON envelope containing
+For retained full-chain profiles, all three commands use `--invocation -` and one JSON envelope containing
 `schema_version=1.0`, `public_input`, the independent public `transition`,
 `owner_context.change_request` (current source snapshot), and `owner_result`.
 For record, `owner_result` is this Skill's completed AI review. Replace it with
@@ -139,11 +147,10 @@ Explicit dimensions, findings (including `[]`), scope conclusion and selected
 exit remain AI-owned and required. Record derives both gate digests and the
 findings count; never import private linkage or eval runtime to author them.
 
-Use the actual `wording_current` producer transition for ready, original
-`clarity_current` for a missing-wording reroute, or original `context_current`
-for a missing-clarity reroute. Do not reconstruct upstream private results or
-downgrade a later transition. Preserve the original public context needed for
-re-entry in the call-local conversation; never fabricate missing hashes.
+Use the actual `clarity_current` 4.0 producer transition for ready, or the original
+`context_current` for a missing-Clarity return. Preserve the distinct source
+content token and semantic identity. Keep original public context call-locally;
+never reconstruct private evidence, downgrade a transition or fabricate a token.
 The runtime derives minimal prerequisites, validates the AI-selected route,
 and emits the public handoff. Checker alone rereads the issue; invoke checks
 the exact receipt and current envelope without live calls. It does not decide
@@ -171,3 +178,10 @@ completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Existing Issue intake
+
+Load [the complete existing-Issue contract](references/issue-intake.md) after
+actual Sync or a local owner return. This is the same Readiness owner and gate.
+Its independent profiles do not require current-run Discovery/Clarify
+receipts. Comments are review material; AI judges their coverage and applicability.

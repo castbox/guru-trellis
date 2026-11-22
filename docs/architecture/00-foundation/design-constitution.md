@@ -12,6 +12,16 @@ Authority identity：`guru-trellis-design-constitution-v1`；状态：`current`�
 
 使用这些原则时，Architecture semantic owner 只记录与当前 task 真实冲突、权衡、例外或不足相关的 identity 和 evidence。未命中的原则不创建空白 verdict；no-impact/current-conforming task 不创建 contribution 或 ADR。
 
+## 五原则的架构准入与基线纠错
+
+“长期架构收敛，减少不必要的耦合”是五原则共同执行的强制准入条件。每个架构判断必须证明所采用机制的当前必要性，比较删除、复用、缩小范围或调整责任边界的可行性。判断依据是 authority、独立状态、生命周期阶段、协调、失败传播、依赖方向及长期成本，不以代码行数或机制数量代替。必须保留已接受行为、真实兼容、安全和必要原子性；局部可替换性须有当前责任边界依据，不能借未来替换预留第二套机制。
+
+当前可行且满足有效约束的收敛方案，不能仅因旧方案已存在、计划已批准、基线已记载或测试通过而被排除。请求、部署、恢复及维护成本分别判断，不能把成本移给其他运行单元或人工步骤后宣称简化；有真实冲突时明确取舍与依据，不要求证明全局最优。缺少适用依据时不能宣称通过，也不能凭缺证据删除既有必要职责。
+
+基线中的技术决定同样接受上述判断。CURRENT 记录实现事实，不因记录存在而认可其必要性；ADR 保留历史理由，不豁免前提失效的决定。证实缺陷后，由原 Architecture owner 沿既有修订及晋升路径纠正当前规范性正文和替代范围，RDT owner 同步真实受影响关系；不能先改 CURRENT 制造符合性，或由执行者直接忽略有效约束。旧实现尚存时如实保留事实，能否共存及何时退出按原 current-knowledge 的 Migration and retirement 判断；不能仅登记 GAP 或指向后续工作就认定纠正完成。无关历史缺陷不自动扩大当前 scope。
+
+设计与 Review 的具体必要性、替代比较及结论承接方法，由原 Architecture owner 的 Adopted-mechanism review 唯一拥有。使用现有设计、贡献及审核结果，不新增逐字段审批表、公共字段或永久台账。
+
 ## 最小必要复杂度的适用范围
 
 新增字段或公共 DTO 属性、状态/转换/枚举值、API/typed exit/callback/plugin point/公共接口、配置/feature switch/策略入口、持久化/缓存/锁/双读写/compatibility layer、metadata/extensions/reserved 等通用扩展容器，以及 wrapper/抽象层/规则引擎/通用机制，都按同一原则审查。

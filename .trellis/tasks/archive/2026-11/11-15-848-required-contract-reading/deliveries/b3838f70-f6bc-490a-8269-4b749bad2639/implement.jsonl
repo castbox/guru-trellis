@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "必需写作规范；子 Agent 自行获得完整正文。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "读取原 Reading Required Contracts In Full 和 Intermediate Command Stdout 1.0；保留原结果恢复边界。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "当前 owner、候选适用性、交互和副作用边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value、Validation Scope Ownership 及 Python 内存检查。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "canonical/managed 安装、AI-first block、用户内容与 Task/session 保留。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "保留 upstream trellis-*，只改 Guru 所属 source 和现有导航。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "22个原 finish entry native payload、三平台 dogfood 与原受管同步。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "保留本批需求、来源设计处置、Policy 和 Docs Plan 的原语义。"}

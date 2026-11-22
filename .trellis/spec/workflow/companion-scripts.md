@@ -16,10 +16,86 @@ establish that the AI received the full text. This method applies to workflow,
 standalone, resumed and child-agent execution under the original owner's read
 obligations.
 
-For a long document, read consecutive bounded line ranges from its first line
-through the actual end of the file. A line-count query can help plan those
-ranges; it is not a substitute for reading them. For example, if a document ends
-within the third range, read these ranges in separate calls:
+First identify the material this operation actually requires. Reuse complete,
+current native injection or previously read text that remains fully available
+and applicable in this owner's context. Increasing a budget does not expand
+the required reading scope. A parent chat's read marker does not supply a child
+Agent's text.
+
+When the current tool can carry the complete material, explicitly request enough
+output budget and read it directly. For nested calls, each inner budget covers
+that command's expected output; the outer budget covers the sum of all outputs
+in that call plus carrier overhead. Do not use only the largest inner output
+as the outer estimate. Exceeding a default budget of 10,000 does not by itself
+require splitting the material.
+
+For Codex `functions.exec` wrapping `exec_command`, start with an inner request
+of 20,000 and an outer request of 24,000, then adjust for the actual material.
+The outer request goes on the first line of the orchestration call; the inner
+request belongs to each command:
+
+```javascript
+// @exec: {"max_output_tokens": 24000}
+const result = await tools.exec_command({
+  cmd: "cat path/to/required-contract.md",
+  max_output_tokens: 20000
+});
+text(result.output);
+```
+
+Values such as 32,000 / 40,000 are adjustment examples for larger material,
+not required steps, fixed thresholds or maximums. Requests do not guarantee
+that the host's display layer uses those limits or accepts arbitrary sizes.
+Do not change global host configuration. Other tools use only their actual
+exposed parameters.
+
+For Markdown returned by `exec_command`, display its `.output` body rather than
+unnecessarily serializing the entire receipt. Native file tools use their actual
+text carrier; do not assume that every tool has `.output`. Carrier selection
+does not replace output budgeting. Combine materials only when all are required
+now and their total can fit the actual display capacity. Inspect the text
+actually returned to the AI, including the file's end, before judging it complete.
+
+If the material exceeds actual capacity, a reliable covering budget cannot be
+chosen, or an adjusted call still truncates, split by file or consecutive
+adjacent ranges. Preserve a failure even when its nominal request exceeded the
+estimated total; do not blindly keep raising the request or claim completeness
+from the parameter alone.
+
+After truncation, distinguish the missing layer:
+
+- If only the outer display truncated and the complete original inner result
+  remains in this owner's existing platform memory across tool calls, redisplay
+  that same result in smaller batches before issuing another read command.
+  A `const` local in an ended `functions.exec` isolate is not cross-call memory.
+- If the inner result already omitted text, the original result was lost, or
+  cross-call memory is unavailable, read the missing text. Raising the outer
+  budget cannot restore text already omitted by the inner call. If the missing
+  range is uncertain, reread the complete body with a covering budget or use
+  consecutive ranges from its first line through the actual end.
+
+When `functions.exec` actually exposes `store` / `load`, the original call can
+retain its complete returned body before displaying it:
+
+```javascript
+// @exec: {"max_output_tokens": 24000}
+const result = await tools.exec_command({
+  cmd: "cat path/to/required-contract.md",
+  max_output_tokens: 20000
+});
+store("required-contract-text", result.output);
+text(result.output);
+```
+
+In a later independent call, use `load("required-contract-text")` to redisplay
+the original body, dividing it into continuous smaller batches if it still
+truncates. After consuming the complete text, release the reference with
+`store("required-contract-text", null)`. This is an example of existing platform
+memory, not a required key or an API assumed on other runners. Do not add a
+memory service, file cache or persistent reading checkpoint.
+
+For a range fallback, these separate reads illustrate continuous coverage when
+the file ends within the third range:
 
 ```bash
 sed -n '1,80p' path/to/required-contract.md
@@ -27,26 +103,15 @@ sed -n '81,160p' path/to/required-contract.md
 sed -n '161,240p' path/to/required-contract.md
 ```
 
-These sizes are examples, not a completeness threshold. If the file continues,
-read the next adjacent ranges until its end, including any final line without
-a newline. Choose smaller ranges when the text is dense or the tool's display
-budget is limited. Avoid concatenating several required full bodies into one
-large response.
-
-When a shell call is returned through another tool or orchestration layer,
-allow enough output budget at both levels for the complete range and the
-surrounding metadata or serialized envelope. A generous inner shell budget does
-not prevent the outer response from being truncated. Inspect the text actually
-returned to the AI at every display layer.
-
-If any range is truncated, reduce its size and reread the affected range.
-Continue until every missing part and the final range are fully visible before
-making the dependent owner judgment or writing. Keep a simple check of covered
-file ranges in the current conversation context. Do not add a tracked or ignored
-read ledger, schema field, automatic grade or script gate. Preserve original
-outputs and failures; later reads supplement the missing text without rewriting
-the original observation. The AI still owns the judgment that the required
-content has been read and understood.
+The sizes are examples, not a completeness threshold. If the file continues,
+read the next adjacent ranges through its actual end, including a final line
+without a newline. If a displayed batch truncates, reduce its size and supplement
+every missing part before the dependent judgment or writing. A line count can
+help plan coverage; it cannot replace reading. Keep coverage in the current
+conversation context. Do not add a tracked or ignored read ledger, schema field,
+automatic grade or script gate. Preserve original outputs and failures; later
+displays or reads supplement them. The AI still judges whether it obtained and
+understood the complete required text.
 
 Line ranges support prose reads. Consume producer JSON, intermediate receipts
 and typed exits from their complete original stdout under their own contracts;
@@ -1020,7 +1085,12 @@ without requiring its branch checkout or cleanliness; `sync` retains the
 original fetch/ff/identity loop below. Omitted operation preserves sync for old
 direct calls. Markdown selects intent. Runtime does not infer it from a Task,
 branch name, dirty state, or an earlier failure. `baseline_ready` enters the
-original Discovery consumer and never claims synchronization.
+object-specific workflow base router and never claims synchronization. The
+selected package-owned current input and closed deterministic envelope use 3.0.
+The original Sync wrapper validates both before execution. Its dedicated Issue
+refresh restores the exact adopted commit while preserving selected_ref; it does
+not reinterpret a later value of that ref. See MIGRATION-819 for controlled
+consumer selection and fixed-provider recovery.
 
 Discovery's `read-change-context-source` command consumes the actual
 `base_current` transition and a source path, then returns fixed-commit blob

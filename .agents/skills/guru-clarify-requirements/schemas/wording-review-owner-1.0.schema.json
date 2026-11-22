@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-wording-review-owner-1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typed_exit",
+        "conclusion",
+        "findings"
+      ],
+      "properties": {
+        "typed_exit": {
+          "const": "reviewed"
+        },
+        "conclusion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "location",
+              "summary",
+              "impact",
+              "revision_owner"
+            ],
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "impact": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision_owner": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typed_exit",
+        "reason"
+      ],
+      "properties": {
+        "typed_exit": {
+          "const": "blocked"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ]
+}

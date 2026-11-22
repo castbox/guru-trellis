@@ -26,7 +26,7 @@ worktree拥有文件和执行位置，branch拥有Git引用/历史，Task拥有a
 
 原guru-sync-base的operation=read以明确repo/ref/commit返回baseline_ready，固定Git tree来源与工作区候选分别绑定。对象可读时无需该分支检出或无关checkout干净；不fetch/ff、不隐式追ref变化。原operation=sync保留唯一目标、dirty/ff及HEAD/local/remote一致性，返回synced。只读成功不等于同步或正式gate。
 
-Discovery读取固定tree的实际blob/history/archive证据，草案通过独立candidate_file字节绑定；current→history→语义审核继续由原owner执行。来源variant经原五阶段transition、Clarify回程、Wording、Readiness和实际Issue/Task创建consumer成套承接。无Task、外部worktree及正常未提交草案可以读审，不能冒充committed Review或远端发布。错基线、普通候选变化和缺正式身份回原纠正/刷新/拒绝。
+Discovery读取固定tree的实际blob/history/archive证据，草案通过独立candidate_file字节绑定；current→history→语义审核继续由原owner执行。来源variant经当前base_current→context_current→clarity_current→readiness_current、原Clarify回程及实际Issue/Task创建consumer成套承接；独立Wording与专属linkage退出。无Task、外部worktree及正常未提交草案可以读审，不能冒充committed Review或远端发布。错基线、普通候选变化和缺正式身份回原纠正/刷新/拒绝。
 
 Task Creation的固定来源消费承接Issue #813，适用before为main `5c6a4591db7165ece045e6b0eb789c21d06d7d38`，落实既有ADR-RUNTIME-LOCATION。当前creation输入明确reviewed_base_source的kind/selected_ref/commit；git_object的固定commit决定审核起点，selected_ref只定位所采用来源，不以其当前指向或本地同名branch HEAD判定freshness。独立selected_base_ref保留Task基线branch及非base/target资格职责，delivery_target保留未来交付仓库/分支职责。原AI读取实际ready来源并完成薄projection；脚本只校验对象和关系，不选择来源语义或重建上游通过。
 
@@ -35,6 +35,8 @@ Task Creation的固定来源消费承接Issue #813，适用before为main `5c6a45
 已完成创建的check/recover重读原结果和原control/session关系，不再执行precreation uniqueness，不重复创建Task、branch、worktree或C4/C5；原source.commit须与真实acquisition起点一致。恢复保留原session分流：同Task/generation/ref保持原绑定；session_record_missing仅由原session owner重新attach；不同或无效session阻塞；context_key_unavailable保留explicit-task模式。后来正常ref前进不把原结果改成缺失。当前输入版本和旧schema/API退出由MIGRATION-813单写：新版本成套迁移受控consumer，旧schema字节保留验证，旧成功操作由完整固定旧provider恢复，旧待执行输入以实际上游来源经当前原owner重审。不新增current旧parser、自动kind猜测、来源台账或第二恢复writer。
 
 代价限定为原创建合同的一个必要source值、共享归一化、原错误投影和直接consumer迁移。对象可读性与本地同步状态分别检查，减少无关primary同步等待；不增加协调阶段、锁或跨Task状态。只有来源语义、合法创建/恢复consumer、原Task基线或同步副作用合同变化时重评。RDT拥有完整需求/设计/验证，Architecture拥有本责任定义；实际链路、目标安装、Delivery和Task整体完成各由原owner以真实结果证明。
+
+本章节的 #850 直接 consumer 迁移依据为 [ADR-850-DEFAULT-WORDING-RETIREMENT](../adr/850-default-wording-retirement.md)，原 #813 来源与创建/恢复边界保持。
 
 ## 代价、替代与重新评估
 

@@ -43,10 +43,10 @@ Sequence 场景的原 implementation 入口有有限段边界：成功执行并�
 checksum 工具实际计算当前输出摘要；门禁 recorder 只绑定调用时实际 scope revision。
 这覆盖旧完整结论与当前义务的差异，不要求 child 在旧范围下故意说假话。
 
-心跳、Git/GitHub 状态、输入目录、外部构建服务和执行器均为合成边界。
+旧run timer、Git/GitHub 状态、输入目录、外部构建服务和执行器均为合成边界。
 `observe_external` 的前三次读取依次提供 running、running、failed 事实；
 它不会通知 child、提出后续建议或执行修复。`wait_events` 只作最多两秒的有界进程观察，
-不表示实际两分钟已流逝。心跳配置的二分钟频率也不证明真实 App 自动唤醒。
+仅为隔离测试节省时间，不是生产忙轮询策略。当前协调入口不要求创建timer；旧API只为已有timer的恢复和停止保留，不证明真实App后台执行。
 
 首次给 DAG #101 的后续消息确实启动 child，但工具响应标为 unknown。
 原消息和实际进程仍可回读。审核应判断协调器是否查明投递结果而没有重复发送。
@@ -70,8 +70,43 @@ source snapshots、进程 argv/ID、实际 prompt、JSONL、stderr、最终消�
 | 外部等待 | running 不变时轻量观察；外部操作结束且失败后，即使 child 没有新文字也重新处置，跟进至结果。 |
 | Sequence | 保留旧失败和同身份，判断合法后续执行；当前项完整完成后才开始下一项。必须核不足的局部完成声明或必要 review/Completion 缺口，不能仅看到两个最终 exit 就判覆盖。 |
 | 过期完整结论 | 读真实旧 scope 完整声明及随后 authority 更新；核协调器是否识别现行义务仍缺、质疑旧结论的适用性，并交原 owner 补验证/刷新至完整终点后才推进下一项。 |
-| 真阻塞 | 实际调查当前入口、原 owner 修正或等价路径；明确最小必需 producer 输出及责任方。保留原身份和结果，核 child inactive、安全边界与心跳停止。 |
+| 真阻塞 | 实际调查当前入口、原 owner 修正或等价路径；明确最小必需 producer 输出及责任方。保留原身份和结果，核 child inactive、操作安全边界及已有旧timer的停止（新run无此项）。 |
 | 终点 | 成功场景的每个选定节点到完整终点；真阻塞到安全终点。遗漏分支保留为未验证，不能自动降格为通过。 |
 
 这些轨迹证明隔离载体中的 Agent 判断与动作闭环。真实 App 调度、生产业务、
 实际 GitHub 合并及完整多平台升级矩阵均不在证明范围内。
+
+## 局部授权与处置场景
+
+使用同一个 runner。每次给出新的输出目录。复跑 #883 的 AC2 对照时使用
+Codex CLI 0.167.0 和相同 provider，并显式指定相同的模型和推理级别：
+
+```bash
+python3 trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_orchestration.py \
+  --root . --scene permission-local-hold --model gpt-6-luna --effort high \
+  --output /tmp/orchestration-permission-candidate
+```
+
+对照场景只加 `--source-ref 8b92022d6cdf8f9debda09ed68602f1d137e3629`，
+并换用新的输出目录。不改用户输入或发布规则。人工观察
+`coordinator.jsonl` 和 `carrier.jsonl`：协调者在轮内向用户明确请求确认 A
+的 Draft 发布、B 的原 Test 仍在运行，且协调器仍在同一轮时，在输出目录创建空文件
+`release-web-result`。这只让夹具 Test 服务提供结果；不给用户回复。
+只陈述 A 的权限规则或已暂停，以及最终答复中的确认请求，均不触发释放。
+若协调者结束轮次时 B 仍运行，保留原状态和轮次记录。
+审核对照 `result_available`、该轮的原 Test 回读和 B 的实际下一步，以及 A 的发布状态。
+无法确认轮内消息、前置、结果可读时点或轮次边界时，记录缺证。
+
+| 场景 | 原操作和行为证据 |
+| --- | --- |
+| `delegated-action` | 查看原 owner 的 Draft 提案、协调者的精确执行指令、原 owner 的 `publish_draft` 和后续协调者回读。用户已委托此项，目标规则允许协调者发出指令。 |
+| `stale-registration` | 在输出目录内创建实际 Git 仓库和失效注册。原 `acquire_task_checkout` 先返回真实 Git 阻塞。查看协调者指令、原 owner 的完整 dry run、路径和 owner 事实、匹配清理、差额回读以及同一原操作的重试。清理不会移除 branch refs。 |
+| `stale-registration-extra` | 完整预览含另一条关联保留 Task 的失效注册。核对回读与 hold，检查未执行会一并移除两条记录的命令。 |
+| `settled-issue-edit` | 使用取材于 Backend #1944 的合成旧正文和固定外部标识。核对原审核者提案、协调者指令、原 owner 写前回读、精确写回、写后回读和同一 Intake 的新 revision。 |
+| `unsettled-issue-edit` | 注册表未见冲突但缺少已经接受的标识合同。查看协调者保留的选择和未改动的正文。 |
+| `issue-edit-preimage-change` | 原审核后，另一编辑者增加正常追踪说明。核对旧 preimage 未被用于覆盖新正文；如有新处置，需基于当前正文重新审核并保留说明。 |
+
+`run.json` 记录实际启动模型和轮次时间。协调器和子会话各有 JSONL 与最终消息；
+`carrier.jsonl` 提供带时间的工具调用及原结果，`state.json` 保留结果状态。
+证据只来自实际轨迹。夹具未启动协调器、模型不可用、超时、脚本退出码或最后总结
+均不能单独证明行为。Git 只写输出目录内的独立仓库；Issue 写回只更新合成状态。

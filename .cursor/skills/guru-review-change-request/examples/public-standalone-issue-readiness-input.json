@@ -1,0 +1,8 @@
+{
+  "profile": "standalone_issue_readiness",
+  "mode": "standalone",
+  "issue": {
+    "repo_ref": "example/project",
+    "number": 17
+  }
+}

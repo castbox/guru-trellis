@@ -6,12 +6,14 @@ import json
 import os
 import re
 import subprocess
+from functools import wraps
 from pathlib import Path
 from typing import Any
 
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.schema import validate_json
+from runtime.io import CommandError
 
 
 SKILL_ID = "guru-publish-task-delivery"
@@ -31,11 +33,46 @@ CLOSING = re.compile(
 )
 
 
-class WorkflowError(RuntimeError):
-    def __init__(self, message: str, *, code: str = "publication_stale", payload: dict[str, Any] | None = None):
-        super().__init__(message)
-        self.code = code
+PUBLIC_ERRORS = {
+    "invalid_json": ("publication", "Use a readable UTF-8 JSON file containing one object.", 2),
+    "schema_mismatch": ("input", "Rebuild the object from current package schemas.", 2),
+    "closing_keyword_forbidden": ("input.pr_body", "Use Refs only; Completion owns later closure decisions.", 3),
+    "publication_stale": ("publication", "Rerun Delivery Review or reprepare the publication transaction.", 3),
+    "external_command_failed": ("publication", "Resume the same transaction after the external blocker clears.", 4),
+    "unsafe_path": ("publication", "Use the exact repository-local Task or publication transaction locator.", 2),
+    "task_not_active": ("task", "Return to the original Task owner and select the active Task before publication.", 3),
+    "task_identity_stale": ("task", "Recover the current Task identity and checkout through the original owner, then reprepare publication.", 3),
+    "repository_identity_stale": ("repository", "Restore the canonical repository binding, then reprepare publication.", 3),
+    "remote_identity_stale": ("remote", "Reread the Delivery branch through the original publication owner before resuming.", 3),
+    "pr_identity_stale": ("pr", "Reread the exact original PR through the publication owner before resuming the same transaction.", 3),
+    "private_state_invalid": ("transaction", "Recover the exact original publication transaction through this owner; preserve completed external actions.", 3),
+    "private_state_missing": ("transaction", "Recover the exact original publication transaction through this owner before retrying.", 3),
+    "internal_error": ("runtime", "Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-publish-task-delivery maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations.", 70),
+}
+
+
+class WorkflowError(CommandError):
+    def __init__(self, message: str, *, code: str = "publication_stale", payload: dict[str, Any] | None = None, field_path: str | None = None):
+        public_code = code if code in PUBLIC_ERRORS else "internal_error"
+        field, remediation, status = PUBLIC_ERRORS[public_code]
+        super().__init__(public_code, field_path if public_code == code and field_path is not None else field, remediation, status)
+        # Existing owner catches retain their message and necessary private payload.
+        self.args = (message,)
         self.payload = payload or {}
+
+
+def _public_command(function):
+    """Keep classified errors intact after the owner's internal recovery routes."""
+    @wraps(function)
+    def run(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except CommandError:
+            raise
+        except Exception as exc:
+            field, remediation, status = PUBLIC_ERRORS["internal_error"]
+            raise CommandError("internal_error", field, remediation, status) from exc
+    return run
 
 
 def canonical(value: Any) -> bytes:
@@ -125,28 +162,30 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
             required.remove("delivery_cycle_ref")
             required.add("readiness_result_id")
     if set(value) != required:
-        raise WorkflowError("Publication input fields do not match the selected closed profile.", code="schema_mismatch")
+        missing = required - set(value)
+        field = "input." + next(iter(missing)) if len(missing) == 1 else "input"
+        raise WorkflowError("Publication input fields do not match the selected closed profile.", code="schema_mismatch", field_path=field)
     if value.get("mode") not in {"workflow", "standalone"}:
-        raise WorkflowError("Unsupported publication mode.", code="schema_mismatch")
+        raise WorkflowError("Unsupported publication mode.", code="schema_mismatch", field_path="input.mode")
     if not isinstance(value.get("task_ref"), str) or TASK_REF.fullmatch(value["task_ref"]) is None:
-        raise WorkflowError("Invalid task_ref.", code="schema_mismatch")
+        raise WorkflowError("Invalid task_ref.", code="schema_mismatch", field_path="input.task_ref")
     if profile == "return_to_draft" and not delivery_profile:
         raise WorkflowError("Draft entries require the current public Delivery identity.", code="schema_mismatch")
     if profile == "review_ready":
         if profile == "review_ready" and not delivery_profile and (not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None):
             raise WorkflowError("delivery_cycle_ref must use the current closed identity.", code="schema_mismatch")
         if not isinstance(value.get("reviewed_head"), str) or SHA40.fullmatch(value.get("reviewed_head", "")) is None:
-            raise WorkflowError("reviewed_head must be a full lowercase commit id.", code="schema_mismatch")
+            raise WorkflowError("reviewed_head must be a full lowercase commit id.", code="schema_mismatch", field_path="input.reviewed_head")
         for field in ("pr_title", "pr_body", "remaining_work_state"):
             if not isinstance(value[field], str) or not value[field].strip():
-                raise WorkflowError(f"{field} is required.", code="schema_mismatch")
+                raise WorkflowError(f"{field} is required.", code="schema_mismatch", field_path=f"input.{field}")
         if profile == "review_ready" and value["remaining_work_state"] not in {"none", "remaining"}:
-            raise WorkflowError("remaining_work_state must be none or remaining.", code="schema_mismatch")
+            raise WorkflowError("remaining_work_state must be none or remaining.", code="schema_mismatch", field_path="input.remaining_work_state")
         if CLOSING.search(value["pr_body"]):
             raise WorkflowError("Delivery PR body contains a closing keyword.", code="closing_keyword_forbidden")
     elif profile == "same_plan_resume":
         if not isinstance(value["transaction_ref"], str) or SHA64.fullmatch(value["transaction_ref"]) is None:
-            raise WorkflowError("transaction_ref must be a lowercase SHA-256 value.", code="schema_mismatch")
+            raise WorkflowError("transaction_ref must be a lowercase SHA-256 value.", code="schema_mismatch", field_path="input.transaction_ref")
     elif profile == "return_to_draft":
         if not isinstance(value["revision_reason"], str) or not value["revision_reason"].strip():
             raise WorkflowError("State the concrete same-Delivery revision reason.", code="schema_mismatch")
@@ -158,22 +197,22 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
 def validate_review(value: dict[str, Any], expected_exit: str = "ready_for_merge") -> dict[str, Any]:
     required = {"schema_version", "skill_id", "review", "route"}
     if set(value) != required or value.get("schema_version") != "1.0" or value.get("skill_id") != SKILL_ID:
-        raise WorkflowError("Semantic review identity is invalid.", code="schema_mismatch")
+        raise WorkflowError("Semantic review identity is invalid.", code="schema_mismatch", field_path="review_input")
     review = value.get("review")
     route = value.get("route")
     if not isinstance(review, dict) or set(review) != {"status", "summary"}:
-        raise WorkflowError("Semantic review shape is invalid.", code="schema_mismatch")
+        raise WorkflowError("Semantic review shape is invalid.", code="schema_mismatch", field_path="review_input.review")
     if review.get("status") != "passed" or not isinstance(review.get("summary"), str) or not review["summary"].strip():
-        raise WorkflowError("A passed semantic publication review is required.", code="schema_mismatch")
+        raise WorkflowError("A passed semantic publication review is required.", code="schema_mismatch", field_path="review_input.review")
     if not isinstance(route, dict) or set(route) != {"typed_exit"} or route.get("typed_exit") != expected_exit:
-        raise WorkflowError("Semantic review route must match the selected publication action.", code="schema_mismatch")
+        raise WorkflowError("Semantic review route must match the selected publication action.", code="schema_mismatch", field_path="review_input.route")
     return value
 
 
 def task_context(root: Path, task_ref: str) -> tuple[Path, dict[str, Any]]:
     task_dir = (root / task_ref).resolve()
     if root not in task_dir.parents or not task_dir.is_dir():
-        raise WorkflowError("Task locator is outside the repository or missing.", code="unsafe_path")
+        raise WorkflowError("Task locator is outside the repository or missing.", code="unsafe_path", field_path="input.task_ref")
     task = read_json(task_dir / "task.json")
     if task.get("schema_version") == "2.0":
         task = DeliveryProjection(root, task_ref).read_record()
@@ -289,7 +328,7 @@ def unique_task_transaction(root: Path, task_ref: str, delivery_key: dict | None
 
 def transaction_path(root: Path, ref: str) -> Path:
     if SHA64.fullmatch(ref) is None:
-        raise WorkflowError("Invalid transaction reference.", code="unsafe_path")
+        raise WorkflowError("Invalid transaction reference.", code="unsafe_path", field_path="transaction_ref")
     return root / ".trellis/.runtime/guru-team/guru-publish-task-delivery" / f"{ref}.json"
 
 

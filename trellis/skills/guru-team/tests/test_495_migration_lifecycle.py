@@ -405,7 +405,6 @@ independent review before shared baseline promotion.
         architecture = self.fixture_architecture_review(planning_identity)
         self.assertEqual(architecture["exit_id"], "baseline_current", architecture)
         self.assertEqual(architecture["impact_kind"], "no_architecture_impact")
-        self.fixture_wording_review()
         author = {
             "mode": "standalone", "authority_refs": [self.task_ref + "/prd.md", "docs/architecture/README.md"],
             "delivery_policy": {
@@ -455,47 +454,6 @@ independent review before shared baseline promotion.
         self.assertTrue(output["planning_result_id"].startswith("planning:"))
         self.assertFalse(checkpoint.exists())
         return output
-
-    def fixture_wording_review(self) -> None:
-        package = self.root / ".trellis/guru-team/skills/packages/guru-review-contract-wording"
-        selectors = ["--root", str(self.root), "--task", self.task_ref]
-        scope = ["--profile", "planning_artifacts", "--mode", "standalone", *selectors]
-
-        def command(name: str, arguments: list[str], payload: dict | None = None) -> dict:
-            result = run(self.root, ["bash", str(package / "scripts" / name), *arguments], payload=payload)
-            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            return json.loads(result.stdout)
-
-        scan = command("record-contract-wording-review.sh", [*scope, "--scan-only"])
-        self.assertEqual(scan["scan"]["hits"], [])
-        dimensions = ("complete_profile_scope", "all_hits_classified", "zero_unchecked_hits",
-                      "product_semantics_preserved", "retained_reasons_sufficient", "zero_hits_not_requirement_review")
-        planning = ("no_requirement_weakening", "source_issue_semantics_preserved", "conditional_paths_have_conditions",
-                    "no_parallel_implementation_paths", "gates_have_machine_verifiable_conditions",
-                    "acceptance_criteria_are_deterministic", "external_quotes_are_labeled_non_contract")
-        # AI review of these exact English fixture plans: unchanged business
-        # behavior, one owner per operation, explicit deferred-byte checks, and
-        # concrete current-owner/session/config acceptance. A zero scanner count
-        # is only a vocabulary fact and does not supply semantic approval.
-        author = {
-            "generated_at": datetime.now(ZoneInfo("UTC")).isoformat(), "revisions": [], "classifications": [],
-            "typed_exit": "pass",
-            "ai_review_gate": {"status": "passed", "reviewer": "fixture-current-owner",
-                               "summary": "Reviewed all three retained business plans: unchanged requirement and owner, explicit mixed-inventory and byte/config checks, one current continuation path, no external normative quotation.",
-                               "reviewed_scan_sha256": scan["scan"]["scan_sha256"],
-                               "checked_dimensions": {name: True for name in dimensions},
-                               "planning_checked_dimensions": {name: True for name in planning}},
-        }
-        owner = command("record-contract-wording-review.sh", [*scope, "--input", "-"], author)
-        checked = command("check-contract-wording-review.sh", [*selectors, "--input", "-"], owner)
-        self.assertEqual(checked["typed_exit"], "pass", checked)
-        output = self.invoke_envelope("guru-review-contract-wording", {
-            "public_input": {"profile": "planning_artifacts", "mode": "standalone",
-                             "source_exit": "start", "continuation_id": "fixture-current-planning",
-                             "task_locator": self.task_ref, "planning_artifacts": ["prd.md", "design.md", "implement.md"]},
-            "owner_result": owner, "validation_receipt": checked["validation_receipt"],
-        })
-        self.assertEqual(output["exit_id"], "pass", output)
 
     def invoke_envelope(self, skill_id: str, envelope: dict) -> dict:
         wrapper = self.root / ".agents/skills" / skill_id / "scripts/invoke.sh"

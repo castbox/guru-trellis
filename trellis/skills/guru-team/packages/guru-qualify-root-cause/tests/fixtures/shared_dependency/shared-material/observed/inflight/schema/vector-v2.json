@@ -1,0 +1,1 @@
+{"generator":"local-gen 2.0","sdk":"0.11.2","operations":{"fetch_scalars":{"input":"keys:list[string]","output":"map[string,string]"}}}

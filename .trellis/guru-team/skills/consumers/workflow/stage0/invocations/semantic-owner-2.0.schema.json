@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-invocation-semantic-owner-2.0",
+  "oneOf": [
+    {
+      "$ref": "semantic-owner.schema.json"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-stage0-invocation-issue-owner-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "public_input",
+        "owner_context",
+        "owner_result"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "public_input": {
+          "type": "object",
+          "oneOf": [
+            {
+              "required": [
+                "profile"
+              ],
+              "properties": {
+                "profile": {
+                  "enum": [
+                    "existing_issue_intake",
+                    "issue_review_return",
+                    "issue_readiness_supplement"
+                  ]
+                }
+              }
+            },
+            {
+              "required": [
+                "profile",
+                "return_identity"
+              ],
+              "properties": {
+                "profile": {
+                  "const": "context_request"
+                },
+                "return_identity": {
+                  "type": "object",
+                  "required": [
+                    "profile"
+                  ],
+                  "properties": {
+                    "profile": {
+                      "const": "issue_readiness_supplement"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "owner_context": {
+          "type": "object"
+        },
+        "owner_result": {
+          "type": "object"
+        },
+        "validation_receipt": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "schema_version",
+                "skill_id",
+                "operation",
+                "result_sha256",
+                "prerequisite_sha256",
+                "snapshot_sha256",
+                "receipt_sha256"
+              ],
+              "properties": {
+                "schema_version": {
+                  "const": "1.0"
+                },
+                "skill_id": {
+                  "enum": [
+                    "guru-review-contract-wording",
+                    "guru-review-change-request"
+                  ]
+                },
+                "operation": {
+                  "enum": [
+                    "check-contract-wording-review",
+                    "check-change-request-review"
+                  ]
+                },
+                "result_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "prerequisite_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "snapshot_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "receipt_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result_sha256",
+                "input_sha256",
+                "source_sha256"
+              ],
+              "properties": {
+                "result_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "input_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "source_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

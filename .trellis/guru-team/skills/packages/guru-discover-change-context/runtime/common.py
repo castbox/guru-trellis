@@ -33,6 +33,7 @@ def load(repo,package_root,value,field):
  return v
 def load_invocation(repo,package_root,value):
  envelope=load(repo,package_root,value,"invocation")
+ if envelope.get("public_input",{}).get("profile")=="issue_readiness_supplement" or envelope.get("public_input",{}).get("return_identity",{}).get("profile")=="issue_readiness_supplement":return envelope
  validate_json(envelope,package_root.parents[1]/"consumers/workflow/stage0/invocations/semantic-owner.schema.json","invocation")
  if not isinstance(envelope.get("transition"),dict):raise CommandError("schema_mismatch","invocation.transition","Provide the independent base_current transition.")
  return envelope

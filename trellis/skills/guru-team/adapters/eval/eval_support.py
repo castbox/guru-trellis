@@ -612,15 +612,16 @@ def qualification_prompt_sha256(
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 def intake_repository_assets(source: Path) -> set[Path]:
-    from adapters.eval.intake_authoring import FACTS_PATH
+    from adapters.eval.intake_authoring import FACTS_PATH, PUBLIC_METHOD_PATHS
 
     facts = json.loads((source / FACTS_PATH).read_text())
-    assets = {Path(FACTS_PATH), *(Path(path) for path in facts["required_reads"])}
+    assets = {Path(FACTS_PATH), *(Path(path) for path in facts["required_reads"]),
+              *(Path(path) for path in PUBLIC_METHOD_PATHS)}
     for relative in assets:
         if (relative.is_absolute() or ".." in relative.parts
                 or any(part in {"examples", "evals", ".runtime", ".git"} for part in relative.parts)
                 or not (relative.parts[0] in {"docs", "src", "tests"}
-                        or relative == Path(".trellis/spec/workflow/semantic-retrieval.md"))):
+                        or relative.as_posix() in PUBLIC_METHOD_PATHS)):
             raise ValueError("Intake repository asset is outside declared evidence")
     return assets
 
@@ -628,11 +629,13 @@ def intake_repository_assets(source: Path) -> set[Path]:
 def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
     from adapters.eval.intake_authoring import COMMANDS, INTAKE_SKILLS
 
-    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "standard_intake", "change_request", "current_issue")))
-    owners = dict(zip(INTAKE_SKILLS, (None, "change_context_owner_result", "clarification_result", "wording_review", "change_request_review")))
+    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "standard_intake", "current_issue")))
+    owners = dict(zip(INTAKE_SKILLS, (None, "change_context_owner_result", "clarification_result", "change_request_review")))
     skill = interface["id"]
     contracts = interface["public_contracts"]
     assets = {Path("SKILL.md"), Path("references/contract.md"), Path("interface.json")}
+    if skill == "guru-clarify-requirements":
+        assets.add(Path("references/issue-content.md"))
     assets.update(Path(f"scripts/{command}.sh") for command in COMMANDS[skill])
     selected = profiles[skill]
     if selected is not None:
@@ -640,9 +643,12 @@ def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
         assets.add(Path(profile["schema"]["path"]))
         owner = next(item for item in contracts["private_artifacts"] if item["id"] == owners[skill])
         assets.add(Path(owner["schema"]["path"]))
-    if skill in {"guru-review-contract-wording", "guru-review-change-request"}:
+    if skill == "guru-review-change-request":
         review = next(item for item in interface["schemas"] if item["id"] == "review_invocation")
         assets.add(Path(review["path"]))
+    call_input = contracts["invocation"].get("call_local", {}).get("public_input", {}).get("schema")
+    if call_input:
+        assets.add(Path(call_input["path"]))
     assets.add(Path(contracts["invocation"]["error_schema"]["path"]))
     assets.update(Path(item["schema"]["path"]) for item in contracts["outputs"])
     if any(path.is_absolute() or ".." in path.parts or path.parts[0] not in
@@ -755,7 +761,31 @@ def public_projection_shared_assets(interface: dict[str, Any]) -> set[Path]:
     relative = Path(envelope["path"])
     if relative.is_absolute() or not relative.parts or ".." in relative.parts:
         raise ValueError("public call-local envelope contains an unsafe asset path")
-    return {relative}
+    # Shared invocation successors can reference the retained envelope. Include
+    # those actual consumer-owned schema dependencies in the public projection.
+    shared_root = Path(__file__).resolve().parents[2]
+    assets, pending = {relative}, [relative]
+    def references(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("$ref"), str):
+                yield value["$ref"]
+            for child in value.values():
+                yield from references(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from references(child)
+    while pending:
+        current = pending.pop()
+        for ref in references(json.loads((shared_root / current).read_text())):
+            locator = ref.split("#", 1)[0]
+            if not locator:
+                continue
+            dependency = (shared_root / current.parent / locator).resolve().relative_to(shared_root)
+            if dependency.parts[0] != "consumers" or dependency.suffix != ".json":
+                raise ValueError("Shared invocation dependency must remain consumer-owned")
+            if dependency not in assets:
+                assets.add(dependency); pending.append(dependency)
+    return assets
 
 def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tuple[Path, Path, Path, str, str]:
     canonical_root = Path(request["package_root"]).resolve()

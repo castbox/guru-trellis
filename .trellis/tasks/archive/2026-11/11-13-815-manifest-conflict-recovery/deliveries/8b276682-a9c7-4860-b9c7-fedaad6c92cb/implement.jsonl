@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实际输出与审核语言合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "完整规划与来源承接合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求的完整性边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "方案和唯一来源设计处置边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "执行验证与唯一Policy/Docs Plan"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "行为导出验证与本Issue最小可靠范围"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "原公共Skill与兼容分发约束，实质修改前完整读"}
+{"file": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md", "reason": "原resolved入口、身份及metadata保持"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "原tools逐路径判断、安装及原事务恢复"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md", "reason": "原completed retirement和unknown恢复"}

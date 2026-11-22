@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-sync-base-input-current-3.0",
+  "oneOf": [
+    {
+      "$ref": "public-input-current-2.0.schema.json"
+    },
+    {
+      "$ref": "public-issue-review-refresh-input-1.0.schema.json"
+    }
+  ]
+}

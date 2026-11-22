@@ -5,23 +5,27 @@ description: 使用多个不同 subagent 从架构、业务实现、测试及跨
 
 # Guru Review Change
 
-## Common review sufficiency
-
-Before reviewing this owner's object, read `review-sufficiency.md` in full from
-the complete Guru provider that supplies this Skill. Its workflow-spec root is
-`trellis/presets/guru-team/spec/workflow` in source, or `.trellis/spec/workflow`
-after installation. Resolve target-project authority separately; the target
-need not install Trellis to receive review from another provider. Apply the
-common rules within this owner's original scope, order and stage conditions.
+## Provider and first required reads
 
 Resolve the complete Guru source or installation that provides this Skill.
-Before substantive output, read its workflow-spec
-`clear-technical-writing.md` in full and apply it within this entry's scope.
-The provider root is `trellis/presets/guru-team/spec/workflow` in source, or
-`.trellis/spec/workflow` after installation. Until that read succeeds, use
+Its workflow-spec root is `trellis/presets/guru-team/spec/workflow` in source,
+or `.trellis/spec/workflow` after installation. Before required long-body reads,
+read only `companion-scripts.md#reading-required-contracts-in-full` in that root.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file. Keep all framework reads below
+in this same provider.
+
+Before substantive output, read that provider's `clear-technical-writing.md`
+in full and apply it within this entry's scope. Until that read succeeds, use
 only short progress messages or a concrete missing-dependency diagnostic. If
 reading fails, pause substantive output, then read it and resume the same request
 when available. That recovery requires no additional approval.
+
+Before reviewing this owner's object, read the same provider's
+`review-sufficiency.md` in full. Resolve target-project authority separately;
+the target need not install Trellis to receive review from another provider.
+Apply the common rules within this owner's original scope, order and stage
+conditions.
 
 This Skill is the semantic owner of independent read-only change review. Read
 [the complete contract](references/contract.md), the selected input contract in
@@ -68,10 +72,20 @@ clarification before running scripts. Do not select a Task or enlarge scope.
 Discussion about this Skill or its trigger wording is not a request to review
 an actual object.
 
+## Bounded Markdown wording profile
+
+For explicit selected Markdown wording review, choose explicit_files with
+review_focus=wording_only and read [the bounded method](references/wording-review.md).
+Execute that method and terminate at its user-response exit. It covers the full
+selected current bytes, including unchanged files. The range method and distinct
+subagent perspectives below apply only to working_tree and committed_range;
+they are not prerequisites for this bounded profile. Issue/draft wording remains
+with original Clarify standalone_wording_review.
+
 ## Execute The Review
 
 1. After the entry decision, resolve the requested repository, review purpose
-   and scope from the current conversation and live facts. Choose `working_tree`
+   and scope from the current conversation and live facts. For range review choose `working_tree`
    or `committed_range`; preserve any explicitly selected paths. Clarify only
    a real ambiguity that remains. Do not create a Task to obtain review inputs.
 2. Run `scripts/capture.sh --input -` with the selected public input on stdin.

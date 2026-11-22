@@ -143,7 +143,7 @@ and conditions still apply; resolve evidence-answerable gaps from those facts
 before asking another product question. Do not repeat an interview for an
 already clear same-scope fact or rebuild Discovery's private result. This owner
 still personally judges current intent, source roles, duplicate disposition
-and scope, then produces its own result for Wording or the original Author.
+and scope, then produces its own result for Readiness or the original Author.
 Changed or unavailable authority returns to the affected original context or
 scope owner; an old-target pass cannot supply the current judgment.
 
@@ -205,6 +205,23 @@ they can change the answer. Retain only examples that resolve real ambiguity or
 material risk; do not require an unrelated matrix or ask a quota of questions.
 Identify what changes and what must remain unchanged. A missing screen state in a
 design does not alone authorize removing its existing business behavior.
+
+When the current request spans several stages of a normal operation, start
+from the supported entry the caller actually uses. Trace the caller's starting
+state, the events that move the operation forward and the actions available
+at each stage. If work continues after a local confirmation, check what the
+caller can do while it is pending, including another edit or invocation when
+supported. Describe what the caller can observe on success, failure or
+abandonment, including what is retained or available when they return, where
+applicable. For a noninteractive operation, use its real caller and observable
+result.
+
+Use source commitments and checked entry and consumer facts to distinguish
+existing behavior from requested behavior. Apply the existing qualification
+rules before treating a newly observed scenario as a requirement or question.
+If the facts still leave a real choice about caller behavior, resolve it through
+this Clarify entry. Leave the mechanism for preserving an agreed outcome to
+the technical owner.
 
 Separate evidence-answerable facts, existing constraints/decisions, unresolved
 requirement choices and routine implementation details. Verify what a backend or
@@ -323,7 +340,7 @@ result stores only the final disposition and objective candidate facts.
 `retarget_existing_issue` owns one validated `select_existing_issue` action
 and returns `retarget_context`. Its unique
 consumer is `guru-sync-base`; the complete sync, context discovery,
-clarification, wording and change-request review chain reruns for the selected
+clarification and change-request review chain reruns for the selected
 issue. No target-specific evidence from the old target transfers.
 
 `reopen_closed_issue` owns one completed `reopen_issue` GitHub
@@ -349,10 +366,19 @@ race, fault-injection or cross-OS hardening follows this same rule.
 
 ## Source Actions And Mutation Boundary
 
+For review-comment publication/update, first read the single
+[review comment rule](issue-review-comment.md). Apply it within the original
+exact action scope. A pure read-only request performs no GitHub mutation.
+
+
 For Issue/draft writing, revision, and requirements review, actually read
 [the shared Issue content specification](issue-content.md) and the installed
-writing specification before the applicable work. That body owns content
-organization; this contract retains source actions and their execution order.
+writing specification before the applicable work. That body owns necessity,
+responsibility-boundary selection, result/evidence separation, minimal acceptance
+before creation, and complete review before each body writeback. Apply those
+methods and their shared validation reference within this owner's writing and
+requirements review responsibility, including later rounds and resumed sessions. This contract
+retains source actions and their execution order.
 When the user requests creation or improvement, organize necessary confirmed
 content into the final body under that specification. Ordinary discussion may
 still use comments; a comment alone does not complete requested body editing.
@@ -555,8 +581,7 @@ not under an Agent discovery projection. Scripts use the managed interpreter;
 do not import an eval helper or run a package module with system Python.
 
 The clear router validates `invocation_context.resume_target` without making a
-new semantic decision: initial issue/draft uses `guru-review-contract-wording`
-(staged #114), standalone uses `guru-standalone-caller`, scope_ready uses the fixed Author projection above, and a non-current active
+new semantic decision: initial issue/draft uses `guru-review-change-request`, standalone uses `guru-standalone-caller`, scope_ready uses the fixed Author projection above, and a non-current active
 classification uses the exact declared interrupted Phase 1/2/3/Branch Review
 target. Any kind/target mismatch fails closed.
 
@@ -568,19 +593,26 @@ For the normal initial Issue path, copy Discovery's actual invoke stdout:
 equal the canonical issue URL originating in `live_change.identity`; do not
 replace it with `#N`. Copy the complete snapshot, including its opaque digest,
 rather than manually rebuilding it from an example. This also preserves the
-target identity for the next Wording consumer.
+target identity for the next Readiness consumer.
 
 For `standard_intake`, load the envelope referenced by
 `interface.json` at `public_contracts.invocation.call_local.envelope`.
-The [shared invocation-envelope schema](../../../consumers/workflow/stage0/invocations/semantic-owner.schema.json)
+The [shared invocation-envelope schema](../../../consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json)
 is installed at
-`.trellis/guru-team/skills/consumers/workflow/stage0/invocations/semantic-owner.schema.json`.
+`.trellis/guru-team/skills/consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json`.
 The [standard intake input example](../examples/public-standard-intake-input.json)
 describes only the profile's `public_input`. Place the current public input
 in the outer envelope's `public_input` field.
-For this profile, set `owner_context` to `{}`. Preserve the actual transition
+For each nonactive full-chain profile using private owner 6.0, set `owner_context.change_request` to the actual captured
+kind/repo/number or draft_id/title/body/updated_at snapshot. Record/check receive
+that same owner_context with owner_result through the unchanged --input carrier.
+The 6.0 recorder binds the distinct source_content_sha256 without storing raw
+source bytes; invoke checks the same snapshot and actual original transition. Preserve the actual transition
 and the checked owner result unchanged. Use the shared schema for the complete
-envelope shape. This `owner_context` guidance applies only to `standard_intake`.
+envelope shape. This source binding also applies to reviewed_plan_intake and
+standalone_review; private confirmation 5.0 and active-task 4.0 retain their
+original contracts. The current complete source example is
+[clarification-source.json](../examples/clarification-source.json).
 
 The original public profile families are `standard_intake`, `reviewed_plan_intake`,
 `active_task_scope_change`, `standalone_review`,
@@ -623,7 +655,7 @@ the AI correctly judged that the product conflict should block.
 
 Clarify alone owns user intent, requirement authority, source classification,
 Issue intent and real unresolved choices. Discovery supplies repository/history
-evidence and coverage; Wording and readiness retain their independent judgments.
+evidence and coverage; Readiness retains its independent judgment.
 Read Direct Source, explicitly selected comments and introduced requirements or
 design sections fresh. Distinguish normative interfaces, mechanisms, order and
 compatibility constraints from advisory candidates; the presence of a design
@@ -659,7 +691,7 @@ entry is only `locator`, `section`, and `authority_kind` (`requirement`,
 irreducible choice of which comment/section and its authority role. Empty is
 legal when there is no introduced source. No full text, final design disposition,
 history, source matrix or authorization belongs here. `clear` or `scope_ready` hands it to the
-clear router; the transition relays it through current Wording/readiness to
+clear router; the transition relays it through current Readiness to
 current Planning. Planning rereads sources and owns final retain/change/reject
 only in `design.md`. A lost selection re-enters this owner instead of guessing
 from task metadata or introducing a persistent cache.
@@ -811,3 +843,16 @@ validation only; current migrated installations fresh re-enter the proper
 scope/Delivery owner. Do not convert an old pass by appending a key. History
 and committed clean content remain facts. This complete installation migration
 is the only switch; no old status writer or reader fallback is added.
+
+## Direct independent Issue requirements review
+
+Use `standalone_issue_requirements` for a new independent read-only request
+about an existing Issue. The [direct review method](standalone-issue-review.md)
+owns live reading, bounded supplementation and re-review reuse. Apply the
+[Issue content specification](issue-content.md) to goals, boundaries, supported
+scenarios, source roles, conditions and observable acceptance. Where linked
+sources establish accepted design, verify the exact affected commitments. Report
+what can be concluded, any finding and any missing evidence. Return
+`issue_reviewed` once the review itself is complete. Use the original
+`standalone_review` path for calls already in that profile and for the existing
+authorized comment workflow.

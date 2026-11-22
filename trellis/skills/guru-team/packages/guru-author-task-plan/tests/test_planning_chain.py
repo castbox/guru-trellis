@@ -90,30 +90,6 @@ class PlanningChainTest(unittest.TestCase):
         return self.command('guru-maintain-architecture-baseline', 'invoke-guru-maintain-architecture-baseline',
             ['--invocation','-'], self.architecture_envelope(candidate), expected=expected)
 
-    def wording(self, changed=False):
-        package = PACKAGE.parent / 'guru-review-contract-wording'
-        selectors = ['--task',self.ref,'--delivery-key',json.dumps(self.key)]
-        args = ['--mode','workflow','--profile','delivery_planning_artifacts',*selectors]
-        path = self.directory / 'design.md'
-        before = hashlib.sha256(path.read_bytes()).hexdigest()
-        if changed:
-            path.write_text('Current equivalent independent Delivery plan.\n')
-        scan = self.command(package.name,'record-contract-wording-review',[*args,'--scan-only'])
-        gate = json.loads((package/'examples/contract-wording-review.json').read_text())['semantic_review']['ai_review_gate']
-        gate.update(status='passed',checked_dimensions=dict.fromkeys(gate['checked_dimensions'],True),planning_checked_dimensions=dict.fromkeys((
-            'no_requirement_weakening','source_issue_semantics_preserved','conditional_paths_have_conditions','no_parallel_implementation_paths',
-            'gates_have_machine_verifiable_conditions','acceptance_criteria_are_deterministic','external_quotes_are_labeled_non_contract'),True))
-        revisions = [] if not changed else [{'revision_id':'equivalent','locator':path.relative_to(self.root).as_posix(),'before_sha256':before,
-            'after_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'reason':'Equivalent wording clarification.','rescan_sha256':scan['scan']['scan_sha256']}]
-        record = self.command(package.name,'record-contract-wording-review',[*args,'--input','-'], {'typed_exit':'content_changed' if changed else 'pass',
-            'classifications':[{'hit_id':row['hit_id'],'classification':'term_definition','reason':'Fixture definition.'} for row in scan['scan']['hits']],
-            'ai_review_gate':gate,'revisions':revisions})
-        checked = self.command(package.name,'check-contract-wording-review',[*selectors,'--input','-'],record)
-        public = json.loads((package/'examples/public-delivery-planning-artifacts-input.json').read_text())
-        public.update(task_ref=self.ref,delivery_key=self.key)
-        return self.command(package.name,'invoke-guru-review-contract-wording',['--root',str(self.root),'--invocation','-'],
-            {'public_input':public,'owner_result':record,'validation_receipt':checked['validation_receipt']})
-
     def approve(self, final, revision_actions=None):
         package=PACKAGE.parent/'guru-approve-task-plan'
         seed=json.loads((package/'examples/planning-approval-delivery.json').read_text())
@@ -173,7 +149,7 @@ class PlanningChainTest(unittest.TestCase):
         self.assertEqual(len(projection.read_record()['deliveries']),1)
         self.assertNotIn('status',projection.read_record())
 
-    def test_real_chain_candidate_solution_wording_final_approval_revision_activation(self):
+    def test_real_chain_candidate_solution_content_revision_final_approval_activation(self):
         original_seed=(self.directory/'design.md').read_bytes()
         (self.directory/'prd.md').write_text('Current Delivery requirements.\n')
         public={'profile':'delivery_initial_review','mode':'workflow','task_ref':self.ref,'delivery_key':self.key,'source_selection':[
@@ -187,9 +163,9 @@ class PlanningChainTest(unittest.TestCase):
         solution={'profile':'delivery_solution_planning','mode':'workflow','task_ref':self.ref,'delivery_key':self.key,
             'architecture_assessment':{k:candidate[k] for k in ('planning_purpose','baseline_identity','constitution_identity','impact_kind','impact_reason')}}
         planned=self.author(solution,{'exit_id':'plan_ready','task_ref':self.ref,'delivery_key':self.key})
-        wording=self.wording(changed=True)
-        self.author({'profile':'delivery_wording_reentry','mode':'workflow',**{k:wording[k] for k in ('task_ref','delivery_key','change_refs')}},planned)
-        self.assertEqual(self.wording()['exit_id'],'pass')
+        (self.directory / 'design.md').write_text('Current equivalent independent Delivery plan.\n')
+        self.author({'profile':'delivery_content_revision','mode':'workflow','task_ref':self.ref,
+                     'delivery_key':self.key,'change_refs':['design.md:equivalent wording']},planned)
         final=self.architecture()
         self.assertEqual(final['planning_purpose'],'final_plan')
         revision=self.approve(final, ['Specify actual current validation boundary.'])

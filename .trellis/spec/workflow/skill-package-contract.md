@@ -551,9 +551,10 @@ authoring_fields, authoring_example and alternate_authoring. The actual output
 selects exactly one item; missing, unknown or duplicate profiles do not select
 a default. The selected seed and AI-authored fields retain the disjoint,
 complete-consumer-input validation below. No new projection operation or
-semantic script is introduced. The current Sync baseline_ready cases are
-pre_task and context_request; their exact AI fields belong to the original
-Sync/Discovery contracts. Original fixed-profile authoring declarations remain.
+semantic script is introduced. The current Sync baseline_ready/synced outputs enter the object-specific
+workflow base router under MIGRATION-819. It preserves original pre_task and
+context_request uses while selecting existing-Issue Readiness explicitly.
+The package-owned profiles and routing reference own those exact projections. Original fixed-profile authoring declarations remain.
 
 The matching current graph adopts registry1.5, production manifest6 and its
 current alias, ordinary eval run5, and the direct discovery/validator,
@@ -741,14 +742,13 @@ The pinned-old Intake activation combined these six packages and exits:
 - `guru-discover-change-context`: `context_ready`, `refresh_base`, `blocked`;
 - `guru-clarify-requirements`: `clear`, `needs_context`, `refresh_context`,
   `retarget_context`, `new_task`, `blocked`;
-- `guru-review-contract-wording`: `pass`, `content_changed`, `blocked`;
 - `guru-review-change-request`: `ready`, `clarify_requirements`,
-  `review_wording`, `refresh_context`, `blocked`;
+  `refresh_context`, `blocked`;
 - `guru-create-task-workspace`: `created`, `refresh_review`, `blocked`.
 
 That six-package/23-exit count and the Workspace consumer are pinned-old-only;
 they are not a current acceptance assertion or route. The #434 registry and
-Interface 1.4 selectors retain Sync, Discovery, Clarification, Wording, and
+Interface 1.4 selectors retain Sync, Discovery, Clarification, and
 Readiness as the five pre-task owners. The workflow sends Readiness `ready` to
 `guru-task-intake-router`: `ready.transition.target.kind=proposed_draft`
 invokes `guru-create-issue`, while `existing_issue` or `standalone_request`
@@ -788,7 +788,7 @@ public output example, or private artifact body is never a production routing
 input.
 
 The Phase 0 transition family has five independent closed stages:
-`base_current`, `context_current`, `clarity_current`, `wording_current`, and
+`base_current`, `context_current`, `clarity_current`, and
 `readiness_current`. Each stage is owned by workflow orchestration, contains
 only the identity/freshness projection required by its one next consumer, and
 is replaced rather than extended when refresh/re-entry invalidates it. A stage
@@ -971,10 +971,10 @@ missing, unknown, multiple, unmapped, or stale-continuation owner results and
 missing package/marker state.
 
 `guru-approve-task-plan` is the only semantic owner of Phase 1 planning
-approval. Its interface uses `judgment_mode=semantic`, declares the same eight
+approval. Its interface uses `judgment_mode=semantic`, declares the same six
 ordered entry preconditions in workflow and standalone modes
 (`runtime_dependency`, `task_checkout`, `current_authority`,
-`planning_documents`, `docs_ssot`, `wording_result`, `issue_scope`, and
+`planning_documents`, `docs_ssot`, and
 `invocation_freshness`), and owns the package-local runtime commands
 `record-planning-approval` and `check-planning-approval`.
 
@@ -1009,7 +1009,7 @@ the #531 projection preserves task_ref/delivery_key/revision_actions into Author
 delivery_approval_revision. Approval never writes the plan. Its independent
 Delivery input 2.0 consumes the actual final_plan Architecture output and checks
 current design freshness; candidate_assessment cannot enter Approval. The
-affected dependencies, Wording and final Architecture precede Approval re-entry.
+affected dependencies, current final Architecture precede Approval re-entry.
 `clarify_scope` delegates through the three-field routing-only
 workflow target, which establishes scope context and mandatory invokes
 `guru-clarify-requirements:delivery_active_task_scope_change`; the caller AI authors the
@@ -1291,72 +1291,35 @@ the complete current preset remains non-portable and fails closed through
 the dispatcher.
 
 `invocation_context.resume_target` is caller-aware and closed. Initial
-issue/draft accepts only `guru-review-contract-wording`; standalone accepts only
+issue/draft accepts only `guru-review-change-request`; standalone accepts only
 `guru-standalone-caller`; active-task accepts the planning-review target or one
 of the declared interrupted Phase 1/2/3/Branch Review targets. Accepted-current
 scope requires the planning-review target.
 
-`guru-review-contract-wording` is the active semantic owner for controlled
-contract wording review. Workflow and standalone modes use the same runtime,
-fixed profile scope, semantic-evidence, and freshness preconditions. The exact
-semantic stages remain `forward_behavior -> ai_review_gate ->
-conditional_human_confirmation -> recorder_validator -> typed_exit`, but any
-necessary authorization stays in the current dialogue and is never a result
-field, digest, reference, or persisted checkpoint.
+The dedicated Wording package and scanner/classification/receipt contracts are
+retired by MIGRATION-850. Original Clarify/Author preserve source meaning,
+conditions, obligation strength and observable acceptance. Architecture and
+Approval retain their original independent judgments. No replacement lexical
+classification, seven-boolean record or extra gate is introduced.
 
-The package owns vocabulary `contract-wording-v2`, classification contract
-`contract-wording-classifications-v1`, the rewrite/classification/review loop,
-the three closed profiles, schema `guru-contract-wording-review-1.0`, and exits
-`pass`, `content_changed`, and `blocked`. `change_request` binds current
-title/body plus any AI-selected authoritative comments; `planning_artifacts`
-binds the active task's `prd.md`, `design.md`, and `implement.md` and requires
-the exact seven-key `planning_checked_dimensions` result; `explicit_paths`
-accepts only a standalone caller's explicit repo-relative Markdown files.
-Every profile emits stdout-only owner-private evidence. No profile writes
-task-local `contract-wording-review.json`.
-
-The deterministic runtime publishes `record-contract-wording-review` and
-`check-contract-wording-review`. It builds fixed scope facts, scans current
-content, derives local identities and unchecked hits, and validates schema,
-classification/reason shape, rescan binding, Gate/exit invariants, and the
-planning-dimension shape/value. It never chooses scope, rewrite,
-classification, reason sufficiency, semantic pass/block, confirmation need, or
-route intent, and it never invents a planning semantic result.
-
-Stale stdout evidence is discarded. The owner rebuilds current scope and scan,
-reruns the complete semantic loop, and emits one current result. There is no
-`--replace-stale`, supersession flag, prior-result digest chain, or task-local
-replacement history. For a live issue revision, the runtime validates only the
-objective preimage, exact proposed bytes, current reread bytes, source identity,
-and update time needed by that mutation consumer; it never records or validates
-user authorization.
-
-Unique consumers are `pass` -> workflow target
-`guru-contract-wording-pass-router`, `content_changed` -> workflow target
-`guru-contract-wording-change-router`, and `blocked` -> stop
-`contract-wording-blocked`. Those routers use only the checker-validated
-profile and exit. Unknown, multiple, stale, or unmapped profile/exit evidence
-fails closed. The checked `planning_artifacts:pass` reaches Architecture
-final_plan; only its current result reaches Planning approval. Approval cannot
-become a second vocabulary,
-classification, scanner, or semantic-review owner. It rereads the three current
-planning files and does not import scanner hits, classification history, file
-digests, or the wording owner's private result. Inputs outside the current
-Interface 1.4 contracts fail closed; only the checked current invocation output
-may be consumed.
+Explicit Issue/draft wording requests use original Clarify
+standalone_wording_review; explicit Markdown requests use original review-change
+explicit_files/wording_only. Both are bounded read-only user responses with no
+Task/session/Delivery or complete Intake prerequisite. Current consumers never
+read retired Wording outputs. Fixed old operations finish through their original
+complete provider before matching tools adoption.
 
 ## Change Request Readiness Package
 
 Active semantic Skill `guru-review-change-request` is the sole pre-task
-readiness owner after `guru-review-contract-wording:change_request:pass`. It
+readiness owner after current original Clarify clear. It
 consumes the current public prerequisite transition; normalizes one
 `existing_issue`, `proposed_draft`, or `standalone_request`; reviews the fixed
 ten dimensions; records findings, scope conclusion, AI Review Gate, and exactly
 one exit. Any real choice or side-effect authorization remains dialogue-local
 and is never part of this result. Its exits are `ready` -> workflow
 `guru-task-intake-router`, `clarify_requirements` ->
-`guru-clarify-requirements`, `review_wording` ->
-`guru-review-contract-wording`, `refresh_context` -> `guru-sync-base`, and
+`guru-clarify-requirements`, `refresh_context` -> `guru-sync-base`, and
 `blocked` -> stop `change-request-review-blocked`.
 
 The record/check commands are stdout-only before task creation. Their single
@@ -1372,7 +1335,7 @@ null issue/URL/update authority, `state=draft`, and current reviewed-body
 SHA-256. Title hash and draft/request/caller identity stay separately bound.
 An arbitrary 64-hex value, including a normal producer's stale prior digest,
 fails closed before prerequisite linkage is accepted.
-Readiness owner result 2.0 is private to its record/check/invoke loop. Upstream
+Readiness owner result 4.0 is private to its record/check/invoke loop. Upstream
 private results and caller-authored flat prerequisites are not accepted; the
 #386 migration removes their CLI path. Target title/body identity remains
 distinct from clarification semantic-content identity and disposition identity.
@@ -1509,7 +1472,7 @@ rereads the exact public current key, generation, planning_root and phase;
 only a planning object with an actual initial-requirements obligation and
 matching Author entry enters initial Author. All others enter the sole
 Task/Delivery continuation at their actual outstanding obligation, including
-existing planning's applicable Author/Wording/Architecture/Approval or current
+existing planning's applicable Author/Architecture/Approval or current
 approved to Activation. Missing/stale outputs return to the original producer;
 phase alone never restarts initial Author. Preserve plans and applicable results. No phase cache, new DTO or
 phase reset is introduced. Scope/implementation
@@ -1791,7 +1754,7 @@ independent of its whole-graph validation.
 ### Standard Intake Native Authoring
 
 For the declared `standard_intake` flow, one native Agent reads the installed
-Discovery, Clarification, Wording, and Readiness Skill contracts and necessary
+Discovery, Clarification, and Readiness Skill contracts and necessary
 live fixture facts. It executes the real Sync and owner-specific preview/scan,
 record, check, and invoke commands in their declared order. The host stages no
 owner result, prerequisite semantic result, or expected decision. The Agent
@@ -2212,7 +2175,7 @@ context/clarity/wording/readiness transitions retain their source-specific
 identities; current context schema 4.0 also separates confirmation target and
 source authority. The original base-current contract is unchanged.
 Minimal selected source locators/sections and normative/advisory role pass only
-to the clear router and current Planning via thin Wording/readiness relay.
+to the clear router and current Planning via thin Readiness relay.
 Create Task created remains identity-only. No source matrix, final disposition,
 full text, history, authorization, task.json source model or future Author
 registration enters that handoff.

@@ -69,47 +69,6 @@ class StageResultTransportTests(unittest.TestCase):
         self.assertEqual(result['returncode'], expected, result)
         return json.loads(result['stdout'])
 
-    def test_wording_invocation_retires_only_successful_file_inputs(self):
-        owner, _, relay = self.transport_fixture()
-        skill = 'guru-review-contract-wording'
-        package = owner / '.trellis/guru-team/skills/packages' / skill
-        (owner / 'contract.md').write_text('Exact contract.\n')
-        selectors = ['--profile', 'explicit_paths', '--mode', 'standalone', '--path', 'contract.md']
-        scan = self.owner_command(relay, skill, 'record-contract-wording-review',
-            [*selectors, '--scan-only'])['result']
-        example = json.loads((package / 'examples/contract-wording-review.json').read_text())
-        review = example['semantic_review']
-        review['ai_review_gate'].pop('planning_checked_dimensions')
-        review['ai_review_gate'].update(reviewed_scan_sha256=scan['scan']['scan_sha256'],
-            summary='Deterministic transport probe; no native review claim.')
-        authored = {'generated_at': example['generated_at'], 'typed_exit': 'pass',
-            'revisions': [], 'classifications': [], 'ai_review_gate': review['ai_review_gate']}
-        recorded = self.owner_command(relay, skill, 'record-contract-wording-review',
-            [*selectors, '--input', '-'], authored)['result']
-        checked = self.owner_command(relay, skill, 'check-contract-wording-review',
-            ['--path', 'contract.md', '--input', '-'], recorded)['result']
-        public = json.loads((package / 'examples/public-explicit-paths-input.json').read_text())
-        public['paths'] = ['contract.md']
-        envelope = {'public_input': public, 'owner_result': recorded,
-            'validation_receipt': checked['validation_receipt']}
-        runtime = owner / '.trellis/.runtime/guru-team/evals'
-        unused = runtime / 'unused-wording.json'
-        unused.write_text('{}')
-        for transport in ('file', 'stdin'):
-            with self.subTest(transport=transport):
-                path = runtime / 'wording-invocation.json'
-                path.write_text(json.dumps(envelope))
-                argument = path.relative_to(owner).as_posix() if transport == 'file' else '-'
-                output = self.owner_command(relay, skill, 'invoke-' + skill,
-                    ['--invocation', argument], envelope if transport == 'stdin' else None)
-                self.assertEqual(output['exit_id'], 'pass')
-                self.assertEqual(path.exists(), transport != 'file')
-        path.write_text(json.dumps({'public_input': public}))
-        self.owner_command(relay, skill, 'invoke-' + skill,
-            ['--invocation', str(path)], expected=2)
-        self.assertTrue(path.is_file())
-        self.assertTrue(unused.is_file())
-
     def test_intermediate_file_consumers_retire_only_their_completed_inputs(self):
         from unittest.mock import patch
         owner, _, relay = self.transport_fixture()

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-discover-change-context-issue-review-owner-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "public_input",
+    "typed_exit",
+    "result_summary",
+    "source_refs",
+    "ai_review_gate"
+  ],
+  "properties": {
+    "public_input": {
+      "type": "object"
+    },
+    "typed_exit": {
+      "enum": [
+        "supplemented",
+        "context_ready",
+        "blocked"
+      ]
+    },
+    "result_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ai_review_gate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-gate-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "reroute",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

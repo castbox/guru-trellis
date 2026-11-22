@@ -67,15 +67,19 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"explicit_choice_required","consumer":{"kind":"skill","id":"guru-execute-task-free-change"}} -->
 <!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"blocked","consumer":{"kind":"stop","id":"task-free-change-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-sync-base","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"synced","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
-<!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"baseline_ready","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
+<!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"synced","consumer":{"kind":"workflow","id":"guru-issue-intake-base-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"baseline_ready","consumer":{"kind":"workflow","id":"guru-issue-intake-base-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"skipped","consumer":{"kind":"workflow","id":"original-request-route"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"blocked","consumer":{"kind":"stop","id":"base-sync-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-discover-change-context","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"supplemented","consumer":{"kind":"skill","id":"guru-review-change-request"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"refresh_base","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"blocked","consumer":{"kind":"stop","id":"change-context-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"reviewed","consumer":{"kind":"stop","id":"wording-review-response"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"issue_reviewed","consumer":{"kind":"stop","id":"issue-review-response"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"supplemented","consumer":{"kind":"skill","id":"guru-review-change-request"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"scope_ready","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
@@ -83,19 +87,20 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"retarget_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"pass","consumer":{"kind":"workflow","id":"guru-contract-wording-pass-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"content_changed","consumer":{"kind":"workflow","id":"guru-contract-wording-change-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"blocked","consumer":{"kind":"stop","id":"contract-wording-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-change-request","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_issue_baseline","consumer":{"kind":"workflow","id":"guru-issue-baseline-refresh-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"full_intake_required","consumer":{"kind":"workflow","id":"guru-issue-full-intake-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"supplement_requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"supplement_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"workflow","id":"guru-task-intake-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"issue_reviewed","consumer":{"kind":"stop","id":"issue-review-response"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"clarify_requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"review_wording","consumer":{"kind":"skill","id":"guru-review-contract-wording"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-create-issue","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"created","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"direct_review_refresh","consumer":{"kind":"workflow","id":"guru-issue-only-review-refresh-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"blocked","consumer":{"kind":"stop","id":"issue-creation-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-create-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task","exit":"created","consumer":{"kind":"workflow","id":"guru-task-created"}} -->
@@ -361,7 +366,7 @@ Select mode/task_ref/delivery_key/source_selection/revision_refs unchanged from 
 
 <!-- guru-workflow-target: {"id":"guru-delivery-planning-author-router"} -->
 
-Consume Creation/Selection's unchanged created DTO through the explicit receiving-session continuation before entering Author or another stage owner. That continuation checks the receiving caller's own Task/Delivery facts and rereads this exact public key, phase, scope and planning_root. Only a current planning Delivery with an actual initial-requirements obligation and matching Author entry projects task_ref/delivery_key plus adjacent source_selection and mode to delivery_initial_review; lost source selection returns to original Clarify. All other objects, including planning with existing work/gates, enter the sole Bound formal Task / Delivery continuation at their actual outstanding obligation and original owner. Existing planning resumes applicable Author/Wording/Architecture/Approval or current approved to Activation, preserving identity, plans and applicable results; missing/stale outputs return to their producer. created does not imply a new object, planning phase or gate pass; this consumer writes no phase/cache and never resets it.
+Consume Creation/Selection's unchanged created DTO through the explicit receiving-session continuation before entering Author or another stage owner. That continuation checks the receiving caller's own Task/Delivery facts and rereads this exact public key, phase, scope and planning_root. Only a current planning Delivery with an actual initial-requirements obligation and matching Author entry projects task_ref/delivery_key plus adjacent source_selection and mode to delivery_initial_review; lost source selection returns to original Clarify. All other objects, including planning with existing work/gates, enter the sole Bound formal Task / Delivery continuation at their actual outstanding obligation and original owner. Existing planning resumes applicable Author/Architecture/Approval or current approved to Activation, preserving identity, plans and applicable results; missing/stale outputs return to their producer. created does not imply a new object, planning phase or gate pass; this consumer writes no phase/cache and never resets it.
 
 ### guru-delivery-selection-router
 
@@ -451,7 +456,7 @@ Enter the existing Scope Change Gate through `guru-clarify-requirements`.
 
 <!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
 
-Validate the selected scope_ready 2.0 closed shape. Pre-publication scope_ready without task_key projects mode/task_ref/source_selection/revision_refs into Author task_scope_requirements. Post-publication scope_ready with task_key consumes actual accepted scope and routes by current obligations to explicit Creation, affected Delivery rework/withdrawal, or Completion; it never repeats scope writing or creates an empty Delivery. For generic clear, resume the declared initial Intake or standalone caller. The two qualification-confirmation clear outputs use their independent closed schemas and the shared clear3 consumer union. Preserve mode, target, candidates, Task/Delivery identity, continuation, resume target and source selection; return to that exact original caller. That caller rereads affected authority and refreshes affected admission or follows its original whole-scope revision route. Clear alone does not admit implementation.
+Validate the selected scope_ready 2.0 closed shape. Pre-publication scope_ready without task_key projects mode/task_ref/source_selection/revision_refs into Author task_scope_requirements. Post-publication scope_ready with task_key consumes actual accepted scope and routes by current obligations to explicit Creation, affected Delivery rework/withdrawal, or Completion; it never repeats scope writing or creates an empty Delivery. For initial Issue/draft clear, invoke original Readiness with the current source profile (current_issue, proposed_draft or standalone_request), the unchanged clarity_current transition and original continuation. For standalone requirements or qualification clear, resume the declared original caller. The two qualification-confirmation clear outputs use their independent closed schemas and the shared clear3 consumer union. Preserve mode, target, candidates, Task/Delivery identity, continuation, resume target and source selection; return to that exact original caller. That caller rereads affected authority and refreshes affected admission or follows its original whole-scope revision route. Clear alone does not admit implementation.
 
 ### guru-full-task-intake-chain
 
@@ -459,29 +464,25 @@ Validate the selected scope_ready 2.0 closed shape. Pre-publication scope_ready 
 
 Start a separately reviewed task intake from the returned draft.
 
-### guru-contract-wording-pass-router
-
-<!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
-
-change_request still enters original change-request review. delivery_planning_artifacts enters Architecture delivery_task_impact_sync final_plan on the actual current Delivery design, then adjacent Approval. Standalone follows its matching original caller.
-
-### guru-contract-wording-change-router
-
-<!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
-
-Delivery planning content_changed copies public task_ref/delivery_key/change_refs unchanged to Author input, adding only profile=delivery_wording_reentry and mode=workflow; never read private Wording revisions. Author re-enters the earliest affected dependency. Other profiles retain their original affected wording/upstream refresh.
-
 ### guru-task-intake-router
 
 <!-- guru-workflow-target: {"id":"guru-task-intake-router"} -->
 
-Project `ready.transition.target.kind` exactly once: `proposed_draft` invokes `guru-create-issue`, while `existing_issue` and `standalone_request` invoke `guru-create-task`; never turn an Issue creation result into task creation without fresh Sync and Intake.
+Accept the independent existing-Issue ready shape or the original complete-chain ready transition. Independent ready invokes original Create Task; copy issue and the complete base_source to reviewed_source and creation.reviewed_base_source. Create Task independently reviews disposition, selected_base_ref, delivery_target and acquisition. Never reconstruct readiness_current or infer integration branch from source selected_ref. Original ready.transition.target.kind still selects proposed_draft -> Create Issue and existing_issue/standalone_request -> Create Task. No new resource side effect follows from ready alone.
 
 ### guru-sync-base
 
 <!-- guru-workflow-target: {"id":"guru-sync-base"} -->
 
-Re-enter `guru-sync-base` and then fresh Intake. `guru-create-issue:created` supplies the newly created exact source Issue and continues as a live Issue, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target.
+Re-enter `guru-sync-base` and then the object-specific base router. An Issue-only created request ends after comment readback. When work was requested, `guru-create-issue:created` supplies the newly created exact source Issue to Sync and existing_issue_intake, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target.
+
+### guru-issue-only-review-refresh-router
+
+<!-- guru-workflow-target: {"id":"guru-issue-only-review-refresh-router"} -->
+
+Return the actual `direct_review_refresh` reason to `guru-create-issue` for the
+same pending draft. Keep the original plan in the current conversation.
+Invoke the original Create owner to decide and complete the affected refresh.
 
 ### guru-task-created
 
@@ -577,7 +578,7 @@ Recheck the restored binding and current task boundary before phase routing.
 
 <!-- guru-workflow-target: {"id":"guru-current-phase-router"} -->
 
-Use current C3/C4/C5-resolved Task identity or explicit task mode, then the sole public Delivery continuation. Planning resumes the actual outstanding obligation in the sole continuation: only initial slice requirements enter Author delivery_initial_review with fresh original source selection. Existing planning resumes its applicable Author/Wording/Architecture/Approval owner, or current approved goes to Activation; missing/stale outputs re-enter their original producer, never reset planning from phase alone. No-current Delivery follows actual scope/Creation/Completion/closeout needs. Missing selection returns to its original producer. No Task status or recovered creation DTO supplies a phase.
+Use current C3/C4/C5-resolved Task identity or explicit task mode, then the sole public Delivery continuation. Planning resumes the actual outstanding obligation in the sole continuation: only initial slice requirements enter Author delivery_initial_review with fresh original source selection. Existing planning resumes its applicable Author/Architecture/Approval owner, or current approved goes to Activation; missing/stale outputs re-enter their original producer, never reset planning from phase alone. No-current Delivery follows actual scope/Creation/Completion/closeout needs. Missing selection returns to its original producer. No Task status or recovered creation DTO supplies a phase.
 
 ### guru-task-plan-clarify-scope-router
 
@@ -765,12 +766,6 @@ Return the owning Skill result and safe remediation, then stop this automatic ch
 
 Return the owning Skill result and safe remediation, then stop this automatic chain until authority or external state changes. Do not guess another route or expose package-private state. An independently requested operation retains the Manual Git/GitHub Operations entry in the workflow.
 
-### contract-wording-blocked
-
-<!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
-
-Return the owning Skill result and safe remediation, then stop this automatic chain until authority or external state changes. Do not guess another route or expose package-private state. An independently requested operation retains the Manual Git/GitHub Operations entry in the workflow.
-
 ### change-request-review-blocked
 
 <!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
@@ -925,7 +920,7 @@ Project actual Author task_ref/requirements_locator into original Clarify task_s
 
 <!-- guru-workflow-target: {"id":"guru-task-plan-ready-router"} -->
 
-Project task_ref/delivery_key to Wording delivery_planning_artifacts and resolve its current three docs; invoke the original Wording owner.
+Project unchanged task_ref/delivery_key to original Architecture delivery_task_impact_sync with purpose=final_plan. Read the actual current Delivery design and contribution. Only that actual final result enters adjacent Approval; no Wording result is required.
 
 ### guru-task-plan-approval-revision-router
 
@@ -1181,3 +1176,59 @@ evidence and completion semantics, retaining their own current judgments.
 ## Bootstrap repair re-entry
 
 Re-enter that same owner using its declared Interface rename and caller authoring. Preserve the original invocation context; consume the actual repair result through its declared exit.
+
+### guru-issue-intake-base-router
+
+<!-- guru-workflow-target: {"id":"guru-issue-intake-base-router"} -->
+
+Consume actual baseline_ready or synced, preserving the full original transition
+call-locally. A qualification context_request return retains the existing
+Discovery projection. For the caller's already selected existing Issue (including
+an actual Create Issue result when work was requested), invoke original
+`guru-review-change-request:existing_issue_intake`. Copy handoff_mode and actual
+exit_id to mode/source_exit; preserve the caller's Issue and continuation_id.
+For read, copy transition.base.kind/selected_ref/commit to base_source. For real
+sync, set kind=synced_branch, selected_ref=the normalized selected_base, and
+commit=decision_head. No current HEAD or read fact can supply synchronization.
+A dedicated Issue refresh return supplies the original Issue/continuation.
+Other draft/discussion/standalone inputs use original Discovery pre_task and its
+actual Sync transition; no Issue is required. AI still authors real retrieval
+clues and Clarify profile under that owner's input contract.
+
+### guru-issue-full-intake-router
+
+<!-- guru-workflow-target: {"id":"guru-issue-full-intake-router"} -->
+
+Use this invocation's original actual Sync stdout to complete Discovery pre_task
+with change_input for the same Issue, then original Clarify ->
+Readiness current_issue. Never reconstruct a full transition from base_source.
+If call-local Sync material was lost, recover it through original Sync: fixed read
+keeps selected_ref and commit; real sync recovers its operation result or runs
+actual sync under its original conditions. Return to existing-Issue Readiness
+with the actual refreshed result before deciding remaining coverage.
+
+### guru-issue-baseline-refresh-router
+
+<!-- guru-workflow-target: {"id":"guru-issue-baseline-refresh-router"} -->
+
+Invoke original Sync with source_exit=refresh_issue_baseline and dedicated
+return_identity={profile:existing_issue_intake,issue,continuation_id}. Add current
+repo_root/mode/route=repo_change. For git_object, operation=read retains selected_ref
+as base_ref and exact commit as base_commit. For synced_branch, operation=sync
+uses its normalized branch as base_branch. Only genuinely stale source judgment
+selects refresh; missing facts alone use Discovery. Actual Sync output returns to
+the base router, which preserves identity and calls the same Readiness owner.
+
+### issue-review-response
+
+<!-- guru-stop-target: {"id":"issue-review-response"} -->
+
+Return the checked independent Issue review to the user. Present the reported
+coverage, conclusion, findings and remaining questions in the selected review's
+scope. End the request here.
+
+### wording-review-response
+
+<!-- guru-stop-target: {"id":"wording-review-response"} -->
+
+Display the bounded Clarify review conclusion and concrete findings to the user. This terminal response does not enter Readiness or Task execution.

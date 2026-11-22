@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-discovery-context-ready-7.0",
+  "oneOf": [
+    {
+      "$ref": "public-context-ready-output-6.0.schema.json"
+    },
+    {
+      "$ref": "public-issue-context-ready-output-1.0.schema.json"
+    }
+  ]
+}

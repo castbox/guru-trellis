@@ -49,8 +49,9 @@ maintenance condition. Ordinary Task readers remain current-only.
 A user request to create/open/file a GitHub Issue must explicitly load
 `guru-create-issue`, including equivalent Chinese intent such as “新建 issue”,
 “创建 Issue”, “新增 Issue”, and contextual “同意新建 issue”. The Skill owns
-its entry preconditions and creation behavior; missing upstream review enters
-the current Intake/applicable scope route and returns to that owner. Do not
+its entry and creation behavior. For an Issue-only request, invoke that
+owner before starting Intake. If the owner actually needs the full Intake
+chain or the applicable active-scope route, follow that route and return to it. Do not
 classify Issue creation as an independent manual Git/GitHub operation or
 create it directly with a CLI/provider. Preserve the requested Issue-only
 scope and existing Task/resource confirmation boundaries.
@@ -65,11 +66,15 @@ an Issue or implementation.
 An explicit GitHub Issue content review request must load its semantic owner:
 “审核 Issue” / “审查 Issue” / “评审 Issue” / “review Issue” and Issue
 requirements-completeness checks load
-`guru-clarify-requirements` for the existing independent review profile;
-explicit readiness or independent-deliverability review loads
-`guru-review-change-request`; explicit wording review loads
-`guru-review-contract-wording`. Each Skill owns its prerequisites and review
-behavior; use the existing entry/context graph when prerequisites are missing.
+`guru-clarify-requirements:standalone_issue_requirements`. Explicit readiness
+or independent-deliverability review loads
+`guru-review-change-request:standalone_issue_readiness`. An explicit request to
+publish or edit retains the applicable original source-action entry. Explicit
+Issue/draft wording review loads
+`guru-clarify-requirements:standalone_wording_review`; explicit Markdown wording review loads
+`guru-review-change:explicit_files` with review_focus=wording_only. Each Skill owns its prerequisites and review
+behavior. The independent Issue review starts at its selected owner. Start
+context work only for the owner's actual evidence gap.
 Review-only intent is distinct from a status lookup or a request to implement
 or revise the Issue. It grants no mutation or Task/resource-creation authority;
 keep existing profile consumers and side-effect boundaries.
@@ -129,16 +134,17 @@ Classify the initial request before repository or network semantic reads:
   express change intent even when the user defers file writes or resource
   creation. “讨论需求”, “设计新功能”, and “先做规划” enter the current Guru owner
   route; deferring mutation does not turn them into information-only requests;
-- change-intent requests that are not already inside an active-task route first
-  invoke `guru-select-workflow-mode`, whether or not an Issue exists or the
-  user mentioned task-free. The selector retains its standard/task-free choice;
+- Issue-only creation first invokes `guru-create-issue` as above. Remaining
+  change-intent requests outside an active-task route first invoke
+  `guru-select-workflow-mode`, whether or not an Issue exists or the user
+  mentioned task-free. The selector retains its standard/task-free choice;
   active-task change intent enters its existing phase/scope-change owner.
   Respect deferred side effects throughout the selected route;
 - `standard_intake` enters guru-sync-base and the existing mapped graph, while
   `task_free` invokes `guru-execute-task-free-change`;
 - new Task intake enters whole-scope Author only through guru-create-task:created;
   existing active Tasks use the bound Task/Delivery continuation and actual owner.
-  Issue creation returns to fresh Intake;
+  a created Issue returns to fresh Intake when the user also requests work;
 - `guru-select-workflow-mode` owns the semantic choice. The shortest explicit
   request is `这次走 task-free` and routes directly. Without explicit intent,
   high-confidence bounded, reversible, low-risk work routes automatically to
@@ -198,8 +204,9 @@ and invokes Author; do not repeat completed Clarify interviews, ask routine
 planning consent, reset task identity or let the method write business docs. Invoke
 `guru-clarify-requirements` with `standard_intake` for ordinary initial Intake
 or `reviewed_plan_intake` for explicitly selected existing requirements/design.
-Initial requests first complete the mandatory selector → Sync → Discovery
-graph and use actual `context_ready` as Clarify entry; loading a method alone
+Initial requests selecting these full Intake profiles first complete the
+mandatory selector → Sync → Discovery graph and use actual `context_ready`
+as Clarify entry; loading a method alone
 does not permit a product question before that entry. Deferred writes or
 resource creation remain deferred throughout the graph.
 Its declared profiles and context loop are package-owned; method loading does not
@@ -216,7 +223,7 @@ Sync read and returns to Discovery with the same confirmation identity.
 Only formal Clarify clear resumes the original caller; its stage duties remain.
 Unknown profiles or mismatched consumers fail closed.
 
-The clear router hands source_selection to current Wording/readiness and task
+The clear router hands source_selection to current Readiness and task
 intake. `guru-task-created` resolves live identity and then current Planning
 consumes the adjacent selection, rereads Direct Source and introduced sections,
 writes authority locators in prd.md, and records final design dispositions only
@@ -225,7 +232,9 @@ remains subject to the matching installation boundary above.
 
 Initial read-only Intake invokes `guru-sync-base` with `operation=read` and
 adopts its explicit/config-selected fixed Git source. Both `baseline_ready` and
-`synced` have Discovery as their sole consumer. Use `operation=sync` only when
+`synced` enter the thin `guru-issue-intake-base-router`: existing Issues invoke
+original Readiness first; drafts/discussion/standalone and original confirmation
+returns retain their applicable Discovery input. Use `operation=sync` only when
 the actual operation is branch refresh/synchronization; it retains its original
 clean/ff/identity conditions. A draft review does not require commit/push or
 moving another checkout. Formal Task, committed Branch Review, and publication
@@ -240,33 +249,48 @@ Invoke guru-discover-change-context and consume only its declared exit.
 
 Invoke guru-clarify-requirements and consume only its declared exit.
 
-#### 0.3 Contract wording review
-
-Invoke guru-review-contract-wording and consume only its declared exit.
-
 #### 0.4 Change-request review
 
 Invoke guru-review-change-request and consume only its declared exit.
 
 #### 0.5 Issue and task creation
 
-The normal repo-changing route is:
+An Issue-only request enters `guru-create-issue` directly. Consume
+`direct_review_refresh` through its original-owner return. `created` ends an
+Issue-only request after Issue and review comment readback.
 
-guru-sync-base -> guru-discover-change-context ->
-guru-clarify-requirements -> guru-review-contract-wording ->
-guru-review-change-request -> `guru-task-intake-router` ->
-`guru-create-issue` or `guru-create-task` by `ready.transition.target.kind`.
+Formal start-work Intake begins with actual Sync -> `guru-issue-intake-base-router`.
+For an existing Issue, explicitly invoke `guru-review-change-request` using
+existing_issue_intake. Consume ready, supplement_context, supplement_requirements,
+full_intake_required, refresh_issue_baseline or blocked only
+through the declared unique consumers in the routing reference.
 
-Only `guru-create-task:created` establishes the Task; current scope acceptance and
-`guru-create-delivery:created` establish the first Delivery before its Planning. `guru-create-issue:created`
-returns to Sync and fresh Intake with the live created Issue as `kind=issue`;
-`guru-create-issue:refresh_review` returns with the proposed draft, without
-inventing an Issue number. The workflow does not create the issue, branch,
-worktree, or task directly. A Scope Change Gate during any active phase
-uses guru-clarify-requirements and returns only through its mapped router.
+Each supplementary exit explicitly invokes its original Discovery/Clarify
+Skill with issue_readiness_supplement. Each actual supplemented result returns
+only to Readiness issue_review_return. Clarify facts return through original
+Discovery context_request to that same Clarify; Clarify completes only the requested requirements or wording_only gap and returns to the same Readiness. The Readiness owner decides the earliest
+remaining dependency after every return. Necessary full Intake retains actual
+Sync -> Discovery -> Clarify -> current_issue Readiness.
+
+For discussion, draft-only work or a creation request that needs full Intake,
+use Sync -> Discovery -> Clarify. Discussion and draft-only work end at the
+requested result. Full Intake for creation continues through proposed_draft
+Readiness -> original Create Issue. A request to start work uses the formal
+Issue and actual live comment at Sync -> existing-Issue Readiness.
+The legal standalone_request/no_issue full chain still enters original Create Task.
+
+Only original `guru-create-task:created` establishes the Task. It retains scope,
+identity, checkout, branch/acquisition and real side-effect checks. Current scope
+acceptance and `guru-create-delivery:created` establish the first Delivery before
+its Planning. A Scope Change Gate uses original Clarify and its mapped router.
 
 
 ## Phase Index
+
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
 
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
 in full. This applies to no-Task, formal Task, task-free, independent Git/GitHub,
@@ -289,7 +313,7 @@ owner judgment.
 
 ```text
 Phase 0: Intake  -> base sync, context, clarification, review, Issue or task creation
-Phase 1: Plan    -> Author requirements, candidate Architecture, Author solution, Wording, final Architecture, Approval, presentation, Delivery activation
+Phase 1: Plan    -> Author requirements, candidate Architecture, Author solution, final Architecture, Approval, presentation, Delivery activation
 Phase 2: Execute -> implementation, engineering self-check and original-owner precommit knowledge integration
 Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycles, Completion, Closure, Finish, Cleanup
 ```
@@ -381,7 +405,7 @@ Author task_scope_requirements → scope_requirements_ready → original Clarify
 task_scope_requirements_acceptance → public accepted scope → explicit Delivery
 Creation → Author delivery_initial_review → requirements_ready → Architecture
 delivery_task_impact_sync candidate_assessment → Author delivery_solution_planning
-→ plan_ready → Wording delivery_planning_artifacts → Architecture
+→ plan_ready → Architecture
 delivery_task_impact_sync final_plan → adjacent Delivery Approval → current
 presentation/acceptance → Delivery activation.
 
@@ -389,8 +413,7 @@ The current Architecture router dispatches by purpose, never by a guessed
 stage or prior prose. Candidate current cannot reach Approval; final current
 cannot return to Author. Sync/bootstrap/repair re-enters the original purpose.
 Conflicts/gaps, regression and blocked retain their explicit consumers/stops.
-Author and qualification packages own their step-local profile rules; Wording
-owns rewrite and Approval owns its current independent review. Missing/stale
+Author and qualification packages own their step-local profile rules; Author owns content revision and Approval owns its current independent review. Missing/stale
 upstream output returns to its producer, and unknown/multiple/unmapped exits
 stop. Old unnamed planning writers, direct planning Wording→Approval and
 purpose-less task-impact planning 2.0 are retired by MIGRATION-292.
@@ -408,10 +431,10 @@ explicit first/next slice. Its `created` output enters the current unique Author
 delivery_initial_review; #292 retains the sole writing responsibility.
 The Author resolves public `planning_root`; no task-root development plan is reused.
 Load the Author's installed `references/planning-body.md` and profile-selected
-`templates/` through its Skill contract. Original Clarify, Wording and Approval
+`templates/` through its Skill contract. Original Clarify and Approval
 own their respective acceptance boundaries and consume that same body contract;
 the workflow does not restate its chapter, depth or trimming rules.
-Before presentation, invoke the planning profile of guru-review-contract-wording.
+Before presentation, complete current final_plan Architecture and independent Approval.
 
 
 #### 1.5 Delivery activation
@@ -433,7 +456,7 @@ task id, path, branch, SHA, digest, summary repetition, or prescribed wording.
 A question, challenge, revision request, partial choice, or ambiguous reply is
 not acceptance. Answer a question and keep the same pause when the plan is
 unchanged. If a planning artifact or the Docs SSOT Plan changes materially,
-re-enter Author for the affected dependency, repeat Wording → final_plan
+re-enter Author for the affected dependency, repeat final_plan
 Architecture → Approval, then present the new
 plan; no reply about an older presentation may be reused. Scope or requirement
 authority change enters the existing clarification route and repeats the
@@ -773,6 +796,11 @@ manual disposition without bridging old DTOs.
 ## Guru Continuation
 
 [trellis-continuation]
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
+
 Before substantive output, load the complete current
 `.trellis/spec/workflow/clear-technical-writing.md`. Read it again after context
 loss when its complete current body is unavailable.
@@ -797,7 +825,7 @@ Without an adjacent output, use only the current obligation's entry:
 
 | Public availability | Load the current entry |
 | --- | --- |
-| current / planning | Phase step 1.1; its actual Author/Wording/Architecture/Approval obligation; current approved alone enters step 1.5. |
+| current / planning | Phase step 1.1; its actual Author/Architecture/Approval obligation; current approved alone enters step 1.5. |
 | current / implementing | Phase step 2.1. |
 | current / checking | Phase step 3.5 with the complete committed candidate. Missing local commit returns to its original TaskCommit/implementation owner; phase grants no pass. |
 | current / reviewing | Phase step 3.5; recover the same committed candidate and original Review result projections before Delivery Review. |
@@ -824,6 +852,11 @@ maintenance owner; normal continuation does not load its historical details.
 ## Continuation details
 
 ### Caller entry details
+
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
 
 Before substantive output on continuation, load the full
 `.trellis/spec/workflow/clear-technical-writing.md` under the Phase Index loading
@@ -871,7 +904,7 @@ binding/selection recovery below as a prerequisite for that one-off review.
 Only its declared successful final-plan result enters adjacent Approval;
 Approval still satisfies its own execution selection entry.
 
-Before dispatching the original Author, Wording, Architecture, Approval or
+Before dispatching the original Author, Architecture, Approval or
 Activation entry in ordinary execution, mandatory invoke `guru-establish-task-identity` and
 `guru-ensure-task-checkout` for the explicit TaskId/generation. Consume their
 actual exits to resolve one current TaskRef and registered checkout. Then read
@@ -938,7 +971,7 @@ PR or Task inventory never selects the Task or Delivery.
 | `no_current_task` | Use the [No-Task entry](#no-task-entry); preserve task-free and independent manual operations. |
 | `no_current_delivery` | Current request/authority determines Task scope Clarify, explicitly selected first/next slice through `guru-create-delivery`, Completion evidence/validation or current Closure/Finish/Cleanup. No automatic empty Delivery. |
 | `terminal_delivery` | Original terminal owner releases that exact selection; Task stays bound for Completion. Do not replace identity. |
-| `current / planning` | Resume the same Delivery's unique Author, Wording, Architecture and Approval. Only its current `approved` enters `guru-activate-delivery`. |
+| `current / planning` | Resume the same Delivery's unique Author, Architecture and Approval. Only its current `approved` enters `guru-activate-delivery`. |
 | `current / implementing` | Resume implementation, engineering self-check and necessary original-owner knowledge integration. Exact local pre-review commit follows; no push/PR before current independent review/readiness. |
 | `current / checking` | Original guru-review-branch reviews the complete committed candidate once and records actual check/full_review. Missing local commit returns to its original commit/implementation owner; phase supplies no pass. |
 | `current / reviewing` | Original Review recovers any missing same-candidate projection or completes the current full_review, then original Delivery Review. A check-slot fact alone is insufficient. |
@@ -951,7 +984,7 @@ PR or Task inventory never selects the Task or Delivery.
 | --- | --- |
 | Task creation output lost | `guru-create-task` exact read-only recovery within the original creation interval; no new Issue/Task/branch/worktree. Existing active continuation, including formal rebind, uses current identity/binding/checkout and actual owner without reconstructing created. |
 | Delivery creation/select output lost | `guru-create-delivery` same-operation recovery with explicit public selection or its own retained create input, never sole inventory guessing. The unchanged created result re-enters its consumer for a fresh public phase read and original-phase continuation. |
-| Planning incomplete, approval missing/stale | Same Delivery Author/Wording/Architecture/Approval; D2 never overwrites D1's planning_root. |
+| Planning incomplete, approval missing/stale | Same Delivery Author/Architecture/Approval; D2 never overwrites D1's planning_root. |
 | Current approval awaits acceptance | `phase-1-delivery-activation` presents current artifacts and invokes new Activation after its dialogue boundary. |
 | Activation result lost | Original `guru-activate-delivery` recovers the actual recorded result for the same key; no Task-status transition or new Delivery. |
 | Check/full_review projection or output lost | Original guru-review-branch validates its same-candidate real semantic result and existing public slots, then recovers only missing operations. Lost necessary coverage requires actual fresh review. |
@@ -974,9 +1007,9 @@ PR or Task inventory never selects the Task or Delivery.
 | Evidence-only update / Reactivate-only validation | Completion's TaskKey entry; no new Delivery or old-generation pass. |
 | Completion `completed` | Closure, acceptance-finish Architecture eligibility, Finish and Cleanup through their independent outputs; do not repeat an already completed promotion. |
 | Finished archive / unfinished closeout | Normal finished archive enters Reactivate with new generation; incomplete closeout returns to its original transaction, never new Task or Reactivate. |
-| Planning wording is absent or stale | Freshly invoke `guru-review-contract-wording:delivery_planning_artifacts` for the selected public key. |
+| Actual planning content changed | In legal planning, invoke original Author delivery_content_revision for the same key and actual change_refs; other stages first use their original rework owner. |
 | Required prewrite Architecture output was lost or candidate facts changed | Re-enter the original Author candidate producer, then Architecture candidate_assessment 3.0 before solution writing. |
-| Final Architecture is absent or stale after current Wording | Freshly invoke original Architecture final_plan 3.0 on the current design; its result goes directly to Approval. |
+| Final Architecture is absent or stale after current Author content | Freshly invoke original Architecture final_plan 3.0 on the current design; its result goes directly to Approval. |
 
 Local dependency gaps block only their true dependent work. The original scope
 and stage owners continue independent necessary consumers and retain the exact
@@ -991,9 +1024,7 @@ continuation above before taking this route; it is not a Task-creation gate.
 For Issue creation intent (新建 / 创建 / 新增 Issue, including contextual
 confirmation), explicitly load `guru-create-issue` and follow its entry contract;
 do not bypass it as a manual GitHub operation.
-For general Issue review intent (审核 / 评审 Issue), explicitly load
-`guru-clarify-requirements`. Explicit readiness review loads
-`guru-review-change-request`; wording review loads `guru-review-contract-wording`.
+For independent Issue reviews, use the Guru Team Gate entry above.
 Follow the selected Skill's entry contract and preserve review-only scope.
 A status lookup remains an information query.
 For 审核 / 审查 / 评审 / 复审 / review, first use the Guru Team Gate's object
@@ -1008,8 +1039,8 @@ reviews use applicable specialist methods. Do not enter change Intake solely
 for independent review or substitute a formal pass for its report.
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
 in this workflow; missing context is not proof of no task.
-Every change-intent request first resolves task identity for the current
-workspace and requested Issue. Unrelated active tasks in the repository
+For a request involving Task work, first resolve task identity for the
+current workspace and requested Issue. Unrelated active tasks in the repository
 inventory are not current-task conflicts, even for the same user; do not ask
 the user to select one or switch to task-free because they exist. A checkout
 path alone does not bind its task identity to that checkout.
@@ -1184,7 +1215,7 @@ unrelated latest CURRENT/version advancement does not replace that authority. Th
 constitution prose, project rules, or Architecture private state.
 
 Planning assesses the real candidate before Author solution writing and the final
-Wording-current plan before Approval. Material implementation expansion refreshes
+current Author plan before Approval. Material implementation expansion refreshes
 the affected original assessment. Necessary precommit integration belongs to the
 original maintenance owner and remains integrated_pending_review. The same new
 independent committed reviewer completes one original Architecture before/after

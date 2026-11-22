@@ -2,6 +2,7 @@ from __future__ import annotations
 import copy,hashlib,json
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.content_identity import title_body_identity
 
 CONSUMERS={"scope_ready":{"kind":"workflow","id":"guru-requirements-clear-router"},"clear":{"kind":"workflow","id":"guru-requirements-clear-router"},"needs_context":{"kind":"skill","id":"guru-discover-change-context"},"refresh_context":{"kind":"skill","id":"guru-sync-base"},"retarget_context":{"kind":"skill","id":"guru-sync-base"},"new_task":{"kind":"workflow","id":"guru-full-task-intake-chain"},"blocked":{"kind":"stop","id":"requirements-clarification-blocked"}}
 def digest(v): return hashlib.sha256(json.dumps(v,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
@@ -14,7 +15,7 @@ def validate_shape(package,payload):
     if confirmation and payload.get("schema_version") != "5.0":
         raise CommandError("schema_mismatch", "input.schema_version", "Reassemble the current confirmation evidence with its original caller identity.", 3)
     schema = ("requirements-clarification-confirmation-5.0.schema.json" if confirmation else
-              "requirements-clarification-active-task-4.0.schema.json" if payload.get("schema_version") == "4.0" else "requirements-clarification.schema.json")
+              "requirements-clarification-active-task-4.0.schema.json" if payload.get("schema_version") == "4.0" else "requirements-clarification-6.0.schema.json")
     validate_json(payload, package / "schemas" / schema, "input")
     exit_id=payload.get("typed_exit")
     if payload.get("consumer")!=CONSUMERS.get(exit_id): raise CommandError("semantic_result_invalid","input.consumer","Match the declared typed-exit consumer.",3)
@@ -58,11 +59,30 @@ def derived_slots(payload):
                         yield row, field, placeholder
 
 
-def derive_owner(package, payload, *, authoring=False):
+def source_identity(payload, source):
+    """Bind caller-captured bytes to the reviewed object, without storing them."""
+    if source is None and payload.get("typed_exit") in {"needs_context", "blocked"}:
+        return None
+    target = payload.get("review_target", {})
+    if not isinstance(source, dict) or not isinstance(source.get("title"), str) or not isinstance(source.get("body"), str):
+        raise CommandError("stale_identity", "owner_context.change_request", "Capture the current source title and body with the original caller.", 3)
+    if (source.get("kind") != target.get("kind") or source.get("repo") != target.get("repo")
+            or hashlib.sha256(source["body"].encode()).hexdigest() != target.get("body_sha256")):
+        raise CommandError("stale_identity", "owner_context.change_request", "Reread the same reviewed source and body.", 3)
+    if target["kind"] == "issue" and (source.get("number") != target.get("issue_number") or source.get("updated_at") != target.get("updated_at")):
+        raise CommandError("stale_identity", "owner_context.change_request", "Reread the same Issue revision.", 3)
+    if target["kind"] == "draft" and not isinstance(source.get("draft_id"), str):
+        raise CommandError("stale_identity", "owner_context.change_request.draft_id", "Preserve the actual draft identity.", 3)
+    return title_body_identity(source["title"], source["body"])
+
+
+def derive_owner(package, payload, *, authoring=False, source=None):
     shape = copy.deepcopy(payload)
     if authoring:
         for row, field, placeholder in derived_slots(shape):
             row.setdefault(field, placeholder)
+    if authoring and payload.get("schema_version") == "6.0":
+        shape.setdefault("source_content_sha256", None if payload.get("typed_exit") in {"needs_context", "blocked"} else "0" * 64)
     # Validate every semantic field before deriving anything. Placeholders are
     # validation-only, never defaults for decisions, evidence, targets or gates.
     validate_shape(package, shape)
@@ -74,6 +94,8 @@ def derive_owner(package, payload, *, authoring=False):
                                "Reread current content and repeat recording without stale derived values.", 3)
         row[field] = value
 
+    if result.get("schema_version") == "6.0":
+        bind(result, "source_content_sha256", source_identity(result, source), "input")
     target = result["review_target"]
     bind(target, "facts_sha256", facts_digest({key: value for key, value in target.items()
                                               if key != "facts_sha256"}), "input.review_target")
@@ -110,10 +132,11 @@ def derive_owner(package, payload, *, authoring=False):
     }
     bind(result, "content_identity", identity, "input")
     validate_shape(package, result)
-    from confirmation import validate_actions
+    from confirmation import validate_actions, validate_issue_actions
+    validate_issue_actions(result)
     validate_actions(result)
     return result
 
 
-def validate_owner(package, payload):
-    return derive_owner(package, payload)
+def validate_owner(package, payload, *, source=None):
+    return derive_owner(package, payload, source=source)

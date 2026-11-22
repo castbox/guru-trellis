@@ -1,5 +1,7 @@
 # Task 与 Delivery 生命周期
 
+#850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
+
 导航别名：`R531-01..05/08`；`R636/BEH636`；`R637/BEH637`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
 
 本次 #679 拟整合的完整前驱：Git `e6c3b8276d62ac174ab42cba5bca4d5784be2ca3:docs/requirements/current/task-delivery-lifecycle.md`。来源及窄补充见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
@@ -15,13 +17,13 @@
 
 `REQ-001/003/004/005/008/010`、`BEH-001..006`、`R531-01 / BEH531-OWNERS` 保持身份。Task 承担整个 accepted scope 的要求、来源和完成责任。Delivery 承担一个明确切片的独立规划、候选、检查、审核和交付结果。D1 与 D2 使用同一种公共 Delivery 模型；D2 不能覆盖 D1 的文档、历史或结果。公共 Task/Delivery 状态归官方 Trellis API，Guru 不另建状态机，也不写 schema-2 Task 的开发 `status`。
 
-新变更先由原 mode owner 判断 standard intake 或 task-free；Issue 的存在、文件数和路径不能单独决定模式。标准 Intake 依次同步所选 base、发现当前变更上下文、澄清来源/要求、审查措辞及独立可交付性，再由原 Creation 创建 Task 和绑定的执行位置。信息查询不创建 Task。已绑定 Task 的变化走原当前 owner，不从 Intake 重建身份。缺失、重复或不唯一的公共身份、出口、consumer、安装合同或 checkout 关系须停止或进入其原恢复路线，不能由 inventory 的唯一候选猜选。
+新变更先由原 mode owner 判断 standard intake 或 task-free；Issue 的存在、文件数和路径不能单独决定模式。标准 Intake 依次同步所选 base、发现当前变更上下文、澄清来源/要求，再由原Readiness复核当前内容与独立可交付性，再由原 Creation 创建 Task 和绑定的执行位置。信息查询不创建 Task。已绑定 Task 的变化走原当前 owner，不从 Intake 重建身份。缺失、重复或不唯一的公共身份、出口、consumer、安装合同或 checkout 关系须停止或进入其原恢复路线，不能由 inventory 的唯一候选猜选。
 
 AI 判断 scope、来源、关联、finding、充分性和路线。确定性工具只执行明确动作、读事实或校验结构/内容绑定。mandatory step 由 global workflow 以稳定 Skill id 调用，step-local Skill 独占完整内部行为。semantic Gate 的脚本成功不代替语义判断。只处理诚实协作中的合法正常路径、普通错误与过期状态，不增加对抗伪造或未要求的并发/崩溃机制。公共 Skill/exit/schema/path 的破坏变化必须有显式迁移。
 
 `R657-01 / BEH657-ADMISSION`：初始 Task 创建和原操作结果恢复保留原 checked created 与精确创建校验。既有活动 Task 经正式 TaskId/generation、合法 binding/rebind、唯一 checkout 及适用 session/explicit-task 解析后，由实际阶段 owner 判断写入；原 created DTO 或原机私有 runtime 不可得不能单独阻塞。正常无范围变化保留仍适用工程结果，真实缺失或歧义回原 owner。每批 source/test/task 写入前仍执行 live checkout boundary，不重建 Task 或空 Delivery，不补造初始创建、资源或历史 pass。
 
-`R657-02 / BEH657-SELECTION`：创建和明确选择已有 Delivery 都保留原 created DTO，其含义是实际 key/root 已建立或选定。唯一 consumer fresh 读取同 key 的公共 current phase；只有 planning 中真实初始需求义务且符合 Author profile 前置时进入 initial Author；已有 Planning 恢复实际 Author/Wording/Architecture/Approval，当前 approved 进入 Activation，缺失或过期结果回原 producer。其余活跃阶段回原 continuation。保留 key、phase、规划、历史及仍适用结果；不能以 created 名称重置阶段或以 phase 冒充门禁。输出丢失经原 producer 恢复同结果，后续按真实阶段承接。
+`R657-02 / BEH657-SELECTION`：创建和明确选择已有 Delivery 都保留原 created DTO，其含义是实际 key/root 已建立或选定。唯一 consumer fresh 读取同 key 的公共 current phase；只有 planning 中真实初始需求义务且符合 Author profile 前置时进入 initial Author；已有 Planning 恢复实际 Author/Architecture/Approval，当前 approved 进入 Activation，缺失或过期结果回原 producer。其余活跃阶段回原 continuation。保留 key、phase、规划、历史及仍适用结果；不能以 created 名称重置阶段或以 phase 冒充门禁。输出丢失经原 producer 恢复同结果，后续按真实阶段承接。
 
 ## 切片建立与唯一 Planning
 
@@ -31,7 +33,7 @@ AI 判断 scope、来源、关联、finding、充分性和路线。确定性工�
 
 `R154-01..05 / BEH154-01..05` 保持。Task PRD 陈述整体要求；Delivery PRD 陈述本批目标、起点、前序事实、依赖及剩余责任。design 展开真实职责、契约、行为、条件、失败、兼容、来源承诺处置和可验证设计；唯一逐项规范性来源设计处置只在 design 维护。implement 明确有依赖顺序、验证、停止/恢复、唯一 Delivery Policy 与唯一 Docs SSOT Plan。full、partial、后续和返工均保留整体与本批区别；已有 detailed 承诺不能缩成标题或链接。章节、适用字段、裁剪和深度由 Author 的现行 planning-body/templates 定义。
 
-Planning 在实质 solution 写入前先取得真实 candidate 的独立 Architecture assessment；Author 消费实际结果完成方案。最终文档经过独立 Wording、Architecture final_plan 和 Approval。无真实 candidate 不产生候选通过。Architecture/Wording/Approval 不代写 Author 正文；Brainstorm 仅在原 owner 之下复用方法。Approval 的当前正式结果交原 Activation；文件存在或 public phase 不是批准。
+Planning 在实质 solution 写入前先取得真实 candidate 的独立 Architecture assessment；Author 消费实际结果完成方案。最终文档由Architecture final_plan和Approval依次审核；Author在原写作和自检中承担完整语义责任，独立Wording不再是当前前置。无真实 candidate 不产生候选通过。Architecture/Approval 不代写 Author 正文；Brainstorm 仅在原 owner 之下复用方法。Approval 的当前正式结果交原 Activation；文件存在或 public phase 不是批准。
 
 原 `guru-activate-delivery` 读取三份当前中文规划、明确切片及相邻 Approval 实际 freshness，完成当前计划展示/接受边界后，唯一使用公共 planning writer 记录真实 Planning 结果。调用方不能从文件重算 token 冒充 Approval。恢复读回同 operation/result，不重复公共写入；真实计划变化回最早受影响 Planning owner。授权仅存在会话，不写入任何 artifact。
 
@@ -138,7 +140,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 **R679-02 / BEH679-FIRST-FAILURE**：接收调用区分 no_current_task、no_current_delivery、current、terminal_delivery、error，以及不同选择和真实 generation/phase/scope 失配。诊断指出本次首先失败条件与原 owner；恢复后再读其余条件。不同合法选择不覆盖，终态不重开，损坏/不可读/API不支持或 checkout 歧义不当作缺绑定。原 Author/Architecture planning 校验保拒绝强度、错误 code 和出口形状，细化具体 field_path/remediation；早于 Delivery guard 的真实 API 错误也保留。精确诊断与 matching 迁移见原 package 及 MIGRATION-679，不新增状态模型。
 
-**R679-03 / BEH679-STANDALONE**：standalone_request 是来源 profile，执行 mode 独立。Readiness 使用真实 Wording producer 请求身份与 mode，调用方定位可不同；source_request_sha256 仍绑定完整当前 draft authority。普通消费者构造错误后，当前 Agent 重读未改 source/适用 producer，完整重建 consumer 并重审自身十维，再消费原 record/check/invoke 的真实结果。不得只补字段、改 producer、手写派生 linkage 或 receipt；真实 source/authority 或前序变化回原 producer。精确字段和可执行 recipe 仍由原 Readiness package 单写。
+**R679-03 / BEH679-STANDALONE**：standalone_request 是来源 profile，执行 mode 独立。Readiness 使用真实Clarify producer请求身份、mode及当前源内容身份，调用方定位可不同；源title/body identity与Clarify semantic identity分开，沿当前后继合同绑定完整draft authority。旧Wording recipe只保其固定provider的历史含义，不是当前reader。普通消费者构造错误后，当前 Agent 重读未改 source/适用 producer，完整重建 consumer 并重审自身十维，再消费原 record/check/invoke 的真实结果。不得只补字段、改 producer、手写派生 linkage 或 receipt；真实 source/authority 或前序变化回原 producer。精确字段和可执行 recipe 仍由原 Readiness package 单写。
 
 **R679-04 / BEH679-ARTIFACTS**：明确选定 Delivery 的展示把真实完整 key 传原 resolver，展示实际 planning_root 中存在的文档。尚无或无当前 Delivery 的 Task-only 停点，只展示该精确 TaskRef 内存在的整体根 PRD，不猜选、构造 key 或创建空切片。Finish 后明确切片使用实际 archive TaskRef/key。实际 resolver 调用和正常缺文件行为须验证，文本一致只证明分发。
 
@@ -214,3 +216,31 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 - **R794-07 / BEH794-ADOPTION**：canonical、packages/runtime/schema、spec、workflow/routing及实际受影响平台沿原owner成套采用，保Task/session/用户内容和sidecar；定向验证分清组件、实际Agent、安装及外部效果，不扩完整Release矩阵。
 
 R531/R530/R600/R636/R637/R638/R710/R711/R713 的未替代条件、source身份、固定B、原single-writer、完整结果消费/恢复和历史观察保持。当前精确输入/出口/命令与薄投影由原canonical packages独占，迁移由MIGRATION-794定位；设计D794、测试T794在对应完整单元承接。
+
+
+## R815：受管 manifest 冲突恢复
+
+来源为 [Issue #815](https://github.com/castbox/guru-trellis/issues/815)，完整前驱为 Git `cb8b4ce349b54cd832ff5b8f72602c5a721ce875` 的本单元。
+
+- **R815-01 / BEH815-PREIMAGE**：正常两分支 canonical 及各自 installer 输出发生 managed manifest 冲突时，原 Reconcile/Git 冲突步骤固定 prior H 中已生成的完整旧 manifest blob，临时恢复工作文件供原 tools inventory 读取。原 provenance/hash 保持，临时前像不得作为最终候选。
+- **R815-02 / BEH815-COMBINATION**：原 tools owner 对组合 canonical 的实际受管差异逐路径 preserve/replace，由原 installer 生成最终 manifest 和投影；经目标 installed/native/drift、sidecar/mode 验证后，原 resolved 路径核最终树、父序及零 unmerged。
+- **R815-03 / BEH815-CONTINUITY**：保持同 Task/Delivery、branch、checkout、PR，以及原 resolved 的当前 Task 自然 dirty metadata 例外。保留无关 Task/session/peer；失败和未知 mutation 沿原输入、frozen plan 与事务恢复，不重放。
+- **R815-04 / BEH815-RETIREMENT**：同 PR 后继 action 通过原 Publication `retire_completed` 核验并退役已完成私有事务，公共发布事实保持。未知或未完成动作先恢复原操作，不手删事务或构造新的 pass。
+- **R815-05 / BEH815-ADOPTION**：原 public I/O、语义门禁和 owner 不变，完整 matching source 经原工具 owner 同步并验证实际目标。开发 local_candidate 保留正式 source-lock 未验证边界；clean committed H 的正式 source_locked 采用是后继原操作。本项独立交付及 Task 终态责任保持，不绑定发布版本。
+
+精确接续步骤归原 canonical packages；职责 D815、场景 T815 位于同名完整单元。证据及窄增加范围见 [#815 追踪](../../requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md)。本节不引入通用恢复框架、授权存储、审计 ledger 或完整矩阵；前文未替代条件保持。
+
+## R850-03 / BEH850-PLANNING：默认退出与同切片修订
+
+Author完成完整规划和自检后，独立Architecture final_plan直接进入Approval，candidate_assessment仍先于实质solution。Approval亲自判断可实施性，缺口交原Author返工，不继承上游通过。原content_changed由Author delivery_content_revision读真实change_refs和当前文档，在同Task/Delivery修订；等义只刷新直接依赖，需求/机制/Architecture/验收实质变化回最早owner。保scope/key/phase/selection和适用结果，不清空规划、不重建身份、不首次激活；固定旧操作按原provider恢复后匹配采用。对应D850-03/T850-03。
+
+## R856：Publish 公共异常边界
+
+来源：[Issue #856](https://github.com/castbox/guru-trellis/issues/856)及其[接受评论](https://github.com/castbox/guru-trellis/issues/856#issuecomment-6894689222)。本节细化 R713-03 的错误诊断和 R531-05 的同事务恢复，不改变发布资格、Refs-only、Closure 或 Task/Delivery 生命周期。
+
+- **R856-01 / BEH856-CLASSIFIED**：Publish 原 owner 已分类的失败经过正式命令边界后，保留真实 code、有依据的 field_path、安全 remediation 和对应 catalog 退出码。缺 readiness_result_id 的当前输入返回 schema_mismatch／exit 2；PR body 含关闭关键词返回 closing_keyword_forbidden／exit 3。两项均须在发布副作用前拒绝。不完整 JSON 保留既有 invalid_json／input／exit 2。
+- **R856-02 / BEH856-RECOVERY**：兼容原 WorkflowError 构造、内部捕获和必要 code/payload。原 owner 先消费合法 review_stale、reprepare_required、resume_publication 路线；未消费失败才进入公共错误输出。失败或未知外部结果先由原 owner 回读同事务，已完成动作不重复；不新增恢复状态或账本。
+- **R856-03 / BEH856-UNKNOWN**：真正未知编程异常保留安全 internal_error／runtime／exit 70 和原维护路径。公共错误不公开原始异常消息、traceback、外部 stderr、完整 payload、PR 正文、命令参数、环境或凭据；不依据这些原值猜测分类或字段。
+- **R856-04 / BEH856-ADOPTION**：同一错误边界覆盖 Publish 的实际直接入口及原 migration/recover consumer。canonical 与受影响受管投影由原 tools owner 成套同步，定向验证 package/runtime、installed/reapply/drift、mode 和 sidecar。源码及 fixture 结果不证明旧业务安装、历史发布或生产效果；完整 Release 矩阵另属原 owner。
+
+职责 D856-01..03、验证 T856-01..05 位于对应生命周期单元。固定前驱为 Git `4f3d9069e0720ec94e39d1079154d2f7a7058935` 的本单元；来源和窄增加边界见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。本节保留全部未替代条件。

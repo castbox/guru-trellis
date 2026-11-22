@@ -19,7 +19,6 @@ SKILLS = (
     "guru-sync-base",
     "guru-discover-change-context",
     "guru-clarify-requirements",
-    "guru-review-contract-wording",
     "guru-review-change-request",
     "guru-create-task-workspace",
 )
@@ -27,7 +26,6 @@ HAPPY_CASES = {
     "guru-sync-base": "synced-route",
     "guru-discover-change-context": "context-ready-route",
     "guru-clarify-requirements": "clear-route",
-    "guru-review-contract-wording": "pass-route",
     "guru-review-change-request": "ready-route",
     "guru-create-task-workspace": "created-route",
 }
@@ -111,14 +109,6 @@ def context_digest(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value) + b"\n").hexdigest()
 
 
-def wording_change_request_source(issue: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "source_kind": "issue",
-        "identity": issue["url"],
-        "title": issue["title"],
-        "body": issue["body"],
-        "updated_at": issue["updatedAt"],
-    }
 
 
 def run(
@@ -548,6 +538,10 @@ def invoke_public(
     envelope: dict[str, Any],
     expected_exit: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    if skill_id == "guru-clarify-requirements" and envelope.get("owner_result", {}).get("schema_version") == "6.0":
+        envelope = copy.deepcopy(envelope)
+        issue = live_issue(root, env)
+        envelope["owner_context"] = {"change_request": {"kind":"issue", "repo":transcript_identity(env)["repo"], "number":issue["number"], "title":issue["title"], "body":issue["body"], "updated_at":issue["updatedAt"]}}
     argv = [
         root / ".agents/skills" / skill_id / "scripts/invoke.sh",
         "--invocation",
@@ -616,6 +610,17 @@ def project_installed_output(
     return projected, str(projection.get("id") or "")
 
 
+def full_intake_discovery_seed(actual: dict[str, Any]) -> dict[str, Any]:
+    """Retained full-chain fixture caller after the workflow base router.
+
+    The source is actual Sync stdout. This supplies no readiness judgment and
+    does not represent initial existing-Issue fast-path coverage.
+    """
+    return {"source_exit": actual["exit_id"], "profile": "pre_task",
+            "mode": actual["handoff_mode"],
+            "continuation_id": actual["handoff_continuation_id"]}
+
+
 def record_semantic(
     root: Path,
     env: dict[str, str],
@@ -666,19 +671,6 @@ def assert_owner_binding(
         ):
             raise RuntimeError(
                 "guru-clarify-requirements owner profile does not match the current public invocation"
-            )
-    elif skill_id == "guru-review-contract-wording":
-        scope = owner_result.get("scope")
-        scope = scope if isinstance(scope, dict) else {}
-        owner_target = str(scope.get("identity") or "").removeprefix(
-            "change_request:"
-        )
-        if (
-            owner_result.get("profile") != profile
-            or owner_target != public_input.get("target_locator")
-        ):
-            raise RuntimeError(
-                "guru-review-contract-wording owner profile does not match the current public invocation"
             )
     elif skill_id == "guru-review-change-request":
         target = owner_result.get("target")
@@ -965,7 +957,7 @@ def clarification_owner_for_issue(
         "body_sha256": body_sha256,
     }
     owner = {
-        "schema_version": "3.0",
+        "schema_version": "6.0",
         "source_selection": source_selection or [],
         "skill_id": "guru-clarify-requirements",
         "generated_at": "2026-01-01T00:00:00Z",
@@ -975,7 +967,7 @@ def clarification_owner_for_issue(
             "kind": "initial_issue",
             "caller": "guru-discover-change-context:context_ready",
             "task_locator": None,
-            "resume_target": "guru-review-contract-wording",
+            "resume_target": "guru-review-change-request",
         },
         "review_target": target,
         "target_disposition": {
@@ -1028,7 +1020,7 @@ def clarification_owner_for_issue(
             ],
             "excluded_scope": ["workspace mutation"],
             "load_bearing_conclusions": [
-                "The current requirement is complete and ready for wording review."
+                "The current requirement is complete and ready for Readiness review."
             ],
             "findings": [],
             "summary": "Current authority and prior transition support a clear route.",
@@ -1048,7 +1040,7 @@ def clarification_owner_for_issue(
                     "The current authoring pass requires a fresh repository context read."
                 ),
             },
-            "reason": "A current context read is required before wording review.",
+            "reason": "A current context read is required before Readiness review.",
             "consumer": {
                 "kind": "skill",
                 "id": "guru-discover-change-context",
@@ -1075,13 +1067,14 @@ def clarification_owner_for_issue(
         {**candidate, "identity": f"#{candidate['number']}", "state": "open", "decision": "rejected", "reason": "The candidate does not replace the current delivery authority."}
         for candidate in duplicate_snapshot["candidates"]
     ]
+    source = {"kind":"issue", "repo":identity["repo"], "number":identity["issue"], "title":issue["title"], "body":issue["body"], "updated_at":issue["updatedAt"]}
     recorded = record_semantic(
         root,
         env,
         "guru-clarify-requirements",
         "record-requirements-clarification.sh",
         ["--mode", "workflow", "--input", "-"],
-        owner,
+        {"owner_result": owner, "owner_context": {"change_request": source}},
     )
     checked = record_semantic(
         root,
@@ -1092,83 +1085,13 @@ def clarification_owner_for_issue(
             "--input", "-", "--expected-result-sha256",
             recorded["content_identity"]["result_sha256"],
         ],
-        recorded,
+        {"owner_result": recorded, "owner_context": {"change_request": source}},
     )
     if checked.get("status") != "passed" or checked.get("typed_exit") != typed_exit:
         raise RuntimeError("current clarification owner did not pass its production checker")
     return recorded, checked
 
 
-def wording_owner_for_issue(
-    root: Path,
-    env: dict[str, str],
-    source_path: Path,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    scanned = record_semantic(
-        root,
-        env,
-        "guru-review-contract-wording",
-        "record-contract-wording-review.sh",
-        [
-            "--mode", "workflow", "--profile", "change_request",
-            "--change-request-input", source_path, "--scan-only",
-        ],
-        {},
-    )
-    scan = scanned["scan"]
-    gate = {
-        "status": "passed",
-        "reviewer": "phase0-transcript-reviewer",
-        "summary": "The complete fixed wording scope and current rescan were semantically reviewed.",
-        "reviewed_scan_sha256": scan["scan_sha256"],
-        "checked_dimensions": {
-            "complete_profile_scope": True,
-            "all_hits_classified": True,
-            "zero_unchecked_hits": True,
-            "product_semantics_preserved": True,
-            "retained_reasons_sufficient": True,
-            "zero_hits_not_requirement_review": True,
-        },
-    }
-    authored = {
-        "generated_at": "2026-01-01T00:00:00Z",
-        "revisions": [],
-        "classifications": [
-            {
-                "hit_id": hit["hit_id"],
-                "classification": "term_definition",
-                "reason": "The semantic review retained this explicit contract term.",
-            }
-            for hit in scan["hits"]
-        ],
-        "ai_review_gate": gate,
-        "typed_exit": "pass",
-    }
-    recorded = record_semantic(
-        root,
-        env,
-        "guru-review-contract-wording",
-        "record-contract-wording-review.sh",
-        [
-            "--mode", "workflow", "--profile", "change_request",
-            "--change-request-input", source_path, "--input", "-",
-        ],
-        authored,
-    )
-    checked = record_semantic(
-        root,
-        env,
-        "guru-review-contract-wording",
-        "check-contract-wording-review.sh",
-        [
-            "--change-request-input", source_path, "--input", "-",
-            "--expected-facts-sha256", recorded["facts_sha256"],
-        ],
-        recorded,
-    )
-    if checked.get("status") != "passed" or checked.get("typed_exit") != "pass":
-        raise RuntimeError("current wording owner did not pass its production checker")
-    return recorded, checked
 
 
 def readiness_owner_for_issue(
@@ -1255,15 +1178,13 @@ def readiness_owner_for_issue(
         }],
         "consumer": {"kind": "workflow", "id": "guru-task-intake-router"},
     }
-    if typed_exit in {"clarify_requirements", "review_wording", "refresh_context"}:
+    if typed_exit in {"clarify_requirements", "refresh_context"}:
         category = {
             "clarify_requirements": "requirement_gap",
-            "review_wording": "wording_gap",
             "refresh_context": "context_stale",
         }[typed_exit]
         failed_dimension = {
             "clarify_requirements": "requirement_completeness",
-            "review_wording": "claimed_behavior_current",
             "refresh_context": "target_authority_current",
         }[typed_exit]
         finding = {
@@ -1289,7 +1210,6 @@ def readiness_owner_for_issue(
                 "kind": "skill",
                 "id": {
                     "clarify_requirements": "guru-clarify-requirements",
-                    "review_wording": "guru-review-contract-wording",
                     "refresh_context": "guru-sync-base",
                 }[typed_exit],
             },
@@ -1346,7 +1266,7 @@ def readiness_invocation(
     return {
         "schema_version": "1.0",
         "public_input": {
-            "profile": "current_issue", "source_exit": "pass", "mode": "workflow",
+            "profile": "current_issue", "source_exit": "clear", "mode": "workflow",
             "target_locator": transition["target_locator"],
             "continuation_id": transition["continuation_id"],
         },
@@ -1450,11 +1370,9 @@ def reentry_transcripts(
     env: dict[str, str],
     source: dict[str, Any],
     readiness_source_path: Path,
-    wording_source_path: Path,
     context_transition: dict[str, Any],
     context_duplicate_snapshot: dict[str, Any],
     clarity_transition: dict[str, Any],
-    wording_transition: dict[str, Any],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
 
@@ -1517,7 +1435,6 @@ def reentry_transcripts(
 
     for producer_exit, target_skill, target_exit in (
         ("clarify_requirements", "guru-clarify-requirements", "clear"),
-        ("review_wording", "guru-review-contract-wording", "pass"),
     ):
         producer_transition = (
             context_transition
@@ -1531,10 +1448,10 @@ def reentry_transcripts(
             "schema_version": "1.0",
             "public_input": {
                 "profile": "current_issue",
-                "source_exit": "pass",
+                "source_exit": "clear",
                 "mode": "workflow",
-                "target_locator": wording_transition["target_locator"],
-                "continuation_id": wording_transition["continuation_id"],
+                "target_locator": clarity_transition["target_locator"],
+                "continuation_id": clarity_transition["continuation_id"],
             },
             "transition": producer_transition,
             "owner_context": {"change_request": source},
@@ -1551,20 +1468,10 @@ def reentry_transcripts(
         target_input, projection_id = project_installed_output(
             root, "guru-review-change-request", producer_exit, producer
         )
-        if target_skill == "guru-clarify-requirements":
-            target_owner, target_checked = clarification_owner_for_issue(
-                root,
-                env,
-                producer["transition"],
-                empty_duplicate_snapshot(producer["transition"], env),
-                "clear",
-            )
-            owner_context: dict[str, Any] = {}
-        else:
-            target_owner, target_checked = wording_owner_for_issue(
-                root, env, wording_source_path
-            )
-            owner_context = {"change_request": source}
+        target_owner, target_checked = clarification_owner_for_issue(
+            root, env, producer["transition"],
+            empty_duplicate_snapshot(producer["transition"], env), "clear")
+        owner_context = {"change_request": source}
         target_envelope = {
             "schema_version": "1.0",
             "public_input": target_input,
@@ -1572,15 +1479,12 @@ def reentry_transcripts(
             "owner_context": owner_context,
             "owner_result": target_owner,
         }
-        if target_skill == "guru-review-contract-wording":
-            target_envelope["validation_receipt"] = target_checked["validation_receipt"]
         assert_owner_binding(target_skill, target_input, target_owner)
         target, target_row = invoke_public(
             root, env, target_skill, target_envelope, target_exit
         )
         expected_stage = {
             "clarify_requirements": "clarity_current",
-            "review_wording": "wording_current",
         }[producer_exit]
         if target.get("transition", {}).get("stage") != expected_stage:
             raise RuntimeError(
@@ -1866,49 +1770,14 @@ def six_step_transcript(
         json.dumps(source, ensure_ascii=False, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    wording_source_path = chain_root / "inputs/wording-change-request.json"
-    wording_source_path.write_text(
-        json.dumps(wording_change_request_source(issue)) + "\n",
-        encoding="utf-8",
-    )
-    wording_owner, wording_checked = wording_owner_for_issue(
-        root, env, wording_source_path
-    )
-    wording_envelope = {
-        "schema_version": "1.0",
-        "public_input": {
-            "profile": "change_request",
-            "source_exit": "clear",
-            "mode": "workflow",
-            "target_locator": clarity["transition"]["target_locator"],
-            "continuation_id": clarity["transition"]["continuation_id"],
-        },
-        "transition": clarity["transition"],
-        "owner_context": {"change_request": source},
-        "owner_result": wording_owner,
-        "validation_receipt": wording_checked["validation_receipt"],
-    }
-    assert_owner_binding(
-        "guru-review-contract-wording",
-        wording_envelope["public_input"],
-        wording_owner,
-    )
-    rows[-1]["next_input_sha256"] = digest(wording_envelope)
-    wording, row = invoke_public(
-        root, env, "guru-review-contract-wording", wording_envelope, "pass"
-    )
-    rows.append(row)
-
     reentry = reentry_transcripts(
         root,
         env,
         source,
         readiness_source_path,
-        wording_source_path,
         context["transition"],
         context["duplicate_snapshot"],
         clarity["transition"],
-        wording["transition"],
     )
 
     readiness_counts_before = operation_counts(env)
@@ -1918,18 +1787,18 @@ def six_step_transcript(
         encoding="utf-8",
     )
     readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
-        root, env, wording["transition"], readiness_source_path,
+        root, env, clarity["transition"], readiness_source_path,
     )
     readiness_envelope = {
         "schema_version": "1.0",
         "public_input": {
             "profile": "current_issue",
-            "source_exit": "pass",
+            "source_exit": "clear",
             "mode": "workflow",
-            "target_locator": wording["transition"]["target_locator"],
-            "continuation_id": wording["transition"]["continuation_id"],
+            "target_locator": clarity["transition"]["target_locator"],
+            "continuation_id": clarity["transition"]["continuation_id"],
         },
-        "transition": wording["transition"],
+        "transition": clarity["transition"],
         "owner_context": {"change_request": source},
         "owner_result": readiness_owner,
         "validation_receipt": readiness_checked["validation_receipt"],
@@ -1954,7 +1823,6 @@ def six_step_transcript(
     content_drift_rejections = assert_readiness_content_drift_rejected(
         root,
         env,
-        wording["transition"],
         readiness_source_path,
     )
 
@@ -2065,7 +1933,6 @@ def six_step_transcript(
         "workspace_path": str(workspace_path),
         "checker_status": checked_result.get("checker", {}).get("status"),
         "clarification_checker_status": clarity_checked.get("status"),
-        "wording_checker_status": wording_checked.get("status"),
         "context_checker_status": context_checked.get("status"),
         "forbidden_runtime_checks": 3,
         "owner_repo": str(root),

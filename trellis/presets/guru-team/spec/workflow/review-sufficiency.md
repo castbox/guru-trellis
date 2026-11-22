@@ -54,6 +54,33 @@ Implementation and tests agreeing cannot establish complete requirements.
 Reading every file, complete chapter headings or filled dimension fields cannot
 replace behavior and relationship coverage.
 
+For an independent review, use the original owner's first-read order and
+isolation rules. From the current source or authority assigned to that owner,
+form concrete questions about required behavior and necessary relationships.
+Then use those questions to examine the applicable candidate design,
+implementation or tests in the order the owner already prescribes. Check later
+summaries against that examination. The caller provides the necessary sources
+and candidate locators. Keep suggested findings, pass narratives and
+explanations that belong to later reads out of the independent first read.
+Retain applicable evidence under the later-candidate rules below.
+
+If a supported operation has several stages, trace what the caller can observe
+and do between them. Where one stage hands state or resources to another, ask
+which business condition must hold through the handoff. Check the actual writer
+and reader, the order of acquisition and release, and what remains usable after
+an applicable failure or abandonment. Architecture and Planning Approval judge
+whether the candidate can maintain that condition within their existing
+responsibilities. Return a technical gap to the original technical owner
+using the existing route. A genuine product choice keeps its original Clarify
+route. Existing scenario qualification and evidence reuse still apply.
+
+For Issue authoring and review, apply the original Clarify-owned Issue content
+specification within each owner's existing responsibility. Its complete body
+is `trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md`
+in source, or `.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`
+after installation, in the same provider. That body owns the Issue-specific
+method; this common review specification does not redefine it.
+
 Tailor units to the actual object and complexity. No universal table, coverage
 percentage, reading quota or unsupported input enumeration is required. Necessary
 unchanged consumers are evidence within the selected review, not automatic
@@ -65,7 +92,11 @@ order. Use [Semantic Retrieval](semantic-retrieval.md) for retrieval sufficiency
 [Specialist Review Standards](quality-guidelines.md#specialist-review-standards)
 for selecting professional methods, and
 [Test And Validation Value](quality-guidelines.md#test-and-validation-value)
-for test effectiveness and proof boundaries. Apply
+for test effectiveness, responsibility boundaries, minimal evidence and each
+round's proposed acceptance or verification obligations. Read that section and
+apply its boundary, deduplication and reuse method before forming review output;
+this common loading point covers later reviews within their original scope.
+Apply
 [Causal Completion Semantics](causal-completion-semantics.md) when judging causal
 claims. These sources retain their topic rules; this file does not copy them.
 

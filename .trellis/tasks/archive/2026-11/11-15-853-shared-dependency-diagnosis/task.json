@@ -1,0 +1,537 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-15-853-shared-dependency-diagnosis",
+  "id": "853-shared-dependency-diagnosis",
+  "name": "853-shared-dependency-diagnosis",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 853,
+    "disposition": "exact_source"
+  },
+  "title": "诊断共享依赖差额判断问题，按证据选择最小修复（G07）",
+  "description": "按 #853 的诊断优先合同，从实际形成共享差额采用或等待结论的原入口取得当前加载与行为证据，再由原 owner 选择必要最小修复或证据充分的无需追加修复结论。",
+  "dev_type": null,
+  "scope": "仅承担 #853 全部 accepted scope：当前消费或方法缺口诊断、对应最小处理和中性材料经原 Agent 入口的行为验证；不预定新增方法或 gate，不实施 #848/#850，不重放历史业务、云端或模型运行，不建立跨 Task 协调状态。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-15",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+    "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+  },
+  "deliveries": [
+    {
+      "id": "c00e79b3-2983-42cf-9c3c-1d1ce34b6b28",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+          "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "R8",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+        "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+      },
+      "candidate": {
+        "base_ref": "a72981db56d2070d8140b468cab3a97ae82effd3",
+        "content_ref": "sha256:8e2a156e4742ff003b2ae51116d6cd546a77eccbbea14fd24febf3ab5046515b",
+        "head_ref": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+        "kind": "git",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/__init__.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/cache_proxy.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/generated_client.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/scalar_cache.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/service.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/README.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/change-contract.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/constitution.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/design/README.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/requirements/README.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/test/README.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/schema/scalar-v1.json",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/frozen/run.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/design.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/facts.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/implement.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/cache_proxy.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/generated_client.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/vector_service.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/schema/vector-v2.json",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/integration.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/prd.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/design.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/facts.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/implement.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/observed/release-note.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/prd.md",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py",
+          "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/test_behavior_collection.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:094d45e0-e8b5-4220-8853-77a592e2dbce",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+              "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "R8",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+            "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/prd.md",
+              "revision": "sha256:d3a912f79742b69e9953af258a8a3f2b18c0547db951dea258cc097586728e2f"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+              "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/implement.md",
+              "revision": "sha256:652eb336e0bee82bcd5854d5bc3fb4bfdd315e59fe8317b4612902732140469d"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:d761933519b182639612b24fbb44d1c994a4263a203aaa1de4dcdc5753a5c003",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+              "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "R8",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+            "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+          },
+          "candidate": {
+            "base_ref": "a72981db56d2070d8140b468cab3a97ae82effd3",
+            "content_ref": "sha256:8e2a156e4742ff003b2ae51116d6cd546a77eccbbea14fd24febf3ab5046515b",
+            "head_ref": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+            "kind": "git",
+            "paths": [
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/__init__.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/cache_proxy.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/generated_client.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/scalar_cache.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/service.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/change-contract.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/constitution.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/design/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/requirements/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/test/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/schema/scalar-v1.json",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/frozen/run.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/design.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/facts.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/implement.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/cache_proxy.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/generated_client.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/vector_service.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/schema/vector-v2.json",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/integration.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/prd.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/design.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/facts.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/implement.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/observed/release-note.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/prd.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/test_behavior_collection.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:094d45e0-e8b5-4220-8853-77a592e2dbce",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/implement.md",
+              "revision": "sha256:652eb336e0bee82bcd5854d5bc3fb4bfdd315e59fe8317b4612902732140469d"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:d761933519b182639612b24fbb44d1c994a4263a203aaa1de4dcdc5753a5c003",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+              "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "R8",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+            "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+          },
+          "candidate": {
+            "base_ref": "a72981db56d2070d8140b468cab3a97ae82effd3",
+            "content_ref": "sha256:8e2a156e4742ff003b2ae51116d6cd546a77eccbbea14fd24febf3ab5046515b",
+            "head_ref": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+            "kind": "git",
+            "paths": [
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/__init__.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/cache_proxy.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/generated_client.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/scalar_cache.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/service.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/change-contract.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/constitution.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/design/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/requirements/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/test/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/schema/scalar-v1.json",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/frozen/run.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/design.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/facts.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/implement.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/cache_proxy.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/generated_client.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/vector_service.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/schema/vector-v2.json",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/integration.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/prd.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/design.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/facts.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/implement.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/observed/release-note.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/prd.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/test_behavior_collection.py"
+            ]
+          },
+          "predecessor_result_id": "check:d761933519b182639612b24fbb44d1c994a4263a203aaa1de4dcdc5753a5c003",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/implement.md",
+              "revision": "sha256:652eb336e0bee82bcd5854d5bc3fb4bfdd315e59fe8317b4612902732140469d"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:6eddb30907d1ed318d10d1e65b511acf1915e7aecdb0be54df6728c6411cccdf",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+              "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "R8",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/design.md",
+            "revision": "sha256:5af312da1de2690f1c7d5e566c49d8f03ec76c58abf3a2d9e742b3f637fa01ae"
+          },
+          "candidate": {
+            "base_ref": "a72981db56d2070d8140b468cab3a97ae82effd3",
+            "content_ref": "sha256:8e2a156e4742ff003b2ae51116d6cd546a77eccbbea14fd24febf3ab5046515b",
+            "head_ref": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+            "kind": "git",
+            "paths": [
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/__init__.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/cache_proxy.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/generated_client.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/scalar_cache.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/service.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/change-contract.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/constitution.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/design/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/requirements/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/test/README.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/schema/scalar-v1.json",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/frozen/run.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/design.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/facts.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/implement.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/cache_proxy.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/generated_client.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/vector_service.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/schema/vector-v2.json",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/integration.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/prd.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/design.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/facts.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/implement.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/observed/release-note.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/prd.md",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py",
+              "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/test_behavior_collection.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:d761933519b182639612b24fbb44d1c994a4263a203aaa1de4dcdc5753a5c003",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/implement.md",
+              "revision": "sha256:652eb336e0bee82bcd5854d5bc3fb4bfdd315e59fe8317b4612902732140469d"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:3734a875a76b22cd14c5fc307e90faef045443e6f201ebbd55b2bb4a439b94ab",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/857",
+            "revision": "sha256:cd9b5cf83aa91913d3f94b4d10c9efd1a223e3fdb4d006ce841356bb4ac702a2"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "a72981db56d2070d8140b468cab3a97ae82effd3",
+          "content_ref": "sha256:8e2a156e4742ff003b2ae51116d6cd546a77eccbbea14fd24febf3ab5046515b",
+          "head_ref": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+          "kind": "git",
+          "paths": [
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/__init__.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/cache_proxy.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/generated_client.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/scalar_cache.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/service.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/change-contract.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/constitution.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/design/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/requirements/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/test/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/schema/scalar-v1.json",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/frozen/run.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/design.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/facts.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/implement.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/cache_proxy.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/generated_client.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/vector_service.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/schema/vector-v2.json",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/integration.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/prd.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/design.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/facts.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/implement.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/observed/release-note.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/prd.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/test_behavior_collection.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 857,
+        "reviewed_head": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/857",
+          "revision": "sha256:cd9b5cf83aa91913d3f94b4d10c9efd1a223e3fdb4d006ce841356bb4ac702a2"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:7a0da40a2067d8e4c3126f53b85ad3a300d9a4ca",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/857",
+            "revision": "7a0da40a2067d8e4c3126f53b85ad3a300d9a4ca"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "a72981db56d2070d8140b468cab3a97ae82effd3",
+          "content_ref": "sha256:8e2a156e4742ff003b2ae51116d6cd546a77eccbbea14fd24febf3ab5046515b",
+          "head_ref": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+          "kind": "git",
+          "paths": [
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/__init__.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/cache_proxy.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/generated_client.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/scalar_cache.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/app/service.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/change-contract.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/architecture/constitution.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/design/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/requirements/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/docs/test/README.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/current/schema/scalar-v1.json",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/frozen/run.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/design.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/facts.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/implement.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/cache_proxy.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/generated_client.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/app/vector_service.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/inflight/schema/vector-v2.json",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/observed/integration.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-material/prd.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/design.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/facts.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/implement.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/observed/release-note.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/fixtures/shared_dependency/shared-ordinary/prd.md",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/run_behavior_validation.py",
+            "trellis/skills/guru-team/packages/guru-qualify-root-cause/tests/test_behavior_collection.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 857,
+        "reviewed_head": "9f1df4fbc69e0fb13a4a693b86741dec5989102c",
+        "merge_commit": "7a0da40a2067d8e4c3126f53b85ad3a300d9a4ca",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:b5ef0605-46bd-4453-a31d-00afa398ec61",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/deliveries/c00e79b3-2983-42cf-9c3c-1d1ce34b6b28/validation/diagnosis.md",
+          "revision": "sha256:301eaaa31e365b9e2580aaa2c52640c27fc11407f78cd0f8201aa5c5939f0559"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/857",
+          "revision": "7a0da40a2067d8e4c3126f53b85ad3a300d9a4ca"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/43721207273",
+          "revision": "9f1df4fbc69e0fb13a4a693b86741dec5989102c:success"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/prd.md",
+        "revision": "sha256:fc23ca2a6aa40c3041e44cee8f34f31e125a462f3b9e7bb0ef95263698f65065"
+      },
+      "delivery_result_ids": [
+        "delivery:7a0da40a2067d8e4c3126f53b85ad3a300d9a4ca"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:6c6fefe53edbdcb44479ba24",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/853",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-15-853-shared-dependency-diagnosis/closeout/closure/Y2xvc3VyZTo2YzZmZWZlNTNlZGJkY2I0NDQ3OWJhMjQ.json",
+          "revision": "sha256:bad5cb72821fdf20bb732e6a9af29657bde1b024a3da3e1065a72bb6d00b3171"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:b5ef0605-46bd-4453-a31d-00afa398ec61",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/853",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}

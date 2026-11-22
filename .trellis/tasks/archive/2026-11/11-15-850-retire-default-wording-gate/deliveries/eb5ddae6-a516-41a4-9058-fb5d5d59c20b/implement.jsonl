@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整读取共享写作规范，保留本批语言与source语义边界。"}
+{"file": ".trellis/tasks/archive/2026-11/11-15-850-retire-default-wording-gate/prd.md", "reason": "整体accepted scope及在途/安装/验收责任。"}
+{"file": ".trellis/tasks/archive/2026-11/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/design.md", "reason": "本D1接口/职责/迁移与验证设计。"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "canonical流程与当前owner/typed consumers。"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/runtime/common.py", "reason": "full-chain Clarity/源身份迁移的实际consumer。"}
+{"file": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py", "reason": "受管资产退役与用户修改/sidecar原owner。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实施前读取当前共享正文合同与所选Delivery模板。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "实施前读取当前共享正文合同与所选Delivery模板。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "实施前读取当前共享正文合同与所选Delivery模板。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实施前读取当前共享正文合同与所选Delivery模板。"}

@@ -25,3 +25,9 @@ Guru 为自己的现有审核职责提供一份可加载的共同充分性规范
 ## 关系与完整定义
 
 [设计职责](../../design/current/review-sufficiency.md) 与 [测试策略](../../test/current/review-sufficiency.md) 承接本能力。共同审核行为只读取唯一 managed spec；现有检索、测试价值、因果、完整知识和专业标准保持原 owner。Architecture 的 owner/依赖决定见 `ARCH-REVIEW-SUFFICIENCY` 与 ADR-REVIEW-SUFFICIENCY。
+
+## R747-D1-02 / BEH747-REVIEW
+
+连续操作和阶段交接涉及本批审核时，原审核 owner 在本职责规定的隔离和首读顺序内，从来源或职责权威推导关键行为与关系问题，再核对候选及实施说明。独立审核输入不得预置缺陷答案或通过结论。各阶段继续使用原有正常场景资格、审核职责和适用证据。必要结论只记录已覆盖、受影响需补验、失败和未执行范围，保留历史观察及其原范围。
+
+来源为 #747 JQ-R5 和本批适用的 R6。由 [设计 D747-D1-02](../../design/current/review-sufficiency.md) 和 [测试 T747-D1-02](../../test/current/review-sufficiency.md) 承接。

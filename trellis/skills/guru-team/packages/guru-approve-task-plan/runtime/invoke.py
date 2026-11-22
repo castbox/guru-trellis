@@ -22,7 +22,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if owner["task_ref"]!=public.get("task_ref") or owner["mode"]!=public.get("mode") or owner["delivery_key"]!=public["delivery_key"]:raise CommandError("stale_identity","owner_result","Rerun planning for the exact public input.",3)
  td=task(repo,public["task_ref"]);directory=planning_directory(repo,td,public["delivery_key"])
  assessment=public["architecture_assessment"]
- if assessment["freshness_identity"]!="sha256:"+hashlib.sha256((directory/"design.md").read_bytes()).hexdigest():raise CommandError("stale_identity","architecture_assessment","Refresh final_plan after current Wording and actual design changes.",3)
+ if assessment["freshness_identity"]!="sha256:"+hashlib.sha256((directory/"design.md").read_bytes()).hexdigest():raise CommandError("stale_identity","architecture_assessment","Refresh final_plan after current Author content and actual design changes.",3)
  paths=sorted(rel(repo,directory/name) for name in ("prd.md","design.md","implement.md"))
  if owner["planning_paths"]!=paths or owner["reviewed_content_sha256"]!=file_set(repo,paths):raise CommandError("stale_identity","planning_paths","Reread the current Delivery plan and refresh only affected owners.",3)
  exit_id=owner["typed_exit"];out={"exit_id":exit_id}

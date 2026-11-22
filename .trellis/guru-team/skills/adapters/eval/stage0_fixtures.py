@@ -135,11 +135,6 @@ def stage0_eval_transition(
     public_input: dict[str, Any],
     owner_result: dict[str, Any],
 ) -> dict[str, Any] | None:
-    if (
-        skill_id == "guru-review-contract-wording"
-        and public_input.get("profile") in {"delivery_planning_artifacts", "explicit_paths"}
-    ):
-        return None
     mode = str(public_input.get("mode") or owner_result.get("mode") or "workflow")
     continuation = str(public_input.get("continuation_id") or "stage0-current")
     target = str(public_input.get("target_locator") or "")
@@ -160,7 +155,6 @@ def stage0_eval_transition(
     stage_by_skill = {
         "guru-discover-change-context": "base_current",
         "guru-clarify-requirements": "context_current",
-        "guru-review-contract-wording": "clarity_current",
     }
     stage = stage_by_skill.get(skill_id)
     if stage is None:
@@ -173,16 +167,6 @@ def stage0_eval_transition(
         identity = transition["base"]["post_sync_resolution_sha256"]
         transition["transition_id"] = f"{stage}:{identity[:24]}"
         return transition
-    if stage == "clarity_current":
-        scope = owner_result.get("scope") if isinstance(owner_result.get("scope"), dict) else {}
-        scope_identity = str(scope.get("identity") or "")
-        if scope_identity:
-            target = scope_identity.removeprefix("change_request:")
-        content_digest = str(scope.get("scope_sha256") or content_digest)
-        for item in scope.get("items", []):
-            if isinstance(item, dict) and item.get("field") == "body":
-                content_digest = str(item.get("content_sha256") or content_digest)
-                break
     transition.update({
         "target_locator": target,
         "continuation_id": continuation,
@@ -194,23 +178,6 @@ def stage0_eval_transition(
         transition["authority_content_sha256"] = str(
             target_value.get("body_sha256") or content_digest
         )
-    elif stage == "clarity_current":
-        transition.update({
-            "context_result_sha256": context_digest,
-            "clarity_result_sha256": clarity_digest,
-            "target_content_sha256": content_digest,
-            "clarity": {
-                "facts_sha256": clarity_digest,
-                "target_sha256": stage0_eval_hash("clarity-target", target),
-                "disposition_sha256": stage0_eval_hash("clarity-disposition", target),
-                "content_sha256": stage0_eval_hash("clarity-content", target),
-                "scope_sha256": stage0_eval_hash("clarity-scope", target),
-            },
-            "target_disposition": {
-                "disposition_sha256": stage0_eval_hash("clarity-disposition", target),
-                "duplicate_facts_sha256": stage0_eval_hash("clarity-duplicates", target),
-            },
-        })
     identity_field = {
         "context_current": "context_result_sha256",
         "clarity_current": "clarity_result_sha256",
@@ -228,14 +195,7 @@ def bind_stage0_call_local_invocation(
 ) -> None:
     skill_id = str(request["skill_id"])
     public_input = copy.deepcopy(public_input)
-    if skill_id == "guru-review-contract-wording" and public_input.get("mode") == "workflow":
-        scope = owner_result.get("scope") if isinstance(owner_result.get("scope"), dict) else {}
-        scope_identity = str(scope.get("identity") or "")
-        if scope_identity.startswith("change_request:"):
-            public_input["target_locator"] = scope_identity.removeprefix(
-                "change_request:"
-            )
-    elif skill_id == "guru-review-change-request" and public_input.get("mode") == "workflow":
+    if skill_id == "guru-review-change-request" and public_input.get("mode") == "workflow":
         target = owner_result.get("target") if isinstance(owner_result.get("target"), dict) else {}
         if isinstance(target.get("url"), str) and target.get("url"):
             public_input["target_locator"] = target["url"]
@@ -258,17 +218,6 @@ def bind_stage0_call_local_invocation(
         "public_input": public_input,
         "owner_result": owner_result,
     }
-    if skill_id == "guru-review-contract-wording":
-        receipt = {
-            "schema_version": "1.0",
-            "skill_id": skill_id,
-            "operation": "check-contract-wording-review",
-            "result_sha256": owner_result["facts_sha256"],
-            "prerequisite_sha256": stage0_contract_digest({"profile": owner_result["profile"], "mode": owner_result["mode"]}),
-            "snapshot_sha256": stage0_contract_digest({"scope": owner_result["scope"], "scan": owner_result["scan"]}),
-        }
-        receipt["receipt_sha256"] = stage0_contract_digest(receipt)
-        envelope["validation_receipt"] = receipt
     if skill_id == "guru-create-task-workspace":
         workspace_state = WORKSPACE_CALL_LOCAL_STATE.get(str(fixture.resolve()))
         if workspace_state is None:
@@ -373,7 +322,7 @@ def clarity_target(
     }
     payload["invocation_context"] = {
         "kind": "initial_issue", "caller": "stage0 eval owner staging",
-        "task_locator": None, "resume_target": "guru-review-contract-wording",
+        "task_locator": None, "resume_target": "guru-review-change-request",
     }
     payload["review_target"] = target
     return payload
@@ -493,9 +442,15 @@ def build_clarity_owner(
             "kind": "standalone_review", "caller": "stage0 eval owner staging",
             "task_locator": None, "resume_target": public_input["resume_target"],
         }
+    payload["schema_version"] = "6.0"
+    payload.pop("source_content_sha256", None)
+    live = json.loads(subprocess.check_output(["gh", "issue", "view", str(payload["review_target"]["issue_number"]), "--repo", payload["review_target"]["repo"], "--json", "number,title,body,updatedAt"], text=True))
+    source = {"kind":"issue", "repo":payload["review_target"]["repo"], "number":live["number"], "title":live["title"], "body":live["body"], "updated_at":live["updatedAt"]}
+    payload["review_target"].update(body_sha256=hashlib.sha256(source["body"].encode()).hexdigest(), updated_at=source["updated_at"])
+    payload["invocation_context"]["resume_target"] = "guru-standalone-caller" if public_input["profile"] == "standalone_review" else "guru-review-change-request"
     return stage0_command(
         package_root.parents[4], "guru-clarify-requirements",
-        "record-requirements-clarification", payload,
+        "record-requirements-clarification", {"owner_result":payload,"owner_context":{"change_request":source}},
         "--mode", payload["mode"], "--input", "-",
     )
 
@@ -692,107 +647,7 @@ def workspace_base_fixture(runtime: Any, head: str) -> dict[str, Any]:
     value={"schema_version":"1.0","skill_id":"guru-sync-base","status":"synced","resolution":{"source":"explicit","selected_base":"main","remote":"origin","candidates":["main"],"resolution_sha256":resolution_sha256},"post_sync_resolution":identity,"post_sync_resolution_sha256":resolution_sha256,"decision_checkout":{"branch":"main","head_before":head,"head_after":head,"clean_before":True,"clean_after":True},"git":{"local_ref":"refs/heads/main","remote_ref":"refs/remotes/origin/main","local_head_before":head,"local_head_after":head,"remote_head_after":head,"fetch_performed":True,"fast_forwarded":False},"fresh":True}
     value["facts_sha256"]=runtime.digest(value);return value
 
-def wording_review(
-    runtime: Any,
-    profile: str,
-    mode: str,
-    scope: dict[str, Any],
-    scan: dict[str, Any],
-    typed_exit: str,
-) -> dict[str, Any]:
-    passed = typed_exit != "blocked"
-    revisions: list[dict[str, Any]] = []
-    if typed_exit == "content_changed":
-        item = scope["items"][0]
-        revisions = [{
-            "revision_id": "stage0-eval-revision", "locator": item["path"],
-            "before_sha256": "0" * 64, "after_sha256": item["content_sha256"],
-            "reason": "The completed planning wording revision is present in the current rescan.",
-            "rescan_sha256": scan["scan_sha256"],
-        }]
-    gate: dict[str, Any] = {
-        "status": "passed" if passed else "blocked", "reviewer": "stage0-eval-reviewer",
-        "summary": "The complete fixed wording scope and current rescan were semantically reviewed.",
-        "reviewed_scan_sha256": scan["scan_sha256"],
-        "checked_dimensions": {
-            key: passed for key in runtime.CONTRACT_WORDING_REVIEW_DIMENSIONS
-        },
-    }
-    if profile == "delivery_planning_artifacts":
-        gate["planning_checked_dimensions"] = {
-            key: passed for key in runtime.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-        }
-    authored = {
-        "generated_at": "2026-01-01T00:00:00Z",
-        "semantic_review": {
-            "revisions": revisions,
-            "classifications": [{
-                "hit_id": hit["hit_id"], "classification": "term_definition",
-                "reason": "The semantic review retained this explicit contract term.",
-            } for hit in scan["hits"]] if passed else [],
-            "ai_review_gate": gate,
-        },
-        "typed_exit": typed_exit,
-    }
-    return runtime.contract_wording_derive_result(profile, mode, scope, scan, authored)
 
-def build_wording_owner(
-    runtime: Any, fixture: Path, package_root: Path, recipe: str, public_input=None,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    change_request = {
-        "kind": "draft", "draft_id": "stage0-wording-eval",
-        "title": "Review Stage 0 wording",
-        "body": "The current change request defines one bounded delivery unit.",
-        "selected_comments": [],
-    }
-    change_path = fixture / ".trellis/.runtime/guru-team/evals/change-request.json"
-    change_path.write_text(json.dumps(change_request) + "\n", encoding="utf-8")
-    if recipe == "wording-pass":
-        profile, mode = "change_request", "workflow"
-        scope, contents = runtime.contract_wording_build_scope(
-            fixture, profile, mode,
-            change_request_input=change_path.relative_to(fixture).as_posix(),
-        )
-        typed_exit = "pass"
-    elif recipe == "wording-content-changed":
-        from adapters.eval.delivery_production import seed_delivery
-        profile, mode = "delivery_planning_artifacts", "workflow"
-        run_git(fixture, "checkout", "-qb", "eval/current")
-        task, key, projection = seed_delivery(fixture, "wording-delivery-eval")
-        directory = projection.planning_directory(key)
-        prior_content = hashlib.sha256((directory / "prd.md").read_bytes()).hexdigest()
-        (directory / "prd.md").write_text("# Delivery PRD\n\nR1. Production eval. The exact owner wrapper is required.\n")
-        if public_input is None:
-            raise ValueError("Delivery wording staging requires its public identity input.")
-        public_input.update(task_ref=task.relative_to(fixture).as_posix(), delivery_key=key)
-        scope, contents = runtime.contract_wording_build_scope(
-            fixture, profile, mode, task_dir=task, delivery_key=key,
-        )
-        typed_exit = "content_changed"
-    elif recipe == "wording-blocked":
-        profile, mode = "explicit_paths", "standalone"
-        scope, contents = runtime.contract_wording_build_scope(
-            fixture, profile, mode,
-            explicit_paths=["docs/requirements/requirement-main.md"],
-        )
-        typed_exit = "blocked"
-    else:
-        raise ValueError(f"unsupported wording owner staging recipe: {recipe}")
-    scan = runtime.scan_contract_wording(scope, contents)
-    result = wording_review(runtime, profile, mode, scope, scan, typed_exit)
-    if profile == "delivery_planning_artifacts":
-        result["semantic_review"]["revisions"][0]["before_sha256"] = prior_content
-        authored = copy.deepcopy(result["semantic_review"])
-        authored.update(typed_exit=result["typed_exit"], generated_at=result["generated_at"])
-        envelope = {"profile": profile, "mode": mode,
-                    "task_ref": task.relative_to(fixture).as_posix(), "delivery_key": key,
-                    "owner_result": authored}
-        result = stage0_command(fixture, "guru-review-contract-wording", "record-contract-wording-review",
-                                envelope, "--invocation", "-", "--root", str(fixture))
-        envelope["owner_result"] = result
-        stage0_command(fixture, "guru-review-contract-wording", "check-contract-wording-review",
-                       envelope, "--invocation", "-", "--root", str(fixture))
-    return result, change_request
 
 def readiness_prerequisites(
     runtime: Any,
@@ -801,7 +656,7 @@ def readiness_prerequisites(
     source_path: Path,
     mode: str,
     continuation: str = "stage0-current",
-    through: str = "wording_current",
+    through: str = "clarity_current",
 ) -> dict[str, dict[str, Any]]:
     context = readiness_context(fixture, source, mode, continuation)
     if through == "context_current":
@@ -843,9 +698,11 @@ def readiness_prerequisites(
     for action in clarity["source_actions"]:
         del action["payload_sha256"], action["action_digest"]
     clarity["mode"] = mode
+    clarity["schema_version"] = "6.0"
+    clarity.pop("source_content_sha256", None)
     clarity["invocation_context"] = {
         "kind": invocation_kind, "caller": "stage0 readiness eval",
-        "task_locator": None, "resume_target": "guru-review-contract-wording",
+        "task_locator": None, "resume_target": "guru-review-change-request",
     }
     clarity["review_target"] = authority
     clarity["target_disposition"] = {
@@ -870,11 +727,11 @@ def readiness_prerequisites(
     }
     clarity = stage0_command(
         fixture, "guru-clarify-requirements", "record-requirements-clarification",
-        clarity, "--mode", mode, "--input", "-",
+        {"owner_result": clarity, "owner_context": {"change_request": source}}, "--mode", mode, "--input", "-",
     )
     stage0_command(
         fixture, "guru-clarify-requirements", "check-requirements-clarification",
-        clarity, "--input", "-",
+        {"owner_result": clarity, "owner_context": {"change_request": source}}, "--input", "-",
     )
     clarified = stage0_command(fixture, "guru-clarify-requirements", "invoke", {
         "schema_version": "1.0", "public_input": {
@@ -883,7 +740,7 @@ def readiness_prerequisites(
             "target_locator": context["transition"]["target_locator"],
             "duplicate_snapshot": snapshot,
         },
-        "transition": context["transition"], "owner_result": clarity, "owner_context": {},
+        "transition": context["transition"], "owner_result": clarity, "owner_context": {"change_request": source},
     }, "--invocation", "-")
     if clarified.get("exit_id") != "clear":
         raise ValueError("Readiness fixture requires the production clear transition")
@@ -891,43 +748,6 @@ def readiness_prerequisites(
         return {"transition": clarified["transition"], "clarity": clarity,
                 "public_outputs": {"context": context, "clarity": clarified}}
 
-    scope, contents = runtime.contract_wording_build_scope(
-        fixture, "change_request", mode,
-        change_request_input=source_path.relative_to(fixture).as_posix(),
-    )
-    scan = runtime.scan_contract_wording(scope, contents)
-    wording = wording_review(runtime, "change_request", mode, scope, scan, "pass")
-    wording_source = {
-        "source_kind": source["kind"], "identity": clarified["transition"]["target_locator"],
-        "title": source["title"], "body": source["body"],
-        "updated_at": source.get("updated_at"),
-    }
-    wording_path = source_path.with_name("wording-source.json")
-    wording_path.write_text(json.dumps(wording_source) + "\n", encoding="utf-8")
-    wording = stage0_command(
-        fixture, "guru-review-contract-wording", "record-contract-wording-review",
-        {**wording["semantic_review"], "generated_at": wording["generated_at"], "typed_exit": "pass"},
-        "--mode", mode, "--profile", "change_request", "--input", "-",
-        "--change-request-input", str(wording_path),
-    )
-    checked = stage0_command(
-        fixture, "guru-review-contract-wording", "check-contract-wording-review",
-        wording, "--input", "-", "--change-request-input", str(wording_path),
-    )
-    worded = stage0_command(fixture, "guru-review-contract-wording", "invoke", {
-        "schema_version": "1.0", "public_input": {
-            "profile": "change_request", "mode": mode,
-            "source_exit": "clear", "continuation_id": continuation,
-            "target_locator": clarified["transition"]["target_locator"],
-        },
-        "transition": clarified["transition"], "owner_result": wording,
-        "owner_context": {"change_request": source},
-        "validation_receipt": checked["validation_receipt"],
-    }, "--invocation", "-")
-    if worded.get("exit_id") != "pass":
-        raise ValueError("Readiness fixture requires the production pass transition")
-    return {"clarity": clarity, "wording": wording, "transition": worded["transition"],
-            "public_outputs": {"context": context, "clarity": clarified, "wording": worded}}
 
 def readiness_semantic_review(
     runtime: Any, target: dict[str, Any], typed_exit: str, *, evidence_ref: str = "target",
@@ -937,7 +757,6 @@ def readiness_semantic_review(
     finding_id = "stage0-readiness-finding"
     category = {
         "clarify_requirements": "requirement_gap",
-        "review_wording": "wording_gap",
         "refresh_context": "context_stale",
         "blocked": "target_complete",
     }.get(typed_exit, "requirement_gap")
@@ -991,7 +810,6 @@ def prepare_readiness_invocation(
     route_by_recipe = {
         "readiness-ready": "ready",
         "readiness-clarify": "clarify_requirements",
-        "readiness-wording": "review_wording",
         "readiness-refresh": "refresh_context",
         "readiness-blocked": "blocked",
     }
@@ -1013,7 +831,7 @@ def prepare_readiness_invocation(
     elif profile in {"proposed_draft", "standalone_request"}:
         issue = None
         source = {
-            "kind": "draft", "draft_id": f"draft:{request_id}",
+            "kind": "draft", "repo": repo, "draft_id": f"draft:{request_id}",
             "title": "Review Stage 0 readiness",
             "body": "The current Intake workflow is one independently deliverable unit.",
             "selected_comments": [],
@@ -1027,8 +845,8 @@ def prepare_readiness_invocation(
     source_path.write_text(json.dumps(source) + "\n", encoding="utf-8")
     prerequisites = readiness_prerequisites(
         runtime, fixture, source, source_path, mode, continuation,
-        {"clarify_requirements": "context_current", "review_wording": "clarity_current"}.get(
-            typed_exit, "wording_current"
+        {"clarify_requirements": "context_current"}.get(
+            typed_exit, "clarity_current"
         ),
     )
     transition = prerequisites["transition"]
@@ -1094,7 +912,6 @@ def prepare_readiness_invocation(
         "schema_version": "1.0", "public_input": {
             "profile": profile, "source_exit": {
                 "context_current": "context_ready", "clarity_current": "clear",
-                "wording_current": "pass",
             }[transition["stage"]], "mode": mode,
             "continuation_id": continuation,
             "target_locator": transition["target_locator"],
@@ -1171,7 +988,6 @@ def workspace_prerequisites(
             "context_result_sha256": transition["context_result_sha256"],
         },
         "clarity": state["producer_results"]["clarity"],
-        "wording": state["producer_results"]["wording"],
         "readiness": readiness,
     }, {
         "repo": repo, "issue_number": issue_number, "url": issue_url,

@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "行为/真实边界验证、事实采用及发布验证范围"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "保留真实失败语义、定向验证及历史preflight替代边界"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "原退役wrapper/manifest/command/schema测试消费者收敛"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_native_platform_load.py", "reason": "混合registry在各root的合法选择与必需缺失回归"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py", "reason": "受hash绑定原正文到合法替换后的完整验证回归"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "current JSON input/output精确清单与conversation不贡献schema的已有合同"}
+{"file": "trellis/guru-team-extension.json", "reason": "current input登记唯一source及真实安装消费者"}
+{"file": "trellis/presets/guru-team/MIGRATION-812.md", "reason": "qualifier current输入与历史schema/原provider恢复"}
+{"file": "trellis/presets/guru-team/MIGRATION-813.md", "reason": "Create Task current2.0与原共享Creation/历史恢复"}
+{"file": "trellis/presets/guru-team/MIGRATION-819.md", "reason": "Sync current3.0仍引用2.0分支，不能误删当前消费者"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前切片完整需求、source与后继采用责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前设计与唯一来源设计处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "验证、partial Policy与Docs Plan"}

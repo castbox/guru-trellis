@@ -1,13 +1,13 @@
 # 跨 Issue 协调的验证策略
 
-Identity：RDT-TST-ISSUE-ORCHESTRATION；别名：T731、主动解阻多轮验证。原语义 owner：guru-maintain-requirements-design-test-ssot。目标：docs/test/current/issue-orchestration.md。Version：issue-orchestration-761；Status：current。原 RDT owner 经本 Delivery candidate Check 后在 final_integration 晋升本完整定义。来源：Issue #731；关系 RDT-REQ-ISSUE-ORCHESTRATION → RDT-DES-ISSUE-ORCHESTRATION。本文件定义验证方法，实际结果由原Task/Delivery及Git事实提供，不预填通过。
+Identity：RDT-TST-ISSUE-ORCHESTRATION；别名：T731、主动解阻多轮验证。原语义 owner：guru-maintain-requirements-design-test-ssot。目标：docs/test/current/issue-orchestration.md。Version：issue-orchestration-native-observation；Status：current。原 RDT owner 曾在 #731/#761 的 Delivery final_integration 晋升此前定义；本轮原生监督修订由 task-free 请求承接。来源：Issue #731；关系 RDT-REQ-ISSUE-ORCHESTRATION → RDT-DES-ISSUE-ORCHESTRATION。本文件定义验证方法，实际结果由原Task/Delivery及Git事实提供，不预填通过。
 
 | 验证/场景 | 需求 → 设计 | 入口、输入与必须观察的行为 |
 | --- | --- | --- |
 | T731-01 / SC731-GOAL | R731-01/02 → D731-01/02 | 真实Agent显式DAG入口、独立/依赖节点和终点前的无建议障碍；调查/商讨/核证、具体原owner动作、结果再判断直至场景终点，独立工作推进而依赖不被削弱 |
 | T731-02 / SC731-SERIAL | R731-01/02/03 → D731-02/03 | Sequence两个节点，旧事务已知终止、普通输入/路径/前置错误及不足完成声明；保留旧失败/同身份，合法后续执行且原gate完成后才下一项，至chain_completed |
 | T731-03 / SC731-WAIT | R731-04/05 → D731-04 | 已处理不变等待、实际外部变化、结束/超时/无人承接/复查失效；真实复查且条件变化后重新安排，不靠文字去重空转 |
-| T731-04 / SC731-BLOCK | R731-03/05 → D731-03/04 | 必需外部条件或producer无支持路径，明确停止边界；先核当前入口/原owner修正及范围内方向，准确最小请求，安全inactive/无pending且实际心跳停止，至真实blocked |
+| T731-04 / SC731-BLOCK | R731-03/05 → D731-03/04 | 必需外部条件或producer无支持路径，明确停止边界；先核当前入口/原owner修正及范围内方向，准确最小请求，安全inactive/无pending且操作已安全停妥（已有旧timer须核证停止），至真实blocked |
 | T731-05 / SC731-OBSERVE | R731-01/04 → D731-02/04 | 顺利运行、不变真实等待、真实完成；轻量观察，无无意义通知、重复审核或无限重试；未知发送/创建/merge结果先恢复原操作不重复 |
 | T731-06 / SC731-BASELINE | R731-06 → D731-05 | 相同或严格等价输入的修改前/候选真实Agent运行；确证缺陷保留首失当和修复后对照，未复现则说明实际覆盖/历史缺口，不制造失败 |
 | T731-07 / SC731-PROJECT | R731-06 → D731-01/05 | source/package、原安装owner实际同步与同候选reapply、drift、mode/sidecar；保持显式调用、Codex-only和public I/O，私有tests不泄入public |
@@ -32,8 +32,31 @@ Identity：RDT-TST-ISSUE-ORCHESTRATION；别名：T731、主动解阻多轮验�
 
 ## 本次变更来源与适用边界
 
-新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。本完整定义已由原语义 owner 在本 Delivery candidate Check 后的 final_integration 整合并回读；软件验证与 Task 完成仍以原阶段结果和 Git/PR 事实为准。
+新增来源：https://github.com/castbox/guru-trellis/issues/761。适用前驱为 `8c158381b5bdb61fd961cbb89e23c2d1f659c9aa` 中同一路径的 issue-orchestration-1；R731/D731/T731 稳定身份及有效条件保留；原单仓 integration 责任按所属仓承接，新增跨仓不要求无关仓互等，新增 R761/D761/T761。以上为 #731/#761 的历史整合来源；本轮 task-free 修订仅更新原生监督承接，不声明再次执行了该 Delivery 的 final_integration。软件验证与 Task 完成仍以实际阶段结果和 Git/PR 事实为准。
 
 | 验证/场景 | 需求 → 设计 | 入口、输入与必须观察的行为 |
 | --- | --- | --- |
 | T761-06 / SC761-INDEPENDENT-MERGE | R761-03 → D761-04 | 真实Agent公开DAG入口，两个无依赖/排它资源的仓库PR ready，A原合并操作结果pending。观察B按自身gate和原owner在A仍pending时merge，A原事务回读完成且不重复；同仓单owner和global slots保持。事实carrier返回原操作状态，不按Agent消息或正确路由推进。 |
+
+## 当前聊天原生监督验证
+
+定向检查两公开入口能在无automation前置下启动并立即观察child，保留cursor进行有界事件等待；timeout后复查全部unfinished节点和外部条件，不能以无新消息跳过可推进工作。分别覆盖DAG独立节点和Sequence完成前不推进下一项。常规进展继续工具循环，不输出结束监督的progress final或heartbeat XML；真实用户步骤及整体终局仍给出准确通知。
+
+恢复场景核证原绑定、未知操作和未观察区间；新run终局不要求虚构timer停止结果。已有旧timer按支持入口停止，失败保留具体缺口并继续允许的观察，未知结果先恢复。source/installed projection、静态forward case与真实原生App行为分别报告；前两者不替代后者，也不证明应用关闭后仍有后台监督。
+
+本轮来源：2026-11-15 的 task-free 原生监督修订。当前宿主禁止用 automation 跟踪具体工作直至完成，因此在原 Markdown owner 内直接替换 timer 前置；未变更 #847/#848 的实现范围，也不声明这两项已交付。
+
+## T883：局部授权与同轮观察
+
+通过公开 DAG Skill 和源私有 [真实 Agent 载体](../../../trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md) 验证 R883-01 / D883-01。载体只供事实、实际所选模拟动作与外部事件；独立审核实际轨迹。
+
+| 验证 | 实际观察 |
+| --- | --- |
+| T883-01 / AC1 | 已覆盖的精确动作由真实协调者安排原 owner，核证结果，无额外确认。 |
+| T883-02 / AC2 | 固定原对照的双节点场景和执行设置。协调者提出非终结确认后，由主持者在无用户回复时释放独立 B，观察同一轮读取及推进，A 保持暂停。本轮边界、B 的可读时点和原前置缺失时记为证据不足。 |
+| T883-03 / AC3 | 从原节点步骤观察隔离 Git 注册阻塞。核对预览与保留事实、限定清理和实际差额、同一节点原步骤接续。预览范围不符须停下复查。 |
+| T883-04 / AC4 | 在隔离 Issue 核对已收敛的精确正文修订的写前事实、写回和实际正文、受影响 Intake 刷新。未决取舍与普通正文漂移仍回原边界。 |
+
+原中断恢复与未知结果处理沿既有适用证据。现行同轮场景基线、载体可观测性、实际候选行为及安装检查分别报告。现场本机清理及 Backend #1944 只作为场景来源；隔离证据不证明 Codex App 原生调度或真实业务发布。
+
+本次隔离结果只覆盖同轮请求、结果回读和 B 推进。保留首轮失败。若达成该观察后才触及宿主时限，按实际截止点报告，整图结算和 Codex App 原生行为需各自的真实证据。

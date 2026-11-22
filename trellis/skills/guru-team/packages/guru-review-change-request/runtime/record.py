@@ -8,6 +8,9 @@ from runtime.io import CommandError
 
 def run(package_root, command, argv):
     envelope, target, prerequisites = invocation(package_root, argv)
+    if target is None:
+        from issue_review import execute
+        return execute(package_root, envelope, "record")
     authored = copy.deepcopy(envelope["owner_result"])
     semantic = authored.get("semantic_review")
     if (not isinstance(semantic, dict)

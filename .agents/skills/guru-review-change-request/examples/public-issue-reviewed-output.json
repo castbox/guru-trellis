@@ -1,0 +1,13 @@
+{
+  "exit_id": "issue_reviewed",
+  "report": {
+    "coverage": [
+      "Issue 正文、当前讨论和引用的验收约束。"
+    ],
+    "conclusion": "该改动可独立交付。开工前仍需确认前置改动已合并。",
+    "findings": [],
+    "open_items": [
+      "核对前置改动的合并状态。"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+task_id: 848-required-contract-reading
+source: https://github.com/castbox/guru-trellis/issues/848
+status: integrated_pending_review
+integrated_into: guru-trellis-rdt
+strategy: delta_first
+authority: guru-trellis-rdt
+base_revision: 0fb7dc9aac817a684c2f95bebb6570061a5ef868
+change_kind: addition
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+targets:
+  requirements: docs/requirements/current/required-contract-reading.md
+  design: docs/design/current/required-contract-reading.md
+  test: docs/test/current/required-contract-reading.md

@@ -1,0 +1,695 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-13-815-manifest-conflict-recovery",
+  "id": "815-manifest-conflict-recovery",
+  "name": "815-manifest-conflict-recovery",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 815,
+    "disposition": "exact_source"
+  },
+  "title": "#815 明确受管 manifest Git 冲突到原 tools owner 的恢复合同",
+  "description": "明确完整旧 manifest 临时前像、原 provenance/hash、逐路径 tools owner 与组合投影生成，验证同身份 resolved 整合和 Publication 原事务退役。",
+  "dev_type": null,
+  "scope": "#815 四项要求、正常两分支 canonical 冲突验收及交付兼容边界；独立交付到 main。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-13",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+    "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+  },
+  "deliveries": [
+    {
+      "id": "8b276682-a9c7-4860-b9c7-fedaad6c92cb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+          "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+        },
+        "anchors": [
+          "R815-01",
+          "R815-02",
+          "R815-03",
+          "R815-04",
+          "R815-05",
+          "R815-06",
+          "AC815-01",
+          "AC815-02",
+          "AC815-03",
+          "AC815-04",
+          "AC815-05",
+          "AC815-06"
+        ]
+      },
+      "planning_root": "deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/design.md",
+        "revision": "sha256:aac08c50aa94ceb3ba2db94939a8a092431d862f30086168e41ac76cecfeada8"
+      },
+      "candidate": {
+        "base_ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+        "content_ref": "sha256:8b27cf8981558fcd3acf791361f13d0a045630c20e15fb680c00dd90c57dd571",
+        "head_ref": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".agents/skills/guru-publish-task-delivery/references/contract.md",
+          ".agents/skills/guru-reconcile-task-base/SKILL.md",
+          ".agents/skills/guru-reconcile-task-base/references/contract.md",
+          ".agents/skills/guru-upgrade-tools/SKILL.md",
+          ".agents/skills/guru-upgrade-tools/references/contract.md",
+          ".claude/skills/guru-publish-task-delivery/references/contract.md",
+          ".claude/skills/guru-reconcile-task-base/SKILL.md",
+          ".claude/skills/guru-reconcile-task-base/references/contract.md",
+          ".claude/skills/guru-upgrade-tools/SKILL.md",
+          ".claude/skills/guru-upgrade-tools/references/contract.md",
+          ".cursor/skills/guru-publish-task-delivery/references/contract.md",
+          ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+          ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+          ".cursor/skills/guru-upgrade-tools/SKILL.md",
+          ".cursor/skills/guru-upgrade-tools/references/contract.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+          ".trellis/spec/workflow/issue-orchestration.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/design.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/manifest.yaml",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/test/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/requirement.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/test.md",
+          "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/managed_manifest_conflict_flow.py",
+          "trellis/workflows/guru-team/README.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:04e129e3-bb6a-4312-a351-e9805ad55d00",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+              "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+            },
+            "anchors": [
+              "R815-01",
+              "R815-02",
+              "R815-03",
+              "R815-04",
+              "R815-05",
+              "R815-06",
+              "AC815-01",
+              "AC815-02",
+              "AC815-03",
+              "AC815-04",
+              "AC815-05",
+              "AC815-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/design.md",
+            "revision": "sha256:aac08c50aa94ceb3ba2db94939a8a092431d862f30086168e41ac76cecfeada8"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/prd.md",
+              "revision": "sha256:105598fea77996ef38bbe29bcbf22f528b88fd064d73a7149a6dbbffc1c10c0c"
+            },
+            {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/design.md",
+              "revision": "sha256:aac08c50aa94ceb3ba2db94939a8a092431d862f30086168e41ac76cecfeada8"
+            },
+            {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/implement.md",
+              "revision": "sha256:726ccd723a2de18187310bae559707a8088bb3e67d4a1802c9334a9d39fcb8d4"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:7938afadf7d14559cfdcc47524a0167b9e091d8934892d8e8c71759808088677",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+              "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+            },
+            "anchors": [
+              "R815-01",
+              "R815-02",
+              "R815-03",
+              "R815-04",
+              "R815-05",
+              "R815-06",
+              "AC815-01",
+              "AC815-02",
+              "AC815-03",
+              "AC815-04",
+              "AC815-05",
+              "AC815-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/design.md",
+            "revision": "sha256:aac08c50aa94ceb3ba2db94939a8a092431d862f30086168e41ac76cecfeada8"
+          },
+          "candidate": {
+            "base_ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+            "content_ref": "sha256:8b27cf8981558fcd3acf791361f13d0a045630c20e15fb680c00dd90c57dd571",
+            "head_ref": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-publish-task-delivery/references/contract.md",
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".agents/skills/guru-reconcile-task-base/references/contract.md",
+              ".agents/skills/guru-upgrade-tools/SKILL.md",
+              ".agents/skills/guru-upgrade-tools/references/contract.md",
+              ".claude/skills/guru-publish-task-delivery/references/contract.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/references/contract.md",
+              ".claude/skills/guru-upgrade-tools/SKILL.md",
+              ".claude/skills/guru-upgrade-tools/references/contract.md",
+              ".cursor/skills/guru-publish-task-delivery/references/contract.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+              ".cursor/skills/guru-upgrade-tools/SKILL.md",
+              ".cursor/skills/guru-upgrade-tools/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/design.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/manifest.yaml",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/requirement.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/test.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/managed_manifest_conflict_flow.py",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:04e129e3-bb6a-4312-a351-e9805ad55d00",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/implement.md",
+              "revision": "sha256:726ccd723a2de18187310bae559707a8088bb3e67d4a1802c9334a9d39fcb8d4"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:7938afadf7d14559cfdcc47524a0167b9e091d8934892d8e8c71759808088677",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+              "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+            },
+            "anchors": [
+              "R815-01",
+              "R815-02",
+              "R815-03",
+              "R815-04",
+              "R815-05",
+              "R815-06",
+              "AC815-01",
+              "AC815-02",
+              "AC815-03",
+              "AC815-04",
+              "AC815-05",
+              "AC815-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/design.md",
+            "revision": "sha256:aac08c50aa94ceb3ba2db94939a8a092431d862f30086168e41ac76cecfeada8"
+          },
+          "candidate": {
+            "base_ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+            "content_ref": "sha256:8b27cf8981558fcd3acf791361f13d0a045630c20e15fb680c00dd90c57dd571",
+            "head_ref": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-publish-task-delivery/references/contract.md",
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".agents/skills/guru-reconcile-task-base/references/contract.md",
+              ".agents/skills/guru-upgrade-tools/SKILL.md",
+              ".agents/skills/guru-upgrade-tools/references/contract.md",
+              ".claude/skills/guru-publish-task-delivery/references/contract.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/references/contract.md",
+              ".claude/skills/guru-upgrade-tools/SKILL.md",
+              ".claude/skills/guru-upgrade-tools/references/contract.md",
+              ".cursor/skills/guru-publish-task-delivery/references/contract.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+              ".cursor/skills/guru-upgrade-tools/SKILL.md",
+              ".cursor/skills/guru-upgrade-tools/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/design.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/manifest.yaml",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/requirement.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/test.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/managed_manifest_conflict_flow.py",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "check:7938afadf7d14559cfdcc47524a0167b9e091d8934892d8e8c71759808088677",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/implement.md",
+              "revision": "sha256:726ccd723a2de18187310bae559707a8088bb3e67d4a1802c9334a9d39fcb8d4"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:5fc5f711a6247ae1ade5d5706cd4cdc4c8acf26172e8411f4873f2303cbcd946",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+              "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+            },
+            "anchors": [
+              "R815-01",
+              "R815-02",
+              "R815-03",
+              "R815-04",
+              "R815-05",
+              "R815-06",
+              "AC815-01",
+              "AC815-02",
+              "AC815-03",
+              "AC815-04",
+              "AC815-05",
+              "AC815-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/design.md",
+            "revision": "sha256:aac08c50aa94ceb3ba2db94939a8a092431d862f30086168e41ac76cecfeada8"
+          },
+          "candidate": {
+            "base_ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+            "content_ref": "sha256:8b27cf8981558fcd3acf791361f13d0a045630c20e15fb680c00dd90c57dd571",
+            "head_ref": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".agents/skills/guru-publish-task-delivery/references/contract.md",
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".agents/skills/guru-reconcile-task-base/references/contract.md",
+              ".agents/skills/guru-upgrade-tools/SKILL.md",
+              ".agents/skills/guru-upgrade-tools/references/contract.md",
+              ".claude/skills/guru-publish-task-delivery/references/contract.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/references/contract.md",
+              ".claude/skills/guru-upgrade-tools/SKILL.md",
+              ".claude/skills/guru-upgrade-tools/references/contract.md",
+              ".cursor/skills/guru-publish-task-delivery/references/contract.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+              ".cursor/skills/guru-upgrade-tools/SKILL.md",
+              ".cursor/skills/guru-upgrade-tools/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/design.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/manifest.yaml",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/requirement.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/test.md",
+              "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/managed_manifest_conflict_flow.py",
+              "trellis/workflows/guru-team/README.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:7938afadf7d14559cfdcc47524a0167b9e091d8934892d8e8c71759808088677",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/deliveries/8b276682-a9c7-4860-b9c7-fedaad6c92cb/implement.md",
+              "revision": "sha256:726ccd723a2de18187310bae559707a8088bb3e67d4a1802c9334a9d39fcb8d4"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:c0928c53589b74c9008d4ebc69874dc4b4e5aa42d7e4f25cb7a3ed1ebdb26da6",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/829",
+            "revision": "sha256:2e5c2a768b5825562c26f733e97e0f54383cc070b6dc88ad3a47797d608246c4"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+          "content_ref": "sha256:8b27cf8981558fcd3acf791361f13d0a045630c20e15fb680c00dd90c57dd571",
+          "head_ref": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".agents/skills/guru-publish-task-delivery/references/contract.md",
+            ".agents/skills/guru-reconcile-task-base/SKILL.md",
+            ".agents/skills/guru-reconcile-task-base/references/contract.md",
+            ".agents/skills/guru-upgrade-tools/SKILL.md",
+            ".agents/skills/guru-upgrade-tools/references/contract.md",
+            ".claude/skills/guru-publish-task-delivery/references/contract.md",
+            ".claude/skills/guru-reconcile-task-base/SKILL.md",
+            ".claude/skills/guru-reconcile-task-base/references/contract.md",
+            ".claude/skills/guru-upgrade-tools/SKILL.md",
+            ".claude/skills/guru-upgrade-tools/references/contract.md",
+            ".cursor/skills/guru-publish-task-delivery/references/contract.md",
+            ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+            ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+            ".cursor/skills/guru-upgrade-tools/SKILL.md",
+            ".cursor/skills/guru-upgrade-tools/references/contract.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+            ".trellis/spec/workflow/issue-orchestration.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/design.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/manifest.yaml",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/test/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/requirement.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/test.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/managed_manifest_conflict_flow.py",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 829,
+        "reviewed_head": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/829",
+          "revision": "sha256:2e5c2a768b5825562c26f733e97e0f54383cc070b6dc88ad3a47797d608246c4"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:43eb4eeeef416b85a2e086bfe7bb8a498ef9dab6",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/829",
+            "revision": "43eb4eeeef416b85a2e086bfe7bb8a498ef9dab6"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "cb8b4ce349b54cd832ff5b8f72602c5a721ce875",
+          "content_ref": "sha256:8b27cf8981558fcd3acf791361f13d0a045630c20e15fb680c00dd90c57dd571",
+          "head_ref": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+            ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".agents/skills/guru-publish-task-delivery/references/contract.md",
+            ".agents/skills/guru-reconcile-task-base/SKILL.md",
+            ".agents/skills/guru-reconcile-task-base/references/contract.md",
+            ".agents/skills/guru-upgrade-tools/SKILL.md",
+            ".agents/skills/guru-upgrade-tools/references/contract.md",
+            ".claude/skills/guru-publish-task-delivery/references/contract.md",
+            ".claude/skills/guru-reconcile-task-base/SKILL.md",
+            ".claude/skills/guru-reconcile-task-base/references/contract.md",
+            ".claude/skills/guru-upgrade-tools/SKILL.md",
+            ".claude/skills/guru-upgrade-tools/references/contract.md",
+            ".cursor/skills/guru-publish-task-delivery/references/contract.md",
+            ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+            ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+            ".cursor/skills/guru-upgrade-tools/SKILL.md",
+            ".cursor/skills/guru-upgrade-tools/references/contract.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md",
+            ".trellis/spec/workflow/issue-orchestration.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/design.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/manifest.yaml",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/proposed/docs/test/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/requirement.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/test.md",
+            "docs/requirements-design-test-contributions/815-manifest-conflict-recovery/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/managed_manifest_conflict_flow.py",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 829,
+        "reviewed_head": "64ddf717c9460c9e9ebf1fb2a9e8c0fb1747b1f5",
+        "merge_commit": "43eb4eeeef416b85a2e086bfe7bb8a498ef9dab6",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:7de06f00-f4be-487c-a6c5-36e8c4e83349",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+          "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/829",
+          "revision": "43eb4eeeef416b85a2e086bfe7bb8a498ef9dab6"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/prd.md",
+        "revision": "sha256:efda5be37560b85ba3892d669d731e0b767507964157d70f2f7f330879d7a272"
+      },
+      "delivery_result_ids": [
+        "delivery:43eb4eeeef416b85a2e086bfe7bb8a498ef9dab6"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:7815109671953b8310e630bb",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/815",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-13-815-manifest-conflict-recovery/closeout/closure/Y2xvc3VyZTo3ODE1MTA5NjcxOTUzYjgzMTBlNjMwYmI.json",
+          "revision": "sha256:c42e4342662b9046da31b4c5430909d2423c33a7b9e0bb42e3193df17166e608"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:7de06f00-f4be-487c-a6c5-36e8c4e83349",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/815",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}

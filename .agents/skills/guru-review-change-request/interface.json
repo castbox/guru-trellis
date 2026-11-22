@@ -3,7 +3,7 @@
   "schema_version": "1.8",
   "id": "guru-review-change-request",
   "name": "guru-review-change-request",
-  "description": "Review whether a current change request is one independently deliverable unit through linked prerequisite evidence, an AI readiness gate, and five typed exits.",
+  "description": "Use for Issue readiness and independent delivery review, including existing-Issue applicability, necessary local supplements and original complete-chain evidence.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -13,8 +13,8 @@
         "runtime_dependency",
         "review_target",
         "clarity_evidence",
-        "wording_evidence",
-        "invocation_freshness"
+        "invocation_freshness",
+        "standalone_issue_review"
       ]
     },
     "standalone": {
@@ -23,8 +23,8 @@
         "runtime_dependency",
         "review_target",
         "clarity_evidence",
-        "wording_evidence",
-        "invocation_freshness"
+        "invocation_freshness",
+        "standalone_issue_review"
       ]
     }
   },
@@ -43,21 +43,21 @@
     },
     {
       "id": "clarity_evidence",
-      "evidence": "clarity_current or wording_current public transition, or original context_current for missing clarity",
+      "evidence": "Full-chain profiles require their actual predecessor transition. Existing-Issue profiles use current live authority and AI-reviewed still-applicable coverage or actual local producer returns.",
       "binding": "the same retained open issue/draft target, checker-passed disposition, content and scope decision",
-      "freshness": "closed public transition, matching locator and same-domain facts cross-fields; opaque clarity identities bound by the complete transition receipt"
-    },
-    {
-      "id": "wording_evidence",
-      "evidence": "wording_current public transition, or original clarity_current for missing wording",
-      "binding": "the same title/body bytes and fixed change-request scope",
-      "freshness": "wording top-level and nested title/body combination identity match current source"
+      "freshness": "The original owner reviews applicability; independent Issue profiles do not manufacture current-run predecessor receipts."
     },
     {
       "id": "invocation_freshness",
       "evidence": "mode, target identity, prerequisite projections, linkage digest, AI review and typed consumer",
       "binding": "one current readiness review round",
       "freshness": "checker recomputes the complete objective projection from current prerequisite bytes"
+    },
+    {
+      "id": "standalone_issue_review",
+      "evidence": "one existing Issue and its current discussion, plus any evidence needed for the requested review",
+      "binding": "the direct read-only profile binds the exact reviewed Issue snapshot and returns the resulting report",
+      "freshness": "review the effect of changed materials and validate the current Issue snapshot in one public invocation"
     }
   ],
   "runtime_dependency": {
@@ -105,12 +105,12 @@
       "path": "examples/public-ready-output-4.0.json"
     },
     {
-      "id": "public_output_clarify_requirements_example",
-      "path": "examples/public-clarify-requirements-output.json"
+      "id": "public_output_ready_example_6_0",
+      "path": "examples/public-ready-output-6.0.json"
     },
     {
-      "id": "public_output_review_wording_example",
-      "path": "examples/public-review-wording-output.json"
+      "id": "public_output_clarify_requirements_example",
+      "path": "examples/public-clarify-requirements-output.json"
     },
     {
       "id": "public_output_refresh_context_example",
@@ -119,6 +119,38 @@
     {
       "id": "public_output_blocked_example",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "existing_issue_intake_input",
+      "path": "examples/public-existing-issue-intake-input.json"
+    },
+    {
+      "id": "issue_review_return_input",
+      "path": "examples/public-issue-review-return-input.json"
+    },
+    {
+      "id": "issue_review_supplement_context",
+      "path": "examples/public-issue-review-supplement-context-output.json"
+    },
+    {
+      "id": "issue_review_supplement_requirements",
+      "path": "examples/public-issue-review-supplement-requirements-output.json"
+    },
+    {
+      "id": "issue_review_supplement_wording",
+      "path": "examples/public-issue-review-supplement-wording-output.json"
+    },
+    {
+      "id": "issue_review_full_intake_required",
+      "path": "examples/public-issue-review-full-intake-required-output.json"
+    },
+    {
+      "id": "issue_review_refresh_issue_baseline",
+      "path": "examples/public-issue-review-refresh-issue-baseline-output.json"
+    },
+    {
+      "id": "issue_ready",
+      "path": "examples/public-issue-ready-output.json"
     }
   ],
   "schemas": [
@@ -189,6 +221,106 @@
     {
       "id": "legacy_718_public_refresh_context_output",
       "path": "schemas/public-refresh-context-output.schema.json"
+    },
+    {
+      "id": "existing_issue_intake_input",
+      "path": "schemas/public-existing-issue-intake-input-1.0.schema.json"
+    },
+    {
+      "id": "current_input_index",
+      "path": "schemas/public-input-2.0.schema.json"
+    },
+    {
+      "id": "issue_review_return_input",
+      "path": "schemas/public-issue-review-return-input-1.0.schema.json"
+    },
+    {
+      "id": "issue_review_supplement_context",
+      "path": "schemas/public-supplement-context-output-1.0.schema.json"
+    },
+    {
+      "id": "issue_review_supplement_requirements",
+      "path": "schemas/public-supplement-requirements-output-1.0.schema.json"
+    },
+    {
+      "id": "issue_review_supplement_wording",
+      "path": "schemas/public-supplement-wording-output-1.0.schema.json"
+    },
+    {
+      "id": "issue_review_full_intake_required",
+      "path": "schemas/public-full-intake-required-output-1.0.schema.json"
+    },
+    {
+      "id": "issue_review_refresh_issue_baseline",
+      "path": "schemas/public-refresh-issue-baseline-output-1.0.schema.json"
+    },
+    {
+      "id": "issue_ready",
+      "path": "schemas/public-issue-ready-output-1.0.schema.json"
+    },
+    {
+      "id": "ready_7_0",
+      "path": "schemas/public-ready-output-7.0.schema.json"
+    },
+    {
+      "id": "issue_review_owner",
+      "path": "schemas/issue-review-owner-1.0.schema.json"
+    },
+    {
+      "id": "current_change_request_review_4_0_schema_json",
+      "path": "schemas/change-request-review-4.0.schema.json"
+    },
+    {
+      "id": "current_issue_review_owner_2_0_schema_json",
+      "path": "schemas/issue-review-owner-2.0.schema.json"
+    },
+    {
+      "id": "current_public_current_issue_input_2_0_schema_json",
+      "path": "schemas/public-current-issue-input-2.0.schema.json"
+    },
+    {
+      "id": "current_public_input_3_0_schema_json",
+      "path": "schemas/public-input-3.0.schema.json"
+    },
+    {
+      "id": "current_public_issue_review_return_input_2_0_schema_json",
+      "path": "schemas/public-issue-review-return-input-2.0.schema.json"
+    },
+    {
+      "id": "current_public_proposed_draft_input_2_0_schema_json",
+      "path": "schemas/public-proposed-draft-input-2.0.schema.json"
+    },
+    {
+      "id": "current_public_ready_output_3_0_schema_json",
+      "path": "schemas/public-ready-output-3.0.schema.json"
+    },
+    {
+      "id": "current_public_ready_output_6_0_schema_json",
+      "path": "schemas/public-ready-output-6.0.schema.json"
+    },
+    {
+      "id": "current_public_ready_output_8_0_schema_json",
+      "path": "schemas/public-ready-output-8.0.schema.json"
+    },
+    {
+      "id": "current_public_standalone_request_input_2_0_schema_json",
+      "path": "schemas/public-standalone-request-input-2.0.schema.json"
+    },
+    {
+      "id": "current_public_supplement_requirements_output_2_0_schema_json",
+      "path": "schemas/public-supplement-requirements-output-2.0.schema.json"
+    },
+    {
+      "id": "current_issue_review_aggregate",
+      "path": "schemas/public-input-4.0.schema.json"
+    },
+    {
+      "id": "standalone_issue_readiness_schema",
+      "path": "schemas/public-standalone-issue-readiness-input-1.0.schema.json"
+    },
+    {
+      "id": "public_issue_reviewed_output_schema",
+      "path": "schemas/public-issue-reviewed-output-1.0.schema.json"
     }
   ],
   "validators": [
@@ -229,14 +361,6 @@
       }
     },
     {
-      "id": "review_wording",
-      "evidence": "the AI found missing, stale, unchecked, mismatched, or non-pass change-request wording evidence",
-      "consumer": {
-        "kind": "skill",
-        "id": "guru-review-contract-wording"
-      }
-    },
-    {
       "id": "refresh_context",
       "evidence": "the AI found stale base, live target, query, current-state, duplicate, or archived-history identity",
       "consumer": {
@@ -250,6 +374,46 @@
       "consumer": {
         "kind": "stop",
         "id": "change-request-review-blocked"
+      }
+    },
+    {
+      "id": "supplement_context",
+      "evidence": "completed original-owner semantic review for this Issue and continuation",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-discover-change-context"
+      }
+    },
+    {
+      "id": "supplement_requirements",
+      "evidence": "completed original-owner semantic review for this Issue and continuation",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-clarify-requirements"
+      }
+    },
+    {
+      "id": "full_intake_required",
+      "evidence": "completed original-owner semantic review for this Issue and continuation",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-issue-full-intake-router"
+      }
+    },
+    {
+      "id": "refresh_issue_baseline",
+      "evidence": "completed original-owner semantic review for this Issue and continuation",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-issue-baseline-refresh-router"
+      }
+    },
+    {
+      "id": "issue_reviewed",
+      "evidence": "completed independent Issue readiness review and objective live Issue snapshot check",
+      "consumer": {
+        "kind": "stop",
+        "id": "issue-review-response"
       }
     }
   ],
@@ -290,15 +454,15 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-review-change-request-input-aggregate-1.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-stage0-review-change-request-input-aggregate-4.0",
+        "path": "schemas/public-input-4.0.schema.json"
       },
       "profiles": [
         {
           "id": "current_issue",
           "schema": {
-            "schema_id": "guru-stage0-review-change-request-input-current-issue-1.0",
-            "path": "schemas/public-current-issue-input.schema.json"
+            "schema_id": "guru-stage0-review-change-request-input-current-issue-2.0",
+            "path": "schemas/public-current-issue-input-2.0.schema.json"
           },
           "example": {
             "id": "current_issue_input",
@@ -312,8 +476,8 @@
         {
           "id": "proposed_draft",
           "schema": {
-            "schema_id": "guru-stage0-review-change-request-input-proposed-draft-1.0",
-            "path": "schemas/public-proposed-draft-input.schema.json"
+            "schema_id": "guru-stage0-review-change-request-input-proposed-draft-2.0",
+            "path": "schemas/public-proposed-draft-input-2.0.schema.json"
           },
           "example": {
             "id": "proposed_draft_input",
@@ -327,8 +491,8 @@
         {
           "id": "standalone_request",
           "schema": {
-            "schema_id": "guru-stage0-review-change-request-input-standalone-request-1.0",
-            "path": "schemas/public-standalone-request-input.schema.json"
+            "schema_id": "guru-stage0-review-change-request-input-standalone-request-2.0",
+            "path": "schemas/public-standalone-request-input-2.0.schema.json"
           },
           "example": {
             "id": "standalone_request_input",
@@ -337,6 +501,51 @@
           "discriminator": {
             "field": "profile",
             "value": "standalone_request"
+          }
+        },
+        {
+          "id": "existing_issue_intake",
+          "schema": {
+            "schema_id": "guru-review-change-request-public-existing-issue-intake-input-1.0",
+            "path": "schemas/public-existing-issue-intake-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "existing_issue_intake_input",
+            "path": "examples/public-existing-issue-intake-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "existing_issue_intake"
+          }
+        },
+        {
+          "id": "issue_review_return",
+          "schema": {
+            "schema_id": "guru-issue-review-return-input-2.0",
+            "path": "schemas/public-issue-review-return-input-2.0.schema.json"
+          },
+          "example": {
+            "id": "issue_review_return_input",
+            "path": "examples/public-issue-review-return-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "issue_review_return"
+          }
+        },
+        {
+          "id": "standalone_issue_readiness",
+          "schema": {
+            "schema_id": "guru-review-change-request-input-standalone-issue-readiness-1.0",
+            "path": "schemas/public-standalone-issue-readiness-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "standalone_issue_readiness_input",
+            "path": "examples/public-standalone-issue-readiness-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standalone_issue_readiness"
           }
         }
       ]
@@ -361,8 +570,8 @@
         "flag": "--invocation",
         "stdin": "-",
         "envelope": {
-          "schema_id": "guru-stage0-invocation-semantic-owner-1.0",
-          "path": "consumers/workflow/stage0/invocations/semantic-owner.schema.json"
+          "schema_id": "guru-stage0-invocation-semantic-owner-4.0",
+          "path": "consumers/workflow/stage0/invocations/semantic-owner-4.0.schema.json"
         }
       },
       "example_argv": [
@@ -374,12 +583,12 @@
       {
         "exit_id": "ready",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-ready-6.0",
-          "path": "schemas/public-ready-output-5.0.schema.json"
+          "schema_id": "guru-stage0-readiness-ready-8.0",
+          "path": "schemas/public-ready-output-8.0.schema.json"
         },
         "example": {
           "id": "ready_output",
-          "path": "examples/public-ready-output-4.0.json"
+          "path": "examples/public-ready-output-6.0.json"
         },
         "consumer_use_ids": [
           "project_ready"
@@ -397,20 +606,6 @@
         },
         "consumer_use_ids": [
           "project_clarify_requirements"
-        ]
-      },
-      {
-        "exit_id": "review_wording",
-        "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-review-wording-3.0",
-          "path": "schemas/public-review-wording-output-3.0.schema.json"
-        },
-        "example": {
-          "id": "review_wording_output",
-          "path": "examples/public-review-wording-output.json"
-        },
-        "consumer_use_ids": [
-          "project_review_wording"
         ]
       },
       {
@@ -440,6 +635,76 @@
         "consumer_use_ids": [
           "project_blocked"
         ]
+      },
+      {
+        "exit_id": "supplement_context",
+        "schema": {
+          "schema_id": "guru-review-change-request-public-supplement-context-output-1.0",
+          "path": "schemas/public-supplement-context-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "issue_review_supplement_context",
+          "path": "examples/public-issue-review-supplement-context-output.json"
+        },
+        "consumer_use_ids": [
+          "issue_review_supplement_context"
+        ]
+      },
+      {
+        "exit_id": "supplement_requirements",
+        "schema": {
+          "schema_id": "guru-review-change-request-public-supplement-requirements-output-2.0",
+          "path": "schemas/public-supplement-requirements-output-2.0.schema.json"
+        },
+        "example": {
+          "id": "issue_review_supplement_requirements",
+          "path": "examples/public-issue-review-supplement-requirements-output.json"
+        },
+        "consumer_use_ids": [
+          "issue_review_supplement_requirements"
+        ]
+      },
+      {
+        "exit_id": "full_intake_required",
+        "schema": {
+          "schema_id": "guru-review-change-request-public-full-intake-required-output-1.0",
+          "path": "schemas/public-full-intake-required-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "issue_review_full_intake_required",
+          "path": "examples/public-issue-review-full-intake-required-output.json"
+        },
+        "consumer_use_ids": [
+          "issue_review_full_intake_required"
+        ]
+      },
+      {
+        "exit_id": "refresh_issue_baseline",
+        "schema": {
+          "schema_id": "guru-review-change-request-public-refresh-issue-baseline-output-1.0",
+          "path": "schemas/public-refresh-issue-baseline-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "issue_review_refresh_issue_baseline",
+          "path": "examples/public-issue-review-refresh-issue-baseline-output.json"
+        },
+        "consumer_use_ids": [
+          "issue_review_refresh_issue_baseline"
+        ]
+      },
+      {
+        "exit_id": "issue_reviewed",
+        "schema": {
+          "schema_id": "guru-review-change-request-output-issue-reviewed-1.0",
+          "path": "schemas/public-issue-reviewed-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "issue_reviewed_output",
+          "path": "examples/public-issue-reviewed-output.json"
+        },
+        "consumer_use_ids": [
+          "issue_review_response"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -452,14 +717,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-task-intake-router-input-2.0",
-          "path": "consumers/workflow/stage0/task-intake-ready.schema.json"
-        },
-        "transition": {
-          "source_field": "transition",
-          "stage": "readiness_current",
-          "schema_id": "guru-stage0-transition-readiness-current-3.0",
-          "path": "consumers/workflow/stage0/transitions/readiness-current-3.0.schema.json"
+          "schema_id": "guru-stage0-task-intake-router-input-4.0",
+          "path": "consumers/workflow/stage0/task-intake-ready-4.0.schema.json"
         }
       },
       {
@@ -486,26 +745,6 @@
         }
       },
       {
-        "id": "review_wording_change_request_input",
-        "consumer": {
-          "kind": "skill",
-          "id": "guru-review-contract-wording"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input",
-          "interface_path": "packages/guru-review-contract-wording/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "change_request"
-        },
-        "transition": {
-          "source_field": "transition",
-          "stage": "clarity_current",
-          "schema_id": "guru-stage0-transition-clarity-current-3.0",
-          "path": "consumers/workflow/stage0/transitions/clarity-current-3.0.schema.json"
-        }
-      },
-      {
         "id": "refresh_context_sync_input",
         "consumer": {
           "kind": "skill",
@@ -525,6 +764,104 @@
           "id": "change-request-review-blocked"
         },
         "payload_kind": "zero_payload"
+      },
+      {
+        "id": "issue_review_supplement_context",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-discover-change-context"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-discover-change-context/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "issue_readiness_supplement",
+          "seed_fields": [
+            "source_exit",
+            "mode",
+            "issue",
+            "base_source",
+            "continuation_id",
+            "gap"
+          ],
+          "authoring_fields": [
+            "profile"
+          ],
+          "authoring_example": {
+            "id": "issue_review_supplement_context_authoring",
+            "path": "examples/author-supplement-context.json"
+          }
+        }
+      },
+      {
+        "id": "issue_review_supplement_requirements",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-clarify-requirements"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-clarify-requirements/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "issue_readiness_supplement",
+          "seed_fields": [
+            "source_exit",
+            "mode",
+            "issue",
+            "base_source",
+            "continuation_id",
+            "gap",
+            "review_focus"
+          ],
+          "authoring_fields": [
+            "profile"
+          ],
+          "authoring_example": {
+            "id": "issue_review_supplement_requirements_authoring",
+            "path": "examples/author-supplement-requirements.json"
+          }
+        }
+      },
+      {
+        "id": "issue_review_full_intake_required",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-issue-full-intake-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "issue_review_full_intake_required-consumer-1.0",
+          "path": "consumers/workflow/stage0/review-change-request-full_intake_required.schema.json"
+        }
+      },
+      {
+        "id": "issue_review_refresh_issue_baseline",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-issue-baseline-refresh-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "issue_review_refresh_issue_baseline-consumer-1.0",
+          "path": "consumers/workflow/stage0/review-change-request-refresh_issue_baseline.schema.json"
+        }
+      },
+      {
+        "id": "issue_review_response",
+        "consumer": {
+          "kind": "stop",
+          "id": "issue-review-response"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-issue-review-response-1.0",
+          "path": "consumers/stop/issue-review-response-1.0.schema.json"
+        }
       }
     ],
     "projections": [
@@ -563,34 +900,6 @@
           {
             "source": "source_locators",
             "target": "source_locators"
-          }
-        ]
-      },
-      {
-        "id": "project_review_wording",
-        "exit_id": "review_wording",
-        "consumer_input_id": "review_wording_change_request_input",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "handoff_profile",
-            "target": "profile"
-          },
-          {
-            "source": "handoff_mode",
-            "target": "mode"
-          },
-          {
-            "source": "handoff_target_locator",
-            "target": "target_locator"
-          },
-          {
-            "source": "handoff_continuation_id",
-            "target": "continuation_id"
           }
         ]
       },
@@ -636,6 +945,92 @@
         "consumer_input_id": "blocked_stop_input",
         "operation": "select",
         "mappings": []
+      },
+      {
+        "id": "issue_review_supplement_context",
+        "exit_id": "supplement_context",
+        "consumer_input_id": "issue_review_supplement_context",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "mode",
+            "target": "mode"
+          },
+          {
+            "source": "issue",
+            "target": "issue"
+          },
+          {
+            "source": "base_source",
+            "target": "base_source"
+          },
+          {
+            "source": "continuation_id",
+            "target": "continuation_id"
+          },
+          {
+            "source": "gap",
+            "target": "gap"
+          }
+        ]
+      },
+      {
+        "id": "issue_review_supplement_requirements",
+        "exit_id": "supplement_requirements",
+        "consumer_input_id": "issue_review_supplement_requirements",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "mode",
+            "target": "mode"
+          },
+          {
+            "source": "issue",
+            "target": "issue"
+          },
+          {
+            "source": "base_source",
+            "target": "base_source"
+          },
+          {
+            "source": "continuation_id",
+            "target": "continuation_id"
+          },
+          {
+            "source": "gap",
+            "target": "gap"
+          },
+          {
+            "source": "review_focus",
+            "target": "review_focus"
+          }
+        ]
+      },
+      {
+        "id": "issue_review_full_intake_required",
+        "exit_id": "full_intake_required",
+        "consumer_input_id": "issue_review_full_intake_required",
+        "operation": "direct"
+      },
+      {
+        "id": "issue_review_refresh_issue_baseline",
+        "exit_id": "refresh_issue_baseline",
+        "consumer_input_id": "issue_review_refresh_issue_baseline",
+        "operation": "direct"
+      },
+      {
+        "id": "issue_review_response",
+        "exit_id": "issue_reviewed",
+        "consumer_input_id": "issue_review_response",
+        "operation": "direct"
       }
     ],
     "private_artifacts": [
@@ -643,8 +1038,17 @@
         "id": "change_request_review",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-3.0.json",
-          "path": "schemas/change-request-review-3.0.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-4.0.json",
+          "path": "schemas/change-request-review-4.0.schema.json"
+        },
+        "persistence": "stdout_only_owner_private"
+      },
+      {
+        "id": "issue_review_owner",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-review-change-request-issue-review-owner-2.0",
+          "path": "schemas/issue-review-owner-2.0.schema.json"
         },
         "persistence": "stdout_only_owner_private"
       }

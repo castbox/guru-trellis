@@ -17,9 +17,6 @@ ENTRIES = {
     "guru-clarify-requirements": (
         "record-requirements-clarification.sh", "check-requirements-clarification.sh", "invoke.sh",
     ),
-    "guru-review-contract-wording": (
-        "record-contract-wording-review.sh", "check-contract-wording-review.sh", "invoke.sh",
-    ),
     "guru-review-change-request": (
         "record-change-request-review.sh", "check-change-request-review.sh", "invoke.sh",
     ),

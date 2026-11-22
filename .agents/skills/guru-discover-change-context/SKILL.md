@@ -31,7 +31,9 @@ recorder/validator, then return exactly one declared typed exit.
 The executing AI checks Sync's public transition against the contract's
 read-only Git facts before semantic retrieval. Record/check later reobserve
 those facts and derive `base_observation`. Use those existing actions in order.
-For an unbound local draft, the contract gives a source-capture example.
+For an unbound local draft, read the contract's
+[Related Issue Clues And Draft Binding](references/contract.md#related-issue-clues-and-draft-binding)
+before using its source-capture example or authoring retrieval clues.
 
 Run commands from the reviewed repository root. The full execution package is
 `.trellis/guru-team/skills/packages/guru-discover-change-context`; `scripts/`,
@@ -135,4 +137,14 @@ Docs, code, tests, and selected archive bodies. Run history preview with the
 same `--source-transition` so it reads the fixed archive tree. Working checkout
 HEAD and dirty bytes are separate from this authority. Supply `candidate_file`
 for a file-backed draft; its body remains a separate candidate through
-Clarify, Wording, and Readiness. Read the package contract for the exact fields.
+Clarify and Readiness. Read the package contract for the exact fields.
+
+## Issue Readiness supplement
+
+Use `issue_readiness_supplement` only for the actual original Readiness gap.
+Read [the local return contract](references/issue-readiness-supplement.md).
+Execute this owner's complete applicable semantic method, original gate and
+necessary interactions. Applicable coverage and current facts satisfy local
+preconditions; do not manufacture full-chain receipts. Complete this local call
+back to the same Issue/source/continuation Readiness, without running the default
+remaining Intake chain. Read-only scope performs no mutation.

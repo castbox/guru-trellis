@@ -123,6 +123,25 @@ class PublicationCarrierTests(unittest.TestCase):
             self.entry("record", "record-task-delivery-publication-gate", ["--input", json.dumps(self.public()), "--review-input", "-"], "{")
         self.assertEqual((review_error.exception.code, review_error.exception.field_path), ("invalid_json", "review_input"))
 
+    def test_direct_invoke_resumes_same_transaction_after_each_lost_mutation_output(self):
+        public = self.public()
+        preview = self.entry("check", "preview-task-delivery-publication", ["--input", json.dumps(public)])
+        arguments = ["--review-input", json.dumps(self.review()), "--confirmed-preview-sha256", preview["confirmation_identity"]]
+        self.drop = "push"
+        interrupted = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(public), *arguments])
+        self.assertEqual(interrupted["exit_id"], "resume_publication")
+        reference = interrupted["transaction_ref"]
+        resume = {"profile": "delivery_same_plan_resume", "mode": "workflow", "task_ref": public["task_ref"],
+                  "delivery_key": public["delivery_key"], "transaction_ref": reference}
+        for action in ("create", "ready"):
+            self.drop = action
+            interrupted = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(resume), *arguments])
+            self.assertEqual((interrupted["exit_id"], interrupted["transaction_ref"]), ("resume_publication", reference))
+        completed = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(resume), *arguments])
+        self.assertEqual(completed["exit_id"], "ready_for_merge")
+        self.assertEqual(completed, self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(resume), *arguments]))
+        self.assertEqual(self.effects, ["push", "create", "ready"])
+
     def test_legacy_formal_selector_passes_the_same_single_stdin_object(self):
         public = {"profile": "legacy_history_verification", "root": str(self.f.repo),
                   "key": {"task_id": "flow-task", "lifecycle_generation": 0}, "task_ref": self.f.task_ref,

@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本批新增workflow和Skill文本须保完整条件与owner表达"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实施及合法规划返工保持唯一写作与来源处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "技术返工需维持实际方案的九节完整深度"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "执行计划返工保持唯一Policy和Docs Plan"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "核现有完整链与新增显式先行/返回唯一consumer"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md", "reason": "Readiness原semantic方法与新profile共同责任"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md", "reason": "局部需求/source/额外事实往返及source_actions原owner"}
+{"file": "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md", "reason": "完整草稿创建/读回与原恢复扩展评论终点"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "公共consumer同批直接迁移与旧路径退出"}
+{"file": "trellis/skills/guru-team/packages/guru-create-task/SKILL.md", "reason": "核新ready到原Creation当前来源/集成/交付及恢复职责"}
+{"file": "trellis/skills/guru-team/packages/guru-create-task/schemas/public-delivery-task-creation-input-2.0.schema.json", "reason": "当前Interface选定的Creation profile2.0，不误用历史1.0"}
+{"file": "trellis/skills/guru-team/contracts/task-lifecycle/task-creation-input-3.0.schema.json", "reason": "完整来源三字段与独立selected_base_ref的闭合consumer"}
+{"file": "trellis/presets/guru-team/MIGRATION-813.md", "reason": "保固定对象/真实同步投影及原成功结果恢复边界"}

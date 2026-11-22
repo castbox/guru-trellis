@@ -1,0 +1,14 @@
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "原_upgrade_bootstrap_fixture、raw及native/legacy比较消费者；只修原身份语义。"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upgrade.py", "reason": "原preview artifacts身份producer及include_content=False，与其他source snapshot内容用途。"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py", "reason": "现有verifier模块测试入口与隔离方式；新回归需实际执行原比较分支。"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "原existing入口、失败回准备owner、新候选及后置发布边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Test And Validation Value与本批最小验证范围，区分组件、实际安装和发布证明。"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进比较消费者，保其他真实raw用途，不新增兼容机制。"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "区分原verifier误报、候选机制资格、实际修复验证和新Stage2验收。"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质文本前完整加载同一写作规范；保条件、术语和证据层次。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批需求、来源、前序与后置责任的正文合同。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核当前七节完整需求和实际切片边界；后续方案仍待原Architecture。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "审核本批实际方案、唯一来源处置、完整接口/流程/验证及canonical承接。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "审核完整执行验证、停止点、唯一Policy/Docs Plan；不以seed或旧gate代替。"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_bootstrap_preservation.py", "reason": "通过真实bootstrap函数验证两分支保留身份、原阶段拒绝与legacy source内容。"}
+{"file": "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py", "reason": "原bootstrap测试consumer按真实inventory形状适配，保留原owner选择、schema与文件保留断言。"}

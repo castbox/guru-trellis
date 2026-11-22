@@ -6,7 +6,11 @@ from runtime.io import CommandError
 from runtime.schema import validate_json
 from common import CONFIRMATION_PROFILES, confirmation_identity, confirmation_source
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);e=load_invocation(repo,package_root,a.invocation);public=e["public_input"];up=e["transition"];owner=e["owner_result"]
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);e=load_invocation(repo,package_root,a.invocation);public=e["public_input"]
+ if public.get("profile")=="issue_readiness_supplement" or public.get("return_identity",{}).get("profile")=="issue_readiness_supplement":
+  from issue_review import execute
+  return execute(package_root,e,"invoke")
+ public=e["public_input"];up=e["transition"];owner=e["owner_result"]
  repository=owner.get("repository") if isinstance(owner.get("repository"),dict) else {}
  try:observation=observe_base_current(package_root,public,up,repository.get("repo"))
  except CommandError as exc:observation={"classification":"blocked","reason":exc.code,"diagnostic":diagnostic(exc)}

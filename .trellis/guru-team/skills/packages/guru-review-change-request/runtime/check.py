@@ -5,6 +5,9 @@ from common import check_result, invocation, live_issue_source, validation_recei
 
 def run(package_root, command, argv):
     envelope, target, prerequisites = invocation(package_root, argv)
+    if target is None:
+        from issue_review import execute
+        return execute(package_root, envelope, "check")
     value = envelope["owner_result"]
     check_result(package_root, value, target, prerequisites)
     live_issue_source(envelope["owner_context"]["change_request"])

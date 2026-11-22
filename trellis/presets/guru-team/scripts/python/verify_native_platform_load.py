@@ -190,18 +190,31 @@ def _projection_parity(target: Path, platform: str) -> dict[str, Any]:
     )
     if not isinstance(registry, dict):
         raise NativeLoadError("installed skill registry root must be an object")
-    active_ids = sorted(
-        row["id"]
+    active_rows = [
+        row
         for row in registry.get("skills", [])
         if isinstance(row, dict)
         and row.get("state") == "active"
         and isinstance(row.get("id"), str)
-    )
-    if not active_ids:
+    ]
+    if not active_rows:
         raise NativeLoadError("installed skill registry contains no active skills")
     roots = tuple(dict.fromkeys((Path(".agents/skills"), *core_descriptor.skill_roots)))
     entry_path = Path(descriptor["entry_path"])
+    applicable_ids: set[str] = set()
     for relative_root in roots:
+        root_platforms = {
+            flag
+            for flag in selected
+            if relative_root in PLATFORM_BY_FLAG[flag].skill_roots
+        }
+        expected_ids = sorted(
+            row["id"]
+            for row in active_rows
+            if "shared" in row.get("supported_platforms", [])
+            or root_platforms.intersection(row.get("supported_platforms", []))
+        )
+        applicable_ids.update(expected_ids)
         root = target / relative_root
         excluded_entry_dir = (
             entry_path.parent.name
@@ -214,13 +227,13 @@ def _projection_parity(target: Path, platform: str) -> dict[str, Any]:
             for path in root.glob("guru-*")
             if path.is_dir() and path.name != excluded_entry_dir
         ) if root.is_dir() else []
-        if actual_ids != active_ids:
+        if actual_ids != expected_ids:
             raise NativeLoadError(
                 f"{platform} projection at {relative_root} disagrees with active registry"
             )
         leaked = sorted(
             (root / skill_id / "tests").relative_to(target).as_posix()
-            for skill_id in active_ids
+            for skill_id in expected_ids
             if (root / skill_id / "tests").exists()
         )
         if leaked:
@@ -235,7 +248,7 @@ def _projection_parity(target: Path, platform: str) -> dict[str, Any]:
     return {
         "selected_platforms": list(selected),
         "skill_roots": [path.as_posix() for path in roots],
-        "skill_count": len(active_ids),
+        "skill_count": len(applicable_ids),
         "entry_path": descriptor["entry_path"],
         "entry_kind": descriptor["entry_kind"],
         "package_private_tests": "excluded",

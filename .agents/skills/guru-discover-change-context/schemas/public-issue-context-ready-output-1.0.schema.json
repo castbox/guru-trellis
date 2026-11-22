@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-discover-change-context-public-issue-context-ready-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "handoff_profile",
+    "handoff_mode",
+    "handoff_issue",
+    "handoff_base_source",
+    "handoff_continuation_id",
+    "handoff_gap",
+    "context_result",
+    "source_refs"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "context_ready"
+    },
+    "handoff_profile": {
+      "const": "issue_readiness_supplement"
+    },
+    "handoff_mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "handoff_issue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-issue-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "number"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "handoff_base_source": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-issue-review-base-source-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "selected_ref",
+        "commit"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "git_object",
+            "synced_branch"
+          ]
+        },
+        "selected_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "handoff_continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_gap": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_result": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

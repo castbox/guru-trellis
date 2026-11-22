@@ -1,0 +1,16 @@
+{
+  "profile": "issue_readiness_supplement",
+  "mode": "workflow",
+  "issue": {
+    "repo_ref": "example/repo",
+    "number": 27
+  },
+  "base_source": {
+    "kind": "git_object",
+    "selected_ref": "origin/main",
+    "commit": "1111111111111111111111111111111111111111"
+  },
+  "continuation_id": "issue-review-27",
+  "source_exit": "supplement_context",
+  "gap": "Resolve the indicated current coverage gap."
+}

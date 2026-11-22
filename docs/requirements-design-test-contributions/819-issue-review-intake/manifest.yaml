@@ -1,0 +1,27 @@
+task_id: 819-issue-review-intake
+lifecycle_generation: 0
+delivery_id: f108d161-d60d-4c89-91bf-d96004ef86a6
+source: https://github.com/castbox/guru-trellis/issues/819
+status: integrated_pending_review
+strategy: delta_first
+preimage: 4f2adef1f7b099f78bb8429e8b8facd66dce3bfc
+authority:
+  locator: docs
+  identity: guru-trellis-rdt
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  - docs/requirements/current/local-fix-intake.md
+  - docs/design/current/local-fix-intake.md
+  - docs/test/current/local-fix-intake.md
+  - docs/requirements/current/issue-content.md
+  - docs/design/current/issue-content.md
+  - docs/test/current/issue-content.md
+

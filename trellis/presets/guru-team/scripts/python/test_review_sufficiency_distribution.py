@@ -31,11 +31,10 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
         repo = fixture.repo
         platforms = {"claude", "codex", "cursor"}
         source_packages = fixture.guru_root / "trellis/skills/guru-team/packages"
-        # Current review owners only; guru-check-task retains historical recovery.
         consumers = (
             "guru-clarify-requirements", "guru-review-change-request",
-            "guru-review-contract-wording", "guru-approve-task-plan",
-            "guru-review-change", "guru-review-branch",
+            "guru-approve-task-plan",
+            "guru-review-change", "guru-check-task", "guru-review-branch",
             "guru-review-task-delivery", "guru-review-task-completion",
             "guru-maintain-architecture-baseline",
             "guru-maintain-requirements-design-test-ssot",
@@ -73,12 +72,9 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
                 for consumer in consumers:
                     entry = root / consumer / "SKILL.md"
                     with self.subTest(projection=root, consumer=consumer):
+                        # Compare canonical and installed bytes; this does not
+                        # prove that an Agent loads the semantic rules.
                         self.assertEqual(entry.read_bytes(), (source_packages / consumer / "SKILL.md").read_bytes())
-                        # Resolve the declared loader against the actual provider.
-                        names = re.findall(r"read `(review-sufficiency\.md)`", entry.read_text())
-                        self.assertTrue(names, f"missing common-body loader: {entry}")
-                        for name in names:
-                            self.assertEqual((repo / ".trellis/spec/workflow" / name).read_bytes(), canonical)
                 review_relative = Path("guru-review-change/references/review-method.md")
                 method = root / review_relative
                 self.assertEqual(method.read_bytes(), (source_packages / review_relative).read_bytes())

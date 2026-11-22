@@ -6,6 +6,11 @@ description: "Run the Guru Team reviewed Delivery, Completion, Closure and Finis
 <!-- guru-team-overlay: v1 -->
 # Guru Finish Work
 
+Before required long-body reads, read only
+`.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`.
+Reuse that section when its complete current text is already available; do not
+first read the entire companion-scripts file.
+
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
 in full and apply it within this entry's existing scope. Until that read succeeds,
 use only short progress messages or concrete missing-dependency diagnostics.

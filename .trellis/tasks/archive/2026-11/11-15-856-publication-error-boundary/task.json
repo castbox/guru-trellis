@@ -1,0 +1,581 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-15-856-publication-error-boundary",
+  "id": "856-publication-error-boundary",
+  "name": "856-publication-error-boundary",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 856,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Publication 已知错误被误报为 internal_error 的公共异常边界",
+  "description": "按 Issue #856 接续原 Publish WorkflowError 与共享 CommandError，保留内部 typed recovery、原失败和副作用边界及未知异常脱敏；不重放实际发布或旧 Draft，不实施 #850。",
+  "dev_type": null,
+  "scope": "Publish 公共异常边界及相关定向生产入口、stateful recovery、catalog 退出码和分发同步验证。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-15",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+    "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+  },
+  "deliveries": [
+    {
+      "id": "5c91eb2e-d659-4221-a4c5-0d0b619f46b8",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+          "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+        },
+        "anchors": [
+          "AC856-01",
+          "AC856-02",
+          "AC856-03",
+          "AC856-04",
+          "AC856-05",
+          "AC856-06"
+        ]
+      },
+      "planning_root": "deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/design.md",
+        "revision": "sha256:189db55d0036ed6ccfc5137ad86931dd06b1333c328506b36fa03ed0640cf26f"
+      },
+      "candidate": {
+        "base_ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+        "content_ref": "sha256:d3298b4465d70defebe4f0487ecc823ca8553ec82ce7bcb980e8e7be924c8ad0",
+        "head_ref": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".agents/skills/guru-publish-task-delivery/commands.json",
+          ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".claude/skills/guru-publish-task-delivery/commands.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".cursor/skills/guru-publish-task-delivery/commands.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
+          "docs/architecture/00-foundation/design-constitution.md",
+          "docs/architecture/06-governance/change-contract.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/design.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/manifest.yaml",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/test/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/requirements.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/test.md",
+          "docs/requirements-design-test-contributions/856-publication-error-boundary/traceability.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_json_carriers.py",
+          "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:9068a96e-082b-4fad-b1ff-82f3a1edacc4",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+              "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+            },
+            "anchors": [
+              "AC856-01",
+              "AC856-02",
+              "AC856-03",
+              "AC856-04",
+              "AC856-05",
+              "AC856-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/design.md",
+            "revision": "sha256:189db55d0036ed6ccfc5137ad86931dd06b1333c328506b36fa03ed0640cf26f"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/prd.md",
+              "revision": "sha256:3aa71f561e4620c28a24d4a93f77bf13b5c696a173928943de4eac41992555e5"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/design.md",
+              "revision": "sha256:189db55d0036ed6ccfc5137ad86931dd06b1333c328506b36fa03ed0640cf26f"
+            },
+            {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/implement.md",
+              "revision": "sha256:0b6213d79c4553938c5a3daecb81af9832b3f7bb98a3663069916f855d0bfa44"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:b0f09b4e0ec9487a119f1eee804564f419d69c370737007dc969487c6fa9115b",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+              "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+            },
+            "anchors": [
+              "AC856-01",
+              "AC856-02",
+              "AC856-03",
+              "AC856-04",
+              "AC856-05",
+              "AC856-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/design.md",
+            "revision": "sha256:189db55d0036ed6ccfc5137ad86931dd06b1333c328506b36fa03ed0640cf26f"
+          },
+          "candidate": {
+            "base_ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+            "content_ref": "sha256:d3298b4465d70defebe4f0487ecc823ca8553ec82ce7bcb980e8e7be924c8ad0",
+            "head_ref": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".agents/skills/guru-publish-task-delivery/commands.json",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-publish-task-delivery/commands.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-publish-task-delivery/commands.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
+              "docs/architecture/00-foundation/design-constitution.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/design.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/manifest.yaml",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/requirements.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/test.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_json_carriers.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:9068a96e-082b-4fad-b1ff-82f3a1edacc4",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/implement.md",
+              "revision": "sha256:0b6213d79c4553938c5a3daecb81af9832b3f7bb98a3663069916f855d0bfa44"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:b0f09b4e0ec9487a119f1eee804564f419d69c370737007dc969487c6fa9115b",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+              "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+            },
+            "anchors": [
+              "AC856-01",
+              "AC856-02",
+              "AC856-03",
+              "AC856-04",
+              "AC856-05",
+              "AC856-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/design.md",
+            "revision": "sha256:189db55d0036ed6ccfc5137ad86931dd06b1333c328506b36fa03ed0640cf26f"
+          },
+          "candidate": {
+            "base_ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+            "content_ref": "sha256:d3298b4465d70defebe4f0487ecc823ca8553ec82ce7bcb980e8e7be924c8ad0",
+            "head_ref": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".agents/skills/guru-publish-task-delivery/commands.json",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-publish-task-delivery/commands.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-publish-task-delivery/commands.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
+              "docs/architecture/00-foundation/design-constitution.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/design.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/manifest.yaml",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/requirements.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/test.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_json_carriers.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py"
+            ]
+          },
+          "predecessor_result_id": "check:b0f09b4e0ec9487a119f1eee804564f419d69c370737007dc969487c6fa9115b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/implement.md",
+              "revision": "sha256:0b6213d79c4553938c5a3daecb81af9832b3f7bb98a3663069916f855d0bfa44"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:ddb53b1ca047e76d3ecebe08c4bf06f0b2d17995a173423faffb42f092bd9273",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+              "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+            },
+            "anchors": [
+              "AC856-01",
+              "AC856-02",
+              "AC856-03",
+              "AC856-04",
+              "AC856-05",
+              "AC856-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/design.md",
+            "revision": "sha256:189db55d0036ed6ccfc5137ad86931dd06b1333c328506b36fa03ed0640cf26f"
+          },
+          "candidate": {
+            "base_ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+            "content_ref": "sha256:d3298b4465d70defebe4f0487ecc823ca8553ec82ce7bcb980e8e7be924c8ad0",
+            "head_ref": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".agents/skills/guru-publish-task-delivery/commands.json",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-publish-task-delivery/commands.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-publish-task-delivery/commands.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
+              "docs/architecture/00-foundation/design-constitution.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/design.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/manifest.yaml",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/requirements.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/test.md",
+              "docs/requirements-design-test-contributions/856-publication-error-boundary/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_json_carriers.py",
+              "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:b0f09b4e0ec9487a119f1eee804564f419d69c370737007dc969487c6fa9115b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-15-856-publication-error-boundary/deliveries/5c91eb2e-d659-4221-a4c5-0d0b619f46b8/implement.md",
+              "revision": "sha256:0b6213d79c4553938c5a3daecb81af9832b3f7bb98a3663069916f855d0bfa44"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:28b9ffc4558477aefdc12533fcf9a505c7f6dbd4e6a45b430d1d505ec7c57ab5",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/860",
+            "revision": "sha256:87a2dd8e3b75c6d14f3629ca2f9d8903fa2bd45a35159ff2bb4e9da3bcc488ae"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+          "content_ref": "sha256:d3298b4465d70defebe4f0487ecc823ca8553ec82ce7bcb980e8e7be924c8ad0",
+          "head_ref": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".agents/skills/guru-publish-task-delivery/commands.json",
+            ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".claude/skills/guru-publish-task-delivery/commands.json",
+            ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".cursor/skills/guru-publish-task-delivery/commands.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
+            "docs/architecture/00-foundation/design-constitution.md",
+            "docs/architecture/06-governance/change-contract.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/design.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/manifest.yaml",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/test/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/requirements.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/test.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_json_carriers.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 860,
+        "reviewed_head": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/860",
+          "revision": "sha256:87a2dd8e3b75c6d14f3629ca2f9d8903fa2bd45a35159ff2bb4e9da3bcc488ae"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:20814cd769ba11cf65de82613434651cdd480e17",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/860",
+            "revision": "20814cd769ba11cf65de82613434651cdd480e17"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "4f3d9069e0720ec94e39d1079154d2f7a7058935",
+          "content_ref": "sha256:d3298b4465d70defebe4f0487ecc823ca8553ec82ce7bcb980e8e7be924c8ad0",
+          "head_ref": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".agents/skills/guru-publish-task-delivery/commands.json",
+            ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".claude/skills/guru-publish-task-delivery/commands.json",
+            ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".cursor/skills/guru-publish-task-delivery/commands.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/check.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/execute.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/migration.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/record.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/recover.py",
+            "docs/architecture/00-foundation/design-constitution.md",
+            "docs/architecture/06-governance/change-contract.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/design.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/manifest.yaml",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/proposed/docs/test/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/requirements.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/test.md",
+            "docs/requirements-design-test-contributions/856-publication-error-boundary/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/check.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/execute.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/migration.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/record.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/recover.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_json_carriers.py",
+            "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 860,
+        "reviewed_head": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c",
+        "merge_commit": "20814cd769ba11cf65de82613434651cdd480e17",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:2418e943-acd5-4859-a862-aa338bd9104a",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/860",
+          "revision": "20814cd769ba11cf65de82613434651cdd480e17"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/43754227535",
+          "revision": "f5ae6243e351ea4ae0e0b7614b16ad83ad5d1d3c"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-15-856-publication-error-boundary/prd.md",
+        "revision": "sha256:14354858e0322a49d06bd7edfeb3d0f7e2dea9a228d2f9f9eee342f6727d3aae"
+      },
+      "delivery_result_ids": [
+        "delivery:20814cd769ba11cf65de82613434651cdd480e17"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:72de7bf9f30931fa1c8ebfae",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/856",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-15-856-publication-error-boundary/closeout/closure/Y2xvc3VyZTo3MmRlN2JmOWYzMDkzMWZhMWM4ZWJmYWU.json",
+          "revision": "sha256:aac1e597b5349608eee2dc297ec140e8a21dcf9ff8d01b81fa7a688d7f157818"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:2418e943-acd5-4859-a862-aa338bd9104a",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/856",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}

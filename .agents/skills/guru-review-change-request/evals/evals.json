@@ -10,17 +10,38 @@
       "native_execution_mode": "semantic_authoring",
       "native_authoring_flow": "standard_intake",
       "native_execution_adapter": "codex",
-      "model_id": "gpt-5.6-sol",
+      "model_id": "gpt-6.1-sol",
       "expected_exit": "ready",
-      "expected_output": "The same native Agent authors all four semantic owners and the actual Readiness wrapper returns ready, using real predecessor outputs.",
-      "files": ["evals/files/standard-intake-source.json"],
-      "assertions": {"deterministic": [
-        {"id": "public-invocation-only", "kind": "trace", "invariant": "public_invocation_only"},
-        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
-      ], "semantic": [
-        {"id": "native-four-owner-review", "evidence_selector": "transcript", "criterion": "Independently read this run's full native transcript, source facts and command receipts. The same native AI actually performs Discovery, Clarification, Wording and Readiness semantic review from the authority before authoring each result; it neither waits for an external owner nor refuses or defers its own responsibility. Actual public outputs are consumed in sequence as context_ready, clear, pass and ready, without invented predecessors or workspace execution. Command order alone is not semantic evidence."}
-      ]}
+      "expected_output": "The same native Agent authors the current semantic owners and the actual Readiness wrapper returns ready, using real predecessor outputs.",
+      "files": [
+        "evals/files/standard-intake-source.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "native-four-owner-review",
+            "evidence_selector": "transcript",
+            "criterion": "Independently read this run's full native transcript, source facts and command receipts. The same native AI actually performs Discovery, Clarification and Readiness semantic review from the authority before authoring each result; it neither waits for an external owner nor refuses or defers its own responsibility. Actual public outputs are consumed in sequence as context_ready, clear and ready, without invented predecessors or workspace execution. Command order alone is not semantic evidence."
+          }
+        ]
+      }
     },
     {
       "id": "standard-intake-authoring-scope-conflict",
@@ -28,17 +49,82 @@
       "native_execution_mode": "semantic_authoring",
       "native_authoring_flow": "standard_intake",
       "native_execution_adapter": "codex",
-      "model_id": "gpt-5.6-sol",
+      "model_id": "gpt-6.1-sol",
       "expected_exit": "blocked",
       "expected_output": "Clarification identifies the unresolved mutually exclusive delivery scope, emits its actual blocked DTO, and no downstream owner or workspace command runs.",
-      "files": ["evals/files/standard-intake-conflicting-source.json"],
-      "assertions": {"deterministic": [
-        {"id": "public-invocation-only", "kind": "trace", "invariant": "public_invocation_only"},
-        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
-      ], "semantic": [
-        {"id": "native-conflict-review", "evidence_selector": "transcript", "criterion": "Independently read this run's full native transcript, source facts and command receipts. The native AI identifies the actual mutually exclusive delivery requirements and unresolved product choice, authors the Clarification blocker and returns its actual blocked public output. It does not invent a user answer, refuse or defer its own review, wait for an external owner, or execute Wording, Readiness or workspace after the blocker. A blocked DTO or command order alone is not semantic evidence."}
-      ]}
+      "files": [
+        "evals/files/standard-intake-conflicting-source.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "native-conflict-review",
+            "evidence_selector": "transcript",
+            "criterion": "Independently read this run's full native transcript, source facts and command receipts. The native AI identifies the actual mutually exclusive delivery requirements and unresolved product choice, authors the Clarification blocker and returns its actual blocked public output. It does not invent a user answer, refuse or defer its own review, wait for an external owner, or execute Readiness or workspace after the blocker. A blocked DTO or command order alone is not semantic evidence."
+          }
+        ]
+      }
+    },
+    {
+      "id": "standard-intake-authoring-acceptance-boundary",
+      "prompt": "Review the current Issue and the supplied repository evidence through the current standard Intake owners. Repository notes include review material with its source role. Use the original contracts and actual predecessor outputs. This is a read-only review: do not edit the Issue, create resources or run a workspace step. Return the actual terminal public output.",
+      "native_execution_mode": "semantic_authoring",
+      "native_authoring_flow": "standard_intake",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-6.1-sol",
+      "expected_exit": "ready",
+      "expected_output": "The original owners judge the current complete Issue and review material within its component, declared CLI, explicit target-runtime and business-config boundaries. The expectation is readiness without adopting unsupported shared-test deployment, service deployment, consumer E2E or repeated scenarios. An actual earlier stop remains evidence to inspect, not an automatic pass.",
+      "files": [
+        "evals/files/issue-acceptance-boundary-source.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-boundary-and-evidence",
+            "evidence_selector": "transcript",
+            "criterion": "Read the complete actual transcript, source body, repository notes and receipts independently. Verify that the native owners distinguish effective requirements from ordinary review suggestions and recognize that component, caller, cross-component and environment responsibilities can combine. They retain the component API, explicit CLI joint delivery, ordered paging, the pre-load invalid-input rejection promise and compatibility. Because the source explicitly requires it, they also retain the target-runtime 4.2 result and the business publish-pagination-config result. They distinguish business configuration publication from service-version deployment and do not adopt per-Issue shared-test deployment, consumer application integration, business E2E, production adoption or coverage thresholds as acceptance, findings, risks, mandatory follow-ups or gates. Goal attribution alone must not justify those additions. A ready DTO alone is insufficient."
+          },
+          {
+            "id": "reuse-and-targeted-gap",
+            "evidence_selector": "transcript",
+            "criterion": "Verify actual reasoning about the supplied evidence and the scenario collection. Existing page/CLI evidence remains reusable when its object, conditions and path apply; reviewer or stage change alone does not trigger reruns. The early rejection before source loading is an explicit internal promise that the supplied response-only observations do not establish, while the target-runtime 4.2 compatibility result remains required and cannot be replaced by source inspection or service deployment. The owners retain the explicit CLI-to-component joint check and the business config update/revision result without turning the word publish into a deployment obligation. Each scenario must correspond to a distinct observable result or risk; the same CLI behavior is not split into create, review and validation-method scenarios. The owners do not delete legitimate technical results merely because source, tests or internal state observe them. Distinguish readiness from implementation completion; do not claim that the missing implementation evidence ran."
+          }
+        ]
+      }
     },
     {
       "id": "ready-route",
@@ -71,7 +157,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-ready-input.json", "evals/files/eval-ready-facts.json"],
+      "files": [
+        "evals/files/eval-ready-input.json",
+        "evals/files/eval-ready-facts.json"
+      ],
       "input_profile_id": "current_issue"
     },
     {
@@ -90,27 +179,11 @@
           }
         ]
       },
-      "files": ["evals/files/eval-clarify-requirements-input.json", "evals/files/eval-clarify-requirements-facts.json"],
+      "files": [
+        "evals/files/eval-clarify-requirements-input.json",
+        "evals/files/eval-clarify-requirements-facts.json"
+      ],
       "input_profile_id": "proposed_draft"
-    },
-    {
-      "id": "review-wording-route",
-      "prompt": "Review the staged standalone request whose controlled wording still needs review, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
-      "expected_exit": "review_wording",
-      "expected_output": "The public DTO is the declared review_wording route.",
-      "assertions": {
-        "deterministic": [
-          {
-            "id": "expected-route",
-            "kind": "json_path",
-            "pointer": "/exit_id",
-            "operation": "equals",
-            "expected": "review_wording"
-          }
-        ]
-      },
-      "files": ["evals/files/eval-review-wording-input.json", "evals/files/eval-review-wording-facts.json"],
-      "input_profile_id": "standalone_request"
     },
     {
       "id": "refresh-context-route",
@@ -128,7 +201,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-refresh-context-input.json", "evals/files/eval-refresh-context-facts.json"],
+      "files": [
+        "evals/files/eval-refresh-context-input.json",
+        "evals/files/eval-refresh-context-facts.json"
+      ],
       "input_profile_id": "current_issue"
     },
     {
@@ -147,7 +223,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "files": [
+        "evals/files/eval-blocked-input.json",
+        "evals/files/eval-blocked-facts.json"
+      ],
       "input_profile_id": "current_issue"
     }
   ]

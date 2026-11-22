@@ -1,5 +1,20 @@
 # Guru Team Preset
 
+已有 Issue 在实际 Sync 后先由原 Readiness 复核当前审核覆盖，再按缺口调用必要原 owner；
+局部补审返回同次 Readiness。Create Issue 的完成结果包括准确的最小审核评论及读回；
+只读审核不发布评论。讨论、仅创建、创建并开工和 no_issue 保持各自终点。
+当前公开合同、来源投影与旧操作恢复见 [MIGRATION-819](MIGRATION-819.md)。
+当前 manifest 的 schema 登记修正与旧输入接续见 [MIGRATION-861](MIGRATION-861.md)。
+源码/fixture 验证不代替 live 评论或实际安装采用证据。
+
+受管 manifest 的正常 Git 冲突由原
+[Reconcile 冲突步骤](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#managed-manifest-conflict-continuation)
+接续到 [tools owner](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md#managed-manifest-preimage)。
+已有安装须通过完整 matching tools 更新采用；开发 `local_candidate` 保留正式 source-lock 未验证边界。
+同 PR 后继操作的完成私有事务退役仍归原
+[Publication owner](../../skills/guru-team/packages/guru-publish-task-delivery/references/contract.md#completed-transaction-before-a-successor-action)。
+源码、安装投影和真实 Agent 接续是不同证据，不代表完整安装/升级或 Release 矩阵通过。
+
 当前出口查询复用 `discover-skill-contract` 的 `--skill <id> --exit <id>`。
 完整路由正文由 workflow 显式引用，preset 将 `references/routing.md` 和
 `references/legacy.md` 安装到 `.trellis/guru-team/references/`。
@@ -21,7 +36,9 @@ Task确认对象与来源authority分别保留；原工具owner负责已有check
 跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
 `guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
 DAG 可处理跨仓显式或动议正式绑定依赖图；Sequence 保持单仓严格串行。
-DAG 按仓核项目、基线及环境，保留旧单仓简写。默认协调器 heartbeat 为 2 分钟。
+DAG 按仓核项目、基线及环境，保留旧单仓简写。协调器在当前聊天内以原生事件等待持续观察子聊天，不创建跟踪具体 Issue 完成的 automation。
+Mobile/Web 可通过 [合同就绪条件](../../skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md#contract-readiness-and-mock-development)
+在接口合同可用后使用 Mock，与后端并行开发；`depends_on` 保留完整完成语义。
 两个入口默认静默执行；通知条件与原生静默输出方式由共享规范的
 [Quiet Notifications](./spec/workflow/issue-orchestration.md#quiet-notifications) 定义。
 始终以完成 Issue 为目标；显式基线用于启动、PR 和完成证明，无关分支不要求同步。
@@ -128,6 +145,14 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 真实 Agent 写作/审核、确定性检查和安装结果分别报告；静态分发不能代替行为
 验收，一个代表平台结果也不证明其他平台实际行为。历史归档不追溯改写，完整
 多平台升级及 Release 矩阵仍归专门 Issue。
+
+[必需正文读取方法](./spec/workflow/companion-scripts.md#reading-required-contracts-in-full)
+由原共享小节维护。AGENTS、workflow 和现有平台入口在首次长文前定位该短节；
+直接独立 Review 入口先解析完整 provider，再读同源短节及必需长文。
+预算是调用请求值，实际显示仍须核验；截断后按原小节补显或补读。
+源码修订不更新已有安装：通过原 tools owner 同步完整匹配来源，再验证
+source/installed、受影响平台投影、reapply/drift、用户内容及 sidecar。
+分发检查与无继承 Agent 的实际采用分别证明，不据此声明宿主容量已修复。
 
 [清晰技术写作规范](./spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
 `.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
@@ -238,8 +263,8 @@ pending 新远端动作回当前审核/readiness。完整版本、退休入口�
 新仓安装前，先将 `GURU_SOURCE` 设置为所选 Guru tag 或完整 candidate SHA 的
 checkout，设置 `FORK_SOURCE` 为本机 Fork 源码目录。下列命令读取该 checkout
 自身的 source lock，不使用本页历史正文中的 SHA。已有 Fork checkout 会复用；
-尚未取得源码时才 clone。先安装 Fork `package.json` 要求的 Node.js，以及
-source lock 声明的 package-manager 版本。
+尚未取得源码时才 clone。先安装 Fork `package.json` 要求的 Node.js，并使用当前 pnpm。
+source lock 保留来源的 package-manager 声明，不据此固定执行版本或修改声明。
 
 ```bash
 (
@@ -249,8 +274,7 @@ source lock 声明的 package-manager 版本。
   SOURCE_LOCK="$GURU_SOURCE/trellis/presets/guru-team/source/trellis-source.json"
   FORK_REPOSITORY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repository"])' "$SOURCE_LOCK")"
   FORK_COMMIT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit"])' "$SOURCE_LOCK")"
-  FORK_PACKAGE_MANAGER="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["package_manager"])' "$SOURCE_LOCK")"
-  test "pnpm@$(pnpm --version)" = "$FORK_PACKAGE_MANAGER"
+  pnpm --version
   if ! git -C "$FORK_SOURCE" rev-parse --git-dir >/dev/null 2>&1; then
     git clone "$FORK_REPOSITORY" "$FORK_SOURCE"
   fi
@@ -275,15 +299,21 @@ source lock 声明的 package-manager 版本。
 
 ## Apply And Verify
 
-已发布稳定版本为 `v0.7.0-guru.8`，peeled commit 为
-`2ab135ed2d3908966785bb23ad42ada0790f0c81`。默认稳定安装使用同一 immutable `.8`
-tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
+`v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，peeled commit 为
+`ac1c823857ad6695c106daeedd25aafce4c50934`。安装该版本时，workflow marketplace 与
+preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身的 Fork lock。
+
+`v0.7.0-guru.8` 是更早的正式版本，peeled commit 为
+`2ab135ed2d3908966785bb23ad42ada0790f0c81`。安装该历史版本时，使用同一 immutable
+`.8` tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.8`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前修复源码的 extension 与 maintenance target 仍为 `0.7.0-guru.8`，但其内容与
-已发布 `.8` tag 分开识别。本次不重发 tag、Release 或同版本 npm 包。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.10`。
+仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.10` 的非 draft、
+非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.10`
+与同一 `.10` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](source/trellis-source.json)。
 本页不另存当前 SHA/CI 对照表；按[构建所选 Fork](#构建所选-fork)核验实际构建。
@@ -301,7 +331,8 @@ Guru 消费公共家族/key 及目标 native 前驱关系；AI 仍审核原安�
 `defer/source_task_schema=2.0` 保留合法副本，由原 binding 与 live checkout 选择唯一
 authority。peer 原 bytes/modes 保留，不进入 lifecycle、session、Delivery 或私有转换。
 匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
-CLI/Core 与 package-manager 版本采用同一 source lock 声明的值。
+本次 Guru 目标更新保持 CLI/Core `0.7.0-castbox.6` 与原 source lock 不变。
+构建使用当前 pnpm，保留所选 checkout 的 package-manager 声明。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
 不证明当前 lock 的匹配构建。使用干净 source workspace 的正常 CLI/Core 依赖布局，
@@ -311,9 +342,19 @@ CLI/Core 与 package-manager 版本采用同一 source lock 声明的值。
 Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包含本次修复，
 不能用该 tag 或相同 extension/CLI 版本号代替所选修复 SHA。
 当前源码、投影及代表性安装各保留其真实来源和验证边界，不证明新 Release 通过。
+完整 canonical 来源经 Delivery 交付后，目标 checkout 从该干净来源加载
+`guru-upgrade-tools`，经 `source_locked` 实际采用并验证完整受管投影及保留行为。
+本地来源样本只验证来源自身安装可用性；目标采用须由目标自身的 resolver、installed
+与 native 检查证明。两者均不证明远端 `.10` marketplace 或正式 Release 通过。
+各 Delivery 保留完整质量与交付责任；
+只有全部准备业务及实际采用完成，才可能通过 Task Completion 并进入终态收尾。
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
+
+本轮 `.10` 发布内容以正式前驱 `v0.7.0-guru.9` 到最终候选的完整 diff 为准。
+准备交付和终态簿记合入后，从届时最新 main 冻结候选；发布前 main 若推进，重新冻结并刷新受影响验证。
+不以其他 Issue 的完成、关闭、合并或归档为前置。以下 `.8` 说明保留其历史截止，不代表本轮验证结果。
 
 已发布 `.8` 的准备集合由 `v0.7.0-guru.7` 到该 Release candidate 的完整 diff 确定。
 该准备差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
@@ -356,7 +397,9 @@ business Intake，普通 apply 保持严格。
 For current-source validation, read the selected Guru checkout's own
 [source lock](source/trellis-source.json), verify its source and CI identity,
 and build that exact Fork commit. Use its CLI with that same reviewed Guru source.
-Stable `.8` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
+Historical `.8` installation uses its original source pair described above.
+Install `.10` only when its non-draft, non-prerelease Release exists, using the same
+immutable tag for workflow and preset. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. For a target meeting the ordinary current-only installation
 prerequisites, run:
@@ -484,8 +527,12 @@ DeliveryKey，并复用原身份和当前选择校验。原 caller 持有本次�
 
 ## Current Intake migration (#250)
 
-The initial route remains Sync → Discovery → Clarify. Clarify owns six profiles
-and selected requirement/design source authority; context requests preserve
+Formal work on an existing Issue enters Readiness after Sync. Issue-only
+creation and independent Issue reviews enter their own Skills first. These
+Skills request additional context when the current evidence needs it. See the
+[entry and adoption contract](MIGRATION-887.md). Discussion, draft-only work and necessary
+full Intake retain Sync → Discovery → Clarify. Clarify owns
+selected requirement/design source authority; context requests preserve
 the original caller. Install/reapply the complete current preset and controlled
 callers together; see the canonical Clarify
 [API migration](../../skills/guru-team/packages/guru-clarify-requirements/references/MIGRATION-250.md).
@@ -496,7 +543,7 @@ current workflow and Clarify contract constrain method reuse and resume.
 
 The sole task-plan business writer is `guru-author-task-plan`. The global
 workflow invokes its requirements and solution exits around purpose-specific
-Architecture planning 3.0, then current Wording, final Architecture and Approval.
+Architecture planning 3.0, then current final Architecture and Approval.
 Step-local behavior stays in the selected packages; upstream brainstorm/start/
 continue and hooks remain upstream-owned. Install the matching complete preset
 and marketplace workflow together using the [version and in-flight migration](./MIGRATION-292.md).

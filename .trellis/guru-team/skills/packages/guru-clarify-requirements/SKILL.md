@@ -43,31 +43,35 @@ For Issue or draft authoring, revision, and requirements review, read the shared
 applicable writing or semantic gate, together with the writing specification
 above and current necessary sources. The full installed content body is
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
-Use it for complete-body organization and self-review within this owner's
-existing responsibility. Preserve review-only scope and the original source
+Use its necessity, body-organization, responsibility-boundary and result/evidence
+methods when forming the draft, and its complete-body review before each proposed Issue writeback.
+Apply its continuing minimal-acceptance rules within this owner's existing
+writing and requirements review, using the referenced shared validation method.
+Preserve review-only scope and the original source
 actions, refresh, and typed exits; a content gap does not authorize a write.
 
 ## Intent Entry
 
 Load this Skill for a general request to review a GitHub Issue, including
 “审核 issue”, “评审 Issue”, “检查 Issue 需求是否完整”, and equivalent intent.
-Use the existing `standalone_review` profile for an independent requirements
-review, preserving its declared caller and actual context prerequisites.
-If current Discovery evidence is missing, load the existing workflow entry
-and obtain it before the semantic loop; do not invent prerequisite outputs.
-For the first `standalone_review` (`source_exit=start`, `mode=standalone`),
-obtain the actual standalone Sync `base_current` transition. Review the missing
-context and record/check `needs_context`, then invoke with that unchanged base
-transition. This initial standalone missing-context exit accepts the base transition;
-it returns `context_request` to Discovery with the original standalone consumer.
-Use Discovery's actual returned context for the requirements review.
+For a new independent requirements review or re-review of an existing Issue,
+use `standalone_issue_requirements`. Follow the [direct review method](references/standalone-issue-review.md).
+Read the Issue and effective discussion before deciding whether repository
+evidence is needed. Review goals, scope, conditions, source commitments and
+observable acceptance. Return the coverage, conclusion, findings and open
+items through `issue_reviewed` to the user.
+
+For an existing `standalone_review` continuation, preserve its original
+caller, context and return. Use that original profile when the user also
+authorizes publishing or updating a review comment. Follow its actual Sync and
+Discovery prerequisites when that profile requires them.
 An actual active-task scope change retains its existing owner/profile.
 
 Review requirements, scope and acceptance against live Issue authority. A
 request only to read Issue status is an information query, not this review.
 Quoting trigger phrases to discuss routing does not request an Issue review.
 An explicit readiness request belongs to `guru-review-change-request`; an
-explicit wording request belongs to `guru-review-contract-wording`.
+explicit Issue/draft wording request selects this owner's `standalone_wording_review` profile.
 
 Review-only scope permits findings and proposed revisions; it does not
 authorize an Issue edit/comment, Task/resource creation or implementation.
@@ -323,3 +327,28 @@ writing. Scope_action is route intent; the current Delivery stage owner alone
 performs legal rework or full withdrawal stop/release. No current Delivery is
 required for whole-scope acceptance. Public operation retries recover the same
 accepted authority; they do not create new Task, Delivery, or current gate pass.
+
+## Issue Readiness supplement
+
+Use `issue_readiness_supplement` only for the actual original Readiness gap.
+Read [the local return contract](references/issue-readiness-supplement.md).
+Execute this owner's complete applicable semantic method, original gate and
+necessary interactions. Applicable coverage and current facts satisfy local
+preconditions; do not manufacture full-chain receipts. Complete this local call
+back to the same Issue/source/continuation Readiness, without running the default
+remaining Intake chain. Read-only scope performs no mutation.
+
+## Review comment publication
+
+For a user-requested Issue rereview whose action scope includes publishing or
+updating the conclusion, read [the shared review comment rule](references/issue-review-comment.md)
+before the original source_actions loop. State the actual local or complete
+coverage accurately. Read-only review returns its conclusion without a comment.
+
+## Explicit wording review
+
+For an explicit read-only Issue or draft wording request, select
+standalone_wording_review and read [its complete bounded method](references/wording-review.md).
+This profile has no Task/Delivery binding or Intake receipt prerequisite and
+terminates at the user response. Explicit Markdown files use original
+`guru-review-change:explicit_files` with review_focus=wording_only.

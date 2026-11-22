@@ -329,10 +329,8 @@ inspect_environment (repository), establish_environment (repository, path, remot
 primary_folder), create_child (issue, model, effort,
 message; cross-repository scenes also require repository, project_id,
 source_branch and target_branch), read_child (child_id), send_message (child_id, message), read_operation
-(operation_id), heartbeat_create (interval_minutes, prompt), heartbeat_read,
-heartbeat_stop; cross-repository carriers expose automation_update (mode=update,
-id, status=ACTIVE|PAUSED, prompt, interval_minutes, target) to update an existing
-heartbeat while preserving its fields. observe_external (issue), wait_events
+(operation_id), heartbeat_read, heartbeat_stop (existing old-run timer recovery
+only), observe_external (issue), wait_events
 (seconds, at most 2).
 For child only: inspect, inspect_inputs, inspect_provider, recover_operation
 (operation_id), execute (input_path), verify, record_gate (stage, status,
@@ -389,13 +387,24 @@ def project_provider(root: Path, model_root: Path, ref: str | None) -> None:
         target.write_bytes(subprocess.check_output(["git", "show", f"{ref}:{relative}"], cwd=root) if ref else (root / relative).read_bytes())
 
 
-def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> None:
+LOCAL_SCENES = ("delegated-action", "permission-local-hold", "stale-registration",
+                "stale-registration-extra", "settled-issue-edit", "unsettled-issue-edit",
+                "issue-edit-preimage-change")
+
+
+def run(root: Path, output: Path, scene: str, ref: str | None, limit: int,
+        model: str | None = None, effort: str | None = None) -> None:
     output.mkdir(parents=True, exist_ok=False)
     model_root = output / "model"
     model_root.mkdir()
     project_provider(root, model_root, ref)
     cross_scene = scene in ("cross-repo", "initiative", "environment-create", "environment-user", "merge-pending")
-    if cross_scene:
+    local_scene = scene in LOCAL_SCENES
+    cross_scene = cross_scene or local_scene
+    if local_scene:
+        from native_local_dispositions import LocalCarrier
+        carrier = LocalCarrier(scene, output, model_root)
+    elif cross_scene:
         from native_cross_repo import CrossCarrier
         carrier = CrossCarrier(scene, output, model_root)
     else:
@@ -419,11 +428,14 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
     carrier.url = f"http://127.0.0.1:{server.server_port}"
     threading.Thread(target=server.serve_forever, daemon=True).start()
     settings = configuration()
-    model, effort = settings.get("model"), settings.get("model_reasoning_effort")
+    model = model or settings.get("model")
+    effort = effort or settings.get("model_reasoning_effort")
     if not model or not effort:
         raise RuntimeError("Current native configuration must resolve model and reasoning settings.")
     if scene == "merge-pending":
         carrier.prime_pending_merge(model, effort, limit)
+    if local_scene:
+        carrier.prime(model, effort, limit)
     if not cross_scene:
         # Establish a real, bounded stopped turn before testing coordinator resume.
         # The priming prompt contains no coordinator instruction or expected route.
@@ -484,16 +496,18 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
         "Carry out the synthetic app/repository operations needed to fully complete all selected Issues. "
         "No further launch question is needed for these isolated fixture effects. "
         "This is a test carrier, not real GitHub or a production application. Its MCP native tool replaces app, "
-        "GitHub, Git and heartbeat I/O. Read its factual repository/workflow/preflight state. "
+        "GitHub, Git and native observation I/O. Read its factual repository/workflow/preflight state. "
         "Use that tool for all synthetic observations, child processes and effects. "
         "File tools may read only the provided same-provider contracts in this directory; do not read runner "
         "source, parent directories, configurations, histories or other repositories. "
-        "The fixture's heartbeat is a native simulated clock, with a two-minute schedule and bounded wait_events. "
+        "The fixture provides bounded native wait_events; it does not require a timer or promise background supervision. "
         "Actual child turns are real independently executing Codex processes. "
         "Continue observing actual results until the requested endpoint or a genuinely settled block. "
         "Report validation limits accurately.\n" +
         ("Do not create or repair release-certificate-service or replace its mandatory result with direct evidence.\n"
          if scene == "blocked" else ""))
+    if local_scene:
+        prompt = carrier.prompt(model, effort)
     rounds = 2 if scene == "environment-user" else 1
     for round_index in range(rounds):
         if round_index:
@@ -502,7 +516,7 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
             prompt += "\nPrevious coordinator result in this same run:\n" + prior + "\nCurrent human update: " + event + "\nResume this same run.\n"
         suffix = "" if round_index == 0 else "-resume"
         final = output / f"coordinator{suffix}.final.txt"
-        args = native_argv(model_root, final, carrier.url)
+        args = native_argv(model_root, final, carrier.url, model=model, effort=effort)
         stdout = (output / f"coordinator{suffix}.jsonl").open("w")
         stderr = (output / f"coordinator{suffix}.stderr").open("w")
         proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, text=True)
@@ -515,11 +529,15 @@ def run(root: Path, output: Path, scene: str, ref: str | None, limit: int) -> No
         print(json.dumps({"output": str(output), "pid": proc.pid, "scene": scene}), flush=True)
         deadline = time.monotonic() + limit
         while proc.poll() is None and time.monotonic() < deadline:
-            time.sleep(1)
+            if local_scene:
+                carrier.observe_host_files()
+            time.sleep(.2 if local_scene else 1)
         if proc.poll() is None:
             metadata["host_limit_reached"] = True
             proc.terminate(); proc.wait(timeout=20)
         metadata.update(returncode=proc.returncode, ended_at=time.time())
+        if local_scene:
+            carrier.trace("host", "coordinator_end", {}, {"returncode": proc.returncode})
         # Preserve all unfinished child processes as an explicit incomplete run.
         carrier.refresh()
         metadata["unfinished_children"] = list(carrier.running)
@@ -538,12 +556,15 @@ if __name__ == "__main__":
     parser.add_argument("--mcp", action="store_true")
     parser.add_argument("--url"); parser.add_argument("--child", default="")
     parser.add_argument("--root", type=Path); parser.add_argument("--output", type=Path)
-    parser.add_argument("--scene", choices=["dag", "sequence", "completion-drift", "blocked", "cross-repo", "initiative", "environment-create", "environment-user", "merge-pending"])
+    parser.add_argument("--scene", choices=["dag", "sequence", "completion-drift", "blocked", "cross-repo", "initiative", "environment-create", "environment-user", "merge-pending", *LOCAL_SCENES])
     parser.add_argument("--source-ref"); parser.add_argument("--limit-seconds", type=int, default=1800)
+    parser.add_argument("--model")
+    parser.add_argument("--effort")
     options = parser.parse_args()
     if options.mcp:
         mcp(options.url, options.child)
     elif options.root and options.output and options.scene:
-        run(options.root.resolve(), options.output.resolve(), options.scene, options.source_ref, options.limit_seconds)
+        run(options.root.resolve(), options.output.resolve(), options.scene, options.source_ref, options.limit_seconds,
+            options.model, options.effort)
     else:
         parser.error("Specify --root, --output and --scene, or the internal --mcp carrier.")

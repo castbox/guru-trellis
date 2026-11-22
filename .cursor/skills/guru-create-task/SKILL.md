@@ -17,8 +17,8 @@ any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
 
 `judgment_mode=semantic`. Consume only `guru-review-change-request:ready`
-with `target.kind=existing_issue | standalone_request`, after the current
-Intake and Sync decision. Never create or select a GitHub Issue here. For an
+with a current complete-chain `target.kind=existing_issue | standalone_request`
+or the independent existing-Issue ready result, after actual Sync and Readiness. Never create or select a GitHub Issue here. For an
 existing Issue, reread its live identity and accepted scope; for a standalone
 request preserve `source.kind=no_issue` without invented closure semantics.
 Issue creation input accepts `exact_source | reference_only` and preserves the
@@ -158,3 +158,17 @@ convert, or delete the record. Old minimal blocked/invalid outputs remain valid.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Existing-Issue ready projection
+
+For the independent Issue ready result, copy issue into reviewed_source's
+kind=issue/repo_ref/number; this owner reviews disposition as exact_source or
+reference_only. Copy all three base_source fields unchanged into
+creation.reviewed_base_source. Do not reconstruct readiness_current. Independently
+review creation.selected_base_ref as the Task integration branch and delivery_target
+as the future delivery repository/branch. Neither comes from source selected_ref.
+Current public profile 2.0 and shared Creation 3.0 remain selected. Preserve
+acquisition.decision_head=reviewed_base_source.commit, original checkout/resource
+conditions and same-result recovery. For synced_branch preserve normalized source
+branch equality; only a new creation additionally checks its current branch HEAD.
+A fixed git_object source does not require primary clean or latest same-name ref.

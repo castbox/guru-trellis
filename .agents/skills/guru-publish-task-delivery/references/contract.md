@@ -162,6 +162,23 @@ postimage. Draft-to-Ready recovery follows the same rule. Once `ready` is
 persisted, every invocation is read-only and rematerializes the same
 `ready_for_merge` DTO after live revalidation.
 
+## Completed transaction before a successor action
+
+Before previewing a successor action for the same Delivery/PR, read the prior
+private transaction's actual phase, original input and live PR/HEAD/payload
+facts. If its mutation is unfinished or unknown, use the original same-plan
+recovery first. Do not replay push/create/edit/Draft/Ready to recover stdout,
+prepare a replacement action, or delete its recovery material.
+
+When that transaction has actually completed, let this owner's existing
+`retire_completed` path verify and retire it before the new action proceeds.
+Retirement removes only that completed private transaction and its owned gate;
+it preserves the public PublicationFact, same Delivery/PR and historical
+publication result. Do not hand-delete a transaction or reset public facts.
+A changed head or stale readiness still returns to its original current owner;
+retirement does not supply a new gate. This clarifies the existing transaction
+lifecycle without adding a command, exit, journal or recovery store.
+
 ## Public Boundary
 
 `ready_for_merge` contains only `task_ref`, `delivery_key`, `publication_result_id`, `repo_ref`,

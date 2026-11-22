@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "所有实质文本与当前Agent输出的统一写作规范"}
+{"file": ".trellis/spec/workflow/review-sufficiency.md", "reason": "原审核覆盖与证据边界，不新增审核流程"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实际规划承接与完整来源保留"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md", "reason": "本次Issue内容方法的canonical修改对象"}
+{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "本次共用验证方法的canonical修改对象；重点Test And Validation Value及Validation Scope Ownership"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前Delivery完整正文与审核所用适用模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前Delivery完整正文与审核所用适用模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前Delivery完整正文与审核所用适用模板"}

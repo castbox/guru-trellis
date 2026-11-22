@@ -19,7 +19,7 @@ SPEC.loader.exec_module(NATIVE)
 
 
 class NativePlatformLoadTests(unittest.TestCase):
-    def fixture(self, root: Path, platform: str) -> Path:
+    def fixture(self, root: Path, platform: str, *, codex_only: bool = False) -> Path:
         target = root / "project"
         descriptor = NATIVE.DESCRIPTORS_BY_FLAG[platform]
         core = NATIVE.PLATFORM_BY_FLAG[platform]
@@ -34,8 +34,26 @@ class NativePlatformLoadTests(unittest.TestCase):
         entry.write_text("# Guru Finish Work\n", encoding="utf-8")
         registry = target / ".trellis/guru-team/skills/registry.json"
         registry.parent.mkdir(parents=True)
+        rows = [{
+            "id": "guru-example",
+            "state": "active",
+            "supported_platforms": ["shared"],
+        }]
+        if codex_only:
+            rows.append({
+                "id": "guru-codex-example",
+                "state": "active",
+                "supported_platforms": ["codex"],
+            })
+            if platform == "codex":
+                skill = target / ".agents/skills/guru-codex-example/SKILL.md"
+                skill.parent.mkdir(parents=True)
+                skill.write_text(
+                    "---\nname: guru-codex-example\ndescription: Codex fixture.\n---\n",
+                    encoding="utf-8",
+                )
         registry.write_text(
-            json.dumps({"skills": [{"id": "guru-example", "state": "active"}]}),
+            json.dumps({"skills": rows}),
             encoding="utf-8",
         )
         manifest = {
@@ -70,6 +88,48 @@ class NativePlatformLoadTests(unittest.TestCase):
                 self.assertEqual(result["actual_load"], "projection_parity")
                 self.assertEqual(result["selected_platforms"], [platform])
                 self.assertEqual(result["package_private_tests"], "excluded")
+
+    def test_mixed_registry_filters_non_codex_roots(self) -> None:
+        for platform in ("claude", "cursor"):
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                target = self.fixture(root, platform, codex_only=True)
+                result = NATIVE.verify_native_platform_load(target, platform, root / "work")
+                self.assertEqual(result["status"], "passed")
+                self.assertEqual(result["skill_count"], 1)
+
+    def test_mixed_registry_includes_required_codex_projection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = self.fixture(root, "codex", codex_only=True)
+            result = NATIVE.verify_native_platform_load(target, "codex", root / "work")
+            self.assertEqual(result["skill_count"], 2)
+            self.assertEqual(result["skill_roots"], [".agents/skills"])
+            (target / ".agents/skills/guru-codex-example/SKILL.md").unlink()
+            (target / ".agents/skills/guru-codex-example").rmdir()
+            with self.assertRaisesRegex(NATIVE.NativeLoadError, "projection at .agents/skills"):
+                NATIVE.verify_native_platform_load(target, "codex", root / "work")
+
+    def test_shared_skill_remains_required_at_each_root(self) -> None:
+        for relative_root in (".agents/skills", ".claude/skills"):
+            with self.subTest(root=relative_root), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                target = self.fixture(root, "claude", codex_only=True)
+                skill = target / relative_root / "guru-example"
+                (skill / "SKILL.md").unlink()
+                skill.rmdir()
+                with self.assertRaisesRegex(NATIVE.NativeLoadError, "disagrees with active registry"):
+                    NATIVE.verify_native_platform_load(target, "claude", root / "work")
+
+    def test_unexpected_codex_projection_fails_for_non_codex_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = self.fixture(root, "cursor", codex_only=True)
+            extra = target / ".cursor/skills/guru-codex-example/SKILL.md"
+            extra.parent.mkdir()
+            extra.write_text("# Codex fixture\n", encoding="utf-8")
+            with self.assertRaisesRegex(NATIVE.NativeLoadError, "projection at .cursor/skills"):
+                NATIVE.verify_native_platform_load(target, "cursor", root / "work")
 
     def test_opencode_native_discovery_passes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

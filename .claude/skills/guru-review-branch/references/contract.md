@@ -25,6 +25,13 @@ Original document owners integrate/read back before commit; pending integration
 is not reviewed promotion. Committed review covers actual before/after and all
 integration files. Do not modify frozen H while reviewing it.
 
+Committed clean checks honor `preserved_worktree_paths` from
+`.trellis/guru-team/config.yml` (omitted or `[]` means no exemptions).
+Only exact tracked paths are excluded from that check; other dirty content
+still blocks. Candidate paths and verification remain unchanged. Review the
+complete B..H, including any listed path changed there, and judge dependency
+and test validity against the preserved worktree projection.
+
 Read Author's references/planning-body.md, applicable Delivery PRD/design/implement
 templates and all necessary source references with their associated conditions.
 Complete nine adequacy responsibilities: requirements, design, implementation,
@@ -73,7 +80,7 @@ Real scope change uses clarify_requirements and actual proposal_refs. Recorder
 binds original Planning, candidate, scope and plan before rollback. Invoke
 validates authorities, then clears planning/check/full_review/readiness. The
 unique guru-task-check-planning-router reaches earliest affected Author/Clarify,
-Wording/Architecture/Approval. Do not broaden scope or rewrite the frozen candidate.
+Author/Architecture/Approval. Do not broaden scope or rewrite the frozen candidate.
 After rollback, delivery_planning_stale_recovery takes the original_review_input
 and reads this same retained checkpoint. Verify same key/B/H/candidate/scope/plans
 and cleared slots, then return the same handoff without rework/pass creation.

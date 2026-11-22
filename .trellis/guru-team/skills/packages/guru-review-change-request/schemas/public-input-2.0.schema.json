@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-change-request-input-aggregate-2.0",
+  "oneOf": [
+    {
+      "$ref": "public-current-issue-input.schema.json"
+    },
+    {
+      "$ref": "public-proposed-draft-input.schema.json"
+    },
+    {
+      "$ref": "public-standalone-request-input.schema.json"
+    },
+    {
+      "$ref": "public-existing-issue-intake-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-issue-review-return-input-1.0.schema.json"
+    }
+  ]
+}

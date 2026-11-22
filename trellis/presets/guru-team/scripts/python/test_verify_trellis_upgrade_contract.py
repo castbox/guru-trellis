@@ -85,18 +85,27 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
              mock.patch.object(self.helper, "record_semantic", side_effect=[recorded, checked]) as call:
             self.assertEqual(self.helper.clarification_owner_for_issue(
                 Path("/fixture"), {}, transition, snapshot), (recorded, checked))
-        authored = call.call_args_list[0].args[-1]
+        record_envelope = call.call_args_list[0].args[-1]
+        authored = record_envelope["owner_result"]
         self.assertNotIn("content_identity", authored)
         self.assertNotIn("facts_sha256", authored["review_target"])
         self.assertNotIn("disposition_digest", authored["target_disposition"])
         self.assertEqual(authored["target_disposition"]["duplicate_facts_sha256"], "d" * 64)
         self.assertNotIn("payload_sha256", authored["source_actions"][0])
         self.assertNotIn("action_digest", authored["source_actions"][0])
-        self.assertIs(call.call_args_list[1].args[-1], recorded)
+        expected_source = {
+            "kind": "issue", "repo": "example/guru-extension", "number": 145,
+            "title": self.issue()["title"], "body": self.issue()["body"],
+            "updated_at": self.issue()["updatedAt"],
+        }
+        self.assertEqual(record_envelope["owner_context"], {"change_request": expected_source})
+        check_envelope = call.call_args_list[1].args[-1]
+        self.assertIs(check_envelope["owner_result"], recorded)
+        self.assertEqual(check_envelope["owner_context"], {"change_request": expected_source})
 
     def test_readiness_all_routes_author_only_semantic_gate_fields(self):
         with mock.patch.object(self.helper, "live_issue", return_value=self.issue()):
-            for route in ("ready", "clarify_requirements", "review_wording", "refresh_context"):
+            for route in ("ready", "clarify_requirements", "refresh_context"):
                 with self.subTest(route=route):
                     authored = self.helper.readiness_owner_for_issue(Path("/fixture"), {}, {}, route)
                     self.assertEqual(set(authored["semantic_review"]["ai_review_gate"]),
@@ -188,6 +197,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         cls.text = VERIFIER.read_text(encoding="utf-8")
         cls.matrix_text = MATRIX_HELPER.read_text(encoding="utf-8")
         cls.matrix = load_matrix_helper()
+
+    @staticmethod
+    def template_fixture(root: Path, original: bytes = b"official\n") -> None:
+        (root / ".trellis").mkdir(parents=True, exist_ok=True)
+        (root / "AGENTS.md").write_bytes(original)
+        (root / ".trellis/.template-hashes.json").write_text(json.dumps({
+            "__version": 2, "hashes": {"AGENTS.md": hashlib.sha256(original).hexdigest()},
+        }))
 
     def test_cli_version_parser_ignores_update_banner_and_keeps_suffix(self):
         output = "Trellis update available: 0.6.17 -> 0.7.0-castbox.1\n0.7.0-castbox.1\n"
@@ -483,8 +500,24 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertEqual((root / "install/project/installed-marker").read_text(), "installed")
 
     def test_existing_cell_seeds_before_command_then_calls_public_tools_owner(self) -> None:
+        for maintenance_exit in ("tools_upgraded", "upgraded"):
+            with self.subTest(maintenance_exit=maintenance_exit):
+                self._assert_existing_cell_maintenance_preimage(maintenance_exit)
+
+    def _assert_existing_cell_maintenance_preimage(self, maintenance_exit: str) -> None:
+        import apply_guru_team_trellis_preset as preset
+
+        # Exercise coordinator handoff and the real hash/renderer gate. External
+        # installation and maintenance are isolated; this is not writer evidence.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
+            self.template_fixture(root)
+            init_agents = (root / "AGENTS.md").read_bytes()
+            maintenance_agents = (
+                init_agents + (preset.AGENTS_AI_FIRST_START_MARKER
+                + "\npredecessor guidance\n" + preset.AGENTS_AI_FIRST_END_MARKER
+                + "\n").encode()
+            )
             before = ("node", "/before/bin/trellis.js")
             target = ("node", "/target/packages/cli/bin/trellis.js")
             projection = {
@@ -522,18 +555,41 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 workflow = project / ".trellis/workflow.md"
                 workflow.parent.mkdir(parents=True)
                 workflow.write_bytes(workflow_bytes)
+                self.template_fixture(project)
                 return False
             def load_json(path):
                 if path.name == "guru-team-extension.json":
                     return predecessor_extension
+                if path.name == ".template-hashes.json":
+                    return json.loads(path.read_text())
                 return {"extension": predecessor_extension}
+            def apply_preset(_source, project, _platform, log, **unused):
+                original = (project / "AGENTS.md").read_bytes()
+                (project / "AGENTS.md").write_bytes(
+                    maintenance_agents if log.name == "preset-initial.log"
+                    else preset.render_agents_ai_first_principles(original)
+                )
+                return {}
+            def maintain(_source, project, *unused):
+                self.assertEqual((project / "AGENTS.md").read_bytes(), maintenance_agents)
+                baseline = maintenance_agents if maintenance_exit == "tools_upgraded" else init_agents
+                # Model the external writer's baseline update and renderer output.
+                self.template_fixture(project, baseline)
+                (project / "AGENTS.md").write_bytes(preset.render_agents_ai_first_principles(baseline))
+                return {"exit_id": maintenance_exit}
+            def validate(project, *unused, agents_preimage):
+                expected = maintenance_agents if maintenance_exit == "tools_upgraded" else init_agents
+                self.assertEqual(agents_preimage, expected)
+                gate = self.matrix._assert_template_hashes(project, root, agents_preimage)
+                self.assertEqual(gate["known_preset_projection_paths"], ["AGENTS.md"])
+                return {}
             with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
                  mock.patch.object(self.matrix, "_init_git_repo"), \
                  mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.17"]), \
                  mock.patch.object(self.matrix, "_checkout_predecessor_source", side_effect=export_tree), \
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow) as init, \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
-                 mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "_apply_preset", side_effect=apply_preset), \
                  mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
@@ -542,11 +598,11 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
                  mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
-                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture", return_value={"exit_id": "tools_upgraded"}) as upgrade, \
+                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture", side_effect=maintain) as upgrade, \
                  mock.patch.object(self.matrix, "_assert_docs_authority"), \
                  mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
                  mock.patch.object(self.matrix, "_assert_projection_consistency"), \
-                 mock.patch.object(self.matrix, "validate_cell", return_value={}):
+                 mock.patch.object(self.matrix, "validate_cell", side_effect=validate):
                 result = self.matrix._run_cell(repo_root=root, cell_root=root / "cell", platform="codex",
                     scenario="existing", workflow_source="fixture", before_tag="before",
                     before_cli="0.6.16", target_cli="0.6.17", allow_local_sample=False,
@@ -556,8 +612,10 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             switch.assert_not_called()
             self.assertEqual(upgrade.call_args.args[:4],
                              (root, root / "cell/project", root / "fork", "fixture"))
-            self.assertEqual(result["update_mode"], "source_locked_tools_upgrade")
-            self.assertEqual(result["workflow_sample"], "source_locked_tools_upgrade")
+            expected_mode = ("source_locked_tools_upgrade" if maintenance_exit == "tools_upgraded"
+                             else "source_locked_installation_upgrade")
+            self.assertEqual(result["update_mode"], expected_mode)
+            self.assertEqual(result["workflow_sample"], expected_mode)
 
     def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
         predecessor_extension = {
@@ -673,6 +731,12 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     "lifecycle_generation": 0, "deliveries": []}))
                 original = {"content_base64": base64.b64encode(task_path.read_bytes()).decode(),
                     "sha256": hashlib.sha256(task_path.read_bytes()).hexdigest(), "mode": 0o644}
+                artifact_path = target / ref / "prd.md"
+                artifact_content = "# Bootstrap guidelines\n保留原始文档。\n".encode()
+                artifact_path.write_bytes(artifact_content)
+                artifact_path.chmod(0o644)
+                artifact_identity = {"sha256": hashlib.sha256(artifact_content).hexdigest(),
+                                     "mode": 0o644}
                 manifest = target / ".trellis/guru-team/extension.json"
                 manifest.parent.mkdir(parents=True)
                 manifest.write_text(json.dumps({"extension": {"version": "0.7.0-guru.4"},
@@ -681,7 +745,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 workflow.parent.mkdir(parents=True)
                 workflow.write_text("[trellis-runtime-contract]{}[/trellis-runtime-contract]")
                 workspace = {"root": str(target), "local_sessions": [], "tasks": [{
-                    "task_ref": ref, "source": original, "artifacts": {ref + "/task.json": original}}],
+                    "task_ref": ref, "source": original, "artifacts": {ref + "/prd.md": artifact_identity}}],
                     "prospective_templates": {"files": [], "contents": {}, "candidate_sha256": "a" * 64},
                     "receipt_source": {"content_base64": base64.b64encode(b'{"hashes":{}}').decode()},
                     "workflow_source": None, "version_source": None}
@@ -696,6 +760,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     result = self.matrix._upgrade_bootstrap_fixture(root, target, root,
                         "gh:castbox/guru-trellis/trellis#" + "a" * 40, root, {})
                 self.assertEqual(task_path.read_bytes(), base64.b64decode(original["content_base64"]))
+                self.assertEqual(artifact_path.read_bytes(), artifact_content)
+                self.assertEqual(artifact_path.stat().st_mode & 0o777, 0o644)
                 if schema == "2.0":
                     self.assertEqual(result["exit_id"], "tools_upgraded")
                     tools.assert_called_once()
@@ -730,7 +796,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 self.assertEqual(command[:4], ("node", "trellis.js", "init", "-y"))
                 self.assertTrue({"--user", "--creator", "--assignee"}.isdisjoint(command))
 
-    def test_install_workflow_uses_native_init_for_unpublished_local_sample(self) -> None:
+    def test_install_workflow_uses_custom_init_and_local_candidate_only_with_sample_permission(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             target = root / "target"
@@ -740,10 +806,26 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             candidate.write_text("# Local candidate\n", encoding="utf-8")
             installed = target / ".trellis/workflow.md"
             installed.parent.mkdir()
-            installed.write_text("# Native\n", encoding="utf-8")
+            installed.write_text("# Before init\n", encoding="utf-8")
+            def custom_init(command, **kwargs):
+                self.assertEqual(command, (
+                    "node", "trellis.js", "init", "-y", "--codex",
+                    "--workflow", "guru-team", "--workflow-source",
+                    "gh:castbox/guru-trellis/trellis#main",
+                ))
+                self.assertEqual(kwargs["cwd"], target)
+                installed.write_text("# Public marketplace workflow\n", encoding="utf-8")
             with mock.patch.object(
                 self.matrix, "_workflow_source_requires_local_sample", return_value=True
-            ), mock.patch.object(self.matrix, "_run") as runner:
+            ), mock.patch.object(self.matrix, "_run", side_effect=custom_init) as runner:
+                with self.assertRaisesRegex(self.matrix.MatrixError, "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE"):
+                    self.matrix._install_workflow(
+                        target, ("node", "trellis.js"), {}, "codex",
+                        "gh:castbox/guru-trellis/trellis#main", root, False,
+                        "fixture", root / "init.log",
+                    )
+                runner.assert_not_called()
+                self.assertEqual(installed.read_text(), "# Before init\n")
                 local_sample = self.matrix._install_workflow(
                     target,
                     ("node", "trellis.js"),
@@ -755,10 +837,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     "0.6.17",
                     root / "init.log",
                 )
-            command = runner.call_args.args[0]
             self.assertTrue(local_sample)
-            self.assertEqual(command[command.index("--workflow") + 1], "native")
-            self.assertNotIn("--workflow-source", command)
+            runner.assert_called_once()
             self.assertEqual(installed.read_text(encoding="utf-8"), "# Local candidate\n")
 
     def test_local_sample_workflow_switch_uses_exact_local_candidate(self) -> None:
@@ -955,6 +1035,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 (target / ".trellis/guru-team/trellis-source.json").write_bytes(
                     (repo / "trellis/presets/guru-team/source/trellis-source.json").read_bytes())
                 (target / ".trellis/.version").write_text("0.6.17")
+                self.template_fixture(target)
                 self.assertEqual(command[1], str(source / "packages/cli/bin/trellis.js"))
                 return False
             with mock.patch.object(self.matrix, "_install_workflow", side_effect=init), \
@@ -2123,10 +2204,9 @@ exit 23
             comparison, "current source/installed", require_exact=True
         )
 
-    def test_installed_projection_and_template_hash_classification_are_current(self) -> None:
+    def test_installed_projection_is_current(self) -> None:
         installed = self.matrix.installed_capability_projection(REPO)
         comparison = self.matrix.compare_capabilities(installed, installed)
-        template_hashes = self.matrix._assert_template_hashes(REPO, REPO)
 
         self.assertTrue(comparison["capabilities_preserved"])
         self.assertEqual(len(installed["skill_api"]["interfaces"]), len(self.matrix._active_registry_rows(REPO)))
@@ -2139,20 +2219,12 @@ exit 23
         self.matrix._assert_projection_consistency(
             current, "current source/installed", require_exact=True
         )
-        self.assertEqual(template_hashes["unknown_drift_count"], 0)
-        self.assertGreater(template_hashes["entry_count"], 0)
 
     def test_arbitrary_agents_edits_fail_hash_gate(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             source, target = Path(directory) / "source", Path(directory) / "target"
             for root in (source, target):
-                (root / ".trellis").mkdir(parents=True)
-                (root / "AGENTS.md").write_text("official\n")
-                (root / ".trellis/.template-hashes.json").write_text(json.dumps({
-                    "__version": 2, "hashes": {
-                        "AGENTS.md": hashlib.sha256(b"official\n").hexdigest()
-                    }
-                }))
+                self.template_fixture(root)
             self.matrix._assert_template_hashes(target, source)
             (target / "AGENTS.md").write_text("unrelated local edit\n")
             with self.assertRaisesRegex(self.matrix.MatrixError, "AGENTS.md"):
@@ -2165,19 +2237,48 @@ exit 23
             source, target = Path(directory) / "source", Path(directory) / "target"
             original = b"official\n"
             for root in (source, target):
-                (root / ".trellis").mkdir(parents=True)
-                (root / "AGENTS.md").write_bytes(original)
-                (root / ".trellis/.template-hashes.json").write_text(json.dumps({
-                    "__version": 2, "hashes": {"AGENTS.md": hashlib.sha256(original).hexdigest()},
-                }))
-            projected = original + b"\n" + preset.AGENTS_AI_FIRST_BLOCK.encode("utf-8")
+                self.template_fixture(root, original)
+            preimage = self.matrix._capture_agents_preimage(target)
+            projected = preset.render_agents_ai_first_principles(original)
             (target / "AGENTS.md").write_bytes(projected)
-            result = self.matrix._assert_template_hashes(target, source)
+            result = self.matrix._assert_template_hashes(target, source, preimage)
             self.assertEqual(result["known_preset_projection_paths"], ["AGENTS.md"])
             for changed in (b"other\n" + projected, projected + b"extra\n", projected.replace(b"AI-first", b"AI-first-edited", 1)):
                 (target / "AGENTS.md").write_bytes(changed)
                 with self.assertRaisesRegex(self.matrix.MatrixError, "AGENTS.md"):
-                    self.matrix._assert_template_hashes(target, source)
+                    self.matrix._assert_template_hashes(target, source, preimage)
+
+    def test_agents_old_block_replacement_uses_bound_preimage_and_preserves_user_bytes(self) -> None:
+        import apply_guru_team_trellis_preset as preset
+
+        original = (b"user preface\n" + (
+            preset.AGENTS_AI_FIRST_START_MARKER + "\nolder guidance\n"
+            + preset.AGENTS_AI_FIRST_END_MARKER + "\n"
+        ).encode() + b"\nuser notes\n")
+        with tempfile.TemporaryDirectory() as directory:
+            source, target = Path(directory) / "source", Path(directory) / "target"
+            for root in (source, target):
+                self.template_fixture(root, original)
+            preimage = self.matrix._capture_agents_preimage(target)
+            hash_bytes = (target / ".trellis/.template-hashes.json").read_bytes()
+            projected = preset.render_agents_ai_first_principles(preimage)
+            for root in (source, target):
+                (root / "AGENTS.md").write_bytes(projected)
+            # Source equality alone cannot establish the target's managed change.
+            with self.assertRaisesRegex(self.matrix.MatrixError, "AGENTS.md"):
+                self.matrix._assert_template_hashes(target, source)
+            result = self.matrix._assert_template_hashes(target, source, preimage)
+            self.assertEqual(result["known_preset_projection_paths"], ["AGENTS.md"])
+            self.assertTrue(projected.startswith(b"user preface\n"))
+            self.assertTrue(projected.endswith(b"\nuser notes\n"))
+            self.assertNotIn(b"older guidance", projected)
+            self.assertEqual(preset.render_agents_ai_first_principles(projected), projected)
+            self.assertEqual((target / ".trellis/.template-hashes.json").read_bytes(), hash_bytes)
+            with self.assertRaisesRegex(self.matrix.MatrixError, "original template hash"):
+                self.matrix._capture_agents_preimage(target)
+            (target / "AGENTS.md").write_bytes(projected + b"new user note\n")
+            with self.assertRaisesRegex(self.matrix.MatrixError, "AGENTS.md"):
+                self.matrix._assert_template_hashes(target, source, preimage)
 
     def test_managed_asset_hashes_are_a_verified_subset_of_managed_assets(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

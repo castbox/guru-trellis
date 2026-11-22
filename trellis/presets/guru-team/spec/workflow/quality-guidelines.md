@@ -214,6 +214,80 @@ detail public. Apply this policy within the current accepted scope and the
 validation ownership below; it does not require historical test cleanup across
 business repositories or a new full-chain gate for every change.
 
+### Responsibility boundary, minimal evidence and later reviews
+
+Apply this method within every original writing and review owner's current
+scope, including requirements, solution, Architecture, Planning Approval,
+implementation, Check, independent review, Branch Review, Delivery Review and
+Completion. Workflow or standalone mode, a different Agent, session recovery,
+another review round and draft provenance create no exemption. Issue-specific
+authoring, creation and body revisions use the complete original Issue content
+method from the same provider. Its source locator is
+`trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md`;
+after installation its locator is
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
+
+Determine the accepted goals, actual consumers, the Issue's independently
+deliverable responsibility and responsibilities outside it. Choose the
+outermost effective observation surface **inside that boundary**. A result may
+be an API, CLI, workflow, document, code, configuration, protocol or data state;
+it need not be an end-user interface or a production business outcome. Consumer
+perspective identifies the promised contract; it does not require running the
+real consumer. Different promised entries need only their necessary differences.
+Do not use a coarse outer result to omit an explicit internal promise.
+
+Stop at that responsibility boundary. The existence of callers, downstream
+dependencies or a final business use does not authorize consumer integration,
+E2E, production adoption or joint acceptance. Missing consumer adoption or E2E
+alone is neither a provider defect nor a completion prerequisite. Defensive
+confidence, general risk or a desire for complete coverage supplies no authority.
+Keep cross-component proof only when an effective requirement includes joint
+delivery, or a current promise itself needs that integration to be proved.
+Identify that promise and the actual gap in boundary-local evidence; an untested
+call chain is not a gap by itself. Use the smallest sufficient check. Substitutes
+may isolate dependencies outside the declared boundary, but must not manufacture
+the result that the tested component itself must produce or omit real dependencies
+needed to prove its own contract.
+
+Treat service-version deployment, shared-test environment deployment,
+target-environment execution and business publish/config operations as distinct
+responsibilities. Ordinary work does not default to a per-change shared-test
+deployment. Require target- or shared-environment evidence only when effective
+authority explicitly promises it or only that environment can establish the
+required contract, and retain the exact environment and unverified boundary in
+that result. A business operation named publish, config or sync does not by
+itself create a service deployment obligation. Conversely, minimal evidence
+cannot delete an explicit target-environment promise, and deployment success
+cannot substitute for a component contract that the deployment does not
+exercise.
+
+Distinguish delivery results from supporting evidence and unsupported expansion.
+Unit, integration, E2E and joint checks are alternative evidence methods, not a
+fixed stack of required acceptance layers. When effective outer evidence already
+proves a promise, do not reproduce it at every internal layer. Add a targeted
+internal check only for an explicit condition that the existing evidence cannot
+prove; it supports the same acceptance rather than creating another layer.
+Require independent defect-detection value from additional verification. Test
+counts, coverage percentages and customary layer checklists supply no obligation.
+Reuse evidence whose object/version, conditions, path and conclusion remain
+applicable. A stage, reviewer, session or confidence change alone does not require
+rerunning it. Each original owner still judges its current sufficiency.
+
+Before adding, restoring or strengthening any verification or acceptance
+obligation, compare current effective authority, supported behavior, responsibility,
+existing acceptance and applicable evidence. Establish the current promise or
+actual defect, the uncovered condition and the necessity of the smallest addition.
+Design, test and review records cannot authorize new requirements by themselves.
+If that basis is absent, remove the candidate before this round's output; do not
+emit it as a blocking Finding, rework, risk, dependency, mandatory follow-up or
+gate. Do not move it to another stage or restore it under a different name.
+Remove unsupported or duplicate obligations together with their derived tests
+and blocking consequences, rather than requesting repeated scope expansion.
+Keep real original-scope omissions, implementation defects, invalid evidence and
+explicit safety or compatibility promises; repair or supplement only their actual
+gaps. A real scope change returns to original Clarify. These judgments use the
+existing owner and conversation, not a new gate, proof table or evidence ledger.
+
 ### Behavior, evidence and experiment selection
 
 Derive assertions from the conditions, actions and observable results required
@@ -230,6 +304,23 @@ may still use test-first development. Adopt existing tests and verifiable
 engineering facts when they remain applicable under the shared applicability
 rules. Fill actual coverage gaps; a stage or executor change alone does not
 require repeating an applicable experiment.
+
+When a sequence of caller actions is part of the accepted delivery, choose the
+smallest supported normal journey that reaches its required observable result
+through the relevant handoffs. If the entry can run and its dependencies are
+ready, Author puts that journey before additional parameter coverage in the
+existing implementation plan. Implement obtains its result before adding
+parameter cases with independent detection value. A high risk lower layer
+can receive an earlier targeted check. If a single function, API or CLI is
+sufficient to observe the promised behavior, use that level. Use a device or
+a wider chain only for behavior that needs it within the accepted boundary.
+
+If an entry or dependency is unavailable, continue independent work and
+record what could not run and which conclusion is affected. After the journey
+passes, complete the necessary acceptance and affected regression checks. Use
+the existing validation body to record the necessary coverage, checks that
+need repeating, failures and checks that did not run. Preserve earlier observations
+with their original meaning.
 
 Distinguish durable behavior/regression tests from temporary diagnostic
 experiments. Durable tests continue to detect contract violations. A diagnostic
@@ -391,6 +482,30 @@ Explain a material difference and limit the claim to the behavior actually
 exercised. Apply the shared
 [engineering-fact applicability rules](workflow-contract.md#candidate-applicability-and-coverage)
 when adopting earlier results after entry, default-path or enablement changes.
+
+Trace the entry the test actually executes to the result it actually observes.
+If a test calls the handler directly, its result supports the handler's
+behavior. Evidence for a gesture, menu or other supported entry must reach that
+entry. If a test observes an asynchronous operation being accepted, follow its
+completion to the usable result when the claim includes that result.
+
+Compare a substitute with the real adapter for the behavior the claim depends
+on. Check only relevant differences, such as object identity, asynchronous
+completion, restoration from persisted state, address updates, caching or
+decoding. Reusing the same object in memory can prove local edits. A claim
+about restoration needs evidence that the reader reconstructs the expected
+state from persistence.
+A known resource address establishes location. A claim about usable media
+also needs evidence that the relevant component can decode it.
+
+Choose inputs from the accepted support range and use the relevant component
+in the actual delivery build. Cover differences in that range that can
+change the outcome. For media, a container can hold different codecs. A sample
+supports the codec combination it exercised on that build. Verify other
+material combinations with evidence applicable to them. If the build or its
+support is unknown, state which claim remains open and have the original
+responsible owner verify it. The original reviewer judges sufficiency from
+observed facts.
 
 Fixtures may establish state that must already exist before the declared
 boundary, and substitutes may isolate dependencies outside it. For example, a
@@ -913,31 +1028,30 @@ distribution contract.
 The throwaway fresh-install and after-update/reapply phases must each discover
 the installed package and execute a real v2 recorder/checker path.
 For `guru-review-change-request`, tests must cover workflow/standalone
-precondition parity; all three target variants; current context/clarity/wording
+precondition parity; all three target variants; current context/clarity/source-content
 projection and hash linkage; each prerequisite missing, stale, wrong-exit, or
 target/content mismatched; all ten ordered dimensions; finding/reference/hash
-closure; five exits and exact consumers; active #112 exact transition;
+closure; four exits and exact consumers; active #112 exact transition;
 unknown/multiple/unmapped exit rejection; empty or incomplete AI Gate;
-scanner/checker success without a semantic Gate; non-ready failed-dimension,
+checker success without a semantic Gate; non-ready failed-dimension,
 blocking-finding, affected-evidence requirements; facts digest freshness;
 stdout-only zero-write behavior; source/installed/schema/runtime/platform
 distribution; and clean throwaway update/workflow/preset reapply with zero
 cache/sidecar residue. Tests must prove scripts preserve the AI-authored route
 and contain no readiness, finding, delivery-unit, history, duplicate, or
 workspace-creation generator. The #386 full-chain regression uses actual
-Discovery/Clarification/Wording public outputs through Readiness record/check/
+Discovery/Clarification public outputs through Readiness record/check/
 invoke, without test-side prerequisite reduction. Preserve distinct semantic
 content, title/body content, and disposition hashes. Exercise original earlier
 stage reroutes, live title-only/body-only drift, wrong target/stage, missing
 inputs and retired private-result shapes; distinguish shape diagnostics from
 live drift. Verify zero repository residue and no workspace creation on a
 representative clean install and reapply, without implying Release-matrix proof.
-The #388 installed regression must exercise real Sync/Discovery/Clarification
-outputs and Wording scan/record/check/invoke with all Wording inputs held in
-memory. Check initial installation and reapply, zero repository/input-file
-residue, unchanged fixed scope, actual checker receipts, and live title/body
-drift rejection. Mock remote responses only at the fixture GitHub boundary;
-do not replace the installed dispatcher or synthesize a successful receipt.
+The retired #388 scanner-only regression has no current consumer. Current
+Issue/draft bounded wording review uses Clarify's explicit profile; Markdown
+full-text wording review uses review-change explicit_files. Their source and
+installed tests observe read-only behavior and actual public outputs without
+claiming that deterministic transport proves Agent semantic review.
 ### Current Task Checkout Boundary
 
 For current checkout-boundary changes, run
@@ -1024,7 +1138,7 @@ recorder, checker, fixture, or re-entry route.
 
 For the #718 read-only source route, run the original public Sync read profile,
 Discovery source reads and record/check/invoke, Clarify including its context
-return, Wording, Readiness, and the unchanged target-creation projection.
+return, Readiness, and the unchanged target-creation projection.
 Observe one fixed tree and independent uncommitted draft from an external
 worktree without Task creation, implicit fast-forward, commit, or push.
 Validate actual stdout against the selected consumer schemas. Separately prove

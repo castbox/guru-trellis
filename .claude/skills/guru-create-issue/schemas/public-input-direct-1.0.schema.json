@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-issue-input-direct-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "action",
+    "ready_target_kind",
+    "reviewed_at",
+    "reviewed_label_identity_sha256",
+    "reviewed_target",
+    "draft",
+    "review_comment_body",
+    "reviewed_comment_sha256"
+  ],
+  "properties": {
+    "profile": {
+      "const": "issue_creation_direct"
+    },
+    "action": {
+      "$ref": "public-input-2.0.schema.json#/properties/action"
+    },
+    "ready_target_kind": {
+      "$ref": "public-input-2.0.schema.json#/properties/ready_target_kind"
+    },
+    "reviewed_at": {
+      "$ref": "public-input-2.0.schema.json#/properties/reviewed_at"
+    },
+    "reviewed_label_identity_sha256": {
+      "$ref": "public-input-2.0.schema.json#/properties/reviewed_label_identity_sha256"
+    },
+    "reviewed_target": {
+      "$ref": "public-input-2.0.schema.json#/properties/reviewed_target"
+    },
+    "draft": {
+      "$ref": "public-input-2.0.schema.json#/properties/draft"
+    },
+    "review_comment_body": {
+      "$ref": "public-input-2.0.schema.json#/properties/review_comment_body"
+    },
+    "reviewed_comment_sha256": {
+      "$ref": "public-input-2.0.schema.json#/$defs/sha256"
+    }
+  }
+}

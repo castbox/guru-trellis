@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-issue-supplement-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "generated_at",
+    "mode",
+    "typed_exit",
+    "review_target",
+    "context_evidence",
+    "confirmed_facts",
+    "repository_answerable_questions",
+    "clarification_rounds",
+    "open_questions",
+    "scope_proposals",
+    "source_actions",
+    "mutation_results",
+    "ai_review_gate",
+    "affected_contracts",
+    "reason",
+    "source_selection"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "skill_id": {
+      "const": "guru-clarify-requirements"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "typed_exit": {
+      "enum": [
+        "clear",
+        "needs_context",
+        "refresh_context",
+        "blocked"
+      ]
+    },
+    "review_target": {
+      "$ref": "requirements-clarification.schema.json#/$defs/reviewTarget"
+    },
+    "context_evidence": {
+      "$ref": "requirements-clarification.schema.json#/$defs/contextEvidence"
+    },
+    "confirmed_facts": {
+      "type": "array",
+      "items": {
+        "$ref": "requirements-clarification.schema.json#/$defs/confirmedFact"
+      }
+    },
+    "repository_answerable_questions": {
+      "type": "array",
+      "items": {
+        "$ref": "requirements-clarification.schema.json#/$defs/repositoryQuestion"
+      }
+    },
+    "clarification_rounds": {
+      "type": "array",
+      "items": {
+        "$ref": "requirements-clarification.schema.json#/$defs/clarificationRound"
+      }
+    },
+    "open_questions": {
+      "$ref": "requirements-clarification.schema.json#/$defs/idList"
+    },
+    "scope_proposals": {
+      "type": "array",
+      "items": {
+        "$ref": "requirements-clarification.schema.json#/$defs/scopeProposal"
+      }
+    },
+    "source_actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "allOf": [
+          {
+            "$ref": "requirements-clarification.schema.json#/$defs/sourceAction"
+          },
+          {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "none",
+                  "issue_comment",
+                  "issue_body_edit"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "mutation_results": {
+      "type": "array",
+      "items": {
+        "$ref": "requirements-clarification.schema.json#/$defs/mutationResult"
+      }
+    },
+    "ai_review_gate": {
+      "$ref": "requirements-clarification.schema.json#/$defs/aiGate"
+    },
+    "affected_contracts": {
+      "$ref": "requirements-clarification.schema.json#/$defs/stringList"
+    },
+    "reason": {
+      "$ref": "requirements-clarification.schema.json#/$defs/nonEmpty"
+    },
+    "source_selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "locator",
+          "section",
+          "authority_kind"
+        ],
+        "properties": {
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority_kind": {
+            "enum": [
+              "requirement",
+              "design_constraint",
+              "advisory"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "clear"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "open_questions": {
+            "maxItems": 0
+          },
+          "context_evidence": {
+            "properties": {
+              "status": {
+                "const": "current"
+              }
+            }
+          },
+          "ai_review_gate": {
+            "properties": {
+              "status": {
+                "const": "passed"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "needs_context"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "context_evidence": {
+            "properties": {
+              "status": {
+                "const": "missing"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "blocked"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "ai_review_gate": {
+            "properties": {
+              "status": {
+                "const": "blocked"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ai_review_gate": {
+            "properties": {
+              "status": {
+                "const": "blocked"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "ai_review_gate"
+        ]
+      },
+      "then": {
+        "properties": {
+          "typed_exit": {
+            "const": "blocked"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -254,6 +254,22 @@ class ReadOnlyReviewRuntimeTests(unittest.TestCase):
         self.assertEqual(error["field_path"], "public_input.base")
         self.assertEqual(self.call("capture", self.public_input(paths=["../outside"]), 2)["code"], "invalid_scope")
 
+    def test_explicit_files_binds_unchanged_full_text_without_writing(self):
+        self.write("docs/a.md", "# A\nThe complete original condition is required.\n")
+        self.write("docs/b.md", "# B\nClear default.\n")
+        self.git("add", ".")
+        self.git("commit", "-qm", "Selected unchanged Markdown")
+        public = self.public_input(profile="explicit_files", paths=["docs/a.md", "docs/b.md"], review_focus="wording_only")
+        before = self.state()
+        snapshot = self.capture(public)
+        self.assertEqual({"exit_id":"reviewed"}, self.invoke(public, snapshot))
+        self.assertEqual(before, self.state())
+        self.write("other.txt", "outside this selected file set\n")
+        self.assertEqual(snapshot, self.capture(public))
+        self.write("docs/a.md", "# A\nA changed condition in the selected full text.\n")
+        self.assertNotEqual(snapshot["content_identity"], self.capture(public)["content_identity"])
+        self.assertEqual("stale_identity", self.invoke(public, snapshot, 3)["code"])
+
     def test_blocked_exit_has_no_snapshot_or_semantic_inference(self):
         before = self.state()
         output = self.call("invoke", {

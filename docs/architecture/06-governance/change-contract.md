@@ -26,7 +26,7 @@ shared-current integration 自身绑定写前 live expected-current；错配只�
 
 ## Constitution applicability consumption
 
-在原 Architecture、Planning 与独立完整 Review 职责内，按唯一 current constitution 的完整五原则判断本次采用的机制及直接影响，包含没有实现 diff 的复用；不单独提高其中一条的地位。具体必要性、作用范围、代价、替代与证据方法只读取原 `guru-maintain-architecture-baseline/references/contract.md`；保护提出方责任沿原 `guru-qualify-root-cause` 的 Protection 合同消费，完整知识与存量处置沿原 `guru-maintain-requirements-design-test-ssot/references/current-knowledge.md` 消费，不在项目另写第二套方法。
+在原 Architecture、Planning 与独立完整 Review 职责内，按唯一 current constitution 的完整五原则及其架构准入与基线纠错要求，判断本次采用的机制及直接影响，包含没有实现 diff 的复用；不单独提高其中一条的地位。具体必要性、作用范围、代价、替代与证据方法只读取原 `guru-maintain-architecture-baseline/references/contract.md`；同一方法用于判断所沿用基线决定及 reviewer 提出的修复，不以设计、代码、测试和基线相符代替合理性判断。保护提出方责任沿原 `guru-qualify-root-cause` 的 Protection 合同消费，完整知识与存量处置沿原 `guru-maintain-requirements-design-test-ssot/references/current-knowledge.md` 消费，不在项目另写第二套方法。
 
 项目原九 concerns 和 project-check 使用既有 reason、evidence、before/after 与真实贡献承接这些判断。改变本项目 Architecture 规范性投影时，由原 Architecture owner 准备隔离完整 proposed 定义，并沿提交前 final_integration/readback、TaskCommit、committed after 绑定和一次独立完整质量链实际写入；RDT owner 只写自身三层 authority。当前 Task 的存量义务仍归原 Planning/Completion，不因基线晋升或拆 Delivery消失；新决策生效、新需求交付、旧实现迁完及环境切换分别表达。无 Architecture 影响保持原轻量路径，不创建空贡献、ADR、逐能力字段、原则评分或永久台账。
 
@@ -39,7 +39,7 @@ shared-current integration 自身绑定写前 live expected-current；错配只�
 - `dedicated_refactor_slice`：在行为/API/规则不变前提下，以单一主写的小切片收敛旧实现，要求可验证、可观测、可回滚和明确删除条件。
 - `no_architecture_impact`：只记录 current baseline/constitution、task/stage 与可审核理由，不创建 contribution、ADR 或 project-check burden。
 
-阶段顺序为 Planning candidate_assessment→Author solution→Wording→final_plan→Approval/Activation→implementation/完整隔离拟写与工程自检→原 owners final_integration/readback→TaskCommit→完整 committed candidate/begin_check→同次独立 Architecture before/after 与九维/full Review→Delivery Review/readiness→Publication→Merge/整体终态。首次 reviewer 新开且未参与实现，审查期间冻结 B/H 不写候选。修复由原 owner 形成后继提交；仍独立的同 reviewer 按 ADR-034 采用可核验覆盖，补审全部差额和影响，覆盖丢失或影响不明补足完整审核。提交前 integrated_pending_review 不得进入 readiness/Publication/Finish；只有真实 no_change 或 reviewed_promoted 可进入原下游资格判断。
+阶段顺序为 Planning candidate_assessment→Author solution→final_plan→Approval/Activation→implementation/完整隔离拟写与工程自检→原 owners final_integration/readback→TaskCommit→完整 committed candidate/begin_check→同次独立 Architecture before/after 与九维/full Review→Delivery Review/readiness→Publication→Merge/整体终态。首次 reviewer 新开且未参与实现，审查期间冻结 B/H 不写候选。修复由原 owner 形成后继提交；仍独立的同 reviewer 按 ADR-034 采用可核验覆盖，补审全部差额和影响，覆盖丢失或影响不明补足完整审核。提交前 integrated_pending_review 不得进入 readiness/Publication/Finish；只有真实 no_change 或 reviewed_promoted 可进入原下游资格判断。
 
 ## Current project-check descriptor
 
@@ -54,13 +54,16 @@ shared-current integration 自身绑定写前 live expected-current；错配只�
 
 ## Current Planning boundary
 
-`guru-author-task-plan` 独占整体 scope PRD 与每 Delivery PRD/design/implement 的规划语义写作及已有 revision 回程，Clarify 的来源/scope 判断、Architecture 独立评估、Wording 受控 rewrite 与 Approval 批准分别归其原 owner。`candidate_assessment` 评估真实候选但不要求尚未产生的 contribution，不输出 promotion_state；其 current consumer 是 Author solution_planning。`final_plan` 评估 Wording-current design 与真实 contribution/必要 ADR，保留 reviewed_candidate 或合法 reviewed_promoted 约束，current consumer 只为相邻 Approval。前置结果不能替代最终结果；两目的仍属于同一 Architecture owner/stage，project descriptor/result 保持2.0。独立 final_plan 使用完整显式对象的只读入口；无绑定或同Task/generation无选择不先写执行选择。原 Task/C4/唯一checkout、public关系/profile、非终态planning、scope/root/design freshness及不同选择/实际error拒绝保持。空历史 reviewer 在authority后核对象，再读设计/consumers，最后解释归属。该入口不改生命周期/session/资源/规划/shared baseline，正式成功仍只交相邻Approval，后者保自身选择；其他目的/stages及普通恢复writers不变。窄替代及理由见[ADR-EXPLICIT-REVIEW-OBJECT](../adr/explicit-review-object.md)。
+`guru-author-task-plan` 独占整体 scope PRD 与每 Delivery PRD/design/implement 的规划语义写作及已有 revision 回程，Clarify 的来源/scope 判断、Architecture 独立评估与 Approval 批准分别归其原 owner；原内容与审核 owner 在各自范围承担表述、保义及完整条件判断，独立 Wording 与专属 scanner/receipt 前置退出。`candidate_assessment` 评估真实候选但不要求尚未产生的 contribution，不输出 promotion_state；其 current consumer 是 Author solution_planning。`final_plan` 评估原 Author 当前实际 design 与真实 contribution/必要 ADR，保留 reviewed_candidate 或合法 reviewed_promoted 约束，current consumer 只为相邻 Approval。前置结果不能替代最终结果；两目的仍属于同一 Architecture owner/stage，project descriptor/result 保持2.0。独立 final_plan 使用完整显式对象的只读入口；无绑定或同Task/generation无选择不先写执行选择。原 Task/C4/唯一checkout、public关系/profile、非终态planning、scope/root/design freshness及不同选择/实际error拒绝保持。空历史 reviewer 在authority后核对象，再读设计/consumers，最后解释归属。该入口不改生命周期/session/资源/规划/shared baseline，正式成功仍只交相邻Approval，后者保自身选择；其他目的/stages及普通恢复writers不变。窄替代及理由见[ADR-EXPLICIT-REVIEW-OBJECT](../adr/explicit-review-object.md)。
 
 Clarify当前Task/Delivery scope profiles先判断范围，返回无task_key的pre-Author scope_ready2.0；原clear-router交Author task_scope_requirements写实际根PRD，scope_requirements_ready及原selection再交Clarify task_scope_requirements_acceptance。只有acceptance核真实AuthorityRef并accept_scope，输出含task_key的post-acceptance scope_ready；其consumer才按义务进入原stage合法rework/stop、显式Creation或Completion。三种scope_action均保留该顺序，不能把pre结果当发布或post结果重复写根PRD。无current Delivery不造空切片。
 
-Wording change refs、Approval revision actions与Delivery/Completion修订经显式projection回唯一writer。旧#292 private4/scope_ready1、active_task_scope_change Author及Task-status activation/resume只属固定旧完整安装，不作current fallback。旧planning2.0无purpose入口也不回退；非Planning6.0/Delivery4.0与bootstrap/repair保持。完整matching切换见MIGRATION-657，公共created wire、原初始Creation validator、原producer恢复及唯一continuation保持；既有Task按当前identity/binding/checkout和实际stage gates续接，Delivery created consumer重读公共phase并核实际未完成义务后进入适用owner。只有真实initial requirements且符合入口才initial Author；已有planning回适用Author/Wording/Architecture/Approval，当前approved进入Activation，缺失/过期输出回原producer。该窄决定由ADR-035拥有，不新建descriptor、状态authority或授权存储。
+真实 content change refs、Approval revision actions与Delivery/Completion修订经显式projection回唯一writer。Author 的 delivery_content_revision 读取实际变化，语义未变只刷新直接依赖，实质变化回原受影响 owner；不将旧 Wording pass 或 content_changed 标签冒充当前判断。旧#292 private4/scope_ready1、active_task_scope_change Author及Task-status activation/resume只属固定旧完整安装，不作current fallback。旧planning2.0无purpose入口也不回退；非Planning6.0/Delivery4.0与bootstrap/repair保持。完整matching切换见MIGRATION-657，公共created wire、原初始Creation validator、原producer恢复及唯一continuation保持；既有Task按当前identity/binding/checkout和实际stage gates续接，Delivery created consumer重读公共phase并核实际未完成义务后进入适用owner。只有真实initial requirements且符合入口才initial Author；已有planning回适用Author/Architecture/Approval，当前approved进入Activation，缺失/过期输出回原producer。该窄决定由ADR-035拥有，不新建descriptor、状态authority或授权存储。
 
-#531以ADR-024迁移上述Planning责任：Task整体scope-only由Author写作后Clarify审查；Delivery candidate/final两目的独立Architecture、Wording、Approval与Activation保持原owner，同DeliveryKey/planning_root回程。Task-only Completion/Finish仍使用task_impact_sync，不将Delivery与Task结果换标签。
+#531以ADR-024迁移的历史Planning责任为：Task整体scope-only由Author写作后Clarify审查；Delivery candidate/final两目的独立Architecture、Wording、Approval与Activation保持原owner，同DeliveryKey/planning_root回程。Task-only Completion/Finish仍使用task_impact_sync，不将Delivery与Task结果换标签。该句记录#531前驱含义；#850当前只退役独立Wording及专属前置，保留上述唯一writer、双Architecture目的、Approval与Activation。
+
+
+本次 current-only 匹配切换与在途接续由 `MIGRATION-850.md` 拥有；已开始的固定旧 provider 操作在该完整版本完成或恢复后再更新。当前规划从同一对象和实际未完成义务续接，复用仍适用覆盖，不重建 Task/Delivery、不清空合法选择或有效规划，不制造 Wording pass。显式 Issue/draft 由原 Clarify 有界只读承接，选定 Markdown 全文由原 review-change 的 explicit_files/wording_only 承接；均无 Task/session 前置、无对象写入或隐含 ready。项目九 concerns、descriptor/check/result identity、提交前真实整合/readback及提交后一次独立完整Review职责保持。窄决定见 `ADR-850-DEFAULT-WORDING-RETIREMENT`；canonical packages与workflow仍单写具体公共合同。
 
 ## 当前候选、晋升与恢复输入
 

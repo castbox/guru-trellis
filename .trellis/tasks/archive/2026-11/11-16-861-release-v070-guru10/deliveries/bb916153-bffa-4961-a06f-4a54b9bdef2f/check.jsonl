@@ -1,0 +1,4 @@
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "规划正文完整性与唯一来源处置"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计承接审核"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批唯一Policy与Docs Plan"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "完整源先交付及后继实际采用"}

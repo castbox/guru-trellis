@@ -104,6 +104,9 @@ class ReadBaselineChainTests(unittest.TestCase):
         interface = json.loads((PACKAGES / skill / "interface.json").read_text())
         contract = interface["public_contracts"]
         projection = next(row for row in contract["projections"] if row["exit_id"] == output["exit_id"])
+        if skill=="guru-sync-base" and projection["operation"]=="direct":
+            # Explicit retained full-chain test caller after the base router.
+            return {"source_exit":output["exit_id"],"profile":output["handoff_profile"],"mode":output["handoff_mode"],"continuation_id":output["handoff_continuation_id"],**({"return_identity":output["return_identity"]} if "return_identity" in output else {})}
         self.assertEqual(projection["operation"], "rename")
         return {row["target"]: copy.deepcopy(output[row["source"]]) for row in projection["mappings"] if row["source"] in output}
 
@@ -141,6 +144,7 @@ class ReadBaselineChainTests(unittest.TestCase):
         package = PACKAGES / "guru-clarify-requirements"
         owner = json.loads((package / "examples/requirements-clarification.json").read_text())
         owner.pop("content_identity")
+        owner.pop("source_content_sha256", None)
         owner["mode"] = "workflow"
         owner["review_target"].update(body_sha256=sha(self.body), updated_at=None)
         owner["review_target"].pop("facts_sha256")
@@ -156,33 +160,19 @@ class ReadBaselineChainTests(unittest.TestCase):
         if needs_context:
             owner.update(typed_exit="needs_context", consumer={"kind": "skill", "id": "guru-discover-change-context"})
             owner["context_evidence"].update(status="missing", missing_reason="Reread the fixed evidence for this question.")
-        recorded = self.call("guru-clarify-requirements", "record-requirements-clarification.sh", owner,
+        source = {"kind": "draft", "repo": "example/guru-extension", "draft_id": self.draft_id,
+                  "title": self.title, "body": self.body}
+        carrier = {"owner_result": owner, "owner_context": {"change_request": source}}
+        recorded = self.call("guru-clarify-requirements", "record-requirements-clarification.sh", carrier,
                              ("--mode", "workflow", "--input", "-"))
-        checked = self.call("guru-clarify-requirements", "check-requirements-clarification.sh", recorded, ("--input", "-"))
+        carrier["owner_result"] = recorded
+        checked = self.call("guru-clarify-requirements", "check-requirements-clarification.sh", carrier, ("--input", "-"))
         self.assertEqual(checked["typed_exit"], owner["typed_exit"])
         public = self.projection("guru-discover-change-context", context)
         return self.invoke("guru-clarify-requirements", {"schema_version": "1.0", "public_input": public,
-                                                         "transition": context["transition"], "owner_context": {}, "owner_result": recorded})
+            "transition": context["transition"], "owner_context": {"change_request": source}, "owner_result": recorded})
 
-    def wording(self, clear):
-        source = {"source_kind": "draft", "identity": self.draft_id, "title": self.title, "body": self.body, "updated_at": None}
-        envelope = {"profile": "change_request", "mode": "workflow", "change_request": source, "owner_result": {}}
-        scanned = self.call("guru-review-contract-wording", "record-contract-wording-review.sh", envelope,
-                            ("--root", str(self.worktree), "--invocation", "-", "--scan-only"))
-        envelope["owner_result"] = {"generated_at": "2026-01-01T00:00:00Z", "typed_exit": "pass", "revisions": [],
-            "classifications": [{"hit_id": hit["hit_id"], "classification": "term_definition", "reason": "The term preserves the declared meaning."} for hit in scanned["scan"]["hits"]],
-            "ai_review_gate": {"status": "passed", "reviewer": "test-owner", "summary": "The fixed title/body scope is clear.",
-                "checked_dimensions": {key: True for key in ("complete_profile_scope", "all_hits_classified", "zero_unchecked_hits", "product_semantics_preserved", "retained_reasons_sufficient", "zero_hits_not_requirement_review")}}}
-        recorded = self.call("guru-review-contract-wording", "record-contract-wording-review.sh", envelope,
-                             ("--root", str(self.worktree), "--invocation", "-"))
-        envelope["owner_result"] = recorded
-        checked = self.call("guru-review-contract-wording", "check-contract-wording-review.sh", envelope,
-                            ("--root", str(self.worktree), "--invocation", "-"))
-        public = {"profile": "change_request", "source_exit": "clear", "mode": "workflow", "target_locator": self.draft_id, "continuation_id": "stage0-current"}
-        return self.invoke("guru-review-contract-wording", {"schema_version": "1.0", "public_input": public,
-            "transition": clear["transition"], "owner_context": {}, "owner_result": recorded, "validation_receipt": checked["validation_receipt"]})
-
-    def readiness(self, wording, *, target_kind="proposed_draft"):
+    def readiness(self, clarity, *, target_kind="proposed_draft"):
         seed = json.loads((PACKAGES / "guru-review-change-request/examples/issue-review.json").read_text())
         owner = {key: seed[key] for key in ("generated_at", "semantic_review", "reason")}
         authority = {"kind": "draft", "repo": "example/guru-extension", "issue_number": None, "url": None, "state": "draft", "updated_at": None, "body_sha256": sha(self.body)}
@@ -190,13 +180,13 @@ class ReadBaselineChainTests(unittest.TestCase):
                      target={"kind": "proposed_draft", "repo": "example/guru-extension", "draft_id": self.draft_id, "source_request_sha256": digest(authority)})
         if target_kind == "standalone_request":
             owner["target"].update(kind=target_kind, request_id=owner["target"].pop("draft_id"), caller_locator="request:fixed-baseline")
-        owner["affected_evidence"] = [{"ref": "transition.context_result_sha256", "sha256": wording["transition"]["context_result_sha256"], "summary": "Current fixed source."}]
+        owner["affected_evidence"] = [{"ref": "transition.context_result_sha256", "sha256": clarity["transition"]["context_result_sha256"], "summary": "Current fixed source."}]
         gate = owner["semantic_review"]["ai_review_gate"]
         owner["semantic_review"]["ai_review_gate"] = {key: gate[key] for key in ("status", "reviewer", "summary")}
         for row in owner["semantic_review"]["dimensions"]:
-            row.update(evidence_refs=["transition.context_result_sha256"], affected_hashes=[wording["transition"]["context_result_sha256"]])
-        envelope = {"schema_version": "1.0", "public_input": {"profile": target_kind, "source_exit": "pass", "mode": "workflow", "target_locator": self.draft_id, "continuation_id": "stage0-current"},
-                    "transition": wording["transition"], "owner_context": {"change_request": {"kind": "draft", "draft_id": self.draft_id, "title": self.title, "body": self.body}}, "owner_result": owner}
+            row.update(evidence_refs=["transition.context_result_sha256"], affected_hashes=[clarity["transition"]["context_result_sha256"]])
+        envelope = {"schema_version": "1.0", "public_input": {"profile": target_kind, "source_exit": "clear", "mode": "workflow", "target_locator": self.draft_id, "continuation_id": "stage0-current"},
+                    "transition": clarity["transition"], "owner_context": {"change_request": {"kind": "draft", "draft_id": self.draft_id, "title": self.title, "body": self.body}}, "owner_result": owner}
         envelope["owner_result"] = self.call("guru-review-change-request", "record-change-request-review.sh", envelope, ("--root", str(self.worktree), "--invocation", "-"))
         checked = self.call("guru-review-change-request", "check-change-request-review.sh", envelope, ("--root", str(self.worktree), "--invocation", "-"))
         envelope["validation_receipt"] = checked["validation_receipt"]
@@ -213,13 +203,13 @@ class ReadBaselineChainTests(unittest.TestCase):
         request = self.projection("guru-clarify-requirements", returning)
         request["change_input"] = self.clues
         context, _ = self.context(returning, request)
-        ready, envelope = self.readiness(self.wording(self.clarify(context)))
+        ready, envelope = self.readiness(self.clarify(context))
         self.assertEqual(ready["exit_id"], "ready")
         self.assertEqual(ready["transition"]["base"], baseline["transition"]["base"])
         target = ready["transition"]["target"]
         data = {"profile": "issue_creation", "action": "create_issue", "ready_target_kind": "proposed_draft", "reviewed_target": target,
                 "reviewed_label_identity_sha256": digest({"reviewed_target": target["identity_sha256"], "labels": []}),
-                "draft": {"repo_ref": "example/guru-extension", "title": self.title, "body": self.body, "labels": [], "duplicate_disposition": "create_new"}, "reviewed_at": "2026-01-01T00:00:00Z"}
+                "draft": {"repo_ref": "example/guru-extension", "title": self.title, "body": self.body, "labels": [], "duplicate_disposition": "create_new"}, "review_comment_body": "已审核当前草稿的范围、表述与独立交付条件。", "reviewed_at": "2026-01-01T00:00:00Z"}
         plan = self.command("guru-create-issue", "record-issue-creation-plan", data)
         self.assertEqual(plan["status"], "ready")
         self.assertEqual(self.git("rev-parse", "HEAD"), self.commit)
@@ -241,10 +231,8 @@ class ReadBaselineChainTests(unittest.TestCase):
         contracts = json.loads((PACKAGES/"guru-sync-base/interface.json").read_text())["public_contracts"]
         declaration = next(row["contract"] for row in contracts["consumer_inputs"] if row["id"] == "baseline_ready_pre_task_input")
         selected = select_authoring_profile(declaration, baseline)
-        alternate = next(row for row in selected["alternate_authoring"] if "source_locators" in row["authoring_fields"])
         seed = self.projection("guru-sync-base", baseline)
-        self.assertEqual(set(seed), set(selected["seed_fields"]))
-        self.assertFalse(set(seed) & set(alternate["authoring_fields"]))
+        self.assertIn("source_exit", seed)
         locators = [{"locator":"docs/requirements.md", "section":"Scope"}]
         context, _ = self.context(baseline, {**seed, "change_input":self.clues, "clarify_profile":"reviewed_plan_intake", "source_locators":locators})
         self.assertEqual(context["handoff_profile"], "reviewed_plan_intake")

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实际读取并在原审核范围检查语义/清晰度。"}
+{"file": ".trellis/tasks/archive/2026-11/11-15-850-retire-default-wording-gate/prd.md", "reason": "对照整体accepted范围，不能只验路由或源码green。"}
+{"file": ".trellis/tasks/archive/2026-11/11-15-850-retire-default-wording-gate/deliveries/eb5ddae6-a516-41a4-9058-fb5d5d59c20b/design.md", "reason": "核SC/接口/在途/安装及真实Agent验证覆盖。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值、层级与普通Issue范围。"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "专属代码/文档退役与真实consumer必要性。"}
+{"file": "docs/architecture/contributions/850-wording-retirement.md", "reason": "独立提交后before/after的隔离Architecture拟写及替代边界。"}

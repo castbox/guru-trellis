@@ -39,12 +39,34 @@
   current source record 同时绑定精确 commit 与成功的上游 CI run；CI 证据不替代本地 build marker
   和实际模板/CLI 校验。full 历史验证需独立 predecessor checkout/SHA；focused 只证明当前 candidate 场景。
 
-- `ARCH-INT-015`：#392 Stage 1 的 repository-private release orchestration 按唯一顺序连接
-  pre-promotion fresh Phase 2 / Task Commit / `origin/main...HEAD` Branch Review -> expected `.47`
-  serialized Architecture/RDT promotion -> post-promotion fresh Phase 2 / Task Commit /完整 Branch Review。
-  第二次 review 通过后才可进入 Publication。preparation merge 后所有 Stage 1 gate identity 失效，
-  Stage 2 只接受 fresh `origin/main` exact commit/tree；完整 Release Gate、annotated tag、tag-pinned smoke、
-  GitHub Release、Issue close 与 cleanup 各自由其 live owner 独立处理。
+- `ARCH-INT-015`：repository-private release orchestration 的每个实际准备 Delivery 采用当前原链：
+  stable Planning/Activation -> 实现与工程自检 -> 必要 Architecture/RDT 完整整合及 readback -> 原 TaskCommit
+  -> 原 constructor/begin_check 固定完整 B..H -> 同次新独立 Review 的 Architecture、九维及完整范围判断
+  -> 真实 check/full_review 两槽 -> publication Architecture eligibility/Delivery Review readiness
+  -> Publication -> expected-head Merge -> Completion。知识整合仅 integrated_pending_review；实际提交后
+  独立 before/after 通过才是 reviewed_promoted。真实后继内容仍须提交并补足受影响独立覆盖。
+  不建立独立 candidate/final Check、固定晋升前后第二轮或 early Draft/source-only TaskCommit 路线。
+
+  若正式 source_locked 实际采用需要先有完整干净来源，由原 Clarify/Author 在同 Task 分配顺序切片。
+  D1 完整交付来源、自身安装/消费者/分发验证及必要知识；真实 delivered 后，Completion 对未实施采用
+  返回 additional_delivery_required，原 Creation 才建 D2 并进入独立 Planning/Activation。原 tools 从真实
+  delivered 的完整干净匹配来源更新实际目标，D2 将全部安装 after 和必要文档纳入自己的完整质量交付链。
+  D1 自身缺陷或必需验证失败不能留给 D2；未交付提交、dirty 来源或临时安装不代替正式采用。
+  原 source lock、CLI/Core 配对、preservation、managed bytes/mode、native、sidecar 与 drift 责任保持。
+
+  全部准备业务满足后才由原 Completion、reference-only Closure no_mutation、Finish 终态归档及
+  bookkeeping、精确 Cleanup 收口。Stage 2 在准备交付和终态归档合入后，重新读取 main 的真实 lineage，
+  冻结唯一 exact commit/tree；此前准备候选和 gates 不作发布 pass。完整前驱 diff、定向安装/前驱升级、
+  actual dogfood、scanner、独立候选判断及 annotated tag、tag-pinned smoke、正式 Release、选定本地收敛、
+  最终 Issue close 仍由原发布合同和 live Issue 的精确边界承担，不能因分切片而减少。
+
+  本条现行关系由 #808 私有消费者采用 #794 后承接；有效依据为当前 ARCH-DOM-053、ARCH-GOV-008/009、
+  change-contract 与 MIGRATION-794。#392 的 pre/post 两轮和 expected `.47` 是其历史完整 provider 的流程，
+  不再作为当前唯一顺序；旧合法在途操作仍按 MIGRATION-794 的完整 matching provider 恢复，不转换旧 pass。
+  仍为 proposed 的 ADR-POSTCOMMIT-INDEPENDENT-REVIEW 不被本条改状态，也不单独证明已接受。
+  取舍是复用原 owner、公共阶段和 staged Delivery 以去除来源/采用循环；代价为每个真实切片完整验证和审查。
+  上游改变来源锁定、Delivery 完成定义或 TaskCommit consumer 时，由原范围/Architecture owner 重评。
+  具体入口及恢复只由私有 release 合同与各原公共 Skill 单写，本单元不复制 schema、增加公共协议或发布账本。
 
 - `ARCH-INT-016`：framework generation owner 为 canonical source record 指定的 fixed Fork official CLI；Guru canonical
   owner 直接迁移 workflow/Skill/runtime/installer/spec/platform consumers，并经 preset 投影到 dogfood 与
@@ -207,7 +229,7 @@ Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级�
 
 `ARCH-INT-043`（#521 reviewed）：canonical workflow、selector/execution/create 合同、C6 最小 primary 前置及原 Review mode schema 经现有 marketplace/preset 与 shared/dogfood/Claude/Codex/Cursor 投影同步。registry36/164/109、business34/158 与软件四轴不变。一个 Codex local-candidate clean/current-update/reapply、current drift 和真实 persistent native caller已定向验证；旧 current-checkout task-free 在 current contracts 直接退出，没有双模式 fallback。Guru 未修改 upstream start/continue/extractor/hooks；实际 upstream bytes 与模型接续分别证明。实际结果、首次失败和层次由[唯一 Test](../../requirements-design-test-contributions/521-checkout-isolation/test.md)拥有；不推定远端 immutable 发布、业务 #120 采用、完整矩阵或旧 primary Task 逐例迁移完成。
 
-`ARCH-INT-044`：Author package、目的专属Architecture planning3.0、原Wording/Approval及Discovery合同由canonical marketplace/preset投影至shared/dogfood/声明平台。当前Task/Delivery scope采用scope_ready2.0两次承接，Task根PRD只由scope-only Author写，accept_scope只由原Clarify acceptance执行；旧#292 private4/scope_ready1、旧profile和status consumer不作为current fallback。原两目的评估、qualifier Author input、最小projection和各owner保持；旧planning2.0无purpose入口退出，中断调用fresh原owner重入，非Planning采用当前5.0/Delivery3.0，pinned历史validation assets保留。完整matching切换和在途恢复见[MIGRATION-657](../../../trellis/presets/guru-team/MIGRATION-657.md)。live registry/Interface定义inventory；[#292 Test](../../requirements-design-test-contributions/292-unique-planning-author/test.md)保留原结果，本轮actual source/installed/Agent及未验证层只见[#657 Test](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/test.md)。知识晋升和源码一致不证明旧业务安装、远端发布或完整Upgrade/Release矩阵。
+`ARCH-INT-044`：Author package、目的专属Architecture planning3.0、原Clarify内容职责、Approval及Discovery合同由canonical marketplace/preset投影至shared/dogfood/声明平台。当前Task/Delivery scope采用scope_ready2.0两次承接，Task根PRD只由scope-only Author写，accept_scope只由原Clarify acceptance执行；旧#292 private4/scope_ready1、旧profile和status consumer不作为current fallback。原两目的评估、qualifier Author input、最小projection和各owner保持；旧planning2.0无purpose入口退出，中断调用fresh原owner重入，非Planning采用当前6.0/Delivery4.0，pinned历史validation assets保留。完整matching切换和在途恢复见[MIGRATION-657](../../../trellis/presets/guru-team/MIGRATION-657.md)。live registry/Interface定义inventory；[#292 Test](../../requirements-design-test-contributions/292-unique-planning-author/test.md)保留原结果，#657当时actual source/installed/Agent及未验证层只见[#657 Test](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/test.md)。知识晋升和源码一致不证明旧业务安装、远端发布或完整Upgrade/Release矩阵。 #850直接退出独立Wording及专属scanner/receipt，当前后继版本与受控consumer按MIGRATION-850成套切换，不覆盖已发布schema path/id。显式Issue/draft及Markdown全文各由原Clarify/review-change有界只读承接；旧固定provider已开始操作先原对象恢复再匹配更新。原#292/#657 Test只保各自历史观察；本批生产wrapper、真实Agent、managed更新/退役和未验证层由本Task配对Test记录，不从源码或历史结果推定安装采用或Release。 本次整合状态为 `integrated_pending_review`；窄替代决定见 [ADR-850-DEFAULT-WORDING-RETIREMENT](../adr/850-default-wording-retirement.md)。
 
 `ARCH-INT-045`（#530）：additive committed_reentry profile、runtime/schema/commands/eval/直接 consumer 合同经 canonical marketplace/preset 同步到 shared/dogfood/Claude/Codex/Cursor；原 dirty 与 compatibility invocation 保持，三个参数 shape 互斥。旧安装采用完整匹配 preset 后才调用新 profile，无 dual reader 或 upstream patch。定向 source/实际 installed 公开链、一个 clean preset/reapply、mode/parity/drift/sidecar 的实际层次由[唯一Test](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)持有；官方 init/update/upgrade、backend #444、远端 marketplace 和完整 Release matrix 未验证，软件四轴不变。
 

@@ -16,7 +16,7 @@ from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 
 DELIVERY_PROFILES = {"delivery_" + name for name in {
-    "initial_review", "active_task_scope_change", "wording_reentry",
+    "initial_review", "active_task_scope_change", "content_revision",
     "approval_revision", "delivery_plan_revision", "requirements_revision",
     "solution_planning", "architecture_conflict_resolution",
 }}

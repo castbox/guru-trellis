@@ -259,7 +259,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         expected = [
             "runtime_dependency", "task_checkout", "current_authority",
-            "planning_documents", "docs_ssot", "wording_result",
+            "planning_documents", "docs_ssot",
             "invocation_freshness",
         ]
         self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)

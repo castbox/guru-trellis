@@ -162,7 +162,7 @@ def request(case: str) -> str:
                 "范围与验收是否完整。按原前置先取得实际 Discovery context；未满足时沿原 owner恢复。"
                 "本次只审查，在当前对话列出具体未决项及建议，不能编造我的答复或改文件、创建资源。")
     if case == "C":
-        return ("使用 guru-review-contract-wording 的 explicit_paths，独立只读审核明确选定的 "
+        return ("使用 guru-review-change 的 explicit_files/wording_only，独立只读审核明确选定的 "
                 "design.md 和 implement.md 全文的语义与措辞，必要来源是 source.md。"
                 "不要改写文件。返回当前审核发现、已查范围及局限；不是正式 Planning Approval。")
     return ("使用 guru-review-change，以 working_tree 原公开入口独立只读审核当前目录候选的"

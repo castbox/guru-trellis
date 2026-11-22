@@ -3,10 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from owner import invoke, parser, repo_root
+from owner import _public_command, invoke, parser, repo_root
 from runtime.io import read_json
 
 
+@_public_command
 def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[str, Any]:
     # Inspect only the profile before loading the separate legacy owner. Normal
     # current calls keep their original runtime dependencies and preconditions.

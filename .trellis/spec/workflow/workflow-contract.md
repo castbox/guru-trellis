@@ -251,9 +251,13 @@ external exits; `guru-verify-extension-installation` and
 counts are checks against the live registry and workflow markers, not an
 alternative routing authority.
 
-The production spine is `guru-sync-base` -> context/clarification/wording/
-change-request review -> `guru-create-issue` for a proposed draft (then fresh
-Intake) or `guru-create-task` for an existing Issue/standalone request ->
+The production spine starts at `guru-sync-base` and the object-specific base
+router. Existing Issues enter the original Readiness owner first, with local
+supplements returning there. Discussion/draft/standalone requests and necessary
+full Intake retain context/clarification/wording/change-request review.
+`guru-create-issue` completes a proposed draft and its review comment; an
+Issue-only request ends there, while requested work uses the formal Issue at
+fresh Sync/Readiness. `guru-create-task` for a ready Issue/standalone request ->
 identity/binding/checkout/session resolution -> Task scope -> `guru-create-delivery`
 -> per-Delivery Planning and `guru-activate-delivery` -> Phase 2 check -> Task Commit -> independent Branch Review -> Delivery Review
 -> Delivery Publish -> Delivery Merge -> whole-task Completion -> source Issue
@@ -421,16 +425,20 @@ or adds baseline prose solely to record final Review/HEAD.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
-Classify the user request before repository/network semantic reads. A
-change-intent request that has not already entered an active-task route invokes
+Classify the user request before repository/network semantic reads. Route an
+Issue-only creation request directly to Create Issue. Route independent Issue
+requirements and readiness reviews to their selected semantic owners. Those
+owners decide whether current evidence needs more context. A remaining
+change-intent request outside an active-task route invokes
 `guru-select-workflow-mode`, including proposed-change requirements discussion,
 feature design and planning with deferred writes/resources. Method loading
 does not replace the actual selection or Clarify entry from current Discovery. An Issue-backed or task-like request that only asks
 for information, such as checking an Issue's current status, remains a
 information-only direct answer. The selector's `standard_intake` exit enters
-`guru-sync-base`, then automatically follows the public graph through current
-context discovery, requirements clarification, wording review, change-request
-review, and the `guru-task-intake-router`. Its `task_free` exit enters only the
+`guru-sync-base`, then the explicit object-specific router. Existing Issues
+enter Readiness's current-applicability profile; its declared local/full/refresh/
+blocked exits preserve original owner responsibility. Other objects retain the
+complete applicable chain and the `guru-task-intake-router`. Its `task_free` exit enters only the
 bounded task-free edit owner, which determines linked non-base execution before the first write.
 
 `guru-sync-base` public invocation is the only authoritative synchronization
@@ -440,24 +448,27 @@ deterministic components inside the public Skill and focused diagnostics/tests.
 Each refresh edge starts one new complete public sync invocation and discards
 the stale transition; it does not maintain a parallel evidence track.
 
-The standard Intake route carries a workflow-owned closed transition:
+The retained full Intake route carries a workflow-owned closed transition:
 
 ```text
 base_current -> guru-discover-change-context
 context_current -> guru-clarify-requirements
-clarity_current -> guru-review-contract-wording
-wording_current -> guru-review-change-request
+clarity_current -> guru-review-change-request
 readiness_current -> guru-task-intake-router
 ```
 
-The router uses `ready.transition.target.kind`: `proposed_draft` invokes
-`guru-create-issue` with its own confirmation and then restarts fresh Sync and
-Intake for the new Issue; `existing_issue` and `standalone_request` invoke
+The router accepts the independent existing-Issue ready result under
+MIGRATION-819, preserving its source and the original Create Task gate. For
+retained full-chain results, it uses `ready.transition.target.kind`: `proposed_draft` invokes
+`guru-create-issue` with its own exact Issue/comment action boundary. Only a
+request to start work continues through Sync and existing-Issue Readiness; `existing_issue` and `standalone_request` invoke
 `guru-create-task`. Only that checked created result enters a newly created
 Task's first whole-scope Author step; an existing active Task follows its
 current identity/binding/checkout and actual continuation owner.
-Issue creation is not task creation. Identity, branch binding, checkout and
-session owners resolve the exact TaskId/generation for subsequent phases.
+A direct creation refresh returns to the original Create owner for the same
+pending draft. An independent Issue review's `issue_reviewed` ends at the user
+response. Identity, branch binding, checkout and session owners resolve the
+exact TaskId/generation for subsequent Task phases.
 
 The producer's actual checked stdout is projected into the next stage and then
 combined only with that consumer's current semantic authoring input. Normal
@@ -533,14 +544,13 @@ obligations. No Task solution-planning state or automatic empty Delivery exists.
 The same Author's Delivery profiles own their three planning documents and
 official planning JSONL. Their `requirements_ready` enters the original Architecture
 owner's planning `candidate_assessment`; that current result returns to Author
-for solution writing. Author `plan_ready` enters Wording, whose planning pass
-enters Architecture `final_plan`; only that current result enters adjacent
+for solution writing. Author `plan_ready` enters Architecture `final_plan`; only that current result enters adjacent
 Approval. The packages own their local contracts, including source-design
 disposition, Delivery Policy and Docs SSOT Plan. Automatically consume each
 declared typed exit. Task scope is distinct from the per-Delivery plan. The first and subsequent
 Delivery are created/selected through `guru-create-delivery` before the existing
 unique Author writes their public planning_root. D2 never replaces D1 artifacts.
-Wording, Architecture and Approval retain separate judgments over that exact plan.
+Author, Architecture and Approval retain their original judgments over that exact plan.
 Only current approved output enters `phase-1-delivery-activation`, which presents
 the complete plan and invokes `guru-activate-delivery` after the current dialogue
 boundary. No base-pair observation is required. No Task planning/in_progress writer remains.
@@ -548,7 +558,7 @@ Same-Delivery rework uses the same owner rather than first/subsequent activation
 The exact profiles and output-loss recovery are step-local package contracts.
 Questions, revision requests, partial choices and ambiguous replies remain
 paused. Material plan changes re-enter the earliest affected Author/dependency
-and repeat current Wording, final Architecture and Approval before presentation.
+and repeat current final Architecture and Approval before presentation.
 Explicit autonomous execution omits only the ordinary unchanged-plan pause;
 scope, authority, material design or risk changes retain their existing boundary.
 
@@ -688,7 +698,7 @@ status, old summaries, and earlier confirmation are never substitutes.
 Planning preserves the original Author, source selection and both
 purpose-bound Architecture producers. Incomplete plans and lost source selection
 return to their original producer; a legitimate branch rebind never replays
-initial creation. Wording and final_plan precede fresh Approval.
+initial creation. Current Author content and final_plan precede fresh Approval.
 Adjacent current public DTOs use their Interface projection. Missing outputs
 return to their original semantic or transaction producer. Commit/publication/
 merge facts survive affected gate rework; their existence does not prove pass.

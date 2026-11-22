@@ -24,15 +24,16 @@ Guru Trellis 为业务研发仓库提供 Guru Team 的 AI 协作流程。它在 
 
 ### 命令行安装新仓库
 
-准备 Git、Bash、Python 3、Node.js，以及所选 Fork 要求的 Node 版本和锁定的 pnpm。
+准备 Git、Bash、Python 3、Node.js，以及所选 Fork 要求的 Node 版本和当前 pnpm。
 GitHub Issue、PR 等操作还需要已安装并登录的 GitHub CLI（`gh`）。
 Guru 的 GitHub 操作使用显式绑定仓库的 `gh` / `gh api`；Git 传输使用 `git`。
 
 先从 [Releases](https://github.com/castbox/guru-trellis/releases) 选择正式 tag。
-以下示例使用已发布的 `v0.7.0-guru.8`；目录按本机情况设置：
+仅当该页面存在 `v0.7.0-guru.10` 的非 draft、非 prerelease Release 时，才执行以下
+`.10` 示例；否则先将 `GURU_REF` 改为实际已正式发布的 tag。目录按本机情况设置：
 
 ```bash
-GURU_REF=v0.7.0-guru.8
+GURU_REF=v0.7.0-guru.10
 GURU_SOURCE=/absolute/path/to/guru-trellis
 FORK_SOURCE=/absolute/path/to/Trellis
 TARGET_REPO=/absolute/path/to/business-repo
@@ -78,9 +79,11 @@ AI 应先说明拟写入 `.trellis/spec/` 的内容，再确认现在执行或�
 <a id="guru-team-extension-version"></a>
 <a id="发布身份边界"></a>
 
-正式业务使用优先选择已发布 tag。当前已发布稳定版本为 `v0.7.0-guru.8`。
-源码中的 extension revision 即使仍为 `0.7.0-guru.8`，也可能已包含 tag 之后的
-未发布修改。相同版本号不代表相同源码或构建。
+当前 canonical extension 与维护目标为 `0.7.0-guru.10`。
+正式业务安装选择实际已正式发布的 tag。`.10` 安装示例以对应的非 draft、非
+prerelease Release 存在为执行条件。
+`v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，其历史来源见
+[preset 指南](trellis/presets/guru-team/README.md#apply-and-verify)。
 
 - **稳定安装**：workflow marketplace 与 preset checkout 使用同一个正式 Guru tag。
 - **候选试用**：两者使用同一个真实、远端可寻址的完整 Guru commit SHA。
@@ -98,6 +101,9 @@ Guru tag、extension revision、Fork commit/CLI 版本是不同的版本轴。
 本页不另存 Fork SHA/CI 对照表。source lock 和 CI 成功只说明各自绑定的来源与结果，
 不证明本地 build、业务安装、实际 Agent 行为或 Release 已验证。
 已发布 tag 也不自动包含当前源码中的修复。
+完整来源交付后，目标 checkout 由原升级 owner 实际采用并验证。
+来源验证、实际采用、Task Completion 和正式发布分别履行各自门禁；临时安装样本
+不能证明目标 checkout 已采用。
 
 ## 升级已有仓库
 

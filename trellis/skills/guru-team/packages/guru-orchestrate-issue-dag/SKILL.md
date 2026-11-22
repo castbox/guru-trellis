@@ -1,6 +1,6 @@
 ---
 name: guru-orchestrate-issue-dag
-description: Explicitly coordinate a cross-repository GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.
+description: Explicitly coordinate a cross-repository GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, native observation and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.
 ---
 
 # Guru Issue DAG Orchestrator
@@ -20,32 +20,43 @@ root is `trellis/presets/guru-team/spec/workflow`; the installed root is
 `.trellis/spec/workflow`. Until loading succeeds, give only a short progress or
 missing-file diagnostic. After recovery, load it and continue without new approval.
 
-Before preflight, live execution, every heartbeat or recovery, read that same
-provider's `issue-orchestration.md` in full and this package's
-[complete DAG contract](references/dag-contract.md). Package-local references
+Before preflight, live execution, each observation cycle or recovery, have that same
+provider's `issue-orchestration.md` and this package's
+[complete DAG contract](references/dag-contract.md) fully loaded. Package-local references
 come from `trellis/skills/guru-team/packages/guru-orchestrate-issue-dag` in source
 or `.trellis/guru-team/skills/packages/guru-orchestrate-issue-dag` after installation.
 A discovery projection is only an entry locator. Do not mix providers or use a
 historical personal copy. The target repository may be elsewhere and need not
 install these orchestration Skills.
 
+Keep both complete current contracts available before judgment. Reuse already
+read or fully injected text while it remains complete and current. Reread when
+the provider version changes, text is lost or truncated, or recovery leaves
+its identity or completeness uncertain; a new observation cycle alone does not
+require another file read.
+
 The shared method exclusively defines selected-base continuity, endpoint
 interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
-heartbeat, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
-it at startup, resume and child continuation alike.
+native waiting, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
+it at startup, resume and child continuation alike. For node actions, use
+the shared method’s `DAG Action Authorization And Handoff` section.
 The local contract owns graph normalization, eligibility, slots, exclusion,
 failure propagation, stage settlement and this Skill's public I/O.
 
 Operate quietly by default under the shared method's `Quiet Notifications`
-section. Its native silent-result transport carries routine progress without
-changing this Skill's declared exits or its duty to observe and continue work.
+section. Keep routine progress inside active tool observation and continuation;
+do not end supervision with a progress-only final response. Apply the shared
+`Conversation Recovery Inputs` and `Observation After An Interruption` sections
+when bindings change and whenever supervision resumes.
 
 ## Execute The DAG
 
 1. Resolve explicit nodes or the initiative’s formally bound members under the
    local contract. Normalize repository-qualified identities and each repository’s
    project/base binding into one graph. Preserve single-repository shorthand.
-   Normalize equivalent edge notation; `A -> B` means B waits for A's full completion. Input order
+   Normalize equivalent edge notation; `A -> B` means B waits for A's full completion.
+   Keep contract-only prerequisites separate under the local contract's
+   `Contract Readiness And Mock Development` section. Input order
    breaks ties among eligible nodes, never creates implicit edges. Clarify only
    actual ambiguous dependencies or choices before affected admission.
 2. Perform the shared read-only preflight and AI Gate for the entire graph.
@@ -56,21 +67,27 @@ changing this Skill's declared exits or its duty to observe and continue work.
    prerequisites, exclusions and any explicit execution-limit compatibility.
    A dry-run returns `dry_run_ready|dry_run_blocked` and stops. Auto/live consume
    ready preflight internally and launch only within current human instructions.
-3. Start or recover the one native current-chat heartbeat, default every two
-   minutes. Recompute eligibility; reserve each slot before creating its child.
+3. Establish the shared native-wait observation loop in this current chat.
+   Recompute eligibility; reserve each slot before creating its child.
    Preserve pending bindings and immediately observe each newly formal child.
    Fill available slots without creating blocked descendants or duplicate owners.
 4. Apply the shared progress and active-unblocking method each cycle, following
    owner actions to their actual results and rechecking real wait conditions.
+   Apply the shared `Confirmation While Independent Work Remains` section
+   when a live owner proposal requires direct human confirmation.
+   Recheck contract readiness for waiting and admitted consumers. When a usable
+   contract permits work, dispatch or continue its frontend owner with Mock
+   development as soon as slots permit, without waiting for backend completion.
    Observe every admitted unfinished node; use the local failure policy for
    affected nodes while keeping other permitted work moving. One busy child,
    merge or repair cannot starve other observations.
-5. Verify full completion before releasing any dependency. A join waits for all
-   predecessors. Refill a free slot immediately when an eligible node exists;
+5. Verify full completion before releasing any `depends_on` edge. A completion
+   join waits for all predecessors; contract prerequisites use their own readiness
+   condition. Refill a free slot immediately when an eligible node exists;
    do not impose a wave barrier. An earlier requested stage frees only the
    execution slot under local rules, never a hard dependency edge.
 6. Recheck current live facts and semantic sufficiency, settle under the local
-   contract, validate child/operation/heartbeat facts with native tools, and
+   contract, validate child/operation/observation facts with native tools, and
    return exactly one declared exit. Tool status never substitutes for AI judgment.
 
 ## Exits

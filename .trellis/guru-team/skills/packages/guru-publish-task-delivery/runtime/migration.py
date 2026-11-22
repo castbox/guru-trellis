@@ -123,8 +123,5 @@ def migrate_636(root, transaction, public, preview):
 def run(package, command, argv):
     try:
         return _run(package, command, argv)
-    except WorkflowError as exc:
-        code = exc.code if exc.code in {"invalid_json", "schema_mismatch", "external_command_failed"} else "publication_stale"
-        raise CommandError(code, "migration", str(exc), 3) from exc
     except LifecycleContractError as exc:
         raise CommandError("publication_stale", exc.field_path, exc.remediation, 3) from exc

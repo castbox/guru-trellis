@@ -98,7 +98,7 @@ result and is never recorded in the owner result or another authorization
 artifact.
 
 Every Delivery, including D1, enters `delivery_task_impact_sync` twice at Planning:
-first `candidate_assessment` on actual prewrite facts, then `final_plan` on Wording-current
+first `candidate_assessment` on actual prewrite facts, then `final_plan` on current Author
 design. Read the purpose-specific contract below before either invocation. The AI rereads the
 project Architecture Baseline, design-constitution authority, project
 change-contract identity, task scope, and applicable project-check protocol.
@@ -196,7 +196,7 @@ not inputs for current Delivery Planning. Candidate assessment consumes
 current call-local design_facts/constraint_refs or the current design_locator;
 it never requires an unwritten contribution, projects promotion_state, or
 claims reviewed_candidate. Its current router returns only to Author
-solution_planning. Final assessment consumes Wording-current design_locator
+solution_planning. Final assessment consumes current Author design_locator
 and actual task-local contribution/necessary ADR; current returns directly to
 Approval. The first result is never reused as the second result.
 

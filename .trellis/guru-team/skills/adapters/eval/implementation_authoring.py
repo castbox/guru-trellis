@@ -29,7 +29,7 @@ PUBLIC_READS = ('SKILL.md', 'interface.json', 'commands.json')
 OWNERS = ('guru-author-task-plan', 'guru-maintain-architecture-baseline',
           'guru-clarify-requirements', 'guru-check-task', 'guru-create-delivery',
           'guru-approve-task-plan', 'guru-activate-delivery',
-          'guru-review-contract-wording', 'guru-qualify-root-cause',
+          'guru-qualify-root-cause',
           'guru-qualify-normal-scenario', 'guru-qualify-solution-mechanism',
           'guru-maintain-requirements-design-test-ssot')
 ENTRY_OWNERS = ('guru-select-workflow-mode', 'guru-sync-base',

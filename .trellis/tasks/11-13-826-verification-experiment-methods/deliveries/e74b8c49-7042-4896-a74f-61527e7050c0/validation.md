@@ -42,3 +42,12 @@ V1/AC1和V2/AC2的候选正常CLI旅程、维护及证据回读已被实际轨�
 ## 定向分发测试的实际范围
 
 原始unittest输出保留在实施子会话工具记录。组合运行session 30875为Ran 2 tests in 332.262s，FAILED(failures=8)；PlanningBody对应前导成功点且不在失败列表，8项均为Review清单仍包含历史guru-check-task。仅修正现行consumer清单后，Review单项session 92849 exit0：Ran 1 test in 78.698s，OK。不能把首次组合整轮称为通过；不补造外部日志。使用managed Python、root cwd和显式PYTHONPATH/upstream scripts；其local_candidate不同正式Fork锁，保持未验证边界。
+
+## 2026-11-22 补验与整合观察
+
+本轮使用同一份去敏 CLI 项目、两份事前固定的方法及相同的 Codex CLI 0.167.0、deepseek-v4.1-flash、high 设置。[复核材料](validation-observations.md)保留共同输入、判据、方法版本、实际工具命令和输出，以及匿名评价结论。此前临时目录中的记录保留为历史观察。
+
+- AC1 和 AC2。候选侧通过真实 CLI 初始化独立存储，确认 doctor 就绪，新增笔记并由独立进程读回。清理后确认本轮存储路径已移除，且验证说明可读取。将 add --text 改为 add --message 后，更新说明并重跑受影响的路径，原观察保留为历史证据。维护阶段的临时存储位于实验目录内，与说明中“项目外”的描述有差异。
+- AC3 和 AC4。原模型在当前环境返回不支持，保留两次环境失败。用替代模型的首次执行暴露了跨目录读取问题，维护阶段一侧读到了评价准则和变体映射，该轮不计入验收。随后使用相同设置，从隔离副本完成两侧初始及维护四次原生执行。执行者无法读取另一侧或评价材料。独立评价者先按 A/B 判读命令、输出和产物，评价完成后才揭示映射。
+- 本案例中，候选侧对就绪和清理的直接观察更完整。现行侧对磁盘 JSON、旧参数被拒后存储未被改变，以及未覆盖范围的证据更明确。评价者认为现行侧的维护证据更易复核。这个结果只适用于同一 CLI 样本和本次模型设置。
+- AC5。对整合后的候选运行 test_planning_body_distribution 和 test_review_sufficiency_distribution，2 项均通过。原工具维护入口重新生成安装清单，返回 tools_upgraded。Dogfood 漂移检查通过，三个声明平台的受管投影与源文件一致，未发现未处理的 .new 或 .bak。正式 Fork 源锁、完整升级和 Release 矩阵、外部项目采用仍未验证。

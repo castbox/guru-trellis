@@ -14,7 +14,7 @@ from jsonschema import Draft202012Validator
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from runtime.schema import validate_json
 from adapters.eval import eval_support, native_adapter
-from adapters.eval.intake_authoring import FACTS_PATH, INTAKE_SKILLS, validate_intake_trace
+from adapters.eval.intake_authoring import FACTS_PATH, INTAKE_SKILLS, PUBLIC_METHOD_PATHS, validate_intake_trace
 
 SKILLS = Path(__file__).resolve().parents[2]
 REPO = SKILLS.parents[2]
@@ -38,9 +38,10 @@ class IntakeProjectionTests(unittest.TestCase):
                 path = owner / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(content)
-            spec = owner / required[-1]
-            spec.parent.mkdir(parents=True)
-            spec.write_bytes((REPO / required[-1]).read_bytes())
+            for relative in PUBLIC_METHOD_PATHS:
+                method = owner / relative
+                method.parent.mkdir(parents=True, exist_ok=True)
+                method.write_bytes((REPO / relative).read_bytes())
             facts = owner / FACTS_PATH
             facts.parent.mkdir(parents=True, exist_ok=True)
             facts.write_text(json.dumps({"source": fixture["source"], "required_reads": required}))
@@ -73,7 +74,14 @@ class IntakeProjectionTests(unittest.TestCase):
                                 for p in base.rglob("*") if p.is_file()}
                 self.assertEqual(materialized, {p for paths in inventory.values() for p in paths})
                 self.assertEqual({p.relative_to(repository).as_posix() for p in repository.rglob("*") if p.is_file()},
-                                 {FACTS_PATH, *required})
+                                 {FACTS_PATH, *required, *PUBLIC_METHOD_PATHS})
+                # The original owner can read its exact installed method paths;
+                # adding a method must not require a new transport or result.
+                for relative in PUBLIC_METHOD_PATHS:
+                    method = repository / relative
+                    self.assertEqual(method.read_bytes(), (REPO / relative).read_bytes())
+                    self.assertIn(str(method), inventory["owner_file"])
+                    self.assertIn(str(method), context)
                 self.assertNotIn("needed schemas/examples", context)
                 self.assertNotIn("expected_exit", context)
                 self.assertNotIn("legacy assets, not additional", context)
@@ -83,21 +91,17 @@ class IntakeProjectionTests(unittest.TestCase):
                     projected = projection if skill == INTAKE_SKILLS[-1] else projection / "flow-packages" / skill
                     for name in ("SKILL.md", "references/contract.md", "interface.json"):
                         self.assertEqual((projected / name).read_bytes(), (SKILLS / "packages" / skill / name).read_bytes())
+                    if skill == "guru-clarify-requirements":
+                        method = projected / "references/issue-content.md"
+                        self.assertEqual(method.read_bytes(), (SKILLS / "packages" / skill / "references/issue-content.md").read_bytes())
+                        self.assertIn(str(method), inventory["skill_contract"])
                     self.assertFalse((projected / "examples").exists())
                     self.assertFalse((projected / "schemas/public-input.schema.json").exists())
                 self.assertFalse((projection / "schemas/public-ready-output.schema.json").exists())
                 self.assertFalse((projection / "schemas/public-proposed-draft-input.schema.json").exists())
-                for skill in INTAKE_SKILLS[-2:]:
+                for skill in INTAKE_SKILLS[-1:]:
                     projected = projection if skill == INTAKE_SKILLS[-1] else projection / "flow-packages" / skill
                     self.assertIn(str(projected / "schemas/review-invocation.schema.json"), inventory["skill_contract"])
-                wording_schema = json.loads((projection / "flow-packages" / INTAKE_SKILLS[3] /
-                                             "schemas/review-invocation.schema.json").read_text())
-                validate_json({
-                    "profile": "change_request", "mode": "workflow", "owner_result": {},
-                    "change_request": {"source_kind": "issue", "identity": fixture["source"]["url"],
-                                       "title": fixture["source"]["title"], "body": fixture["source"]["body"],
-                                       "updated_at": fixture["source"]["updated_at"]},
-                }, projection / "flow-packages" / INTAKE_SKILLS[3] / "schemas/review-invocation.schema.json", "projected_wording")
                 args = [sys.executable, "-B", protocol["helper_path"]]
                 for flag, field in (("trace", "trace_path"), ("request-sha256", "request_sha256"),
                         ("projection-root", "projection_root"), ("repository-root", "repository_projection_root"),

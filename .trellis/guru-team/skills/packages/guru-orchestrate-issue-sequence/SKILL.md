@@ -1,6 +1,6 @@
 ---
 name: guru-orchestrate-issue-sequence
-description: Explicitly coordinate an ordered GitHub Issue chain across separate Codex chats and worktrees. Invoke by name when each Issue must fully finish before the next begins, with heartbeat supervision and live completion proof. Do not use implicitly or for unordered parallel work. Discussing the Skill or requesting a dry-run does not launch execution.
+description: Explicitly coordinate an ordered GitHub Issue chain across separate Codex chats and worktrees. Invoke by name when each Issue must fully finish before the next begins, with native observation and live completion proof. Do not use implicitly or for unordered parallel work. Discussing the Skill or requesting a dry-run does not launch execution.
 ---
 
 # Guru Issue Sequence Orchestrator
@@ -20,25 +20,33 @@ root is `trellis/presets/guru-team/spec/workflow`; the installed root is
 `.trellis/spec/workflow`. Until loading succeeds, give only a short progress or
 missing-file diagnostic. After recovery, load it and continue without new approval.
 
-Before preflight, live execution, every heartbeat or recovery, read that same
-provider's `issue-orchestration.md` in full and this package's
-[complete chain contract](references/chain-contract.md). Package-local references
+Before preflight, live execution, each observation cycle or recovery, have that same
+provider's `issue-orchestration.md` and this package's
+[complete chain contract](references/chain-contract.md) fully loaded. Package-local references
 come from `trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence` in
 source or `.trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence`
 after installation. A discovery projection is only an entry locator. Do not
 mix providers or use a historical personal copy. The target repository may be
 elsewhere and need not install these orchestration Skills.
 
+Keep both complete current contracts available before judgment. Reuse already
+read or fully injected text while it remains complete and current. Reread when
+the provider version changes, text is lost or truncated, or recovery leaves
+its identity or completeness uncertain; a new observation cycle alone does not
+require another file read.
+
 The shared method exclusively defines selected-base continuity, endpoint
 interpretation, current-dialogue authority, overall completion responsibility, active unblocking, child operation,
-heartbeat, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
+native waiting, quiet notifications, continuation, merge/completion proof and supported recovery. Apply
 it at startup, resume and child continuation alike.
 The local contract owns exact order, dependency compatibility, serial
 advancement, earlier-stage disposition and this Skill's public I/O.
 
 Operate quietly by default under the shared method's `Quiet Notifications`
-section. Its native silent-result transport carries routine progress without
-changing this Skill's declared exits or its duty to observe and continue work.
+section. Keep routine progress inside active tool observation and continuation;
+do not end supervision with a progress-only final response. Apply the shared
+`Conversation Recovery Inputs` and `Observation After An Interruption` sections
+when bindings change and whenever supervision resumes.
 
 ## Execute The Sequence
 
@@ -48,8 +56,8 @@ changing this Skill's declared exits or its duty to observe and continue work.
    Resolve the selected base and actual human execution limits before launch.
    Keep full completion as the goal and strict complete-before-next advancement.
    A dry-run returns its one ready/blocked result and stops; auto/live consume ready preflight internally.
-3. Start or recover the one native current-chat heartbeat, default every two
-   minutes. Create only the current Issue child, or recover its exact existing
+3. Establish the shared native-wait observation loop in this current chat.
+   Create only the current Issue child, or recover its exact existing
    owner. Preserve pending creation; immediately observe each newly formal child.
 4. Apply the shared progress and active-unblocking method to that same child
    each cycle, following owner actions to actual results and rechecking real
@@ -59,7 +67,7 @@ changing this Skill's declared exits or its duty to observe and continue work.
    required closeout and accepted overrides. Only then advance to the next
    Issue. An earlier-stage result never satisfies this advancement gate.
 6. Recheck semantic sufficiency and current live facts. Settle using the local
-   contract and native child/operation/heartbeat validation, then return exactly
+   contract and native child/operation/observation validation, then return exactly
    one declared exit. Tool status never substitutes for AI judgment.
 
 ## Exits

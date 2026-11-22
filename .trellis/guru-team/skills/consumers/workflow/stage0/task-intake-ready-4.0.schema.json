@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-task-intake-router-input-4.0",
+  "$ref": "../../../packages/guru-review-change-request/schemas/public-ready-output-8.0.schema.json"
+}

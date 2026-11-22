@@ -12,6 +12,7 @@ from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.base_selection import check_candidate
+from runtime.content_identity import title_body_identity
 
 
 DIMENSIONS = (
@@ -24,11 +25,10 @@ CATEGORIES = {"requirement_gap", "delivery_conflict", "wording_gap", "context_st
 CONSUMERS = {
     "ready": {"kind": "workflow", "id": "guru-task-intake-router"},
     "clarify_requirements": {"kind": "skill", "id": "guru-clarify-requirements"},
-    "review_wording": {"kind": "skill", "id": "guru-review-contract-wording"},
     "refresh_context": {"kind": "skill", "id": "guru-sync-base"},
     "blocked": {"kind": "stop", "id": "change-request-review-blocked"},
 }
-GATES = {"ready": "passed", "clarify_requirements": "reroute", "review_wording": "reroute", "refresh_context": "reroute", "blocked": "blocked"}
+GATES = {"ready": "passed", "clarify_requirements": "reroute", "refresh_context": "reroute", "blocked": "blocked"}
 
 
 def parse(parser, argv):
@@ -74,7 +74,7 @@ def sha(text):
 
 
 def validate_owner(package_root, payload, field="input"):
-    validate_json(payload, package_root / "schemas/change-request-review-3.0.schema.json", field)
+    validate_json(payload, package_root / "schemas/change-request-review-4.0.schema.json", field)
     return payload
 
 
@@ -84,7 +84,7 @@ def normalize_target(source, authored_target):
     title = str(source.get("title") or "")
     body = str(source.get("body") or "")
     title_hash, body_hash = sha(title), sha(body)
-    content_hash = digest({"title_sha256": title_hash, "body_sha256": body_hash})
+    content_hash = title_body_identity(title, body)
     kind = authored_target.get("kind")
     repo = authored_target.get("repo")
     if not isinstance(repo, str) or re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) is None:
@@ -142,31 +142,22 @@ def live_issue_source(source):
 
 def normalize_prerequisites(transition, target, source, package_root):
     stage = transition.get("stage") if isinstance(transition, dict) else None
-    if stage not in {"context_current", "clarity_current", "wording_current"}:
-        raise CommandError("schema_mismatch", "transition", "Provide a declared public prerequisite stage transition.")
-    schema = package_root.parents[1] / "consumers/workflow/stage0/transitions" / (stage.replace("_", "-") + "-3.0.schema.json")
+    if stage not in {"context_current", "clarity_current"}:
+        raise CommandError("schema_mismatch", "transition", "Provide the current context or Clarity transition.")
+    version = "4.0" if stage == "clarity_current" else "3.0"
+    schema = package_root.parents[1] / "consumers/workflow/stage0/transitions" / (stage.replace("_", "-") + "-" + version + ".schema.json")
     validate_json(transition, schema, "transition")
-    check_candidate(transition.get("candidate"),target["body_sha256"])
+    check_candidate(transition.get("candidate"), target["body_sha256"])
     if stage == "context_current" and transition["authority_content_sha256"] != target["body_sha256"]:
         raise CommandError("stale_identity", "transition.authority_content_sha256", "Refresh context for the current body.", 3)
-    result = {}
-    fields = {"clarity": ("facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256"),
-              "wording": ("facts_sha256", "scope_sha256", "scan_sha256", "target_content_sha256")}
-    for name, keys in fields.items():
-        present = name in transition
-        result[name] = {"status": "current" if present else "missing",
-                        **{key: transition[name][key] if present else None for key in keys}}
-    if "clarity" in transition:
-        clarity = transition["clarity"]
-        if (transition["clarity_result_sha256"] != clarity["facts_sha256"]
-                or (stage == "clarity_current" and transition["target_content_sha256"] != clarity["content_sha256"])):
-            raise CommandError("schema_mismatch", "transition.clarity", "Use consistent public clarity facts and disposition identities.")
-    if "wording" in transition:
-        wording = transition["wording"]
-        if transition["wording_facts_sha256"] != wording["facts_sha256"] or transition["target_content_sha256"] != wording["target_content_sha256"]:
-            raise CommandError("schema_mismatch", "transition.wording", "Use consistent public wording facts and content identities.")
-        if wording["target_content_sha256"] != target["content_sha256"]:
-            raise CommandError("stale_identity", "transition.wording.target_content_sha256", "Refresh wording for the current title and body.", 3)
+    keys = ("facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256")
+    clarity = transition.get("clarity")
+    result = {"clarity": {"status": "current" if clarity else "missing", **{key: clarity[key] if clarity else None for key in keys}}}
+    if clarity:
+        if transition["clarity_result_sha256"] != clarity["facts_sha256"] or transition["target_content_sha256"] != clarity["content_sha256"]:
+            raise CommandError("schema_mismatch", "transition.clarity", "Preserve the original Clarity semantic identities.")
+        if transition["source_content_sha256"] != target["content_sha256"]:
+            raise CommandError("stale_identity", "transition.source_content_sha256", "Return to original Clarify for the current title and body.", 3)
     return result
 
 
@@ -176,12 +167,17 @@ def invocation(package_root, argv, *, final=False):
     parser.add_argument("--invocation", required=True)
     args = parse(parser, argv)
     envelope = load(root(package_root, args.root), package_root, args.invocation, "invocation")
-    schema = (package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json"
+    profile = envelope.get("public_input", {}).get("profile")
+    if final and profile == "standalone_issue_readiness":
+        return envelope, None, None
+    if profile in {"existing_issue_intake", "issue_review_return"}:
+        return envelope, None, None
+    schema = (package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json"
               if final else package_root / "schemas/review-invocation.schema.json")
     validate_json(envelope, schema, "invocation")
     public, context, owner = envelope["public_input"], envelope["owner_context"], envelope["owner_result"]
     profile = public.get("profile")
-    schemas = {"current_issue": "public-current-issue-input.schema.json", "proposed_draft": "public-proposed-draft-input.schema.json", "standalone_request": "public-standalone-request-input.schema.json"}
+    schemas = {"current_issue": "public-current-issue-input-2.0.schema.json", "proposed_draft": "public-proposed-draft-input-2.0.schema.json", "standalone_request": "public-standalone-request-input-2.0.schema.json"}
     if profile not in schemas:
         raise CommandError("schema_mismatch", "public_input.profile", "Use one declared source profile.")
     validate_json(public, package_root / "schemas" / schemas[profile], "public_input")
@@ -205,14 +201,14 @@ def invocation(package_root, argv, *, final=False):
     expected_locator = target["url"] if profile == "current_issue" else source["draft_id"]
     if public["target_locator"] != expected_locator:
         raise CommandError("stale_identity", "public_input.target_locator", "Use the current source target locator.", 3)
-    required_stage = {"ready": "wording_current", "clarify_requirements": "context_current", "review_wording": "clarity_current"}.get(owner.get("typed_exit"))
+    required_stage = {"ready": "clarity_current", "clarify_requirements": "context_current"}.get(owner.get("typed_exit"))
     if required_stage and transition["stage"] != required_stage:
         raise CommandError("schema_mismatch", "transition.stage", "Provide the original " + required_stage + " transition for the AI-selected exit.")
     return envelope, target, prerequisites
 
 
 def linkage(target, prerequisites):
-    value = {"target_identity_sha256": target["identity_sha256"], "target_content_sha256": target["content_sha256"], "clarity_facts_sha256": prerequisites["clarity"].get("facts_sha256"), "clarity_disposition_sha256": prerequisites["clarity"].get("disposition_sha256"), "wording_facts_sha256": prerequisites["wording"].get("facts_sha256")}
+    value = {"target_identity_sha256": target["identity_sha256"], "target_content_sha256": target["content_sha256"], "clarity_facts_sha256": prerequisites["clarity"].get("facts_sha256"), "clarity_disposition_sha256": prerequisites["clarity"].get("disposition_sha256")}
     value["linkage_sha256"] = digest(value)
     return value
 
@@ -244,7 +240,7 @@ def validate_semantics(authored, target, prerequisites, linked):
 def build_result(authored, target, prerequisites):
     linked = linkage(target, prerequisites)
     validate_semantics(authored, target, prerequisites, linked)
-    result = {"schema_version": "3.0", "skill_id": "guru-review-change-request", "generated_at": authored.get("generated_at"), "mode": authored.get("mode"), "target": target, "prerequisites": prerequisites, "evidence_linkage": linked, "semantic_review": authored.get("semantic_review"), "typed_exit": authored.get("typed_exit"), "reason": authored.get("reason"), "affected_evidence": authored.get("affected_evidence"), "consumer": authored.get("consumer")}
+    result = {"schema_version": "4.0", "skill_id": "guru-review-change-request", "generated_at": authored.get("generated_at"), "mode": authored.get("mode"), "target": target, "prerequisites": prerequisites, "evidence_linkage": linked, "semantic_review": authored.get("semantic_review"), "typed_exit": authored.get("typed_exit"), "reason": authored.get("reason"), "affected_evidence": authored.get("affected_evidence"), "consumer": authored.get("consumer")}
     result["facts_sha256"] = digest(result)
     return result
 

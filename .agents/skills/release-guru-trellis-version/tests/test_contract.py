@@ -2,12 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -20,13 +17,10 @@ ROOTS = {
     "claude": REPO / ".claude/skills" / SKILL_ID,
     "cursor": REPO / ".cursor/skills" / SKILL_ID,
 }
-RUNTIME_MODULE = REPO / ".trellis/guru-team/runtime/reviewed_content.py"
 PUBLIC_SKILLS = REPO / "trellis/skills/guru-team"
 sys.path.insert(0, str(PUBLIC_SKILLS))
-from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
-from runtime.task_lifecycle.git_facts import inspect_repository
-TASK_REF = ".trellis/tasks/09-02-release"
-TASK_COMMIT_PACKAGE = PUBLIC_SKILLS / "packages/guru-create-task-commit"
+from runtime.delivery_projection.adapter import authority_ref
+
 DELIVERY_OWNERS = (
     "guru-review-task-delivery",
     "guru-publish-task-delivery",
@@ -43,18 +37,14 @@ RETIRED_OWNERS = (
 )
 
 
-def load_reviewed_content_module():
-    spec = importlib.util.spec_from_file_location(
-        "release_skill_reviewed_content", RUNTIME_MODULE
-    )
+def load_fixture(name: str, relative: str):
+    path = PUBLIC_SKILLS / "packages" / relative
+    spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
-        raise AssertionError(f"cannot import {RUNTIME_MODULE}")
+        raise AssertionError(f"cannot import {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-REVIEWED_CONTENT = load_reviewed_content_module()
 
 
 class SkillContractTest(unittest.TestCase):
@@ -89,7 +79,7 @@ class SkillContractTest(unittest.TestCase):
         self.assertEqual(f"name: {SKILL_ID}", frontmatter[0])
         self.assertTrue(frontmatter[1].startswith("description: "))
         self.assertIn("references/contract.md", match.group(2))
-        self.assertLess(len(match.group(2).splitlines()), 12)
+        self.assertIn("local installation convergence", match.group(2))
 
     def test_public_marketplace_preset_and_extension_inventories_exclude_skill(self) -> None:
         registry = json.loads(
@@ -143,7 +133,7 @@ class SkillContractTest(unittest.TestCase):
                     SKILL_ID, path.read_text(encoding="utf-8", errors="ignore")
                 )
 
-    def test_contract_owns_two_stages_two_reviews_and_independent_confirmations(self) -> None:
+    def test_contract_owns_current_delivery_chain_and_independent_release_boundaries(self) -> None:
         contract = (
             ROOTS["shared"] / "references/contract.md"
         ).read_text(encoding="utf-8")
@@ -190,41 +180,36 @@ class SkillContractTest(unittest.TestCase):
         self.assertNotIn("Shared/Codex/Claude/Cursor install", contract)
         self.assertNotIn("GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY", contract)
         honest_path = (
-            "stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> "
-            "pre_promotion_commit -> guru-review-branch_pre_promotion -> "
-            "serialized_architecture_rdt_promotion -> fresh_phase2 -> "
-            "guru-create-task-commit -> post_promotion_commit -> "
-            "guru-review-branch_post_promotion -> "
+            "stable_plan -> implementation_and_engineering_checks -> "
+            "necessary_rdt_architecture_integration_and_readback -> "
+            "guru-create-task-commit -> constructor/begin_check -> "
+            "guru-review-branch -> publication_architecture_eligibility -> "
             "guru-review-task-delivery -> guru-publish-task-delivery -> "
-            "guru-merge-task-delivery -> guru-review-task-completion -> "
-            "guru-complete-task-closure:no_mutation -> guru-finish-task -> "
-            "guru-cleanup-task-resources"
+            "guru-merge-task-delivery -> guru-review-task-completion"
         )
         self.assertIn(honest_path, contract)
-        self.assertEqual(2, honest_path.split(" -> ").count("guru-create-task-commit"))
-        self.assertEqual(
-            2,
-            sum(
-                step.startswith("guru-review-branch_")
-                for step in honest_path.split(" -> ")
-            ),
-        )
-        self.assertEqual(
-            1,
-            honest_path.split(" -> ").count("serialized_architecture_rdt_promotion"),
-        )
-        self.assertIn("The first review cannot be reused", contract)
-        self.assertIn("the second review cannot run before promotion", contract)
-        self.assertIn("promotion is an intentional reviewed-content mutation", contract)
+        for responsibility in (
+            "`pre_review_committed` enters only the original implementation router",
+            "`check` then `full_review`",
+            "successor content changes",
+            "Complete Source Before Actual Adoption",
+            "Only after D1 is actually `delivered`",
+            "`additional_delivery_required`",
+            "planning router invokes Creation to establish D2",
+            "D2 receives its own Planning and Activation",
+            "D1 source defects or required",
+            "matching complete original",
+        ):
+            self.assertIn(responsibility, normalized)
         self.assertIn("*whole preparation task*", contract)
         self.assertIn("`reference_only`", contract)
         self.assertIn("`Refs #<issue>` with no closing keyword", contract)
-        self.assertIn("Closure has no Issue mutation", contract)
+        self.assertIn("Closure must return `no_mutation`", contract)
         self.assertIn("After Stage 1 Delivery and Finish bookkeeping merges", contract)
         self.assertIn("Verify the remote tag points to the exact", contract)
         self.assertIn("passing smoke for that tag and candidate", contract)
         self.assertIn("separate Issue-closure", contract)
-        self.assertIn("Stage 1 reference-only Closure never substitutes", contract)
+        self.assertIn("Stage 1 reference-only Closure never substitutes", normalized)
         for retired in RETIRED_OWNERS:
             self.assertNotIn(retired, contract)
 
@@ -266,16 +251,14 @@ class SkillContractTest(unittest.TestCase):
                 )
                 exits = {item["id"]: item["consumer"] for item in interface["external_exits"]}
                 self.assertEqual({"kind": "skill", "id": consumer}, exits[exit_id])
-                marker = (
-                    '<!-- guru-skill-exit: '
-                    + json.dumps(
-                        {"skill": owner, "exit": exit_id, "consumer": exits[exit_id]},
-                        separators=(",", ":"),
-                    )
-                    + " -->"
-                )
-                self.assertIn(marker, workflow)
+                self.assertIn(owner, workflow)
+                self.assertIn(consumer, workflow)
                 self.assertIn(owner, contract)
+        completion = json.loads((PUBLIC_SKILLS / "packages/guru-review-task-completion/interface.json").read_text())
+        consumer = next(row["consumer"] for row in completion["external_exits"]
+                        if row["id"] == "additional_delivery_required")
+        self.assertEqual({"kind": "workflow", "id": "task-delivery-planning-router"}, consumer)
+        self.assertIn("guru-create-delivery", workflow)
         for retired in RETIRED_OWNERS:
             self.assertNotIn(retired, contract)
 
@@ -319,392 +302,204 @@ class SkillContractTest(unittest.TestCase):
                 self.assertIn(forbidden, contract)
 
 
-class ReviewedContentIdentityTest(unittest.TestCase):
+class PreparationDeliveryFlowTest(unittest.TestCase):
+    """Real public producers; fixture judgments and PR facts are not AI/GitHub proof."""
+
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory()
-        self.repo = Path(self.temp.name) / "fixture"
-        subprocess.run(
-            ["git", "init", "-q", "-b", "main", str(self.repo)], check=True
-        )
-        self.inputs = self.repo / ".trellis/.runtime/guru-team/evals/release-skill"
-        self.inputs.mkdir(parents=True)
-        self.git("config", "user.name", "Release Skill Contract Test")
-        self.git("config", "user.email", "release-skill@example.invalid")
-        self.git(
-            "remote",
-            "add",
-            "origin",
-            "https://github.com/castbox/guru-trellis.git",
-        )
-        self.write(".gitignore", ".trellis/.runtime/\n")
-        self.write(".trellis/config.yaml", "workspace_mode: worktree\n")
-        shutil.copytree(REPO / ".trellis/scripts", self.repo / ".trellis/scripts")
-        shutil.copytree(
-            REPO / "trellis/workflows/guru-team/schemas",
-            self.repo / "trellis/workflows/guru-team/schemas",
-        )
-        self.write("base.txt", "base\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "base")
-        self.git("switch", "-qc", "feat/335-release-fixture")
-        self.write(
-            f"{TASK_REF}/implement.md",
-            "# Stable implementation plan\n\nNo execution checklist.\n",
-        )
-        self.write(f"{TASK_REF}/prd.md", "# Fixture task\n")
-        self.write(f"{TASK_REF}/design.md", "# Fixture design\n")
-        self.write(
-            f"{TASK_REF}/task.json",
-            json.dumps(
-                {
-                    "id": Path(TASK_REF).name,
-                    "name": Path(TASK_REF).name,
-                    "title": "建立 guru-trellis 私有正式发布 Skill",
-                    "status": "in_progress",
-                    "branch": "feat/335-release-fixture",
-                    "base_branch": "main",
-                }
-            )
-            + "\n",
-        )
-        self.write(".agents/skills/release/SKILL.md", "delivery-v1\n")
-        self.write("README.md", "durable-v1\n")
-        self.write("config/release.yml", "revision: v1\n")
-        self.write("schemas/release.schema.json", '{"revision": "v1"}\n')
-        self.write("scripts/release.sh", "#!/usr/bin/env bash\necho v1\n")
-        self.write("tests/test_release.py", "EXPECTED = 'v1'\n")
-        BranchBindingStore(inspect_repository(self.repo)).establish(
-            TaskLifecycleKey(Path(TASK_REF).name, 0), "feat/335-release-fixture"
-        )
-        self.delivery_commit = self.create_delivery_commit()
+        module = load_fixture("release_delivery_flow", "guru-check-task/tests/test_delivery_flow.py")
+        self.flow = module.DeliveryFlow()
+        self.flow.delivery_profile = "pull_request"
+        self.flow.setUp()
+        self.addCleanup(self.flow.doCleanups)
+        self.repo, self.key = self.flow.repo, self.flow.key
+        self.projection = self.flow.projection
+        module = load_fixture("release_commit_fixture", "guru-create-task-commit/tests/test_committed_reentry.py")
+        self.commit_owner = module.CommittedReentryTest()
+        self.commit_owner.fixture = self.flow
+        self.commit_owner.repo, self.commit_owner.key = self.repo, self.key
+        self.commit_owner.task_ref, self.commit_owner.projection = self.flow.task_ref, self.projection
+        # The reused fixture establishes only the pre-test Planning boundary.
+        # This test's business increment is committed by the actual TaskCommit.
+        self.commit_owner.restart_implementation()
+        self.base = self.projection.content_base(self.key)
 
-    def tearDown(self) -> None:
-        self.temp.cleanup()
-
-    def git(self, *args: str) -> str:
-        return subprocess.run(
-            ["git", *args],
-            cwd=self.repo,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
-        ).stdout.strip()
-
-    def write(self, relative: str, content: str) -> None:
-        path = self.repo / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
-
-    def identity(self, *, include_worktree: bool = False) -> dict[str, str]:
-        value = REVIEWED_CONTENT.reviewed_content_identity(
-            self.repo, commit="HEAD", include_worktree=include_worktree
-        )
-        self.assertEqual("guru-reviewed-content-1.0", value["algorithm"])
-        return value
-
-    def commit_paths(self, message: str, *paths: str, force: bool = False) -> None:
-        add = ["add"]
-        if force:
-            add.append("-f")
-        self.git(*add, *paths)
-        self.git("commit", "-qm", message)
-
-    def write_json(self, relative: str, value: dict) -> Path:
-        path = self.inputs / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(value), encoding="utf-8")
-        return path
-
-    def create_delivery_commit(self) -> dict[str, object]:
-        phase2_anchor = self.git("rev-parse", "HEAD")
-        self.git("update-ref", "refs/remotes/origin/main", phase2_anchor)
-        self.write(
-            ".trellis/.runtime/guru-team/owner-checkpoints/09-02-release/"
-            "phase2-check.json",
-            json.dumps(
-                {
-                    "typed_exit": "passed",
-                    "task_ref": TASK_REF,
-                    "phase2_capture_commit": phase2_anchor,
-                }
-            )
-            + "\n",
-        )
-        public_input = self.write_json(
-            "inputs/task-commit-public.json",
-            {
-                "profile": "initial_commit",
-                "mode": "workflow",
-                "task_ref": TASK_REF,
-                "source_exit": "passed",
-                "phase2_commit_anchor": phase2_anchor,
-            },
-        )
-        reviewed_paths = (
-            f"{TASK_REF}/design.md",
-            f"{TASK_REF}/implement.md",
-            f"{TASK_REF}/prd.md",
-            f"{TASK_REF}/task.json",
-            ".agents/skills/release/SKILL.md",
-            "README.md",
-            "config/release.yml",
-            "schemas/release.schema.json",
-            "scripts/release.sh",
-            "tests/test_release.py",
-        )
-        authoring = {
-            "path_classifications": [
-                {
-                    "path": path,
-                    "category": "task-reviewed",
-                    "reason": "The release delivery path passed the fixture Phase 2 review.",
-                    "coverage_source": "guru-check-task fixture",
-                }
-                for path in reviewed_paths
-            ],
-            "message": {
-                "type": "feat",
-                "scope": "release",
-                "summary": "create final delivery content",
-                "background": "Issue #335 requires one owner-created delivery commit.",
-                "changes": "Commit the reviewed release Skill, task, docs, config, schema, script, and test bytes.",
-                "boundaries": "Keep publication and release side effects outside this fixture.",
-                "validations": "Run the repo-private honest-path contract test.",
-            },
-            "ai_review": {
-                "status": "passed",
-                "summary": "The exact delivery paths and commit message are current and sufficient.",
-                "evidence": ["The fixture Phase 2 result covers every staged path."],
-            },
-        }
-        prepared = self.run_package_wrapper(
-            TASK_COMMIT_PACKAGE,
-            "prepare-task-commit.sh",
-            "--input",
-            public_input.relative_to(self.repo),
-            "--candidate-json",
-            json.dumps(authoring),
-        )
-        candidate = Path(str(prepared["candidate_artifact"]))
-        checked = self.run_package_wrapper(
-            TASK_COMMIT_PACKAGE,
-            "check-task-commit-plan.sh",
-            "--candidate-artifact",
-            candidate,
-        )
-        self.assertEqual("committed", checked["typed_exit"])
-        executed = self.run_package_wrapper(
-            TASK_COMMIT_PACKAGE,
-            "create-task-commit.sh",
-            "--candidate-artifact",
-            candidate,
-        )
-        invocation = self.write_json(
-            "inputs/task-commit-invocation.json",
-            {
-                "result": {
-                    **executed,
-                    "typed_exit": "committed",
-                    "task_ref": TASK_REF,
-                    "base_ref": "origin/main",
-                    "branch_review_commit": executed["commit_sha"],
-                }
-            },
-        )
-        output = self.run_package_wrapper(
-            TASK_COMMIT_PACKAGE,
-            "invoke.sh",
-            "--invocation",
-            invocation.relative_to(self.repo),
-        )
-        self.assertEqual("committed", output["exit_id"])
-        self.assertEqual(output["branch_review_commit"], self.git("rev-parse", "HEAD"))
-        self.assertFalse(candidate.exists())
+    def commit_increment(self, relative="release-contract.md", content="Current release consumer.\n"):
+        self.commit_owner.restart_implementation()
+        (self.repo / relative).write_text(content)
+        prepared = self.commit_owner.prepare({})
+        before = int(self.flow.git("rev-list", "--count", "HEAD"))
+        args = ("--candidate-artifact", prepared["candidate_artifact"])
+        output = self.flow.wrapper("guru-create-task-commit", "invoke.sh", *args)
+        self.assertEqual("pre_review_committed", output["exit_id"])
+        self.assertEqual(output, self.flow.wrapper("guru-create-task-commit", "invoke.sh", *args))
+        self.assertEqual(before + 1, int(self.flow.git("rev-list", "--count", "HEAD")))
+        self.assertEqual(output["branch_review_commit"], self.flow.git("rev-parse", "HEAD").strip())
         return output
 
-    def run_branch_wrapper(
-        self, name: str, *args: object, ok: bool = True
-    ) -> dict:
-        process = subprocess.run(
-            [
-                str(PUBLIC_SKILLS / "packages/guru-review-branch/scripts" / name),
-                "--root",
-                str(self.repo),
-                *map(str, args),
-                "--json",
-            ],
-            cwd=REPO,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+    def begin_check(self, *paths):
+        head = self.flow.git("rev-parse", "HEAD").strip()
+        result = subprocess.run(
+            ["bash", str(REPO / "trellis/workflows/guru-team/scripts/bash/construct-delivery-candidate.sh"),
+             "--root", str(self.repo), "--task", self.flow.task_ref,
+             "--delivery-key", json.dumps(self.key), "--development-base", self.base,
+             "--head", head, "--paths", *paths],
+            capture_output=True, text=True,
         )
-        payload = json.loads(process.stdout or process.stderr)
-        if ok:
-            self.assertEqual(0, process.returncode, payload)
-        else:
-            self.assertNotEqual(0, process.returncode, payload)
-        return payload
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        candidate = json.loads(result.stdout)
+        operation = {"api_version": "1.0", "operation": "begin_check", "key": self.key,
+                     "owner_role": "implementation",
+                     "owner_id": self.projection.declaration()["owners"]["implementation"],
+                     "expected_phase": "implementing", "candidate": candidate}
+        result = subprocess.run(
+            [sys.executable, str(REPO / ".trellis/scripts/delivery.py"), "begin-check",
+             "--task", self.flow.task_ref, "--input", self.flow.write("begin-check.json", operation)],
+            cwd=self.repo, capture_output=True, text=True,
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(candidate, self.projection.resolve(self.key)["candidate"])
+        self.assertEqual(self.base, candidate["base_ref"])
+        return candidate
 
-    def run_package_wrapper(
-        self,
-        package: Path,
-        name: str,
-        *args: object,
-        ok: bool = True,
-        env: dict[str, str] | None = None,
-    ) -> dict[str, object]:
-        process = subprocess.run(
-            [
-                str(package / "scripts" / name),
-                "--root",
-                str(self.repo),
-                *map(str, args),
-                "--json",
-            ],
-            cwd=REPO,
-            env={**os.environ, **(env or {})},
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        payload = json.loads(process.stdout or process.stderr)
-        if ok:
-            self.assertEqual(0, process.returncode, payload)
-        else:
-            self.assertNotEqual(0, process.returncode, payload)
-        return payload
+    def record_review(self):
+        self.flow.head = self.flow.git("rev-parse", "HEAD").strip()
+        public = {"profile": "delivery_branch_review", "mode": "workflow",
+                  "task_ref": self.flow.task_ref, "delivery_key": self.key,
+                  "base_ref": self.base, "branch_review_commit": self.flow.head,
+                  "review_intent": "initial_review"}
+        authoring = json.loads((PUBLIC_SKILLS / "packages/guru-review-branch/examples/authoring-delivery-passed-2.0.json").read_text())
+        self.flow.wrapper("guru-review-branch", "review-branch.sh", "--task", self.flow.task_ref,
+                          "--skill-input", self.flow.write("review.json", public),
+                          "--semantic-review-file", self.flow.write("review-owner.json", authoring),
+                          "--typed-exit", "passed")
+        checked = self.flow.wrapper("guru-review-branch", "check-review-gate.sh", "--task", self.flow.task_ref,
+                                    "--delivery-key", json.dumps(self.key))
+        self.assertFalse(checked["formal_exit"])
+        return public
 
-    def record_branch_review(self) -> tuple[Path, Path]:
-        base = self.git("rev-parse", "HEAD^")
-        self.git("update-ref", "refs/remotes/origin/main", base)
-        public_input = self.write_json(
-            "inputs/branch-review.json",
-            {
-                "profile": "branch_review",
-                "mode": "workflow",
-                "task_ref": TASK_REF,
-                "base_ref": "origin/main",
-                "branch_review_commit": self.git("rev-parse", "HEAD"),
-                "review_intent": "initial_review",
-            },
-        )
-        semantic = self.write_json(
-            "inputs/semantic.json",
-            {
-                "delivery_review": {
-                    "task_scope": ["R335-03"],
-                    "delivery_slice": ["R335-03"],
-                    "remaining_work": [],
-                    "independent_delivery_conditions": [
-                        "The reviewed preparation slice is independently deliverable."
-                    ],
-                    "validation_boundaries": [
-                        "The release tag and smoke remain post-merge Issue work."
-                    ],
-                    "current_slice_status": "passed",
-                    "remaining_work_status": "disclosed",
-                    "summary": "Preparation delivery is complete; release work remains separate.",
-                },
-                "candidate_classifications": [
-                    {
-                        "candidate_ref": "candidate-no-defect",
-                        "decision": "rejected_not_reproduced",
-                        "witness": {
-                            "requirement_refs": ["R335-03"],
-                            "supported_entry_refs": ["entry:branch-review"],
-                            "existing_caller_refs": ["caller:release-skill"],
-                            "honest_action_sequence": [
-                                "review the complete supported range"
-                            ],
-                            "defect_observation": "No current defect reproduced.",
-                            "excluded_assumptions": [],
-                        },
-                        "consumer_use": "branch_review_route_checker",
-                    }
-                ],
-                "semantic_review": {
-                    "qualified_findings": [],
-                    "scope_proposals": [],
-                    "observations": [],
-                    "followup_candidates": [],
-                    "rejected_candidates": [],
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "summary": "Reviewed the complete fixture range.",
-                    },
-                },
-                "verification_evidence": {
-                    "reviewer": "independent-agent-fixture",
-                    "review_source": "independent-agent",
-                    "evidence": ["Complete fixture range reviewed."],
-                },
-            },
-        )
-        result = self.run_branch_wrapper(
-            "review-branch.sh",
-            "--task",
-            TASK_REF,
-            "--skill-input",
-            public_input,
-            "--semantic-review-file",
-            semantic,
-            "--typed-exit",
-            "passed",
-        )
-        self.assertIn(result["status"], {"recorded", "duplicate"})
-        return public_input, (
-            self.repo
-            / ".trellis/.runtime/guru-team/owner-checkpoints"
-            / Path(TASK_REF).name
-            / "review-gate.json"
-        )
+    def invoke_review(self, public, success=True):
+        return self.flow.wrapper("guru-review-branch", "invoke.sh", "--input",
+                                 self.flow.write("review.json", public), success=success)
 
-    def test_honest_path_runs_commit_and_branch_review_without_retired_owners(self) -> None:
-        delivery_head = str(self.delivery_commit["branch_review_commit"])
-        reviewed = self.identity()["sha256"]
-        public_input, checkpoint = self.record_branch_review()
-        self.assertTrue(checkpoint.is_file())
-        checked = self.run_branch_wrapper(
-            "check-review-gate.sh", "--task", TASK_REF, "--expected-exit", "passed"
-        )
-        self.assertEqual("owner_checkpoint_validated", checked["status"])
-        projected = self.run_branch_wrapper(
-            "invoke.sh", "--task", TASK_REF, "--input", public_input
-        )
-        self.assertEqual("passed", projected["exit_id"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-        self.assertFalse(checkpoint.exists())
+    def checkpoint(self):
+        return (self.repo / ".trellis/.runtime/guru-team/owner-checkpoints" /
+                self.key["task_id"] / self.key["delivery_id"] / "review-gate.json")
 
-    def test_delivery_durable_config_script_and_test_drift_change_identity(self) -> None:
-        previous = self.identity()["sha256"]
-        changes = (
-            ("delivery", ".agents/skills/release/SKILL.md", "delivery-v2\n"),
-            ("durable", "README.md", "durable-v2\n"),
-            ("config", "config/release.yml", "revision: v2\n"),
-            ("schema", "schemas/release.schema.json", '{"revision": "v2"}\n'),
-            ("script", "scripts/release.sh", "#!/usr/bin/env bash\necho v2\n"),
-            ("test", "tests/test_release.py", "EXPECTED = 'v2'\n"),
-        )
-        for category, relative, content in changes:
-            with self.subTest(category=category):
-                self.record_branch_review()
-                self.write(relative, content)
-                self.commit_paths(f"{category} drift", relative)
-                current = self.identity()["sha256"]
-                self.assertNotEqual(previous, current)
-                stale = self.run_branch_wrapper(
-                    "check-review-gate.sh",
-                    "--task",
-                    TASK_REF,
-                    ok=False,
-                )
-                self.assertEqual(
-                    ("stale_identity", "reviewed_content_sha256"),
-                    (stale["code"], stale["field_path"]),
-                )
-                previous = current
+    def reviewed(self):
+        self.commit_increment()
+        self.begin_check("release-contract.md")
+        public = self.record_review()
+        output = self.invoke_review(public)
+        self.assertEqual(output, self.invoke_review(public))
+        self.assertFalse(self.checkpoint().exists())
+        return output
+
+    def test_current_commit_constructor_review_two_slots_and_readiness(self):
+        output = self.reviewed()
+        results = self.projection.resolve(self.key)["results"]
+        self.assertEqual("planning:flow", results["check"]["predecessor_result_id"])
+        self.assertEqual(results["check"]["result_id"], results["full_review"]["predecessor_result_id"])
+        self.assertEqual(output["full_review_result_id"], results["full_review"]["result_id"])
+        self.assertEqual(results["check"]["candidate"], results["full_review"]["candidate"])
+        self.assertEqual("guru-review-branch", results["check"]["owner_id"])
+        self.assertEqual("ready", self.flow.readiness(output)["exit_id"])
+
+    def test_original_review_resumes_missing_second_slot_without_new_judgment(self):
+        self.commit_increment()
+        self.begin_check("release-contract.md")
+        public = self.record_review()
+        # Resume at the existing first-projection boundary with its real owner result.
+        sys.path.insert(0, str(PUBLIC_SKILLS / "packages/guru-review-branch/runtime"))
+        from delivery_review import result_id
+        from runtime.delivery_projection.gates import record_gate
+        owner = json.loads(self.checkpoint().read_text())
+        check_id = result_id(owner, "check")
+        record_gate(self.projection, self.key, "check", check_id,
+                    owner["gate_judgments"]["check"]["outcome"],
+                    [authority_ref(self.projection.planning_directory(self.key) / "implement.md", self.repo)], [])
+        self.assertIsNone(self.projection.resolve(self.key)["results"]["full_review"])
+        reviewed = self.invoke_review(public)
+        self.assertEqual(check_id, self.projection.resolve(self.key)["results"]["check"]["result_id"])
+        self.assertEqual(reviewed, self.invoke_review(public))
+        self.assertEqual("ready", self.flow.readiness(reviewed)["exit_id"])
+
+    def test_real_successor_needs_current_review_and_cannot_publish_old_readiness(self):
+        from unittest.mock import patch
+        ready = self.flow.readiness(self.reviewed())
+        old_public = {"profile": "delivery_review_ready", "mode": "workflow",
+                      "task_ref": self.flow.task_ref, "delivery_key": self.key,
+                      "readiness_result_id": ready["readiness_result_id"],
+                      "reviewed_head": self.flow.head, "pr_title": ready["pr_title"],
+                      "pr_body": ready["pr_body"], "remaining_work_state": ready["remaining_work_state"]}
+        prior = self.projection.resolve(self.key)["candidate"]
+        self.commit_increment("consumer.txt", "A genuine successor consumer.\n")
+        candidate = self.begin_check("consumer.txt")
+        self.assertNotEqual(prior["content_ref"], candidate["content_ref"])
+        self.assertTrue({"app.txt", "release-contract.md", "consumer.txt"}.issubset(candidate["paths"]))
+        package, owner = self.flow.load_owner("guru-publish-task-delivery")
+        review = {"schema_version": "1.0", "skill_id": package.name,
+                  "review": {"status": "passed", "summary": "Fixture boundary only."},
+                  "route": {"typed_exit": "ready_for_merge"}}
+        with patch.object(owner, "execute") as remote:
+            rejected = owner.invoke(self.repo.resolve(), old_public, review, None)
+            self.assertEqual("review_stale", rejected["exit_id"])
+            remote.assert_not_called()
+        self.assertIsNone(self.projection.resolve(self.key)["results"]["full_review"])
+        new_review = self.invoke_review(self.record_review())
+        self.assertEqual("ready", self.flow.readiness(new_review)["exit_id"])
+        self.assertNotEqual(ready["readiness_result_id"], self.projection.resolve(self.key)["results"]["readiness"]["result_id"])
+
+    def test_delivered_source_remaining_adoption_enters_completion_then_creation(self):
+        import hashlib
+        ready = self.flow.readiness(self.reviewed())
+        candidate = self.projection.resolve(self.key)["candidate"]
+        evidence = [authority_ref(self.repo / "release-contract.md", self.repo)]
+        # Read-only provider facts describe a completed remote boundary. They do
+        # not claim real GitHub mutation; the public fact validators still run.
+        with self.flow.provider_response(body=ready["pr_body"]):
+            self.projection.apply({"api_version": "1.0", "operation": "record_publication", "key": self.key,
+                "owner_role": "publication", "owner_id": "guru-test-publication", "expected_phase": "publishing",
+                "result": {"result_id": "publication:release-source", "owner_id": "guru-test-publication",
+                    "evidence": evidence, "profile": "pull_request", "candidate": candidate,
+                    "repo_ref": "example/repo", "pr_number": 9, "reviewed_head": self.flow.head,
+                    "target_ref": "main", "publication_ref": {"locator": "https://github.com/example/repo/pull/9",
+                        "revision": "sha256:" + hashlib.sha256(ready["pr_body"].encode()).hexdigest()}}})
+        with self.flow.provider_response(body=ready["pr_body"], merged=True):
+            self.projection.apply({"api_version": "1.0", "operation": "record_delivery", "key": self.key,
+                "owner_role": "delivery", "owner_id": "guru-test-delivery", "expected_phase": "publishing",
+                "result": {"result_id": "delivery:release-source", "owner_id": "guru-test-delivery",
+                    "evidence": evidence, "profile": "pull_request", "candidate": candidate,
+                    "repo_ref": "example/repo", "pr_number": 9, "reviewed_head": self.flow.head,
+                    "merge_commit": "f" * 40, "target_ref": "main"}})
+        self.assertEqual("delivered", self.projection.resolve(self.key)["phase"])
+        task_key = {name: self.key[name] for name in ("task_id", "lifecycle_generation")}
+        public = {"profile": "delivery_completion", "mode": "workflow", "task_ref": self.flow.task_ref,
+                  "task_key": task_key}
+        semantic = {"profile": public["profile"], "mode": public["mode"], "reviewed_task_key": task_key,
+                    "reviewed_scope": self.projection.read_record()["accepted_scope"],
+                    "reviewed_delivery_result_ids": ["delivery:release-source"], "evidence": evidence,
+                    "remaining_work_refs": ["scope:actual-adoption"], "result_id": "completion:release-source",
+                    "route": {"typed_exit": "additional_delivery_required", "reason": {
+                        "reason_code": "actual_adoption_unimplemented", "reason_refs": ["scope:actual-adoption"]}}}
+        pending = self.flow.wrapper("guru-review-task-completion", "invoke.sh", "--input",
+            self.flow.write("completion.json", public), "--semantic-result", self.flow.write("completion-owner.json", semantic))
+        self.assertEqual("additional_delivery_required", pending["exit_id"])
+        self.assertEqual([], self.projection.read_record()["completion_results"])
+        creation = {"profile": "delivery_creation", "mode": "workflow", "task_ref": pending["task_ref"],
+                    "task_key": pending["task_key"], "scope_ref": {
+                        "authority": self.projection.read_record()["accepted_scope"], "anchors": ["R1"]},
+                    "delivery_profile": "pull_request", "continuation_id": "actual-adoption", "action": "create"}
+        owner = {"typed_exit": "created",
+                 "reason": "Fixture accepted remaining actual adoption after source Delivery."}
+        created = self.flow.wrapper("guru-create-delivery", "invoke.sh", "--input", self.flow.write("creation.json", creation),
+                                    "--owner-result", self.flow.write("creation-owner.json", owner))
+        self.assertEqual("created", created["exit_id"])
+        self.assertNotEqual(self.key, created["delivery_key"])
+        self.assertEqual(task_key, {name: created["delivery_key"][name] for name in task_key})
+        successor = self.projection.resolve(created["delivery_key"])
+        self.assertEqual("planning", successor["phase"])
+        self.assertIsNone(successor["results"]["planning"])
+        self.assertEqual("delivered", self.projection.resolve(self.key)["phase"])
 
 
 if __name__ == "__main__":

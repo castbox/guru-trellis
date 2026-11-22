@@ -11,7 +11,7 @@ never reset a branch, infer source selection from metadata, or create another
 Task. Source selection retains locator/section/authority_kind. Normative design
 is a constraint; advisory design remains advisory.
 
-Current aggregate 2.0 has nine independent profiles and five exits. The old
+Current aggregate 3.0 has nine independent profiles and five exits. The old
 Task-root development profiles and outputs remain validation assets for fixed
 old installations; they are not current runtime fallbacks. Migration must
 apply the complete matching workflow, consumers and package set after public
@@ -34,7 +34,7 @@ not a new public input/output or an Interface artifact inventory.
 | delivery_active_task_scope_change | [Task PRD](../templates/task-prd.md) to read the already published whole requirements, plus [Delivery PRD](../templates/delivery-prd.md) to revise affected slice requirements. Do not republish scope here. |
 | delivery_requirements_revision | [Delivery PRD](../templates/delivery-prd.md); converge actual requirements and context before requirements_ready. |
 | delivery_solution_planning | [Delivery design](../templates/delivery-design.md) and [Delivery implement](../templates/delivery-implement.md); consume current candidate_assessment and complete applicable solution/execution/context before plan_ready. Read current PRD and its necessary references too. |
-| delivery_wording_reentry | Load each affected body's [PRD](../templates/delivery-prd.md), [design](../templates/delivery-design.md) or [implement](../templates/delivery-implement.md) template. Equivalent wording refreshes only affected gates; changed mechanism returns to candidate assessment before substantive solution writing. |
+| delivery_content_revision | Load each affected body's [PRD](../templates/delivery-prd.md), [design](../templates/delivery-design.md) or [implement](../templates/delivery-implement.md) template. Equivalent wording refreshes only affected gates; changed mechanism returns to candidate assessment before substantive solution writing. |
 | delivery_approval_revision | Load the templates for actual revision_actions: [PRD](../templates/delivery-prd.md), [design](../templates/delivery-design.md), [implement](../templates/delivery-implement.md). Execution-only repair may return plan_ready; requirements/design repair returns to candidate assessment. |
 | delivery_delivery_plan_revision | [Delivery implement](../templates/delivery-implement.md) for the same slice Policy; load [PRD](../templates/delivery-prd.md) and [design](../templates/delivery-design.md) when their actual context or delta changes. Preserve remaining responsibility and whole Completion conditions. |
 | delivery_architecture_conflict_resolution | [Delivery design](../templates/delivery-design.md) and [Delivery implement](../templates/delivery-implement.md), plus [Delivery PRD](../templates/delivery-prd.md) when requirements are affected. Revise only after the applicable original dependency; a real scope choice returns Clarify. |
@@ -96,7 +96,7 @@ retirement call and does not import or read private ports or pending inputs.
 | --- | --- |
 | delivery_initial_review | Explicit Creation result plus original source_selection; converge slice requirements and actual candidate. |
 | delivery_active_task_scope_change | Original Clarify published scope_ready plus selection/revision_refs and affected key; revise only affected slice requirements/candidate after root requirements publication. |
-| delivery_wording_reentry | Actual Wording content_changed/change_refs; equivalent wording returns plan_ready; changed mechanism returns requirements_ready. |
+| delivery_content_revision | Actual content change_refs on this same Delivery; equivalent wording returns plan_ready; changed mechanism returns requirements_ready. |
 | delivery_approval_revision | Actual Approval revision_actions, or Check planning_stale/reapprove_plan revision_actions for every current-scope planning repair, including retained current_scope decisions and same-owner recovered or corrected handoff; execution-plan-only fixes may return plan_ready; requirements/design fixes re-enter candidate assessment. |
 | delivery_delivery_plan_revision | Delivery Review delivery_policy_gap/revision_refs; revise the same key's actual slice policy. Completion next_independent_delivery goes to Creation first, then delivery_initial_review on its new UUID. |
 | delivery_requirements_revision | Original Clarify source_selection/revision_refs; converge the current slice without a caller-preselected decision. |
@@ -118,7 +118,7 @@ investigation or product interview merely because Task or Delivery identity was
 created. Each profile still owns its current completeness and mechanism
 judgment. Source/scope changes return to Clarify; stale or missing source
 evidence returns to its original owner. The resulting requirements still enter
-Architecture, and the complete plan still enters Wording and final Architecture
+Architecture, and the complete plan still enters final Architecture
 before Approval.
 
 Use `.trellis/spec/workflow/workflow-contract.md#interaction-budget` when
@@ -250,7 +250,7 @@ it does not write planning, decide routes, or replace Approval. No persistent
 Author checkpoint or authorization record is created.
 
 requirements_ready.key/candidate -> Architecture candidate_assessment -> this
-same key's solution_planning; plan_ready.key -> Wording -> fresh final_plan ->
+same key's solution_planning; plan_ready.key -> fresh final_plan ->
 adjacent Approval. Candidate assessment cannot substitute for final_plan.
 clarify_scope -> original Clarify; blocked -> declared fail-closed stop.
 scope_requirements_ready goes only to whole-scope Clarify, never Architecture.
@@ -403,3 +403,20 @@ not a mandatory second action. The returned operation key projects only
 TaskId/generation plus existing TaskRef to original Completion. Stopped is
 neither delivered nor completed. Planning and later-stage scope/withdrawal
 profiles retain their own original Skill owners.
+
+## Content and semantic preservation
+
+Before returning the current plan, compare it with complete applicable sources.
+Preserve confirmed requirements and source meaning, complete conditions,
+negation, exceptions and sequence. Select one actual implementation path with
+Architecture; define objective conditions for deterministic gates and observable
+acceptance. Keep external quotations, advice and historical facts in their actual
+source role. These are Author's existing content responsibilities, assessed again
+by original Architecture and Approval within their own scope. Do not create seven
+boolean fields, vocabulary classifications or another gate.
+
+For delivery_content_revision, first read current change_refs and all necessary
+current planning context. Equivalent edits refresh only directly affected content
+and judgments. Requirement, mechanism, Architecture or acceptance changes return
+to the earliest affected original owner; preserve the Task/Delivery and valid
+coverage. It is neither first activation nor an instruction to rerun every stage.

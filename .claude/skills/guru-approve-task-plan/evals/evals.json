@@ -53,7 +53,7 @@
           },
           {
             "id": "revision-rereviews-before-presentation",
-            "criterion": "For revision-request, the decision revises the plan, reruns wording and planning semantic review, and presents the revised plan before any activation.",
+            "criterion": "For revision-request, the decision revises the plan, reruns final Architecture and planning semantic review, and presents the revised plan before any activation.",
             "evidence_selector": "transcript"
           },
           {

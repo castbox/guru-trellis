@@ -60,7 +60,7 @@ class ExitDiscoveryTests(unittest.TestCase):
             path.write_bytes(original)
 
     def test_skill_consumer_exposes_target_preconditions_and_usable_producer_schema(self) -> None:
-        result = self.successful("guru-sync-base", "baseline_ready")
+        result = self.successful("guru-review-change-request", "supplement_context")
         self.assertEqual(result["consumer"], {"kind": "skill", "id": "guru-discover-change-context"})
         self.assertTrue(result["entry"]["locator"].endswith("guru-discover-change-context/SKILL.md"))
         self.assertTrue(result["entry"]["entry_preconditions"])
@@ -71,16 +71,15 @@ class ExitDiscoveryTests(unittest.TestCase):
         validate_json(example, package / output["schema"]["path"], "output")
         self.assertEqual(result["projection"]["operation"], "rename")
         selected = select_authoring_profile(result["consumer_input"]["contract"], example)
-        self.assertEqual(selected["profile_id"], "pre_task")
-        self.assertEqual(set(selected["authoring_fields"]), {"change_input", "clarify_profile"})
-        self.assertTrue(any("source_locators" in row["authoring_fields"] for row in selected["alternate_authoring"]))
+        self.assertEqual(selected["profile_id"], "issue_readiness_supplement")
+        self.assertEqual(set(selected["authoring_fields"]), {"profile"})
         self.assertNotIn("private_artifacts", result)
 
     def test_conditional_router_is_returned_without_choosing_a_branch(self) -> None:
-        result = self.successful("guru-review-contract-wording", "pass")
-        self.assertEqual(result["consumer"]["id"], "guru-contract-wording-pass-router")
-        self.assertIn("change_request", result["entry"]["body"])
-        self.assertIn("delivery_planning_artifacts", result["entry"]["body"])
+        result = self.successful("guru-clarify-requirements", "clear")
+        self.assertEqual(result["consumer"]["id"], "guru-requirements-clear-router")
+        self.assertIn("original Readiness", result["entry"]["body"])
+        self.assertIn("resume target", result["entry"]["body"])
         self.assertNotIn("## Mandatory Skills", result["entry"]["body"])
 
     def test_stop_consumer_keeps_its_own_behavior(self) -> None:
