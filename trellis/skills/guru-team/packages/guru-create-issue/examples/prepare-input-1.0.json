@@ -1,0 +1,14 @@
+{
+  "draft_id": "draft-review-current-lifecycle",
+  "draft": {
+    "repo_ref": "castbox/guru-trellis",
+    "title": "Review current lifecycle scope",
+    "body": "Reviewed scope and acceptance.",
+    "labels": [
+      "enhancement"
+    ],
+    "duplicate_disposition": "create_new"
+  },
+  "reviewed_at": "2026-09-26T12:00:00Z",
+  "review_comment_body": "已审核本 Issue 的完整需求、范围、措辞和独立交付条件。当前草稿可进入开工复核；没有未决前置。"
+}

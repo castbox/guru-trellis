@@ -249,6 +249,18 @@ may isolate dependencies outside the declared boundary, but must not manufacture
 the result that the tested component itself must produce or omit real dependencies
 needed to prove its own contract.
 
+Treat service-version deployment, shared-test environment deployment,
+target-environment execution and business publish/config operations as distinct
+responsibilities. Ordinary work does not default to a per-change shared-test
+deployment. Require target- or shared-environment evidence only when effective
+authority explicitly promises it or only that environment can establish the
+required contract, and retain the exact environment and unverified boundary in
+that result. A business operation named publish, config or sync does not by
+itself create a service deployment obligation. Conversely, minimal evidence
+cannot delete an explicit target-environment promise, and deployment success
+cannot substitute for a component contract that the deployment does not
+exercise.
+
 Distinguish delivery results from supporting evidence and unsupported expansion.
 Unit, integration, E2E and joint checks are alternative evidence methods, not a
 fixed stack of required acceptance layers. When effective outer evidence already
@@ -292,6 +304,23 @@ may still use test-first development. Adopt existing tests and verifiable
 engineering facts when they remain applicable under the shared applicability
 rules. Fill actual coverage gaps; a stage or executor change alone does not
 require repeating an applicable experiment.
+
+When a sequence of caller actions is part of the accepted delivery, choose the
+smallest supported normal journey that reaches its required observable result
+through the relevant handoffs. If the entry can run and its dependencies are
+ready, Author puts that journey before additional parameter coverage in the
+existing implementation plan. Implement obtains its result before adding
+parameter cases with independent detection value. A high risk lower layer
+can receive an earlier targeted check. If a single function, API or CLI is
+sufficient to observe the promised behavior, use that level. Use a device or
+a wider chain only for behavior that needs it within the accepted boundary.
+
+If an entry or dependency is unavailable, continue independent work and
+record what could not run and which conclusion is affected. After the journey
+passes, complete the necessary acceptance and affected regression checks. Use
+the existing validation body to record the necessary coverage, checks that
+need repeating, failures and checks that did not run. Preserve earlier observations
+with their original meaning.
 
 Distinguish durable behavior/regression tests from temporary diagnostic
 experiments. Durable tests continue to detect contract violations. A diagnostic
@@ -355,6 +384,30 @@ Explain a material difference and limit the claim to the behavior actually
 exercised. Apply the shared
 [engineering-fact applicability rules](workflow-contract.md#candidate-applicability-and-coverage)
 when adopting earlier results after entry, default-path or enablement changes.
+
+Trace the entry the test actually executes to the result it actually observes.
+If a test calls the handler directly, its result supports the handler's
+behavior. Evidence for a gesture, menu or other supported entry must reach that
+entry. If a test observes an asynchronous operation being accepted, follow its
+completion to the usable result when the claim includes that result.
+
+Compare a substitute with the real adapter for the behavior the claim depends
+on. Check only relevant differences, such as object identity, asynchronous
+completion, restoration from persisted state, address updates, caching or
+decoding. Reusing the same object in memory can prove local edits. A claim
+about restoration needs evidence that the reader reconstructs the expected
+state from persistence.
+A known resource address establishes location. A claim about usable media
+also needs evidence that the relevant component can decode it.
+
+Choose inputs from the accepted support range and use the relevant component
+in the actual delivery build. Cover differences in that range that can
+change the outcome. For media, a container can hold different codecs. A sample
+supports the codec combination it exercised on that build. Verify other
+material combinations with evidence applicable to them. If the build or its
+support is unknown, state which claim remains open and have the original
+responsible owner verify it. The original reviewer judges sufficiency from
+observed facts.
 
 Fixtures may establish state that must already exist before the declared
 boundary, and substitutes may isolate dependencies outside it. For example, a

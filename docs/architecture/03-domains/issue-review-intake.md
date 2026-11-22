@@ -70,3 +70,13 @@ Clarify的source title/body token与语义identity分别绑定；Readiness核实
 本定义承接已批准的实际方案及当前实现。原 owners 已执行本次完整定义整合与 readback，状态仅为 `integrated_pending_review`。配对 [Test](../../test/current/local-fix-intake.md) 及 [#850 Test](../../requirements-design-test-contributions/850-wording-retirement/test.md) 分开记录实际工程汇总、可读的受管采用原文、真实 Agent 观察与未验证项。源码工具结果不能替代语义或整个调用链证明。
 
 本轮工具采用为 `local_candidate`，`formal_fork_source_lock` 仍为 `unverified`。真实有界 draft/file 审核、缺源 blocked、live Readiness 以及隔离 Planning 返工后 approved 各只证明其实际观察；它们不是正式 #850 Planning 的替代结果。#819 的 `wording_only` 真实往返已在受控本地三来源 fixture 中实际完成：Readiness 补审、单次 PATCH/GET、Clarify supplemented、同次 Readiness ready。首错保留，不能称首次正确；该观察不证明 live GitHub 写入、完整链或全部正常分支。未将全 I07、全部验收、独立 committed Review、远端交付或 Release 写成通过。
+
+## #887 当前独立入口及恢复
+
+#887 窄替代前述对只建单与独立审核的全链条件。正式开工继续使用 Sync 后的 existing_issue_intake 及现有按缺口补审。依据见 [ADR-887-ISSUE-ENTRY-STREAMLINE](../adr/887-issue-entry-streamline.md)。
+
+资料齐备的只建单先进入 Create Issue。该 owner 完整审核准确写入内容，必要时回原 Clarify 或 Readiness。确认后，原执行器写入和读回两对象。写前失效的直接入口回 Create，区分仅查重过期和实质变化。写入结果未知时，同一个尝试负责找回已写对象。创建并开工通过正式 Issue 进入既有正式入口。
+
+独立需求审核和就绪审核分别由 Clarify 与 Readiness 从实时 Issue 和有效讨论开始。两者按实际问题补查，并在复审采用仍适用的依据。就绪审核另判断交付单位与前置依赖。独立结果只返回用户。需要开工或另有写入的请求依照原 owner 单独处理。
+
+本次整合使用固定 before 61da60132bd0f6b64ab8626ac3158093481cd21e。实际验证及适用环境见配对 [Test](../../test/current/issue-content.md)。

@@ -54,6 +54,26 @@ Implementation and tests agreeing cannot establish complete requirements.
 Reading every file, complete chapter headings or filled dimension fields cannot
 replace behavior and relationship coverage.
 
+For an independent review, use the original owner's first-read order and
+isolation rules. From the current source or authority assigned to that owner,
+form concrete questions about required behavior and necessary relationships.
+Then use those questions to examine the applicable candidate design,
+implementation or tests in the order the owner already prescribes. Check later
+summaries against that examination. The caller provides the necessary sources
+and candidate locators. Keep suggested findings, pass narratives and
+explanations that belong to later reads out of the independent first read.
+Retain applicable evidence under the later-candidate rules below.
+
+If a supported operation has several stages, trace what the caller can observe
+and do between them. Where one stage hands state or resources to another, ask
+which business condition must hold through the handoff. Check the actual writer
+and reader, the order of acquisition and release, and what remains usable after
+an applicable failure or abandonment. Architecture and Planning Approval judge
+whether the candidate can maintain that condition within their existing
+responsibilities. Return a technical gap to the original technical owner
+using the existing route. A genuine product choice keeps its original Clarify
+route. Existing scenario qualification and evidence reuse still apply.
+
 For Issue authoring and review, apply the original Clarify-owned Issue content
 specification within each owner's existing responsibility. Its complete body
 is `trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md`

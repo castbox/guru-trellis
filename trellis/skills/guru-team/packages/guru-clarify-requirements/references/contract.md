@@ -206,6 +206,23 @@ material risk; do not require an unrelated matrix or ask a quota of questions.
 Identify what changes and what must remain unchanged. A missing screen state in a
 design does not alone authorize removing its existing business behavior.
 
+When the current request spans several stages of a normal operation, start
+from the supported entry the caller actually uses. Trace the caller's starting
+state, the events that move the operation forward and the actions available
+at each stage. If work continues after a local confirmation, check what the
+caller can do while it is pending, including another edit or invocation when
+supported. Describe what the caller can observe on success, failure or
+abandonment, including what is retained or available when they return, where
+applicable. For a noninteractive operation, use its real caller and observable
+result.
+
+Use source commitments and checked entry and consumer facts to distinguish
+existing behavior from requested behavior. Apply the existing qualification
+rules before treating a newly observed scenario as a requirement or question.
+If the facts still leave a real choice about caller behavior, resolve it through
+this Clarify entry. Leave the mechanism for preserving an agreed outcome to
+the technical owner.
+
 Separate evidence-answerable facts, existing constraints/decisions, unresolved
 requirement choices and routine implementation details. Verify what a backend or
 platform actually does; the user chooses the product response, not the external
@@ -826,3 +843,16 @@ validation only; current migrated installations fresh re-enter the proper
 scope/Delivery owner. Do not convert an old pass by appending a key. History
 and committed clean content remain facts. This complete installation migration
 is the only switch; no old status writer or reader fallback is added.
+
+## Direct independent Issue requirements review
+
+Use `standalone_issue_requirements` for a new independent read-only request
+about an existing Issue. The [direct review method](standalone-issue-review.md)
+owns live reading, bounded supplementation and re-review reuse. Apply the
+[Issue content specification](issue-content.md) to goals, boundaries, supported
+scenarios, source roles, conditions and observable acceptance. Where linked
+sources establish accepted design, verify the exact affected commitments. Report
+what can be concluded, any finding and any missing evidence. Return
+`issue_reviewed` once the review itself is complete. Use the original
+`standalone_review` path for calls already in that profile and for the existing
+authorized comment workflow.

@@ -167,7 +167,10 @@ def invocation(package_root, argv, *, final=False):
     parser.add_argument("--invocation", required=True)
     args = parse(parser, argv)
     envelope = load(root(package_root, args.root), package_root, args.invocation, "invocation")
-    if envelope.get("public_input", {}).get("profile") in {"existing_issue_intake", "issue_review_return"}:
+    profile = envelope.get("public_input", {}).get("profile")
+    if final and profile == "standalone_issue_readiness":
+        return envelope, None, None
+    if profile in {"existing_issue_intake", "issue_review_return"}:
         return envelope, None, None
     schema = (package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner-3.0.schema.json"
               if final else package_root / "schemas/review-invocation.schema.json")

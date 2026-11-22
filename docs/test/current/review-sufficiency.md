@@ -23,3 +23,9 @@ Identity：`RDT-TST-REVIEW-SUFFICIENCY`；状态：`current`。关联 [R717](../
 本批实际观察定位为 TaskId=`717-review-sufficiency`、generation=`0`、DeliveryId=`a55b1bd3-718a-42aa-a77a-dc9387abc2b9` 的 `validation/review-sufficiency.md` 与 `validation/implementation.md`。前者唯一承接真实 old/new 案例、首轮失败、合法控制、原入口与恢复后的逐例判断；后者承接定向机械、分发与实际 tools 采用。Task 活动或归档路径由原 Task 身份解析，不依靠本单元复制运行摘要。
 
 已取得的证据是本地候选源码、实际安装和受控案例中的 Agent 行为，不推出统计改善、任意审核一次发现全部缺陷、外部专业 Skill 接入或业务生产效果。首次失败及原独立入口 bootstrap 的未验证边界保持原观察；正式 Check/Review/Delivery/Completion 读取各原公共结果与 Git/PR 事实，知识晋升本身不产生阶段通过。完整多平台 installer/Release 矩阵及 formal Fork source-lock 仍未验证。
+
+## T747-D1-02 / SC747-REVIEW
+
+R747-D1-02 → D747-D1-02。V1 复用 [T747-D1-01](behavior-validation-method.md) 的同组中性输入。未参与写作的原生 Agent 在新进程中加载完整候选 provider，按原 Approval 的独立审核方法先读来源并形成问题，再打开候选核对交接。评价者按真实读取顺序和输出核对问题来源、技术修订归属与证据边界。被测过程不接收前一过程的输出或外置期待。当前 Task 的正式 Approval 仍由原门禁承担。该观察覆盖本批 JQ-AC6 和 AC8。
+
+V5 检查受影响的规划正文、审核规范和 package 的定向安装与 reapply。V6 由原工具维护入口按 `local_candidate` 同步，回读归属、drift 和 sidecar，核对用户文件与 Task/session 保留。两项承接本批 JQ-AC7。验证记录按实际入口与结果表述，适用的既有证据继续采用。

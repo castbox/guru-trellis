@@ -1,0 +1,28 @@
+task_id: 11-17-880-issue-responsibility-acceptance
+source: https://github.com/castbox/guru-trellis/issues/880
+status: integrated_pending_review
+strategy: delta_first
+preimage: 76198a53b4da989b66d2e5f135ff4d2b703ca3cf
+authority:
+  locator: docs
+  identity: guru-trellis-rdt
+  version: 76198a53b4da989b66d2e5f135ff4d2b703ca3cf
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  requirements:
+    - docs/requirements/current/issue-content.md
+    - docs/requirements/current/behavior-validation-method.md
+  design:
+    - docs/design/current/issue-content.md
+    - docs/design/current/behavior-validation-method.md
+  test:
+    - docs/test/current/issue-content.md
+    - docs/test/current/behavior-validation-method.md

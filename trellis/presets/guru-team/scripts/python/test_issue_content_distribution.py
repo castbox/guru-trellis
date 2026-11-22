@@ -32,7 +32,7 @@ class IssueContentDistributionTest(unittest.TestCase):
         body = Path(clarify) / "references/issue-content.md"
         review_body = Path(clarify) / "references/issue-review-comment.md"
         assets = [body, review_body]
-        for kind in ("brief", "detailed", "revision"):
+        for kind in ("brief", "detailed", "revision", "acceptance-boundary"):
             assets.append(Path(clarify) / "examples/issue-content" / kind / "process.md")
         owners = (
             clarify,

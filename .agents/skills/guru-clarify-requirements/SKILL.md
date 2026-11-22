@@ -54,16 +54,17 @@ actions, refresh, and typed exits; a content gap does not authorize a write.
 
 Load this Skill for a general request to review a GitHub Issue, including
 “审核 issue”, “评审 Issue”, “检查 Issue 需求是否完整”, and equivalent intent.
-Use the existing `standalone_review` profile for an independent requirements
-review, preserving its declared caller and actual context prerequisites.
-If current Discovery evidence is missing, load the existing workflow entry
-and obtain it before the semantic loop; do not invent prerequisite outputs.
-For the first `standalone_review` (`source_exit=start`, `mode=standalone`),
-obtain the actual standalone Sync `base_current` transition. Review the missing
-context and record/check `needs_context`, then invoke with that unchanged base
-transition. This initial standalone missing-context exit accepts the base transition;
-it returns `context_request` to Discovery with the original standalone consumer.
-Use Discovery's actual returned context for the requirements review.
+For a new independent requirements review or re-review of an existing Issue,
+use `standalone_issue_requirements`. Follow the [direct review method](references/standalone-issue-review.md).
+Read the Issue and effective discussion before deciding whether repository
+evidence is needed. Review goals, scope, conditions, source commitments and
+observable acceptance. Return the coverage, conclusion, findings and open
+items through `issue_reviewed` to the user.
+
+For an existing `standalone_review` continuation, preserve its original
+caller, context and return. Use that original profile when the user also
+authorizes publishing or updating a review comment. Follow its actual Sync and
+Discovery prerequisites when that profile requires them.
 An actual active-task scope change retains its existing owner/profile.
 
 Review requirements, scope and acceptance against live Issue authority. A

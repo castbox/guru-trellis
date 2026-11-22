@@ -4,7 +4,9 @@
 
 #819由原RDT owner在完整实施和真实工程结果后完成final_integration并读回；状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定before=4f2adef1f7b099f78bb8429e8b8facd66dce3bfc，来源与替代边界见[#819追踪](../../requirements-design-test-contributions/819-issue-review-intake/traceability.md)。以下旧观察保其原截止；本轮实际结果由[#819 Test](../../requirements-design-test-contributions/819-issue-review-intake/test.md)拥有。
 
-Identity：`RDT-DES-ISSUE-CONTENT`；状态：`current`。导航别名：`D153`、`CON153`、`D153-01..03`、`CON153-01..03`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 原设计](../../requirements-design-test-contributions/153-issue-content-ssot/design.md)与 #818 D1 的原正文收敛和 Docs Plan。
+#880由原RDT owner在真实工程结果后完成整合与读回；状态为`integrated_pending_review`，尚待TaskCommit及独立committed Review。固定前驱 Git `76198a53b4da989b66d2e5f135ff4d2b703ca3cf`；来源与实际结果见[#880追踪](../../requirements-design-test-contributions/880-issue-responsibility-acceptance/traceability.md)。
+
+Identity：`RDT-DES-ISSUE-CONTENT`；状态：`current`。导航别名：`D153`、`CON153`、`D153-01..03`、`CON153-01..03`、`D880`、`CON880`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。来源为[#153 原设计](../../requirements-design-test-contributions/153-issue-content-ssot/design.md)、#818 D1 的原正文收敛和 Docs Plan及[#880](https://github.com/castbox/guru-trellis/issues/880) R1–R7。
 
 本单元由原 RDT owner 在 #818 批准 Planning、实际实现及工程结果完成后，于 `codex/818-issue-minimal-sufficiency` 的 final_integration 实际整合。整合前重读真实目标、适用来源及必要关系，写后逐项 readback；整合状态为 `integrated_pending_review`，尚待 TaskCommit 与独立 committed Review。该事实不产生 Check/Review pass 或 Task Completion。原基线为 Git `fd0ee32618433a92ae934e29afb5b72e7136b4f7`；本次来源及精确替代范围见 [#818 贡献](../../requirements-design-test-contributions/818-issue-minimal-sufficiency/traceability.md)，普通当前读取无需拼接提案。
 
@@ -81,3 +83,27 @@ MIGRATION-850单写前代path/id保留、后继版本及当前consumer映射，�
 承接R868-02/03。Clarify SKILL/contract、Readiness SKILL/contract/issue-intake和Create Issue SKILL只定位同一方法与原执行点。Readiness保十维/原出口；Create首次provider写前亲自核完整稿，不合规refresh_review，不成第二writer。复用正确workflow与声明平台创建路由。managed副本由原tools owner匹配同步，Task/session及用户修改保留。对应T868-01/02/04。
 
 共用D868-03/CON868-VALIDATION由[原验证方法设计单元](behavior-validation-method.md)拥有。对应[R868-01..03](../../requirements/current/issue-content.md)、[T868-01/02/04](../../test/current/issue-content.md)。
+
+## D880-01 / CON880-ISSUE-CONTENT：唯一内容正文
+
+承接 R880-01..07。在 Clarify-owned `issue-content.md` 原“验收切面与必要结果”段直接增加责任层组合、环境／部署／业务发布分离及场景集合独立风险规则。原结果／证据分类、边界内最外沿观察、原文完整审核与薄 owner 引用保持。`acceptance-boundary` 教学例增加目标环境正例、业务配置发布非服务部署和重复场景负例，不新增平行 SSOT、映射字段或裁剪执行器。
+
+## D880-02 / CON880-VALIDATION：跨阶段最小边界
+
+承接 R880-02/03/06。在 `quality-guidelines.md#test-and-validation-value` 原责任边界段补充服务版本部署、共享 test 部署、目标环境执行和业务发布配置的区别。有效需求或环境唯一性决定目标环境证据；最小验证不能删除明确承诺，部署通过不能替代未覆盖合同。Issue 专属场景集合规则仍由 D880-01 拥有，本节不复制。
+
+## D880-03 / CON880-OWNERS：原门禁与单一消费者
+
+承接 R880-05。Clarify、Readiness 和 Create Issue 继续沿现有薄引用和完整正文检查使用同一规则。Readiness 保留原十维与回程；Create Issue 保留首次 provider 写前核对和 `refresh_review`。不新增 Skill、profile、typed exit、schema、DTO、审批或独立 reviewer。
+
+## D880-04 / CON880-EVIDENCE：现有 eval 与受管分发
+
+承接 R880-06/07。扩展现有 `issue-acceptance-boundary-source.json` 和原 native eval case，使同一去敏 mixed scenario 包含组件、CLI、明确目标 runtime、业务配置发布及无依据环境／部署／重复场景建议。`test_issue_content_distribution.py` 将 `acceptance-boundary` 教学例纳入真实 writer/reapply 检查。受管 dogfood 与声明平台投影由原 `guru-upgrade-tools`／installer 同步，不手工覆盖。对应 T880-01..05。
+
+## D887-01 / CON887-ISSUE-ONLY
+
+创建直接入口由原 Create Issue 承担。其预备命令从准确的草稿、评论和当前查重时间生成 issue_creation_direct。原执行器消费该结果并负责创建、回读和恢复。写前过期或草稿失配返回 direct_review_refresh，原 Create 根据原因重审或刷新。写入结果未知时使用原尝试恢复。原 issue_creation 和 refresh_review 继续服务完整链消费者。对应 R887-01、R887-03、T887-02。详细入口和兼容见 [MIGRATION-887](../../../trellis/presets/guru-team/MIGRATION-887.md)。
+
+## D887-02 / CON887-INDEPENDENT-REVIEW
+
+Clarify 和 Readiness 各自决定审核和补查。共用的客观检查使用实际 Issue 快照核对当前正文和讨论，完成后以 issue_reviewed 交用户回复节点。复审依据留在当前对话。用户要求开工、编辑或评论时，继续使用相应正式流程。对应 R887-02、R887-03、T887-01、T887-02。本节窄替代 D868-02、D880-03 的入口条件。完整共用内容规则继续适用。

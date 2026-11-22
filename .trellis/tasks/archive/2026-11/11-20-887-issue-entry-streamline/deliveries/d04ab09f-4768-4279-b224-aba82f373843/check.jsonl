@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "当前写作和审查说明"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 profile、图及消费方定义"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验收范围和最小验证"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "canonical 路由"}
+{"file": "docs/architecture/03-domains/issue-review-intake.md", "reason": "现行入口及原 owner 边界"}

@@ -1,0 +1,11 @@
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md", "reason": "complete final Issue-content rule for committed review"}
+{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "complete final cross-stage validation rule for committed review"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/evals/files/issue-acceptance-boundary-source.json", "reason": "complete final eval facts for behavior review"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/evals/evals.json", "reason": "complete final semantic criteria for behavior review"}
+{"file": "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py", "reason": "real distribution and reapply checks"}
+{"file": "docs/requirements/current/issue-content.md", "reason": "final accepted Issue-content authority"}
+{"file": "docs/design/current/issue-content.md", "reason": "final Issue-content design authority"}
+{"file": "docs/test/current/issue-content.md", "reason": "final Issue-content test authority"}
+{"file": "docs/requirements/current/behavior-validation-method.md", "reason": "final validation requirement authority"}
+{"file": "docs/design/current/behavior-validation-method.md", "reason": "final validation design authority"}
+{"file": "docs/test/current/behavior-validation-method.md", "reason": "final validation test authority"}
