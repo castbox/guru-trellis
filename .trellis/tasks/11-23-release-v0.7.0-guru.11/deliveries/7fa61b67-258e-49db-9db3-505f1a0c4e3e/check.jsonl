@@ -28,3 +28,18 @@
 {"file": "docs/design/current/completion-closure.md", "reason": "审查 Completion/Publication current responsibilities"}
 {"file": "docs/test/current/completion-closure.md", "reason": "审查 T669-06 当前阶段观察与历史边界"}
 {"file": "docs/test/current/runtime-location.md", "reason": "审查 #813 当前阶段观察与历史边界"}
+{"file": "trellis/guru-team-extension.json", "reason": "F1/F2 canonical public schema and companion inventory"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "F1/F2 manifest/interface and retired companion regressions"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py", "reason": "F3 current Publication stale remediation"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json", "reason": "F3 current Publication stale remediation catalog"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py", "reason": "F3 remediation contract regression"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/owner.py", "reason": "F3 current Merge stale-body recovery route"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md", "reason": "F3 current Merge production graph consumer"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md", "reason": "F3 current post-Approval Publication responsibility"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md", "reason": "F3 current review and Publication responsibility scope"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md", "reason": "F3 archived-review result must not feed retired Delivery Review"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/tests/README.md", "reason": "F3 current alignment test consumer terminology"}
+{"file": "trellis/presets/guru-team/spec/workflow/data-contracts.md", "reason": "F3 canonical current review/Publication semantics"}
+{"file": "trellis/presets/guru-team/spec/workflow/workflow-contract.md", "reason": "F3 canonical current Publication/Merge route"}
+{"file": "trellis/presets/guru-team/spec/workflow/clear-technical-writing.md", "reason": "F3 current Review terminology"}
+{"file": ".trellis/spec/workflow/index.md", "reason": "F3 tracked non-managed workflow spec route projection"}

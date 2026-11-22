@@ -116,6 +116,18 @@ class DirectCommandErrors(unittest.TestCase):
         task.assert_not_called()
         self.assertTrue(all(call.args[1] == ["git", "rev-parse", "--show-toplevel"] for call in effects.call_args_list))
 
+    def test_publication_stale_remediation_matches_catalog_and_current_route(self):
+        catalog = json.loads((PACKAGE / "errors/catalog.json").read_text(encoding="utf-8"))
+        catalog_remediation = next(
+            item["remediation"]
+            for item in catalog["errors"]
+            if item["code"] == "publication_stale"
+        )
+        owner_remediation = self.owner.PUBLIC_ERRORS["publication_stale"][1]
+        self.assertEqual(catalog_remediation, owner_remediation)
+        self.assertIn("Branch Review", owner_remediation)
+        self.assertIn("Publication preparation/readiness", owner_remediation)
+
     def test_all_five_entry_boundaries_keep_unknown_failures_safe_at_exit_70(self):
         sentinel = "private-body-and-credential-sentinel"
         commands = (

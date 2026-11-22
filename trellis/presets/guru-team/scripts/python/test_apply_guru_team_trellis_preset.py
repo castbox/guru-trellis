@@ -2139,8 +2139,15 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("run-skill-command", public_api["companion_scripts"])
         self.assertIn("record-planning-approval", public_api["companion_scripts"])
         self.assertIn("check-planning-approval", public_api["companion_scripts"])
-        self.assertIn("record-task-delivery-review", public_api["companion_scripts"])
-        self.assertIn("check-task-delivery-review", public_api["companion_scripts"])
+        for manifest in (canonical, installed["extension"]):
+            self.assertNotIn(
+                "record-task-delivery-review",
+                manifest["public_api"]["companion_scripts"],
+            )
+            self.assertNotIn(
+                "check-task-delivery-review",
+                manifest["public_api"]["companion_scripts"],
+            )
         self.assertIn("execute-extension-verification", public_api["companion_scripts"])
         self.assertIn("record-extension-verification", public_api["companion_scripts"])
         self.assertIn("check-extension-verification", public_api["companion_scripts"])

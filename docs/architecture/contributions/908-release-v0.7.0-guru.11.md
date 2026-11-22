@@ -1,14 +1,16 @@
 # #908 v0.7.0-guru.11 发布知识收敛：Architecture 隔离贡献
 
-Identity：`architecture-contribution-908-release-v0.7.0-guru.11-v1`。状态：`proposed`。所属 Task 为 `release-v0.7.0-guru.11` / generation 0，Delivery 为 `7fa61b67-258e-49db-9db3-505f1a0c4e3e`。固定 before 为 Git `2acab7fadebf57c2f2560451b9ff2a050d8811f5`。来源为 [Issue #908](https://github.com/castbox/guru-trellis/issues/908) 与 Author 当前 `plan_ready` 规划；当前 planning 尚未经 final_plan、Approval 或 Activation 接受。
+Identity：`architecture-contribution-908-release-v0.7.0-guru.11-v1`。状态：`integrated_pending_review`。所属 Task 为 `release-v0.7.0-guru.11` / generation 0，Delivery 为 `7fa61b67-258e-49db-9db3-505f1a0c4e3e`。固定 before 为 Git `2acab7fadebf57c2f2560451b9ff2a050d8811f5`。来源为 [Issue #908](https://github.com/castbox/guru-trellis/issues/908)。
 
-独立 Planning candidate assessment 已返回 `baseline_current / architecture_impact`，change path 为 `target_native`，decision refs 为 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW`、`ADR-024`、`ADR-034`。本贡献只拥有本 Task 的隔离拟写，不是 shared current 或质量通过结果。原 Architecture owner 在实施和真实工程结果后执行 final integration、写入、readback 和适用性检查；TaskCommit 后的独立 committed Review 才能建立 `reviewed_promoted`。
+当前观察状态：Task 公共 Planning 已 accepted，Delivery 已 Activation 并进入过 checking；初始 independent committed Branch Review 返回 `implementation_required`，F1–F4 仍 open，当前 phase 为 `implementing` rework。该 Review 没有通过，本贡献也没有成为 `reviewed_promoted`。以下第 2–4 节保留 planning 时拟同步、拟调整和拟晋升措辞；其观察截止均为 Activation 前，当前状态以本段和第 7 节为准。
+
+独立 Planning candidate assessment 已返回 `baseline_current / architecture_impact`，change path 为 `target_native`，decision refs 为 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW`、`ADR-024`、`ADR-034`。原 Architecture owner 已在真实工程结果后执行 final integration、写入、readback 和适用性检查；该整合事实只记录为 `integrated_pending_review`，不建立 `reviewed_promoted`。
 
 ## 1. 问题与目标
 
 当前 public registry/workflow 已由 `guru-review-branch` 一次完成独立 Check 和完整 Branch Review，通过后由 `guru-publish-task-delivery` 承接 readiness、PR payload、预览和发布。`guru-review-task-delivery` 已从当前 registry/workflow 退出。
 
-若仍把独立 `Delivery Review` 写成 current owner，就会让 Architecture、RDT/Test 和仓库私有 release 合同继续指向不存在的阶段。另有 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW` 保持 `proposed`，但多个 current consumers 已依赖它的决定。本贡献收敛这两类 authority 冲突，不改变已接受产品范围、Task/Delivery 身份、发布候选或历史结果。
+若仍把独立 `Delivery Review` 写成 current owner，就会让 Architecture、RDT/Test 和仓库私有 release 合同继续指向不存在的阶段。Planning 时 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW` 仍为 `proposed`，但多个 current consumers 已依赖它的决定；该观察截止于 Activation 前，当前 ADR 已收敛为 accepted/current。本贡献收敛这两类 authority 冲突，不改变已接受产品范围、Task/Delivery 身份、发布候选或历史结果。
 
 ## 2. 目标与不变边界
 
@@ -81,7 +83,7 @@ publication Architecture eligibility -> guru-publish-task-delivery readiness -> 
 3. “验证与重评”中的“当前只有候选方案，无实现或发布 pass”改为明确的 #794 观察截止；后续事实由 R900/D900、实际 committed Review、Publication 和 Release 原结果承接，ADR 不追写最终 pass。
 4. 状态由 `proposed` 改为 `accepted`。删除“本候选尚未成为共享 current，不能据此跳过当前安装门禁”的当前自述，保留 #794 历史 Task/Delivery 来源。
 
-拟晋升前仍须原 Architecture owner 比较完整 before、本贡献、实际 current 和 11 个 consumer；写入后只能记录 `integrated_pending_review`。committed Review 独立通过后才记录 `reviewed_promoted`。
+原 Architecture owner 已比较完整 before、本贡献、实际 current 和 11 个 consumer，并完成写入/readback；当前只能记录 `integrated_pending_review`。初始 committed Branch Review 已返回 `implementation_required`，尚未建立 `reviewed_promoted`。
 
 ## 5. RDT/Test 关联
 
@@ -97,6 +99,6 @@ publication Architecture eligibility -> guru-publish-task-delivery readiness -> 
 
 ## 7. Project check 与证据边界
 
-`guru-trellis-architecture-convergence@1` 已由独立 candidate assessment 判断 applicable、blocking、pass。该判断只属于 candidate assessment 事实，覆盖当时的 authority binding、七个 current units、ADR promotion、11 个 consumer 和 candidate design；它不是 final_plan、Approval、Activation 或 committed Review 的通过结果。最终 planning eligibility 必须由当前 final_plan 独立产生，后续结果由各原 owner 承接。
+`guru-trellis-architecture-convergence@1` 已由独立 candidate assessment 判断 applicable、blocking、pass。该判断只属于 candidate assessment 事实，覆盖当时的 authority binding、七个 current units、ADR promotion、11 个 consumer 和 candidate design。其规划时观察截止于 Activation 前：当时它没有产生 final_plan、Approval、Activation 或 committed Review 结果，最终 planning eligibility 尚须由 current final_plan 独立判断；当前可观察状态见本段末句。
 
-本贡献不证明最终 contribution 已整合、current 已写入、TaskCommit 已发生或 committed Review 已通过。实际 source/installed validators、RDT readback、ADR promotion、TaskCommit、独立完整 Review、Publication、Merge、tag、Release 和本地采用分别由其原 owner 的结果承接。
+上述 candidate assessment 本身不证明最终整合、TaskCommit 或 committed Review 结果。独立观察到的当前事实是 contribution/current 已写入并 readback、TaskCommit 已形成待审 H、初始 committed Review 返回 `implementation_required`；它没有通过。Rework 后的后继内容仍需原 writer、TaskCommit 和受影响 Review 重新承接。Publication、Merge、tag、Release 和本地采用仍分别由其原 owner 的结果承接。

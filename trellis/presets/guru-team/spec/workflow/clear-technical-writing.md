@@ -66,7 +66,7 @@ Required rules apply only under their stated conditions. Advisory rules guide im
 | Task | 整体 accepted scope 的任务身份与生命周期；不能用一次切片交付替代整体完成。/ The identity and lifecycle for the whole accepted scope. One slice does not establish whole-task completion. |
 | Delivery | Task 内一个选定的交付切片及其结果；Delivery 合并不等于 Task Completion。/ A selected delivery slice and its result within a Task. Its merge does not establish Task Completion. |
 | Check | 对当前 task scope 的完整质量检查，由原 Check owner 执行。/ The complete quality check of current task scope, owned by the existing Check owner. |
-| Review | 原审核 owner 针对其声明范围的独立语义审核；按具体用途写明 Branch Review、Delivery Review 等。/ An independent semantic assessment within the review owner's declared scope. Name the specific review when needed. |
+| Review | 原审核 owner 针对其声明范围的独立语义审核；按具体用途写明 Branch Review、independent change review 等。/ An independent semantic assessment within the review owner's declared scope. Name the specific review when needed. |
 | 强制 / Required | 适用条件成立时必须满足的要求；不能改写为可选。/ An obligation when applicable; do not rewrite it as optional. |
 | 建议 / Advisory | 可改善表达的偏好；不是业务前置或独立阻塞理由。/ A preference that can improve wording; not a business prerequisite or an independent blocker. |
 | literal | 需要精确保留的字面内容；其外部解释仍受本规范约束。/ Content that must remain exact; surrounding explanations still follow this specification. |
