@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-22T09:00:30Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-22-896-adopt-merged-pr",
+    "title": "支持接收缺少 Publication 记录的已合并 PR，并接续原 Task 归档",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-22-896-adopt-merged-pr",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/896-adopt-merged-pr",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "支持接收缺少 Publication 记录的已合并 PR，并接续原 Task 归档",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr",
+          ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr/prd.md",
+          ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#896"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/896-adopt-merged-pr"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr",
+        ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr/prd.md",
+        ".trellis/tasks/archive/2026-11/11-22-896-adopt-merged-pr/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "支持接收缺少 Publication 记录的已合并 PR，并接续原 Task 归档；#896；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}

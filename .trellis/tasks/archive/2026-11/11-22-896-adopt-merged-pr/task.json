@@ -1,0 +1,735 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-22-896-adopt-merged-pr",
+  "id": "896-adopt-merged-pr",
+  "name": "896-adopt-merged-pr",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 896,
+    "disposition": "exact_source"
+  },
+  "title": "支持接收缺少 Publication 记录的已合并 PR，并接续原 Task 归档",
+  "description": "完成 castbox/guru-trellis#896",
+  "dev_type": null,
+  "scope": "在既有 Task/Delivery 下接收可核实归属的已合并双父 PR，并接续现有验收与归档。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-22",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+    "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+  },
+  "deliveries": [
+    {
+      "id": "29b33521-d2c5-4c64-83de-850ea35bc1f9",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+          "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "AC1",
+          "AC2",
+          "AC3"
+        ]
+      },
+      "planning_root": "deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/design.md",
+        "revision": "sha256:18be3f62337dc007f0091c36d23ac4d0ae20f678e4a39c22e4af3ba6c32b8ff6"
+      },
+      "candidate": {
+        "base_ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
+        "content_ref": "sha256:8e51b14100603fe68bb2e4307f60eb9ede40941678c93594c118f680e7f954fb",
+        "head_ref": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-merge-task-delivery/SKILL.md",
+          ".agents/skills/guru-merge-task-delivery/commands.json",
+          ".agents/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+          ".agents/skills/guru-merge-task-delivery/interface.json",
+          ".agents/skills/guru-merge-task-delivery/references/contract.md",
+          ".agents/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+          ".agents/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+          ".agents/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+          ".agents/skills/guru-review-task-completion/SKILL.md",
+          ".claude/skills/guru-merge-task-delivery/SKILL.md",
+          ".claude/skills/guru-merge-task-delivery/commands.json",
+          ".claude/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+          ".claude/skills/guru-merge-task-delivery/interface.json",
+          ".claude/skills/guru-merge-task-delivery/references/contract.md",
+          ".claude/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+          ".claude/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+          ".claude/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+          ".claude/skills/guru-review-task-completion/SKILL.md",
+          ".cursor/skills/guru-merge-task-delivery/SKILL.md",
+          ".cursor/skills/guru-merge-task-delivery/commands.json",
+          ".cursor/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+          ".cursor/skills/guru-merge-task-delivery/interface.json",
+          ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+          ".cursor/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+          ".cursor/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+          ".cursor/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+          ".cursor/skills/guru-review-task-completion/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/interface.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+          ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
+          ".trellis/workflow.md",
+          "docs/architecture/adr/026-manual-merged-delivery-recovery.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+          "docs/requirements-design-test-contributions/896-adopt-merged-pr/traceability.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/MIGRATION-896.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/skills/guru-team/packages/guru-finish-task/tests/test_adopt_merged_pr_journey.py",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/interface.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py",
+          "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:386a04ad-9911-4537-a497-ce09910617c6",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+              "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/design.md",
+            "revision": "sha256:18be3f62337dc007f0091c36d23ac4d0ae20f678e4a39c22e4af3ba6c32b8ff6"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/prd.md",
+              "revision": "sha256:c0fc04f3b8e528569cb82fd4796e94dbc6798fc2f7ea8af091716ef0159b29c4"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/design.md",
+              "revision": "sha256:18be3f62337dc007f0091c36d23ac4d0ae20f678e4a39c22e4af3ba6c32b8ff6"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/implement.md",
+              "revision": "sha256:a0fe5b9a49b89872f39357ed477e496b28a0121667c145c04af6d5e5fe7cd1ba"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:add87e43b5260e37119821c4fa0feebf475ae9b86936a147ec9de018f839406d",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+              "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/design.md",
+            "revision": "sha256:18be3f62337dc007f0091c36d23ac4d0ae20f678e4a39c22e4af3ba6c32b8ff6"
+          },
+          "candidate": {
+            "base_ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
+            "content_ref": "sha256:8e51b14100603fe68bb2e4307f60eb9ede40941678c93594c118f680e7f954fb",
+            "head_ref": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-merge-task-delivery/SKILL.md",
+              ".agents/skills/guru-merge-task-delivery/commands.json",
+              ".agents/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".agents/skills/guru-merge-task-delivery/interface.json",
+              ".agents/skills/guru-merge-task-delivery/references/contract.md",
+              ".agents/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".agents/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".agents/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".agents/skills/guru-review-task-completion/SKILL.md",
+              ".claude/skills/guru-merge-task-delivery/SKILL.md",
+              ".claude/skills/guru-merge-task-delivery/commands.json",
+              ".claude/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".claude/skills/guru-merge-task-delivery/interface.json",
+              ".claude/skills/guru-merge-task-delivery/references/contract.md",
+              ".claude/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".claude/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".claude/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".claude/skills/guru-review-task-completion/SKILL.md",
+              ".cursor/skills/guru-merge-task-delivery/SKILL.md",
+              ".cursor/skills/guru-merge-task-delivery/commands.json",
+              ".cursor/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".cursor/skills/guru-merge-task-delivery/interface.json",
+              ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+              ".cursor/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".cursor/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".cursor/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".cursor/skills/guru-review-task-completion/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/interface.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
+              ".trellis/workflow.md",
+              "docs/architecture/adr/026-manual-merged-delivery-recovery.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+              "docs/requirements-design-test-contributions/896-adopt-merged-pr/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/MIGRATION-896.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-finish-task/tests/test_adopt_merged_pr_journey.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/interface.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py",
+              "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:386a04ad-9911-4537-a497-ce09910617c6",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/implement.md",
+              "revision": "sha256:a0fe5b9a49b89872f39357ed477e496b28a0121667c145c04af6d5e5fe7cd1ba"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:add87e43b5260e37119821c4fa0feebf475ae9b86936a147ec9de018f839406d",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+              "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/design.md",
+            "revision": "sha256:18be3f62337dc007f0091c36d23ac4d0ae20f678e4a39c22e4af3ba6c32b8ff6"
+          },
+          "candidate": {
+            "base_ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
+            "content_ref": "sha256:8e51b14100603fe68bb2e4307f60eb9ede40941678c93594c118f680e7f954fb",
+            "head_ref": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-merge-task-delivery/SKILL.md",
+              ".agents/skills/guru-merge-task-delivery/commands.json",
+              ".agents/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".agents/skills/guru-merge-task-delivery/interface.json",
+              ".agents/skills/guru-merge-task-delivery/references/contract.md",
+              ".agents/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".agents/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".agents/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".agents/skills/guru-review-task-completion/SKILL.md",
+              ".claude/skills/guru-merge-task-delivery/SKILL.md",
+              ".claude/skills/guru-merge-task-delivery/commands.json",
+              ".claude/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".claude/skills/guru-merge-task-delivery/interface.json",
+              ".claude/skills/guru-merge-task-delivery/references/contract.md",
+              ".claude/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".claude/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".claude/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".claude/skills/guru-review-task-completion/SKILL.md",
+              ".cursor/skills/guru-merge-task-delivery/SKILL.md",
+              ".cursor/skills/guru-merge-task-delivery/commands.json",
+              ".cursor/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".cursor/skills/guru-merge-task-delivery/interface.json",
+              ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+              ".cursor/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".cursor/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".cursor/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".cursor/skills/guru-review-task-completion/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/interface.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
+              ".trellis/workflow.md",
+              "docs/architecture/adr/026-manual-merged-delivery-recovery.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+              "docs/requirements-design-test-contributions/896-adopt-merged-pr/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/MIGRATION-896.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-finish-task/tests/test_adopt_merged_pr_journey.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/interface.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py",
+              "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "check:add87e43b5260e37119821c4fa0feebf475ae9b86936a147ec9de018f839406d",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/implement.md",
+              "revision": "sha256:a0fe5b9a49b89872f39357ed477e496b28a0121667c145c04af6d5e5fe7cd1ba"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:97e60992bb1b42720ed2bff173b20240e4b97163fce63a35acc55276429419c2",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+              "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/design.md",
+            "revision": "sha256:18be3f62337dc007f0091c36d23ac4d0ae20f678e4a39c22e4af3ba6c32b8ff6"
+          },
+          "candidate": {
+            "base_ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
+            "content_ref": "sha256:8e51b14100603fe68bb2e4307f60eb9ede40941678c93594c118f680e7f954fb",
+            "head_ref": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-merge-task-delivery/SKILL.md",
+              ".agents/skills/guru-merge-task-delivery/commands.json",
+              ".agents/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".agents/skills/guru-merge-task-delivery/interface.json",
+              ".agents/skills/guru-merge-task-delivery/references/contract.md",
+              ".agents/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".agents/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".agents/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".agents/skills/guru-review-task-completion/SKILL.md",
+              ".claude/skills/guru-merge-task-delivery/SKILL.md",
+              ".claude/skills/guru-merge-task-delivery/commands.json",
+              ".claude/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".claude/skills/guru-merge-task-delivery/interface.json",
+              ".claude/skills/guru-merge-task-delivery/references/contract.md",
+              ".claude/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".claude/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".claude/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".claude/skills/guru-review-task-completion/SKILL.md",
+              ".cursor/skills/guru-merge-task-delivery/SKILL.md",
+              ".cursor/skills/guru-merge-task-delivery/commands.json",
+              ".cursor/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".cursor/skills/guru-merge-task-delivery/interface.json",
+              ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+              ".cursor/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".cursor/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".cursor/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".cursor/skills/guru-review-task-completion/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/interface.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
+              ".trellis/workflow.md",
+              "docs/architecture/adr/026-manual-merged-delivery-recovery.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+              "docs/requirements-design-test-contributions/896-adopt-merged-pr/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/MIGRATION-896.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-finish-task/tests/test_adopt_merged_pr_journey.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/interface.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py",
+              "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:add87e43b5260e37119821c4fa0feebf475ae9b86936a147ec9de018f839406d",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/deliveries/29b33521-d2c5-4c64-83de-850ea35bc1f9/implement.md",
+              "revision": "sha256:a0fe5b9a49b89872f39357ed477e496b28a0121667c145c04af6d5e5fe7cd1ba"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:951494c58be7c744de1aa6301b57f5674d2274c936a96bd15c6436d45bd2c93a",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/897",
+            "revision": "sha256:4ac0e68874a9dadcdde8d7b3f3bcc3234d612e4435c01b7dab3264efb79699e3"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
+          "content_ref": "sha256:8e51b14100603fe68bb2e4307f60eb9ede40941678c93594c118f680e7f954fb",
+          "head_ref": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-merge-task-delivery/SKILL.md",
+            ".agents/skills/guru-merge-task-delivery/commands.json",
+            ".agents/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".agents/skills/guru-merge-task-delivery/interface.json",
+            ".agents/skills/guru-merge-task-delivery/references/contract.md",
+            ".agents/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".agents/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".agents/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".agents/skills/guru-review-task-completion/SKILL.md",
+            ".claude/skills/guru-merge-task-delivery/SKILL.md",
+            ".claude/skills/guru-merge-task-delivery/commands.json",
+            ".claude/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".claude/skills/guru-merge-task-delivery/interface.json",
+            ".claude/skills/guru-merge-task-delivery/references/contract.md",
+            ".claude/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".claude/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".claude/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".claude/skills/guru-review-task-completion/SKILL.md",
+            ".cursor/skills/guru-merge-task-delivery/SKILL.md",
+            ".cursor/skills/guru-merge-task-delivery/commands.json",
+            ".cursor/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".cursor/skills/guru-merge-task-delivery/interface.json",
+            ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+            ".cursor/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".cursor/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".cursor/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".cursor/skills/guru-review-task-completion/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/interface.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
+            ".trellis/workflow.md",
+            "docs/architecture/adr/026-manual-merged-delivery-recovery.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+            "docs/requirements-design-test-contributions/896-adopt-merged-pr/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/guru-team-extension.json",
+            "trellis/presets/guru-team/MIGRATION-896.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/packages/guru-finish-task/tests/test_adopt_merged_pr_journey.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/interface.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py",
+            "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 897,
+        "reviewed_head": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/897",
+          "revision": "sha256:4ac0e68874a9dadcdde8d7b3f3bcc3234d612e4435c01b7dab3264efb79699e3"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:0ac1724f4070d759984d5575a9a89b427d69675c",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/897",
+            "revision": "0ac1724f4070d759984d5575a9a89b427d69675c"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
+          "content_ref": "sha256:8e51b14100603fe68bb2e4307f60eb9ede40941678c93594c118f680e7f954fb",
+          "head_ref": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-merge-task-delivery/SKILL.md",
+            ".agents/skills/guru-merge-task-delivery/commands.json",
+            ".agents/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".agents/skills/guru-merge-task-delivery/interface.json",
+            ".agents/skills/guru-merge-task-delivery/references/contract.md",
+            ".agents/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".agents/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".agents/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".agents/skills/guru-review-task-completion/SKILL.md",
+            ".claude/skills/guru-merge-task-delivery/SKILL.md",
+            ".claude/skills/guru-merge-task-delivery/commands.json",
+            ".claude/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".claude/skills/guru-merge-task-delivery/interface.json",
+            ".claude/skills/guru-merge-task-delivery/references/contract.md",
+            ".claude/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".claude/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".claude/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".claude/skills/guru-review-task-completion/SKILL.md",
+            ".cursor/skills/guru-merge-task-delivery/SKILL.md",
+            ".cursor/skills/guru-merge-task-delivery/commands.json",
+            ".cursor/skills/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".cursor/skills/guru-merge-task-delivery/interface.json",
+            ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+            ".cursor/skills/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".cursor/skills/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".cursor/skills/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".cursor/skills/guru-review-task-completion/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/interface.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
+            ".trellis/workflow.md",
+            "docs/architecture/adr/026-manual-merged-delivery-recovery.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+            "docs/requirements-design-test-contributions/896-adopt-merged-pr/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/guru-team-extension.json",
+            "trellis/presets/guru-team/MIGRATION-896.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/packages/guru-finish-task/tests/test_adopt_merged_pr_journey.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/adopt-merged-pr-review-1.0.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/examples/public-delivery-adopt-merged-pr-input-1.0.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/interface.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/adopt_merged_pr.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/adopt-merged-pr-review-1.0.schema.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/public-input-delivery-3.0.schema.json",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py",
+            "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 897,
+        "reviewed_head": "c998bb2f1d034ad175cf241030a00404d9a88f98",
+        "merge_commit": "0ac1724f4070d759984d5575a9a89b427d69675c",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:915ada1a-578a-49db-8d14-7851cbbf578f",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/897",
+          "revision": "0ac1724f4070d759984d5575a9a89b427d69675c"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/896-adopt-merged-pr/test.md",
+          "revision": "sha256:458ef3fe98ba844f948fdfe234b9f4825d3f1997a83075dab090e29a17a8f394"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/45004268897",
+          "revision": "c998bb2f1d034ad175cf241030a00404d9a88f98"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/prd.md",
+        "revision": "sha256:a29141e49fb540f34076de8e071f36f9494213d3c6d7adf55f794af8308ca97d"
+      },
+      "delivery_result_ids": [
+        "delivery:0ac1724f4070d759984d5575a9a89b427d69675c"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:8b972059f3d2fecc26aa9f86",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/896",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-22-896-adopt-merged-pr/closeout/closure/Y2xvc3VyZTo4Yjk3MjA1OWYzZDJmZWNjMjZhYTlmODY.json",
+          "revision": "sha256:e28a7830ec12a59d4cb796a16ac7cc5d5a8e543c0ed101aa8dd1065b4ed717a8"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:915ada1a-578a-49db-8d14-7851cbbf578f",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/896",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
