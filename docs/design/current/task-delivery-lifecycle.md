@@ -230,3 +230,9 @@ Author requirements_ready经candidate assessment回solution_planning，plan_read
 - **D900-04 / CON900-ADOPT**。当前 canonical Interface 明确选择新的准备与执行输入。转换原调用方，旧正常入口退出，完整前驱负责匹配版本的已执行操作恢复。分发与在途接续见 MIGRATION-900。
 
 验证见 T900。历史版本及原结果保留各自的观察边界。
+
+## D899 一次解析与精确后续读取
+
+承接 [R899](../../requirements/current/task-delivery-lifecycle.md#r899-标准续接上下文)。同一公开命令组合现有 Task、session、C4/C5、登记 checkout 和 Delivery 读取。前次事实由当次依赖逐项核对，依赖失配后重建相应定位。显式只读结果不改变会话选择。结果中的错误指向既有读取或恢复负责人。
+
+标准 Workflow 运行一次上下文解析。后续使用已定位对象读取精确官方 Delivery 和门禁适用性。存在 Publication PR 时通过原 repo-bound GitHub 读取核对状态。真实已合并先进入原恢复，实际 delivered 才能进入 Completion。可执行示例见 [Guru workflow 公开说明](../../../trellis/workflows/guru-team/README.md#读取当前续接对象)。

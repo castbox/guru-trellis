@@ -263,3 +263,9 @@ Author完成完整规划和自检后，独立Architecture final_plan直接进入
 - **R900-04 / BEH900-ADOPT**。正常、返工和续接入口、公开消费者、最小示例、迁移合同、声明平台及受管投影成套切换。在途采用见 [MIGRATION-900](../../../trellis/presets/guru-team/MIGRATION-900.md)。
 
 设计 D900 和测试 T900 承接这些要求。#794 的独立审查和旧 Draft 的适用处置继续有效。
+
+## R899 标准续接上下文
+
+标准会话续接通过一次公开读取定位已验证的 Task、checkout 和适用 Delivery。区分当前、无 Delivery、终态、无 Task 和缺少必要绑定。原显式读取、权限、写入恢复及阶段门禁继续由既有入口处理。
+
+同会话可传回先前成功结果。只有仍满足当前依赖的部分可复用。TaskId、generation、绑定、checkout、当前 Delivery 或相关来源变化时刷新受影响事实。查询不写 Task、会话或 Git 资源。普通失配与旧记录保留诊断和原负责方。设计承接见 [D899](../../design/current/task-delivery-lifecycle.md#d899-一次解析与精确后续读取)，验证见 [T899](../../test/current/task-delivery-lifecycle.md#t899-续接行为验证)。

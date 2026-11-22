@@ -8,7 +8,7 @@ Identity：`ARCH-CONTEXT-001`；aliases：step-context、exit discovery、routin
 
 ## 1. 责任与适用范围
 
-本单元拥有 Guru 当前步骤上下文的加载组织、出口查询及其分发边界。真实 caller 是
+本单元拥有 Guru 当前步骤上下文、标准续接的只读定位、出口查询及其分发边界。真实 caller 是
 已经取得一个原 Skill 合法 typed exit 的 AI，或需要定位当前 Task/Delivery 未完义务的
 start/continue/resume caller。它不拥有 Task/Delivery 身份、selection、阶段转换或 semantic pass。
 这些职责保留在原 workflow、原 Skill 与官方模型，具体续接决定沿
@@ -83,6 +83,45 @@ upgrade owner；实际维护才加载 `.trellis/guru-team/references/legacy.md` 
 references。原 family、conversion、control-retirement、manual archive resume、historical
 closeout 的支持/停止条件和准确 source pin 保持。不得按版本号一刀切、批量转换无关
 Task、改历史归档，或把旧 Finalizer/历史 gate 转成当前 pass。原维护算法不复制到本单元。
+
+### 标准续接的只读定位（#899）
+
+[Issue #899](https://github.com/castbox/guru-trellis/issues/899) 的适用 before 为 Git
+`f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7`。本条款延伸 ADR-035 和
+ADR-STEP-CONTEXT-LOADING 的读入口。原会话、Task、C4/C5、Git 登记和上游 Delivery
+记录继续提供各自的事实。唯一 Workflow continuation 判断当前义务并调用原 owner。
+
+普通会话续接使用一次公开上下文调用 `read-continuation-context.sh --root .`。
+它读取实际会话，校验当前 Task、generation、分支绑定、资源归属及唯一登记 checkout，
+再核对该会话选中的 Delivery。结果区分 `current`、`no_current_delivery`、
+`terminal_delivery`、`no_current_task`、`binding_required` 和 `error`。
+成功结果按需给出 TaskId、generation、TaskRef、已校验 checkout，以及 Delivery id、
+phase 和 planning_root。没有当前 Task 交原 No-Task 入口。已绑定 Task 缺少当前
+Delivery 时，Workflow 处理其原有义务。终态交原终态入口。缺少必要绑定时，原 Bind
+owner 恢复已知对象。显式读取按原对象约束校验，并标记为显式结果。调用方凭实际会话
+选择进入会话执行。查询及诊断无 Task、session、Git 或 stage 写入。已识别的旧记录
+保留原诊断和维护入口。原恢复动作继续使用各自的事务和已成立事实。
+
+同一会话可传回完整的前次成功结果。当前查询首先读取其独立依赖，再决定采用哪些
+已有投影。Task 依赖仓库、会话、绑定、当前代际和来源。checkout 还依赖 C4/C5、
+Git 登记和实际 checkout。Delivery 定位还依赖选择、精确记录和支持声明。
+关系发生变化时，入口重新投影受影响的部分。复用标识由调用方在当前会话中传递，
+作用只限投影复用。依赖读取仍在每次调用执行。相同会话不保证重用或减少 I/O。
+
+进入阶段表前，Workflow 使用已核验的 checkout、TaskRef 和 DeliveryKey 读取精确
+公共记录及原 gate applicability。该读取使用公开的 `--delivery-record -` 模式，
+避免再解析会话、分支或 checkout。Workflow 核对 key、generation、phase 和
+planning_root，精确读取按当前安装声明核对 profile。若有 Publication PR，Workflow
+先按精确 repo 和 PR 读取当前事实。实际 MERGED 进入原 Merge recovery，再由原
+`delivered` 结果进入 Completion。显式已合并 PR 的 adopt 条件仍按原合同。
+原公开门禁适用性和 producer 结果决定阶段的实际后继。
+
+本入口随 matching workflow、runtime 和受影响安装投影分发。已有安装通过原 tools
+owner 接入。旧支持版本继续使用其完整 provider。#899 的工程观察覆盖代表性实际续接、
+一次上下文查询、精确门禁读取、正常复用与变化的定向测试，以及 dogfood 更新和
+定向 reapply。合并恢复分支使用分层证据。#899 的实际续接读取未遇到 Publication PR，
+原 Merge 用例覆盖相关恢复逻辑。实际整合的状态为 `integrated_pending_review`，
+提交后原独立 Review 评估代码、测试和完整 before/after。
 
 ## 5. Reader、分发与历史观察
 
