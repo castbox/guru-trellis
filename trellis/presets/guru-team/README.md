@@ -181,6 +181,9 @@ reapply preset。现有受管哈希与 `.new`/`.bak` 机制保留用户修改；
 随后原 Completion 审查真实内容与验证证据；采用边界见
 [MIGRATION-557](MIGRATION-557.md)。仅 source 验证不证明旧安装已经切换。
 
+原 Task 和 Delivery 存在但缺少 Publication 时，使用
+[`delivery_adopt_merged_pr` 采用说明](MIGRATION-896.md)。
+
 The [shared interaction contract](./spec/workflow/workflow-contract.md#interaction-budget) is loaded at
 `.trellis/spec/workflow/workflow-contract.md#interaction-budget` by the workflow,
 interactive Skill owners and platform entries. Source/projection checks prove

@@ -20,6 +20,12 @@ Delivery fact, calls no merge, needs no old gate or trailers, and returns to
 original Completion. Never apply the pre-merge checks/confirmation to this
 already occurred fact. Both modes use the same entry and review.
 
+For an already MERGED PR whose original Delivery has no Publication, select
+`delivery_adopt_merged_pr`. Read
+[`Adopt a merged PR`](references/contract.md#adopt-a-merged-pr), then review the
+explicit Task/Delivery and the PR's Git evidence. The same public invocation
+records the existing Delivery fact. Only its `delivered` exit enters Completion.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
@@ -30,7 +36,7 @@ retains its own current judgment, formal result and action boundary.
 
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
-Use this Skill only after `guru-publish-task-delivery:ready_for_merge`. Read
+For a new merge, enter after `guru-publish-task-delivery:ready_for_merge`. Read
 [references/contract.md](references/contract.md), preview the exact active task
 and live PR facts, then complete the six-dimension semantic review.
 

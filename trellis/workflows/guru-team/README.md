@@ -205,6 +205,11 @@ reapply preset。现有受管哈希与 `.new`/`.bak` 机制保留用户修改；
 支持方式、实际内容/CI职责与完整安装采用见
 [MIGRATION-557](../../presets/guru-team/MIGRATION-557.md)及 Merge step-local contract。
 
+原 Task/Delivery 存在但缺少 Publication 时，用户可显式选定原 Task、
+Delivery、仓库和已合并 PR。Merge 的 `delivery_adopt_merged_pr` 依据 Git
+归属记录实际交付。原 Completion 接续验收。采用说明见
+[MIGRATION-896](../../presets/guru-team/MIGRATION-896.md)。
+
 The [shared interaction contract](../../presets/guru-team/spec/workflow/workflow-contract.md#interaction-budget) is loaded at
 `.trellis/spec/workflow/workflow-contract.md#interaction-budget` by the workflow,
 interactive Skill owners and platform entries. Source/projection checks prove

@@ -40,31 +40,31 @@
     {
       "id": "active_task",
       "evidence": "task.json, current branch/worktree and Git HEAD",
-      "binding": "public Task identity and selected Delivery key; active unique checkout is required for a new merge, historical recovery validates actual immutable Task/Delivery attribution",
+      "binding": "Public Task identity and selected Delivery key. A new merge or first adoption requires the original registered Task checkout. Recovery of an existing terminal fact checks its immutable attribution.",
       "freshness": "reread before gate, mutation and terminal projection"
     },
     {
       "id": "publication_handoff",
       "evidence": "Publish ready_for_merge DTO",
-      "binding": "Delivery key, exact Publication result, repository, PR, reviewed head and actual PR-body revision; manual recovery reads unique existing public Publication by exact Task/Delivery/repo/PR",
+      "binding": "A new merge uses the reviewed Publication handoff. Published recovery uses the existing public Publication. Adoption without Publication uses the explicit Task, Delivery and PR, then verifies their immutable Git relation.",
       "freshness": "compared with the first live PR read"
     },
     {
       "id": "live_merge_readiness",
       "evidence": "Ready/Open PR, checks, reviews, mergeability, base ref and repository policy",
-      "binding": "one same-repository merge-commit candidate; new-mutation only, manual MERGED recovery preserves real checks without demanding green",
+      "binding": "A new merge requires current readiness. Terminal profiles verify the same-repository two-parent merge and retain actual PR-head checks.",
       "freshness": "reread at the mutation boundary"
     },
     {
       "id": "merge_message",
       "evidence": "AI-reviewed subject, body and exact Delivery trailers",
-      "binding": "stable Task and Delivery identities, schema 2, generation and reviewed head for new merges; original schema-1 bytes only for bounded historical recovery; manual recovery requires actual two-parent identity and target ancestry, no message/gate",
+      "binding": "A new merge requires schema 2 trailers with Task, Delivery, generation and reviewed head. The historical migration checks its original message. The terminal profiles establish the merge from the PR, parents and target ancestry.",
       "freshness": "stored only in the current owner-private gate"
     },
     {
       "id": "invocation_freshness",
       "evidence": "public input, semantic review, private gate and terminal live facts",
-      "binding": "one PR and one expected-head merge action",
+      "binding": "One PR and one reviewed action. Adoption binds the selected scope, PR and check facts to the call-local review.",
       "freshness": "checker rejects any identity drift or ambiguous terminal state"
     }
   ],
@@ -187,6 +187,14 @@
     {
       "id": "delivery_history_result_v3",
       "path": "examples/delivery-history-result-3.0.json"
+    },
+    {
+      "id": "public_delivery_adopt_merged_pr_input_1_0",
+      "path": "examples/public-delivery-adopt-merged-pr-input-1.0.json"
+    },
+    {
+      "id": "adopt_merged_pr_review_1_0",
+      "path": "examples/adopt-merged-pr-review-1.0.json"
     }
   ],
   "schemas": [
@@ -385,6 +393,18 @@
     {
       "id": "delivery_history_result_v3",
       "path": "schemas/delivery-history-result-3.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_3_0",
+      "path": "schemas/public-input-delivery-3.0.schema.json"
+    },
+    {
+      "id": "public_delivery_adopt_merged_pr_input_1_0",
+      "path": "schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json"
+    },
+    {
+      "id": "adopt_merged_pr_review_1_0",
+      "path": "schemas/adopt-merged-pr-review-1.0.schema.json"
     }
   ],
   "validators": [
@@ -554,8 +574,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-merge-task-delivery-input-delivery-aggregate-2.0",
-        "path": "schemas/public-input-delivery-2.0.schema.json"
+        "schema_id": "guru-merge-task-delivery-input-delivery-aggregate-3.0",
+        "path": "schemas/public-input-delivery-3.0.schema.json"
       },
       "profiles": [
         {
@@ -616,6 +636,21 @@
           "discriminator": {
             "field": "profile",
             "value": "delivery_merged_recovery"
+          }
+        },
+        {
+          "id": "delivery_adopt_merged_pr",
+          "schema": {
+            "schema_id": "guru-merge-task-delivery-input-delivery-adopt-merged-pr-1.0",
+            "path": "schemas/public-delivery-adopt-merged-pr-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "public_delivery_adopt_merged_pr_input_1_0",
+            "path": "examples/public-delivery-adopt-merged-pr-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_adopt_merged_pr"
           }
         },
         {

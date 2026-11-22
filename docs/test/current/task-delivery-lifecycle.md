@@ -31,6 +31,17 @@
 | BEH567-01..05 / 该源T567链 | 各阶段固定B/H；无关target前进；实际冲突/依赖同步 | 固定候选正常前进、默认零Reconcile；仅真实触发固定一次target，恢复同Delivery，不追赶、不重放无关门禁。 |
 | T531-07 / R531-07 | 完整匹配安装及显式旧数据迁移 | canonical/installed/native/reapply一致，旧公共/私有迁移分owner；source修改不证明旧业务/production已采用。 |
 
+## 接收已合并 PR 的验证（#896）
+
+| 稳定标识 | 正常入口和观察 |
+| --- | --- |
+| T896-01 / R896-01..02 / D896-01..02 | 隔离环境从公开 Merge 接收缺少 Publication 的原 Delivery。以实际内容完成原 Completion、Closure 和 Finish，读回目标上的原 Task 归档。Closure 读回已关闭的源 Issue。 |
+| T896-02 / R896-01..02 / D896-01..02 | 正常合并冲突处理可使两棵树不同。分别核对 PR head Candidate、实际落地差异和历史 CI。无归属证据或范围不同的 PR 保持原状态。 |
+| T896-03 / R896-03 / D896-02 | 重入返回同一交付。回归已有 Publication 的终态恢复。 |
+| T896-04 / R896-03 / D896-01 | 通过受管工具更新同步 canonical 与匹配安装的入口，核对平台投影、漂移和侧车。 |
+
+实际结果见 [#896 验证记录](../../requirements-design-test-contributions/896-adopt-merged-pr/test.md)。
+
 ## T657：当前续接、选择与范围修订
 
 | 稳定场景 | 正常入口和观察 | 证据边界 |

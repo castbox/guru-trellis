@@ -11,7 +11,7 @@ existing regular, non-symlink UTF-8 JSON file or `-` for stdin. Inline JSON is
 unsupported. Absolute file paths identify that file. Relative paths resolve
 under `--root` first, then under this package. Use stdin for only one JSON
 parameter in a call. The current profiles are `delivery_ready_for_merge`,
-`delivery_merged_recovery`, `delivery_scope_withdrawal` and
+`delivery_merged_recovery`, `delivery_adopt_merged_pr`, `delivery_scope_withdrawal` and
 `delivery_scope_revision`; each retains its own input and review schema.
 
 For a new expected-head merge, load the current profile/schema/example through
@@ -100,6 +100,55 @@ still-applicable results; changed content returns through affected original
 owners. Missing necessary evidence, actual remaining work and changed
 authority retain their original incomplete/revision routes. A reliable merge
 record neither suppresses a business defect nor completes the whole Task.
+
+### Adopt a merged PR
+
+Use `delivery_adopt_merged_pr` when the original Delivery has no Publication.
+The user selects the repository, PR number, TaskRef and DeliveryKey. If the
+selected Delivery has a Publication, use `delivery_merged_recovery`. The
+standalone and workflow modes use the same facts and review.
+
+Before first recording, use the original registered Task checkout. If the
+current session has a different Task or Delivery selection, resolve it through
+the original identity or selection owner.
+
+The Merge owner reads the public Task and Delivery. Verify the TaskId,
+generation, source, target branch, Delivery profile, planning root and slice.
+Read GitHub's actual PR, merge commit, two parents, PR head and current target
+branch. The first-parent history of the target must include the merge commit.
+The second merge parent must equal the PR head.
+
+Read the original Task record and accepted scope artifact at the PR head and
+merge commit. The Task, selected Delivery and accepted scope must match the
+current public record. Compare with the unique merge base of the first merge
+parent and PR head. Require the PR to introduce the selected Delivery or change
+its relation or matching planning evidence. Inherited Task metadata supplies no
+PR-specific relation. For a relocated Task, use its public artifact origin to
+locate the historical record. Incomplete or ambiguous evidence stops before
+recording.
+
+The Merge AI reviews the complete merge-base-to-PR-head and
+first-parent-to-merge ranges and actual PR-head checks. Assess whether the PR
+effect belongs to the selected Delivery. Keep failed, pending and missing
+checks as observed. Review both ranges when they differ. The merge commit
+identifies the landed content, including merge edits. The public Candidate
+identifies the PR head and its supported paths after the normal Candidate
+metadata exclusions. Inspect both complete ranges before those exclusions.
+
+Pass the profile input and separate `adopt-merged-pr-review-1.0` through
+`scripts/invoke.sh --input ... --review-input ...`. The review binds the
+selected DeliveryKey and scope, PR identity and observed checks. The validator
+rereads the objective facts. If they match a passed Merge review, it records
+through the original public `record_delivery(historical_success=true)` operation.
+The review is call-local. The record uses the existing DeliveryFact and PR
+evidence. It carries neither synthetic Publication nor prior gate results.
+The invocation performs no remote mutation.
+
+Match an existing identical fact and return the same `delivered` handoff. If a
+different fact is already present, keep it and report the mismatch. Only
+existing facts can be recovered from an archived Task. Completion reads the
+recorded PR head Candidate, the full landed merge and the checks against the
+accepted whole scope. Completion owns the evidence and adequacy judgment.
 
 ### Public recorded history query 2.0
 

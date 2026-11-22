@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -16,7 +17,7 @@ PACKAGE = Path(__file__).resolve().parents[1]
 SKILLS = PACKAGE.parents[1]
 
 
-class ManualRecoveryTests(unittest.TestCase):
+class _MergedPullRequestFixture(unittest.TestCase):
     def setUp(self):
         spec = importlib.util.spec_from_file_location("manual_recovery_flow", SKILLS / "packages/guru-check-task/tests/test_delivery_flow.py")
         module = importlib.util.module_from_spec(spec)
@@ -27,16 +28,10 @@ class ManualRecoveryTests(unittest.TestCase):
         self.addCleanup(self.flow.doCleanups)
         self.repo = self.flow.repo
         self.projection = self.flow.projection
-        self.flow.readiness(self.flow.full_review(self.flow.check()))
-        delivery = self.projection.resolve(self.flow.key)
-        self.publication = {"result_id": "publication:manual", "owner_id": self.projection.declaration()["owners"]["publication"],
-            "evidence": [delivery["scope_ref"]["authority"]], "profile": "pull_request",
-            "candidate": delivery["candidate"], "repo_ref": "example/repo", "pr_number": 9,
-            "reviewed_head": self.flow.head, "target_ref": "main",
-            "publication_ref": {"locator": "https://github.com/example/repo/pull/9", "revision": "sha256:" + hashlib.sha256(b"Refs #9").hexdigest()}}
         self.base = self.flow.git("rev-parse", "main").strip()
         self.actual = self.flow.head
-        self.make_merge()
+
+    def start_provider(self):
         self.checks = [{"name": "required", "status": "COMPLETED", "conclusion": "SUCCESS"}]
         self.bin = self.repo / ".trellis/.runtime/manual-provider"
         self.bin.mkdir()
@@ -52,6 +47,38 @@ class ManualRecoveryTests(unittest.TestCase):
         self.env = patch.dict(os.environ, {"PATH": str(self.bin) + os.pathsep + os.environ["PATH"]})
         self.env.start()
         self.addCleanup(self.env.stop)
+
+    def responses(self, *, state="CLOSED", base="main", number=9):
+        pr = {"number": number, "state": state, "merged_at": "2026-10-15T01:00:00Z" if state == "CLOSED" else None,
+            "merge_commit_sha": self.merge, "base": {"ref": base, "repo": {"full_name": "example/repo"}},
+            "head": {"sha": self.actual, "repo": {"full_name": "example/repo"}}}
+        values = {"repos/example/repo": {"full_name": "example/repo"}, f"repos/example/repo/pulls/{number}": pr,
+            "repos/example/repo/commits/" + self.merge + "/pulls": [pr],
+            "checks": {"number": number, "state": "MERGED" if state == "CLOSED" else state,
+                "url": f"https://github.com/example/repo/pull/{number}", "body": "Refs #9", "headRefOid": self.actual, "baseRefName": base,
+                "mergeCommit": {"oid": self.merge}, "statusCheckRollup": self.checks, "reviewDecision": ""},
+            "repos/example/repo/git/ref/heads/main": {"object": {"sha": self.flow.git("rev-parse", "main").strip()}},
+            "repos/example/repo/git/commits/" + self.merge: {"sha": self.merge, "message": f"Merge pull request #{number}",
+                "parents": [{"sha": self.base}, {"sha": self.actual}]}}
+        (self.bin / "responses.json").write_text(json.dumps(values))
+
+    def invoke(self, *, success=True, review=None):
+        return self.flow.wrapper(PACKAGE.name, "invoke.sh", "--input", self.flow.write("manual.json", self.public),
+            "--review-input", self.flow.write("manual-review.json", review or self.review()), success=success)
+
+
+class ManualRecoveryTests(_MergedPullRequestFixture):
+    def setUp(self):
+        super().setUp()
+        self.flow.readiness(self.flow.single_review())
+        delivery = self.projection.resolve(self.flow.key)
+        self.publication = {"result_id": "publication:manual", "owner_id": self.projection.declaration()["owners"]["publication"],
+            "evidence": [delivery["scope_ref"]["authority"]], "profile": "pull_request",
+            "candidate": delivery["candidate"], "repo_ref": "example/repo", "pr_number": 9,
+            "reviewed_head": self.flow.head, "target_ref": "main",
+            "publication_ref": {"locator": "https://github.com/example/repo/pull/9", "revision": "sha256:" + hashlib.sha256(b"Refs #9").hexdigest()}}
+        self.make_merge()
+        self.start_provider()
         self.public = {"profile": "delivery_merged_recovery", "mode": "workflow", "task_ref": self.flow.task_ref,
             "delivery_key": self.flow.key, "repo_ref": "example/repo", "pr_number": 9}
         self.responses()
@@ -65,20 +92,6 @@ class ManualRecoveryTests(unittest.TestCase):
             "-m", "Merge pull request #9").strip()
         self.flow.git("update-ref", "refs/heads/main", self.merge)
 
-    def responses(self, *, state="CLOSED", base="main"):
-        pr = {"number": 9, "state": state, "merged_at": "2026-10-15T01:00:00Z" if state == "CLOSED" else None,
-            "merge_commit_sha": self.merge, "base": {"ref": base, "repo": {"full_name": "example/repo"}},
-            "head": {"sha": self.actual, "repo": {"full_name": "example/repo"}}}
-        values = {"repos/example/repo": {"full_name": "example/repo"}, "repos/example/repo/pulls/9": pr,
-            "repos/example/repo/commits/" + self.merge + "/pulls": [pr],
-            "checks": {"number": 9, "state": "MERGED" if state == "CLOSED" else state,
-                "url": "https://github.com/example/repo/pull/9", "body": "Refs #9", "headRefOid": self.actual, "baseRefName": base,
-                "mergeCommit": {"oid": self.merge}, "statusCheckRollup": self.checks, "reviewDecision": ""},
-            "repos/example/repo/git/ref/heads/main": {"object": {"sha": self.flow.git("rev-parse", "main").strip()}},
-            "repos/example/repo/git/commits/" + self.merge: {"sha": self.merge, "message": "Merge pull request #9",
-                "parents": [{"sha": self.base}, {"sha": self.actual}]}}
-        (self.bin / "responses.json").write_text(json.dumps(values))
-
     def review(self):
         return {"reviewed_delivery_key": self.flow.key, "publication_result_id": "publication:manual",
             "reviewed_pr": {"repo_ref": "example/repo", "pr_number": 9, "head_sha": self.actual,
@@ -87,10 +100,6 @@ class ManualRecoveryTests(unittest.TestCase):
                 "summary": "Reviewed the full published-to-actual and PR delta, including extra paths.",
                 "affected_owner_refs": [] if self.actual == self.flow.head else ["guru-review-task-completion", "guru-check-task"]},
             "ai_review_gate": {"status": "passed", "summary": "Fixture attribution/actual content/CI truth reviewed; not whole-task completion."}}
-
-    def invoke(self, *, success=True, review=None):
-        return self.flow.wrapper(PACKAGE.name, "invoke.sh", "--input", self.flow.write("manual.json", self.public),
-            "--review-input", self.flow.write("manual-review.json", review or self.review()), success=success)
 
     def trace_invoke(self):
         trace = self.flow.inputs / "manual-git-trace.jsonl"
@@ -305,6 +314,122 @@ class ManualRecoveryTests(unittest.TestCase):
                 self.assertEqual(expected, out["exit_id"])
                 if expected != "completed":
                     self.assertEqual([], self.projection.read_record()["completion_results"])
+
+
+class AdoptMergedPullRequestTests(_MergedPullRequestFixture):
+    def setUp(self):
+        super().setUp()
+        self.common_base = self.base
+        self.task_json = self.repo / self.flow.task_ref / "task.json"
+        self.flow.git("add", f"{self.flow.task_ref}/task.json")
+        self.flow.git("commit", "-qm", "Record the current Delivery before merge")
+        self.actual = self.flow.git("rev-parse", "HEAD").strip()
+        self.flow.git("remote", "add", "origin", "https://github.com/example/repo.git")
+        self.flow.git("switch", "main")
+        (self.repo / "app.txt").write_text("main update\n")
+        self.flow.git("add", "app.txt")
+        self.flow.git("commit", "-qm", "Update the same file on main")
+        self.base = self.flow.git("rev-parse", "HEAD").strip()
+        conflict = subprocess.run(
+            ["git", "merge", "--no-ff", "--no-commit", "feat/flow"],
+            cwd=self.repo, capture_output=True, text=True,
+        )
+        self.assertEqual(1, conflict.returncode, conflict.stderr)
+        self.assertEqual(self.actual, self.flow.git("rev-parse", "MERGE_HEAD").strip())
+        (self.repo / "app.txt").write_text("main update and feature\n")
+        self.flow.git("add", "app.txt")
+        self.flow.git("commit", "-qm", "Merge pull request #9")
+        self.merge = self.flow.git("rev-parse", "HEAD").strip()
+        self.flow.git("switch", "feat/flow")
+        self.start_provider()
+        self.public = {"profile": "delivery_adopt_merged_pr", "mode": "workflow", "task_ref": self.flow.task_ref,
+            "delivery_key": self.flow.key, "repo_ref": "example/repo", "pr_number": 9}
+        self.checks = [{"name": "required", "status": "COMPLETED", "conclusion": "FAILURE"}]
+        self.responses()
+
+    def review(self):
+        return {"reviewed_delivery_key": self.flow.key,
+            "reviewed_scope_ref": self.projection.resolve(self.flow.key)["scope_ref"],
+            "reviewed_pr": {"repo_ref": "example/repo", "pr_number": self.public["pr_number"],
+                "head_sha": self.actual, "merge_sha": self.merge, "target_ref": "main"},
+            "observed_checks": self.checks,
+            "ai_review_gate": {"status": "passed", "summary": "Fixture review for attribution, PR content, and landed content."}}
+
+    def test_adopts_actual_merge_without_publication_and_recovers_same_fact(self):
+        before = self.projection.resolve(self.flow.key)
+        self.assertIsNone(before["publication_result"])
+        self.assertIsNone(before["delivery_result"])
+        self.assertEqual("feature\n", self.flow.git("show", f"{self.actual}:app.txt"))
+        self.assertEqual("main update and feature\n", self.flow.git("show", f"{self.merge}:app.txt"))
+        self.assertEqual(f"{self.base} {self.actual}", self.flow.git("show", "-s", "--format=%P", self.merge).strip())
+
+        result = self.invoke()
+        self.assertEqual({"exit_id": "delivered", "task_ref": self.flow.task_ref,
+            "task_key": {"task_id": self.flow.key["task_id"], "lifecycle_generation": self.flow.key["lifecycle_generation"]}},
+            result)
+        after = self.projection.resolve(self.flow.key)
+        self.assertEqual("delivered", after["phase"])
+        self.assertIsNone(after["publication_result"])
+        self.assertEqual(before["results"], after["results"])
+        self.assertEqual([], self.projection.read_record()["completion_results"])
+        fact = after["delivery_result"]
+        self.assertEqual("delivery:" + self.merge, fact["result_id"])
+        self.assertEqual(self.merge, fact["merge_commit"])
+        self.assertEqual(self.actual, fact["reviewed_head"])
+        self.assertEqual(self.actual, fact["candidate"]["head_ref"])
+        self.assertEqual(self.common_base, fact["candidate"]["base_ref"])
+        self.assertEqual(["app.txt"], fact["candidate"]["paths"])
+        with self.projection.api.delivery_store.GitCandidateContent(self.repo) as content:
+            self.assertEqual(content.content_ref(self.actual, ["app.txt"]), fact["candidate"]["content_ref"])
+            self.assertNotEqual(content.content_ref(self.merge, ["app.txt"]), fact["candidate"]["content_ref"])
+
+        recorded = self.task_json.read_bytes()
+        self.checks = []
+        self.responses()
+        self.assertEqual(result, self.invoke())
+        self.assertEqual(recorded, self.task_json.read_bytes())
+        calls = [json.loads(line) for line in self.calls.read_text().splitlines()]
+        self.assertTrue(any(call[:3] == ["pr", "view", "9"] and "statusCheckRollup" in call[-1] for call in calls))
+        self.assertFalse(any(call[:2] == ["pr", "merge"] for call in calls))
+
+    def test_rejects_unrelated_pr_that_inherited_the_original_delivery(self):
+        self.base = self.merge
+        self.flow.git("switch", "-qc", "feat/unrelated", "main")
+        (self.repo / "unrelated.txt").write_text("Other change\n")
+        self.flow.git("add", "unrelated.txt")
+        self.flow.git("commit", "-qm", "Add an unrelated file")
+        self.actual = self.flow.git("rev-parse", "HEAD").strip()
+        self.flow.git("switch", "main")
+        self.flow.git("merge", "--no-ff", "-m", "Merge pull request #10", "feat/unrelated")
+        self.merge = self.flow.git("rev-parse", "HEAD").strip()
+        self.flow.git("switch", "feat/flow")
+        self.public["pr_number"] = 10
+        self.responses(number=10)
+        self.assertEqual(self.flow.git("show", f"{self.base}:{self.flow.task_ref}/task.json"),
+            self.flow.git("show", f"{self.actual}:{self.flow.task_ref}/task.json"))
+        self.assertEqual("unrelated.txt", self.flow.git("diff", "--name-only", self.base, self.actual).strip())
+        before = self.task_json.read_bytes()
+
+        result = self.invoke()
+
+        self.assertEqual("merge_blocked", result["exit_id"])
+        self.assertEqual("merged_pr_attribution_missing", result["reason_code"])
+        self.assertEqual(10, result["pr_number"])
+        self.assertEqual(before, self.task_json.read_bytes())
+
+    def test_rejects_newly_accepted_task_scope_without_writing_delivery(self):
+        from runtime.delivery_projection.adapter import authority_ref
+
+        authority = self.repo / "requirements.md"
+        authority.write_text("R1: deliver the original feature. R2: cover an additional requirement.\n")
+        self.projection.scope(authority_ref(authority, self.repo))
+        before = self.task_json.read_bytes()
+
+        result = self.invoke()
+
+        self.assertEqual("merge_blocked", result["exit_id"])
+        self.assertEqual("merged_pr_scope_mismatch", result["reason_code"])
+        self.assertEqual(before, self.task_json.read_bytes())
 
 
 if __name__ == "__main__":

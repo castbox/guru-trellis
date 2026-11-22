@@ -96,15 +96,17 @@ def candidate_read_error(root, head, paths, error):
 
 
 def commit_candidate(projection, publication, actual_head, *, git_root=None, content=None):
+    return immutable_candidate(projection, publication["candidate"], actual_head, git_root=git_root, content=content)
+
+
+def immutable_candidate(projection, candidate, actual_head, *, git_root=None, content=None):
     """Use the installed public hash over immutable bytes/modes/deletions."""
-    candidate = publication["candidate"]
     paths = candidate["paths"]
     source = projection.root if git_root is None else git_root
     if content is None:
         with projection._call(projection.api.delivery_store.GitCandidateContent,
                               source, no_lazy_fetch=True) as local:
-            return commit_candidate(projection, publication, actual_head,
-                                    git_root=source, content=local)
+            return immutable_candidate(projection, candidate, actual_head, git_root=source, content=local)
     try:
         content_ref = projection._call(content.content_ref, actual_head, paths)
     except LifecycleContractError as exc:
@@ -114,7 +116,7 @@ def commit_candidate(projection, publication, actual_head, *, git_root=None, con
     return {**candidate, "kind": "git", "head_ref": actual_head, "content_ref": content_ref}
 
 
-def terminal_facts(root, public, publication):
+def merged_pr_facts(root, public, target_ref, *, additional_commits=()):
     repo, number = public["repo_ref"], public["pr_number"]
     require_gh(root)
     repository = gh_json(root, ["api", f"repos/{repo}"], "repository")
@@ -132,7 +134,7 @@ def terminal_facts(root, public, publication):
         raise CommandError("github_response_incomplete", "github.pr", "Read complete repo/base/head/merge identity.") from exc
     if (pr.get("number") != number or pr.get("state", "").upper() != "CLOSED"
             or base_repo.casefold() != repo.casefold() or head_repo.casefold() != repo.casefold()
-            or target != publication["target_ref"]):
+            or target != target_ref):
         return None, "manual_merge_pr_identity_mismatch"
     commit = gh_json(root, ["api", f"repos/{repo}/git/commits/{merge}"], "merge commit")
     try:
@@ -149,7 +151,7 @@ def terminal_facts(root, public, publication):
     except (KeyError, TypeError) as exc:
         raise CommandError("github_response_incomplete", "github.base_ref", "Read the current selected target base.") from exc
     prepared = []
-    for sha in (merge, head, base_head, publication["reviewed_head"]):
+    for sha in (merge, head, base_head, *additional_commits):
         if sha not in prepared:
             ensure_commit(root, repo, sha)
             prepared.append(sha)
@@ -163,11 +165,55 @@ def terminal_facts(root, public, publication):
             or "statusCheckRollup" not in checks
             or checks["statusCheckRollup"] is not None and not isinstance(checks["statusCheckRollup"], list)):
         raise CommandError("github_response_incomplete", "github.checks", "Read this actual merged head's checks, including an empty missing set.")
-    # Unfiltered deltas are read even if candidate.paths would miss new paths.
     return {"repo_ref": repo, "pr_number": number, "head_sha": head, "merge_sha": merge,
             "target_ref": target, "checks": checks["statusCheckRollup"] or [],
-            "publication_delta": git(root, "diff", "--name-status", publication["reviewed_head"], head, "--"),
-            "pr_delta": git(root, "diff", "--name-status", parents[0], head, "--")}, None
+            "first_parent": parents[0]}, None
+
+
+def terminal_facts(root, public, publication):
+    reviewed_head = publication["reviewed_head"]
+    facts, reason = merged_pr_facts(root, public, publication["target_ref"],
+                                    additional_commits=(reviewed_head,))
+    if reason:
+        return None, reason
+    # Unfiltered deltas are read even if candidate.paths would miss new paths.
+    facts["publication_delta"] = git(root, "diff", "--name-status", reviewed_head, facts["head_sha"], "--")
+    facts["pr_delta"] = git(root, "diff", "--name-status", facts["first_parent"], facts["head_sha"], "--")
+    return facts, None
+
+
+def reviewed_pr(facts):
+    return {key: facts[key] for key in ("repo_ref", "pr_number", "head_sha", "merge_sha", "target_ref")}
+
+
+def record_terminal_delivery(package, public, projection, delivery, facts, candidate):
+    fact = {
+        "result_id": "delivery:" + facts["merge_sha"],
+        "owner_id": projection.declaration()["owners"]["delivery"],
+        "evidence": [{"locator": f"https://github.com/{public['repo_ref']}/pull/{public['pr_number']}",
+                      "revision": facts["merge_sha"]}],
+        "profile": "pull_request",
+        "candidate": candidate,
+        "repo_ref": public["repo_ref"],
+        "pr_number": public["pr_number"],
+        "reviewed_head": facts["head_sha"],
+        "merge_commit": facts["merge_sha"],
+        "target_ref": facts["target_ref"],
+    }
+    existing = delivery["delivery_result"]
+    if existing is not None and existing != fact:
+        return blocked(package, public, "manual_merge_existing_result_mismatch",
+                       "Recover this Delivery's original immutable result; never replace an already recorded success.")
+    if existing is None:
+        if projection.task_dir.resolve().is_relative_to((projection.root / ".trellis/tasks/archive").resolve()):
+            raise archived_fact_gap()
+        projection.apply({"api_version": "1.0", "operation": "record_delivery", "key": public["delivery_key"],
+                          "owner_role": "delivery", "owner_id": fact["owner_id"], "expected_phase": delivery["phase"],
+                          "historical_success": True, "result": fact})
+    output = {"exit_id": "delivered", "task_ref": public["task_ref"],
+              "task_key": {key: public["delivery_key"][key] for key in ("task_id", "lifecycle_generation")}}
+    validate_json(output, package / "schemas/public-output-delivery-delivered-1.0.schema.json", "stdout")
+    return output
 
 
 def invoke(root, package, public, review):
@@ -181,10 +227,9 @@ def invoke(root, package, public, review):
         facts, reason = terminal_facts(root, public, publication)
         if reason:
             return blocked(package, public, reason, "Original Merge requires an attributable actual two-parent MERGED PR on its recorded target base; no remote merge is performed.")
-        reviewed_pr = {key: facts[key] for key in ("repo_ref", "pr_number", "head_sha", "merge_sha", "target_ref")}
         if (review["reviewed_delivery_key"] != public["delivery_key"]
                 or review["publication_result_id"] != publication["result_id"]
-                or review["reviewed_pr"] != reviewed_pr
+                or review["reviewed_pr"] != reviewed_pr(facts)
                 or review["observed_checks"] != facts["checks"]):
             raise CommandError("stale_identity", "review_input", "Reread actual association, head/content and CI facts and complete this recovery review.", 3)
         actual = commit_candidate(projection, publication, facts["head_sha"])
@@ -195,21 +240,6 @@ def invoke(root, package, public, review):
             raise CommandError("stale_identity", "content_impact", "Different candidate bytes require an explicit changed-candidate impact review.", 3)
         if review["ai_review_gate"]["status"] != "passed":
             return blocked(package, public, "manual_merge_review_blocked", review["ai_review_gate"]["summary"])
-        fact = {"result_id": "delivery:" + facts["merge_sha"], "owner_id": projection.declaration()["owners"]["delivery"],
-                "evidence": [{"locator": f"https://github.com/{public['repo_ref']}/pull/{public['pr_number']}", "revision": facts["merge_sha"]}],
-                "profile": "pull_request", "candidate": actual, "repo_ref": public["repo_ref"], "pr_number": public["pr_number"],
-                "reviewed_head": facts["head_sha"], "merge_commit": facts["merge_sha"], "target_ref": facts["target_ref"]}
-        if delivery["delivery_result"] is not None and delivery["delivery_result"] != fact:
-            return blocked(package, public, "manual_merge_existing_result_mismatch", "Recover this Delivery's original immutable result; never replace an already recorded success.")
-        if delivery["delivery_result"] is None:
-            if projection.task_dir.resolve().is_relative_to((root / ".trellis/tasks/archive").resolve()):
-                raise archived_fact_gap()
-            projection.apply({"api_version": "1.0", "operation": "record_delivery", "key": public["delivery_key"],
-                              "owner_role": "delivery", "owner_id": fact["owner_id"], "expected_phase": delivery["phase"],
-                              "historical_success": True, "result": fact})
-        output = {"exit_id": "delivered", "task_ref": public["task_ref"],
-                  "task_key": {key: public["delivery_key"][key] for key in ("task_id", "lifecycle_generation")}}
-        validate_json(output, package / "schemas/public-output-delivery-delivered-1.0.schema.json", "stdout")
-        return output
+        return record_terminal_delivery(package, public, projection, delivery, facts, actual)
     except LifecycleContractError as exc:
         raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
