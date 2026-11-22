@@ -1,0 +1,331 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-22-822-incremental-enablement",
+  "id": "822-incremental-enablement",
+  "name": "822-incremental-enablement",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 822,
+    "disposition": "exact_source"
+  },
+  "title": "#822 收敛 Task 内小范围启用的增量规划、证据复用与交付接续",
+  "description": "基于 main 验证去敏五字段小范围启用及其恢复、规划和交付接续，按已观察的当前差额完成交付。",
+  "dev_type": null,
+  "scope": "限 #822 的 Task 内后续 Delivery、已有切片恢复、增量规划、原证据适用性及验证停止条件。修复可验证的实际缺口，覆盖受影响投影。业务配置写入、部署及完整安装升级矩阵均在范围外。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-22",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+    "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+  },
+  "deliveries": [
+    {
+      "id": "cb2c4dcb-ebb9-4230-87f3-178112fc17cb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+          "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/design.md",
+        "revision": "sha256:00814f7b61f8ab35b0f64cb7aa7274dd2b8101a47994250094cae2f8e536b658"
+      },
+      "candidate": {
+        "base_ref": "ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f",
+        "content_ref": "sha256:f9d726f92928b72a70d39eb99b34b16ef09e4a91848aaee345b12e89fb227f59",
+        "head_ref": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+        "kind": "git",
+        "paths": [
+          "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:870e18ec-87bf-49ab-80cd-e43ecf395654",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+              "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/design.md",
+            "revision": "sha256:00814f7b61f8ab35b0f64cb7aa7274dd2b8101a47994250094cae2f8e536b658"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/prd.md",
+              "revision": "sha256:345d41ca11b4fe700d0ee4a10f75aa033a94f3ad7921be84fe410b6e5f2e5f4e"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/design.md",
+              "revision": "sha256:00814f7b61f8ab35b0f64cb7aa7274dd2b8101a47994250094cae2f8e536b658"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/implement.md",
+              "revision": "sha256:f10441bd048d073e6dd05742e3094d02cc956d94b63ab745baeeb9f64db5e61e"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:f00a3948b1822ab03d43fe9b8e54857805b86245a8de48ec806e5d30f2be9251",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+              "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/design.md",
+            "revision": "sha256:00814f7b61f8ab35b0f64cb7aa7274dd2b8101a47994250094cae2f8e536b658"
+          },
+          "candidate": {
+            "base_ref": "ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f",
+            "content_ref": "sha256:f9d726f92928b72a70d39eb99b34b16ef09e4a91848aaee345b12e89fb227f59",
+            "head_ref": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+            "kind": "git",
+            "paths": [
+              "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:870e18ec-87bf-49ab-80cd-e43ecf395654",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/implement.md",
+              "revision": "sha256:f10441bd048d073e6dd05742e3094d02cc956d94b63ab745baeeb9f64db5e61e"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:f00a3948b1822ab03d43fe9b8e54857805b86245a8de48ec806e5d30f2be9251",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+              "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/design.md",
+            "revision": "sha256:00814f7b61f8ab35b0f64cb7aa7274dd2b8101a47994250094cae2f8e536b658"
+          },
+          "candidate": {
+            "base_ref": "ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f",
+            "content_ref": "sha256:f9d726f92928b72a70d39eb99b34b16ef09e4a91848aaee345b12e89fb227f59",
+            "head_ref": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+            "kind": "git",
+            "paths": [
+              "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py"
+            ]
+          },
+          "predecessor_result_id": "check:f00a3948b1822ab03d43fe9b8e54857805b86245a8de48ec806e5d30f2be9251",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/implement.md",
+              "revision": "sha256:f10441bd048d073e6dd05742e3094d02cc956d94b63ab745baeeb9f64db5e61e"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:22ed164f136e7278514310067a3b46a56de3bbd4b20b9e9570db3e6cef6d19cc",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+              "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/design.md",
+            "revision": "sha256:00814f7b61f8ab35b0f64cb7aa7274dd2b8101a47994250094cae2f8e536b658"
+          },
+          "candidate": {
+            "base_ref": "ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f",
+            "content_ref": "sha256:f9d726f92928b72a70d39eb99b34b16ef09e4a91848aaee345b12e89fb227f59",
+            "head_ref": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+            "kind": "git",
+            "paths": [
+              "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:f00a3948b1822ab03d43fe9b8e54857805b86245a8de48ec806e5d30f2be9251",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-822-incremental-enablement/deliveries/cb2c4dcb-ebb9-4230-87f3-178112fc17cb/implement.md",
+              "revision": "sha256:f10441bd048d073e6dd05742e3094d02cc956d94b63ab745baeeb9f64db5e61e"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:773040779d6481923b1ee72e2fcb43e4ad00126626d5ed1fa7bd8243bfa7b4cd",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/894",
+            "revision": "sha256:9e9810ebb11d59af9320f72a5167a7e31ea01b53891e007ad5925f8f917cf4aa"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f",
+          "content_ref": "sha256:f9d726f92928b72a70d39eb99b34b16ef09e4a91848aaee345b12e89fb227f59",
+          "head_ref": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+          "kind": "git",
+          "paths": [
+            "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 894,
+        "reviewed_head": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/894",
+          "revision": "sha256:9e9810ebb11d59af9320f72a5167a7e31ea01b53891e007ad5925f8f917cf4aa"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:75a2de02a541df52fa555a0addb0b4a691453a12",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/894",
+            "revision": "75a2de02a541df52fa555a0addb0b4a691453a12"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f",
+          "content_ref": "sha256:f9d726f92928b72a70d39eb99b34b16ef09e4a91848aaee345b12e89fb227f59",
+          "head_ref": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+          "kind": "git",
+          "paths": [
+            "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 894,
+        "reviewed_head": "22cff307508d5e8beb7fd258ebf35bcbb19d3016",
+        "merge_commit": "75a2de02a541df52fa555a0addb0b4a691453a12",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:822:75a2de02a541df52fa555a0addb0b4a691453a12",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/894",
+          "revision": "75a2de02a541df52fa555a0addb0b4a691453a12"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/822-incremental-enablement/test.md",
+          "revision": "sha256:287359fd545b9070d8fe21e8012b113225520818cda06af753e80f5229e5c99d"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/44997115071",
+          "revision": "22cff307508d5e8beb7fd258ebf35bcbb19d3016"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-22-822-incremental-enablement/prd.md",
+        "revision": "sha256:8f33f4e78e55a108faa7403f5b09e6ca3c5e96a56edae4cf984df7b17335d29f"
+      },
+      "delivery_result_ids": [
+        "delivery:75a2de02a541df52fa555a0addb0b4a691453a12"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:d7cde01d2f542d39e720f27f",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/822",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-22-822-incremental-enablement/closeout/closure/Y2xvc3VyZTpkN2NkZTAxZDJmNTQyZDM5ZTcyMGYyN2Y.json",
+          "revision": "sha256:fdab0c342ba28a3b78b018dd8dc11f791f94eb2dbfe5bc86101f8ff01da978c6"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:822:75a2de02a541df52fa555a0addb0b4a691453a12",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/822",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
