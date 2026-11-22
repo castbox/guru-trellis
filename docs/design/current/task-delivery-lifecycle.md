@@ -83,6 +83,12 @@ ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh revi
 
 原事务在远端已成功但输出/投影丢失时，先确认实际 identity与成功结果，复用同事务完成 projection，零重复 mutation。历史 published/merged结果保留，即使当前 gate stale；该事实不代替新的 Review。已正式关联的人工双亲 merge 由原 Merge recovery读真实 actual head、Publication relation、CI/delta后记录；不再 merge。Completion 再审actual-vs-published与whole scope；独立未完成CI不被合并事实变为pass。
 
+### 缺少 Publication 的显式接收（#896）
+
+`D896-01` 由原 Merge 的 `delivery_adopt_merged_pr` 拥有。独立输入定位原 Task/Delivery 与 repo/PR。Merge 复用同仓双父终态校验。Git 中的 Task 记录和接受范围在 PR head 与合并树中均须匹配，所选 Delivery 还须有超出共同基点继承状态的 PR 归属证据。
+
+`D896-02` 通过既有 `record_delivery(historical_success=true)` 保存唯一交付事实，用 PR head 固定 Candidate，使用 `merge_commit` 和核实的第一父定位实际合入差异。原 Completion 审阅两段内容、实际 head CI 和当前整体接受范围。Closure 与 Finish 消费原公开结果。重入读取相同事实，既有 Publication profile 继续使用原来源关系。
+
 ## 跨环境 source 与既有 PR 恢复
 
 `D635-03/04/05 / CON635-PUBLICATION/ENVIRONMENT/DISTRIBUTION` 保留原 public Task/Delivery/session 模型和 step-local owners。Identity 从已选 repository、明确 source ref/commit 与公共 key 验证活动记录和必要代码；Establish/Ensure/Bind 只建立当前 common-dir 的合法 branch/worktree/session 关系。共享记录不携带原机路径或资源资格。原语义 owner 重判当前适用性，可核验工程命令按已有候选合同采用，不复制 gate pass 或要求无变化全链重跑。

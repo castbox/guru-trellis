@@ -956,15 +956,14 @@ output returns to its original producer. Public phase is an availability clue,
 never a Planning, Check, full Review, readiness or Completion pass.
 
 Before resuming the phase table, reread the exact explicitly selected Delivery
-and its existing public Publication PR. If that PR is actually MERGED and the
-Delivery fact is missing, invoke original `guru-merge-task-delivery` with
-`delivery_merged_recovery` before any mechanical Publish, readiness or pre-merge
-gate refresh. That owner resolves the association and ordinary mismatches;
-missing or ambiguous relations stop there without recreating an identity or
-old gate. An exact existing Delivery fact uses the same owner's read-only
-recovery when its output was lost. Its `delivered` goes only to original
-Completion. A new chat still needs its exact binding or deliberate selection;
-PR or Task inventory never selects the Task or Delivery.
+and its existing public Publication PR if present. For an actually MERGED
+Publication PR, invoke original `guru-merge-task-delivery:delivery_merged_recovery`
+before attempting Publish, readiness, or pre-merge gate refresh. When the user
+explicitly selects a MERGED PR and its original Task/Delivery without
+Publication, invoke `guru-merge-task-delivery:delivery_adopt_merged_pr`.
+Load the selected Merge profile for attribution and recovery. Only its
+`delivered` goes to original Completion. A new chat needs its exact binding
+or deliberate selection. PR or Task inventory never selects a Task or Delivery.
 
 | Public current query / phase | Unique owner family |
 | --- | --- |
@@ -1000,6 +999,7 @@ PR or Task inventory never selects the Task or Delivery.
 | Publication private transaction unavailable, with an explicitly selected shared source and existing Open PR | Invoke original `guru-publish-task-delivery` through its closed `delivery_remote_draft_recovery` or `delivery_remote_ready_recovery` input. The package owns current state, readiness and remaining-action judgment; no new PR. |
 | Closure private transaction unavailable, with the exact shared result input | Invoke original `guru-complete-task-closure:closure_shared_result_recovery`; consume its existing exits. The carrier does not restore authorization or prove terminal state. |
 | Exact selected Delivery's existing Publication PR is manually MERGED | Original Merge `delivery_merged_recovery`, then only its verified `delivered` enters original Completion; no pre-merge gate reconstruction. |
+| Explicitly selected MERGED PR and original Task/Delivery without Publication | Original Merge `delivery_adopt_merged_pr`. Route only its verified `delivered` to original Completion. |
 | Same-Delivery findings/plan/base/readiness changes | Original affected owner judges dependency-scoped invalidation and invokes lawful earliest-owner rework. Commit and historical remote facts remain facts. |
 | Whole accepted-scope change | `guru-clarify-requirements`, then affected Delivery owner; independent goals follow scope judgment rather than silently expanding this Task. |
 | Whole withdrawal/supersession of undelivered slice | Scope decision then current phase owner public stop/release; no empty implementation or false delivery; PR/resources keep their own owner boundaries. |
@@ -1140,17 +1140,14 @@ is only that operation's
 failure, not automatic Guru re-entry. Returning to Guru lifecycle still requires
 its original current entry preconditions and declared routes.
 
-An already manually MERGED, formally published Delivery may enter the original
-`guru-merge-task-delivery:delivery_merged_recovery` profile using its exact
-existing public Task/Delivery/Publication relation. Load that Skill's complete
-profile; do not reconstruct a pre-merge gate or mechanically rerun readiness.
-This subsequent original-owner invocation, rather than the manual operation,
-can emit `delivered` to original Task-wide Completion. Its `merge_blocked`
-retains the original Merge stop. Across turns/chats use current explicit
-identity/session/checkout owners; branch names or inventory never select a
-replacement Task/Delivery. Existing Guru mutation and completion routes stay
-unchanged. Step-local attribution, CI/content impact and recording belong only
-to Merge; whole-scope adequacy belongs only to Completion.
+For an explicitly selected already MERGED PR, use the original Merge owner.
+Select `delivery_merged_recovery` when the exact public Publication exists.
+Select `delivery_adopt_merged_pr` when the user selects the original Task and
+Delivery and their Publication is unavailable. Load that Skill's complete
+profile. A `delivered` result enters original Task-wide Completion.
+A `merge_blocked` result retains the Merge stop. Across turns or chats use
+current explicit identity, session, and checkout owners. The Merge Skill owns
+attribution and terminal recording. Completion owns the whole Task judgment.
 
 ### Workspace and task boundary
 

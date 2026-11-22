@@ -91,6 +91,14 @@ Delivery Review、Publication 和 Merge 分别核当前 payload、Issue 语义�
 
 Delivery 合并只产生 slice 结果。Task 未分配范围、未完成要求和缺失必要证据仍归整体 Completion。Completion、Closure、Finish、Cleanup、Reactivate 的完整能力定义在 [completion-closure](completion-closure.md)。
 
+## 接收缺少 Publication 的已合并 PR（#896）
+
+`R896-01 / BEH896-ADOPT`：用户可显式选择同仓已合并双父 PR 与原 Task/Delivery。Merge 根据真实 Git 的归属证据及现有 Task 与 Delivery 身份和接受范围核对该选择，并核对 GitHub 目标、head、双父合并和目标第一父历史。证据不足、歧义或不匹配时报告缺口，保持原 Delivery 状态。
+
+`R896-02 / BEH896-CLOSEOUT`：归属成立后，Merge 记录实际交付。原 Completion 依据既有接受范围、真实落地内容及其所需证据判断验收。验收通过后沿原 Closure 和 Finish 收尾。源 Issue 已关闭时，Closure 重新读取其状态。
+
+`R896-03 / BEH896-REENTRY`：同一 PR 的恢复重入读回同一交付。已有 Publication 的 #557 恢复保持可用。
+
 ## 跨环境活动接续与状态职责
 
 `R635-01/03/04/05 / BEH635-STATE/RECOVER/RESOURCE/MIGRATION` 增加跨环境正常行为。原执行者不再主导同一生命周期时，B 从可获取、已提交的 source ref/commit 读取同 repository、TaskId/generation、source/scope、Delivery 和必要代码。该 ref 不必已进入默认分支；唯一可验证来源自动承接，有实际歧义才询问缺失选择。不复制 A 的 `.git`、runtime、session 或资源账本，不迁移仅在 A 的 dirty 工作。不承诺发现其他 clone 未发布状态，不支持两个环境同时主导该生命周期。

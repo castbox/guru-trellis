@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "写作规则"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "标准工作流职责与消费"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "执行器与公共 CLI 边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "新增公开 profile 和兼容规则"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验收、覆盖及安装边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "正式规划正文合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/", "type": "directory", "reason": "Delivery 规划正文模板"}
+{"file": "docs/architecture/adr/026-manual-merged-delivery-recovery.md", "reason": "既有合并归属决策"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md", "reason": "现有 #557 兼容及 Merge 生命周期"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "当前生命周期设计权威"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "当前生命周期验证权威"}
