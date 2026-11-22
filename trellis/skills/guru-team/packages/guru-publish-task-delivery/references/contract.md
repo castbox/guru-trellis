@@ -33,6 +33,12 @@ PR establishes the candidate but the public PublicationFact is absent,
 checks its own attribution and historical requirements. Neither path writes
 a PublicationFact to give Merge additional eligibility.
 
+After the public PublicationFact has been recorded, a fresh preparation
+evaluates its own readiness and payload. An identical proposal can have no
+pending remote actions. A changed payload uses the same PR and gets a new
+preview. A refusal stops the new action. Recover any missing original
+PublicationFact through the original transaction first.
+
 After readiness has been recorded, the public publishing phase on its own
 cannot recreate the PR text. If no usable preview or transaction remains,
 re-enter current preparation. Publication legally clears readiness with
@@ -116,8 +122,9 @@ If the remote result succeeded but public projection or stdout was lost, resume
 this transaction, read the same result and retry projection without repeating
 push/create/Ready. Recover historical success even if current scope, HEAD or
 readiness changed, then separately return `review_stale`; history does not
-supply a new readiness pass. `stale_reason` has the direct
-`delivery_readiness_refresh.reentry_reason` consumer. If the slice remains publishing and earlier full Review is applicable, this
+supply a new readiness pass. The Publication refresh router consumes
+`stale_reason`. If the slice remains publishing and earlier full Review is
+applicable, this
 Publication owner legally reworks to Readiness before returning. Earlier
 missing/stale gates retain their real owner obligation. No Issue closure occurs.
 
@@ -177,9 +184,9 @@ Historical data is read only by its named history or migration owner.
 ## Ownership
 
 `guru-publish-task-delivery` is the only owner of the remote publication
-transaction for one reviewed public Delivery. It consumes the exact ready DTO
-from Delivery Review and produces only the minimal Merge seed or a typed
-same-owner/stale/blocking result. Git and GitHub remain the live fact sources;
+transaction for one reviewed public Delivery. Its preparation uses the current
+full Review and Architecture results to assess readiness and produce a preview.
+Execution produces the minimal Merge seed or a typed recovery or stop result. Git and GitHub remain the live fact sources;
 the ignored transaction is recovery state, not a Delivery ledger.
 
 The current 2.0 transaction owns one action and terminal:

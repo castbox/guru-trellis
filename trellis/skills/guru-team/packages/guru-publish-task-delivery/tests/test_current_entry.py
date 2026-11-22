@@ -215,6 +215,66 @@ class PublicationEntryTests(unittest.TestCase):
         self.assertNotEqual(original["publication_result_id"], refreshed["publication_result_id"])
         self.assertEqual(["push", "create", "ready", "edit"], self.effects)
 
+    def test_current_readiness_updates_an_already_published_same_head(self):
+        self.ready_to_prepare()
+        with self.provider_reads():
+            original = self.execute(self.prepare())
+        original_body = self.pr["body"]
+        self.semantic["pr_payload"]["body"] = "本次验证补充了安装结果。"
+        preview = self.prepare()
+        self.assertEqual("publication_prepared", preview["exit_id"])
+        self.assertEqual(["converge_metadata"], preview["target"]["actions"])
+        self.assertEqual(original_body, self.pr["body"])
+        self.assertEqual(["push", "create", "ready"], self.effects)
+        with self.provider_reads():
+            refreshed = self.execute(preview)
+            self.assertEqual(refreshed, self.execute(preview))
+        self.assertEqual("ready_for_merge", refreshed["exit_id"])
+        self.assertEqual(original["pr_number"], refreshed["pr_number"])
+        self.assertEqual(self.semantic["pr_payload"]["body"], self.pr["body"])
+        self.assertEqual(["push", "create", "ready", "edit"], self.effects)
+
+    def test_current_readiness_refusal_stops_an_already_published_same_head(self):
+        self.ready_to_prepare()
+        with self.provider_reads():
+            original = self.execute(self.prepare())
+        ref = "missing-validation"
+        self.semantic["candidate_classifications"] = [{
+            "candidate_ref": ref,
+            "decision": "qualified_current",
+            "consumer_use": "delivery_review_route_checker",
+            "witness": {
+                "requirement_refs": ["AC1"],
+                "supported_entry_refs": ["delivery_prepare_publication"],
+                "existing_caller_refs": ["guru-publication-entry-router"],
+                "honest_action_sequence": ["Publish the reviewed candidate", "Check the current evidence again"],
+                "defect_observation": "The required validation service cannot be reached.",
+                "excluded_assumptions": [],
+            },
+        }]
+        self.semantic["findings"] = [{
+            "finding_ref": ref,
+            "candidate_ref": ref,
+            "dimension": "validation_truthfulness",
+            "summary": "Missing current external validation.",
+            "evidence_refs": [ref],
+            "route_class": "external_blocker",
+            "status": "open",
+            "closure_evidence": [],
+        }]
+        next(item for item in self.semantic["dimensions"]
+             if item["id"] == "validation_truthfulness")["status"] = "blocked"
+        self.semantic["route"] = {
+            "typed_exit": "blocked",
+            "reason_code": "validation_unavailable",
+            "remediation": "Restore access to current validation.",
+        }
+        result = self.prepare()
+        self.assertEqual("blocked", result["exit_id"])
+        self.assertEqual(original["publication_result_id"],
+                         self.f.projection.resolve(self.f.key)["publication_result"]["result_id"])
+        self.assertEqual(["push", "create", "ready"], self.effects)
+
     def test_merge_rework_refreshes_readiness_for_same_pr(self):
         from runtime.delivery_projection.adapter import authority_ref
         from runtime.delivery_projection.gates import rework

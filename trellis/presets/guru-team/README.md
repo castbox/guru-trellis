@@ -202,7 +202,7 @@ the existing managed-spec installer. Qualification and stage packages read
 that one source; apply/reapply distributes their stage-local contracts.
 
 Normal revision/recovery contracts live in `guru-review-branch` and
-`guru-review-task-delivery`; apply/reapply projects those canonical packages
+`guru-publish-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
 it does not replace the cumulative Upgrade/Release matrix.
 The historical #531 development candidate uses the upstream Task schema 2.0 / Delivery API 1.0.

@@ -54,7 +54,7 @@ def _original_transaction(root, public, delivery):
             result_id = original["result_id"] if original else "publication:" + value["transaction_ref"]
             readiness_id = (delivery["results"]["readiness"] or {}).get("result_id")
             if (publication and publication["result_id"] == result_id
-                    or publication is None and identity.get("readiness_result_id") == readiness_id):
+                    or identity.get("readiness_result_id") == readiness_id):
                 o.validate_transaction(value)
                 ready.append(value)
     matches = active or ready
@@ -172,9 +172,12 @@ def prepare(package, root, public, semantic):
     if transaction and transaction["action"] == "return_to_draft":
         return _recover_draft(root, transaction)
     if transaction and transaction["stage"] in READY_POSTIMAGE_STAGES:
-        terminal = _ready_postimage(root, transaction)
-        if terminal and (terminal["exit_id"] == "ready_for_merge" or selected["publication_result"] is None):
-            return terminal
+        # Recover a missing result before considering a new request.
+        # A recorded publication is history for this fresh readiness decision.
+        if not o.published_transaction_recorded(root, transaction):
+            terminal = _ready_postimage(root, transaction)
+            if terminal:
+                return terminal
         if transaction["stage"] == "ready":
             transaction = None
     stale = _current_review(root, public, projection, selected, applicability)
@@ -225,9 +228,11 @@ def execute(package, root, public, review, observed_identity):
     if transaction and transaction["action"] == "return_to_draft":
         return _recover_draft(root, transaction)
     if transaction and transaction["stage"] in READY_POSTIMAGE_STAGES:
-        terminal = _ready_postimage(root, transaction)
-        if terminal and (terminal["exit_id"] == "ready_for_merge" or selected["publication_result"] is None):
-            return terminal
+        same_action = transaction["input"] == _source(prepared)
+        if same_action or not o.published_transaction_recorded(root, transaction):
+            terminal = _ready_postimage(root, transaction)
+            if terminal:
+                return terminal
         if transaction["stage"] == "ready":
             transaction = None
     stale = _current_review(root, prepared, projection, selected, applicability)
