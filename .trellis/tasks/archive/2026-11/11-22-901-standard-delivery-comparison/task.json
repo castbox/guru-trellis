@@ -1,0 +1,366 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-22-901-standard-delivery-comparison",
+  "id": "901-standard-delivery-comparison",
+  "name": "901-standard-delivery-comparison",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 901,
+    "disposition": "exact_source"
+  },
+  "title": "对照验证标准 Delivery 流程的减负效果",
+  "description": "按 #736 AC9 对照验证 v0.7.0-guru.8 与 v0.7.0-guru.9 的标准 Delivery 流程。",
+  "dev_type": null,
+  "scope": "通过真实 Agent 对同一标准 Delivery 场景做发布版对照，保留可复核实测记录，报告工作量、归因和未验证边界。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-22",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+    "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+  },
+  "deliveries": [
+    {
+      "id": "ab0d4e4a-96d9-4060-8702-b8f5efd43fc1",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+          "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3"
+        ]
+      },
+      "planning_root": "deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+        "revision": "sha256:dd6a824887f5c13eb6b667b4438248af686ffbe45b261d40e0185055244f9b87"
+      },
+      "candidate": {
+        "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+        "content_ref": "sha256:8923d07474508a80293d259250e58f73b4981c354cb4865779576c3af05980cf",
+        "head_ref": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+        "kind": "git",
+        "paths": [
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/check.jsonl",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.jsonl",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+          ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:0d32f0f7-0f76-4d23-850b-8fec99b23f79",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+              "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+            "revision": "sha256:dd6a824887f5c13eb6b667b4438248af686ffbe45b261d40e0185055244f9b87"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+              "revision": "sha256:bc9468bde0b166fbcee2985433430c72bbd7d6fceed8db0cf8d6e41530902b75"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+              "revision": "sha256:dd6a824887f5c13eb6b667b4438248af686ffbe45b261d40e0185055244f9b87"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              "revision": "sha256:465143b4966505b10285a8a584cdb1d6b9173c79d86ebf146a46a0bd18b1d500"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:7f2b9a7ccf0bb524111d8c4a698125494b8b04dd6cfa09f6624073cc3a932975",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+              "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+            "revision": "sha256:dd6a824887f5c13eb6b667b4438248af686ffbe45b261d40e0185055244f9b87"
+          },
+          "candidate": {
+            "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+            "content_ref": "sha256:8923d07474508a80293d259250e58f73b4981c354cb4865779576c3af05980cf",
+            "head_ref": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+            "kind": "git",
+            "paths": [
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/check.jsonl",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.jsonl",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:0d32f0f7-0f76-4d23-850b-8fec99b23f79",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              "revision": "sha256:465143b4966505b10285a8a584cdb1d6b9173c79d86ebf146a46a0bd18b1d500"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:7f2b9a7ccf0bb524111d8c4a698125494b8b04dd6cfa09f6624073cc3a932975",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+              "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+            "revision": "sha256:dd6a824887f5c13eb6b667b4438248af686ffbe45b261d40e0185055244f9b87"
+          },
+          "candidate": {
+            "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+            "content_ref": "sha256:8923d07474508a80293d259250e58f73b4981c354cb4865779576c3af05980cf",
+            "head_ref": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+            "kind": "git",
+            "paths": [
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/check.jsonl",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.jsonl",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md"
+            ]
+          },
+          "predecessor_result_id": "check:7f2b9a7ccf0bb524111d8c4a698125494b8b04dd6cfa09f6624073cc3a932975",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              "revision": "sha256:465143b4966505b10285a8a584cdb1d6b9173c79d86ebf146a46a0bd18b1d500"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:ab7b024939c9b813f385b99c235c01261b1c1a19687497e75c4a730331c5a672",
+          "owner_role": "readiness",
+          "owner_id": "guru-publish-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+              "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+            "revision": "sha256:dd6a824887f5c13eb6b667b4438248af686ffbe45b261d40e0185055244f9b87"
+          },
+          "candidate": {
+            "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+            "content_ref": "sha256:8923d07474508a80293d259250e58f73b4981c354cb4865779576c3af05980cf",
+            "head_ref": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+            "kind": "git",
+            "paths": [
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/check.jsonl",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.jsonl",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+              ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:7f2b9a7ccf0bb524111d8c4a698125494b8b04dd6cfa09f6624073cc3a932975",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+              "revision": "sha256:465143b4966505b10285a8a584cdb1d6b9173c79d86ebf146a46a0bd18b1d500"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:3833be8774f65b30e74293f6fc31b230c2337216b12e09a6199ddfc6d366aa4c",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/906",
+            "revision": "sha256:66a3939b6aa9ae5719f505978ed4a58b415a84be716ff8a0c3ac469804f73be9"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+          "content_ref": "sha256:8923d07474508a80293d259250e58f73b4981c354cb4865779576c3af05980cf",
+          "head_ref": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+          "kind": "git",
+          "paths": [
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/check.jsonl",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.jsonl",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 906,
+        "reviewed_head": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/906",
+          "revision": "sha256:66a3939b6aa9ae5719f505978ed4a58b415a84be716ff8a0c3ac469804f73be9"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:663d93f9deee755ad831b3b12c34d26715f277d3",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/906",
+            "revision": "663d93f9deee755ad831b3b12c34d26715f277d3"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+          "content_ref": "sha256:8923d07474508a80293d259250e58f73b4981c354cb4865779576c3af05980cf",
+          "head_ref": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+          "kind": "git",
+          "paths": [
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/check.jsonl",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/design.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.jsonl",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/implement.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/prd.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+            ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 906,
+        "reviewed_head": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77",
+        "merge_commit": "663d93f9deee755ad831b3b12c34d26715f277d3",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:901-663d93f9deee755ad831b3b12c34d26715f277d3",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation.md",
+          "revision": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77"
+        },
+        {
+          "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/deliveries/ab0d4e4a-96d9-4060-8702-b8f5efd43fc1/validation-observations.md",
+          "revision": "c2dba15d3de20c1d3988cbd1e6dc9c5bdae62d77"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/906",
+          "revision": "663d93f9deee755ad831b3b12c34d26715f277d3"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/prd.md",
+        "revision": "sha256:a46aab681b858f3c62c3343b38f53936020fceccf10d49e4dff89d9d15a99764"
+      },
+      "delivery_result_ids": [
+        "delivery:663d93f9deee755ad831b3b12c34d26715f277d3"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:038ab3bb3c6dbc85b3684903",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/901",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-22-901-standard-delivery-comparison/closeout/closure/Y2xvc3VyZTowMzhhYjNiYjNjNmRiYzg1YjM2ODQ5MDM.json",
+          "revision": "sha256:5b21a85afc6ed19b31da7e040d11b7773f0de3af4a39967cffea717377bc3065"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:901-663d93f9deee755ad831b3b12c34d26715f277d3",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/901",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
