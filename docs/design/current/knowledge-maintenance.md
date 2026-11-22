@@ -110,7 +110,7 @@ R710/BEH710 的正常 authoring、客观身份派生、完整结果合法消费�
 
 **D710-01 / CON710-AUTHORING**：原 Review AI 实际完成一次当前完整语义判断，只写原 recorder 的最小语义输入；recorder 派生客观身份。最小示例是正常入口，完整结果示例只供消费说明，不形成双 authoring 或新 wrapper。
 
-**D710-02 / CON710-CONSUMPTION**：record/check/invoke 独占各自输入和输出。原 receipt 定位本次完整结果，checker 验证该结果，invoke 消费真实完整文件；receipt/绿色状态不替代 owner result。公共候选/局部 token 按原 consumer 分离。真实 check 与 full_review 分别绑定一次实际判断的充分性和完整覆盖，由原 public API 顺序记录；成功只交原 Delivery Review，绝不回 TaskCommit 或提前 Publication。
+**D710-02 / CON710-CONSUMPTION**：record/check/invoke 独占各自输入和输出。原 receipt 定位本次完整结果，checker 验证该结果，invoke 消费真实完整文件；receipt/绿色状态不替代 owner result。公共候选/局部 token 按原 consumer 分离。真实 check 与 full_review 分别绑定一次实际判断的充分性和完整覆盖，由原 public API 顺序记录；成功只交当前 Publication preparation/readiness，绝不回 TaskCommit 或在审查前执行 Publication。
 
 **D710-03 / CON710-RETIREMENT**：record完整输入退休与完整结果消费/恢复分开；MIGRATION-794 定位旧受支持操作的固定完整provider及同操作恢复。新链直接选择新 Review 合同，不从旧Check结果换owner/version造pass；既有真实已完成结果只按其原语义读取。无长期双parser或第二状态。
 

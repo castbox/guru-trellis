@@ -189,8 +189,9 @@ loop.
 ### Stage 2: Post-Merge Exact Candidate
 
 After Stage 1 Delivery and Finish bookkeeping merges, discard the preparation
-branch HEAD, Branch Review, Delivery Review result, and all earlier release
-evidence. Fresh-fetch `origin/main`, prove its live merge/base lineage (including
+branch HEAD, Branch Review result, Publication preparation/readiness/execution
+results, and all earlier release evidence. Fresh-fetch `origin/main`, prove its
+live merge/base lineage (including
 the terminal archive), and freeze one exact candidate
 commit and tree. Every release check and later mutation must bind that same
 candidate identity; the preparation reviewed HEAD is never substituted for it.
@@ -316,8 +317,9 @@ release ledger or tracked status file.
 
 Use the existing `guru-reviewed-content-1.0` owner contract. Changes to actual
 delivery bytes, durable README or Docs authority, configuration, schema,
-scripts, or tests make every affected Phase 2, Branch Review, Delivery Review,
-Publish, Merge, Completion, Finish, or exact-candidate gate stale and require
+scripts, or tests make every affected Phase 2, Branch Review, Publication
+readiness/execute, Merge, Completion, Finish, or exact-candidate gate stale and
+require
 its owner to rerun.
 
 Changes confined to `.trellis/tasks/**`, `.trellis/workspace/**`,

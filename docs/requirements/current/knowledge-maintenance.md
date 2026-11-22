@@ -24,7 +24,7 @@
 
 RDT 保持四 profiles：bootstrap_foundation 建立/复用/迁移兼容三层 authority；task_impact_sync3.0 对批准 delta 判断 no-op、完整 isolated candidate 或 revision；promotion3.0 在 final_integration 审查 contribution、subtraction、trace、历史和 Architecture inheritance 并实际写入；repair 修复具体 authority/navigation/迁移缺陷，不扩需求或改无关历史。bootstrap/repair 原合同不变。
 
-Planning、实施、提交后独立完整 Review、Delivery Review、Completion 和 Finish 各自读取阶段适用的完整正文与必要关系。Planning 选择唯一 ssot_first、delta_first、bootstrap_or_repair_docs 或 no_docs_update_needed。实施先形成完整隔离候选；candidate_ready 只表示贡献和完整拟写可供原维护方整合，不表示共享 authority 已更新。无变化返回真实 no-change，不创建空 contribution、ADR 或提交。
+Planning、实施、提交后独立完整 Review、Publication readiness/execute、Completion 和 Finish 各自读取阶段适用的完整正文与必要关系。Planning 选择唯一 ssot_first、delta_first、bootstrap_or_repair_docs 或 no_docs_update_needed。实施先形成完整隔离候选；candidate_ready 只表示贡献和完整拟写可供原维护方整合，不表示共享 authority 已更新。无变化返回真实 no-change，不创建空 contribution、ADR 或提交。
 
 `R331-04 / BEH331-04`、`R600-01..06` 与 `R638-01..07`：Planning 批准后，implementation 完成全部实现和真实工程验证。原 RDT/Architecture owners 在提交前 final_integration 读取完整 proposed targets、适用来源和实际 target，保留所有仍有效条件并整合。它们不要求尚未发生的独立 candidate Check 或提交前独立 implementation Architecture pass。原 owners 一次固定真实目标 branch/commit；不同单元保留未命中内容，相同单元比较 applicable base、双方 proposal、真实 current 和受影响未改 consumers。Git 文本合并不替代语义判断；需求前提改变回 scope/Planning，接口或验证义务改变回原责任方。
 

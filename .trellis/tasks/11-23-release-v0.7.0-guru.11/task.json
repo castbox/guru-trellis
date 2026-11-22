@@ -53,12 +53,44 @@
       "phase": "implementing",
       "plan_ref": {
         "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md",
-        "revision": "sha256:68fbbacb8a4889bf1f865b5350efc3cc827d1cd88c959969498516dea3c65061"
+        "revision": "sha256:1e9ee54f987ee93aac8bdc2266788319d41b9e5b35a8033670f0b2bf265affaf"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "2acab7fadebf57c2f2560451b9ff2a050d8811f5",
+        "content_ref": "sha256:9a0e32dc3f0dcc3738c761587d00f391421a8002a6afacd32dd6c8005dff9928",
+        "head_ref": "7d1b742f79f7b47732adf562e93774f972c98d43",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/release-guru-trellis-version/references/contract.md",
+          ".agents/skills/release-guru-trellis-version/tests/test_contract.py",
+          ".claude/skills/release-guru-trellis-version/references/contract.md",
+          ".codex/skills/release-guru-trellis-version/references/contract.md",
+          ".cursor/skills/release-guru-trellis-version/references/contract.md",
+          "README.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/design.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/manifest.yaml",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/proposed/docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/proposed/docs/test/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/requirements.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/test.md",
+          "docs/requirements-design-test-contributions/908-release-v0.7.0-guru.11/traceability.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/skills/guru-team/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          "trellis/workflows/guru-team/README.md"
+        ]
+      },
       "results": {
         "planning": {
-          "result_id": "planning-accepted:13a7c8c2-a99a-4269-aafc-cbfcce7bd845",
+          "result_id": "planning-accepted:5443139d-12df-4afe-bf6c-f2a5cfcecce6",
           "owner_role": "planning",
           "owner_id": "guru-activate-delivery",
           "outcome": "accepted",
@@ -81,7 +113,7 @@
           },
           "plan_ref": {
             "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md",
-            "revision": "sha256:68fbbacb8a4889bf1f865b5350efc3cc827d1cd88c959969498516dea3c65061"
+            "revision": "sha256:1e9ee54f987ee93aac8bdc2266788319d41b9e5b35a8033670f0b2bf265affaf"
           },
           "candidate": null,
           "predecessor_result_id": null,
@@ -93,11 +125,11 @@
             },
             {
               "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md",
-              "revision": "sha256:68fbbacb8a4889bf1f865b5350efc3cc827d1cd88c959969498516dea3c65061"
+              "revision": "sha256:1e9ee54f987ee93aac8bdc2266788319d41b9e5b35a8033670f0b2bf265affaf"
             },
             {
               "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md",
-              "revision": "sha256:ab1f40481be6b0e4c843f15c8c42d97e54b024fc9d9d481bd6789fd481af5c0c"
+              "revision": "sha256:cc5613963432ebf99a94afa19711451db6bbef5b2679129cb68af97e9cefc42b"
             }
           ]
         },

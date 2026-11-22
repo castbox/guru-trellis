@@ -16,3 +16,17 @@
 {"file": "docs/test/current/codex-skill-distribution.md", "reason": "私有 Skill 公共排除与分发验证"}
 {"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "选择实际验证与来源样本证据"}
 {"file": ".trellis/spec/docs/public-docs.md", "reason": "公开 README 分工与发布版本规则"}
+{"file": "docs/architecture/contributions/908-release-v0.7.0-guru.11.md", "reason": "#908 Architecture 隔离贡献、target_native 与 ADR 晋升边界"}
+{"file": "docs/architecture/01-current/system.md", "reason": "ARCH-CUR-051 与 ARCH-CUR-070 current authority"}
+{"file": "docs/architecture/03-domains/ownership.md", "reason": "ARCH-DOM-036/053/055/059 current authority"}
+{"file": "docs/architecture/03-domains/workflow-context.md", "reason": "ADR current execution-order consumer"}
+{"file": "docs/architecture/04-integrations/distribution.md", "reason": "ARCH-INT-015/020 与 ADR status observation"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Architecture change path、consumer 与 promotion contract"}
+{"file": "docs/architecture/06-governance/rules.md", "reason": "ARCH-GOV-008/009 current governance"}
+{"file": "docs/architecture/adr/postcommit-independent-review.md", "reason": "待修正并晋升的 current ADR authority"}
+{"file": "docs/requirements/current/knowledge-maintenance.md", "reason": "ADR current consumer 与 RDT 阶段读取"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "ADR current consumer 与 Review result 承接"}
+{"file": "docs/requirements/current/completion-closure.md", "reason": "Completion/Publication 当前阶段与维度"}
+{"file": "docs/design/current/completion-closure.md", "reason": "Completion/Publication 当前职责"}
+{"file": "docs/test/current/completion-closure.md", "reason": "T669-06 当前观察边界"}
+{"file": "docs/test/current/runtime-location.md", "reason": "#813 当前观察边界"}

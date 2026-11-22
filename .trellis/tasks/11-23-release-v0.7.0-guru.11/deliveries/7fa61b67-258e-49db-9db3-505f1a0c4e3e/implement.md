@@ -12,7 +12,8 @@ TaskId 为 `release-v0.7.0-guru.11` / generation 0；DeliveryId 为 `7fa61b67-25
 - `.trellis/spec/workflow/quality-guidelines.md` 的 Test And Validation Value 和 Validation Scope Ownership；
 - `.trellis/spec/docs/public-docs.md`；
 - 当前 `guru-publish-task-delivery` Interface 与 contract；
-- 当前 RDT lifecycle 三份完整单元与 `current-knowledge.md`；
+- 当前 RDT lifecycle 三份完整单元、Requirements/Design `knowledge-maintenance.md`、Requirements/Design/Test `completion-closure.md`、Test `runtime-location.md` 与 `current-knowledge.md`；
+- 当前 Architecture Baseline、constitution、change contract，以及命中冲突的 `ARCH-CUR-051`、`ARCH-DOM-036`、`ARCH-DOM-055`、`ARCH-DOM-059`、`ARCH-INT-015`、`ARCH-INT-020`、`ARCH-GOV-009` 和 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW`；
 - Trellis 官方 index、custom workflow 和 custom spec template marketplace 页面。
 
 ## 2. 有依赖顺序的步骤与文件责任
@@ -23,7 +24,7 @@ TaskId 为 `release-v0.7.0-guru.11` / generation 0；DeliveryId 为 `7fa61b67-25
 | S2 更新版本生产者与消费者 | Activation；原 upgrade/docs owner | 更新 design §4.1 所列六类文件到 `.11`；保持 Fork/CLI 与输出 shape；D1-V1 观察实际 producer→consumer |
 | S3 更新公开说明 | S2；原 docs writer | 更新根、workflow、preset README 的 `.11`、`.10` 前驱和 Release 条件；历史版本保留；D1-V4 完整读回 |
 | S4 迁移私有发布链 | S2；原 private release writer | 修改 Shared release contract 为 current publication entry/readiness chain；同步 Codex/Claude/Cursor 三副本；更新 Shared `tests/test_contract.py` 当前 owner/consumer 断言；D1-V2 运行 |
-| S5 更新当前 RDT delta | 真实 S2–S4 内容；原 RDT owner | 在 Task-local contribution 中提出 lifecycle R/D/T 的受影响完整正文；原 owner final integration/readback；D1-V5 核对 |
+| S5 更新当前 Knowledge 与 Architecture | 真实 S1–S4 内容及 fresh candidate/final-plan 结果；原 Architecture/RDT owners | 在合法 task-local contribution 或 direct delta 中同步七个命中 Architecture 当前单元；修正决定 4 后晋升 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW`；同步 lifecycle R/D/T、Requirements/Design `knowledge-maintenance.md`、Requirements/Design/Test `completion-closure` 对应正文和 Test `runtime-location.md#813`；完整复核 ADR consumers；保留其他历史身份；原 owners final integration/readback；D1-V5 核对 |
 | S6 来源验证 | 完整 S2–S5 after；原 verifier/tools owner | D1-V3 source、平台根、focused Codex 来源样本、同项目三平台 apply、installed validator、完整投影/sidecar 检查 |
 | S7 提交与独立 Review | 完整工程与知识结果；原 TaskCommit/implementation/Review | 展示并执行精确本地 TaskCommit；constructor/begin_check 固定 B..H；新独立 reviewer 同次完成 Architecture、九维和完整 Branch Review |
 | S8 D1 交付 | 通过 Review；publication Architecture eligibility | Publication 完成 readiness、准确中文 Refs #908 预览、确认后 push/PR 与 expected-head Merge；实际 delivered 后交 Completion |
@@ -100,7 +101,9 @@ done
 
 ### D1-V5：RDT 与 Architecture
 
-RDT delta 必须包含实际 lifecycle 三层的完整受影响正文，而不是只替换关键词。原 RDT owner 在 TaskCommit 前 final-integrate/readback 到 current units，并记录 `integrated_pending_review`。candidate Architecture 已为 no impact；final_plan 仍须重新判断当前 design，且不创建空 contribution/ADR。
+Knowledge delta 必须包含实际 lifecycle 三层、Requirements/Design `knowledge-maintenance.md`、Requirements/Design/Test `completion-closure.md` 和 Test `runtime-location.md#813` 的完整受影响正文，而不是只替换关键词。原 RDT owner 在 TaskCommit 前 final-integrate/readback 到 current units，并记录 `integrated_pending_review`。`T669-06` 与 `#813` 的观察边界只同步当前阶段名称，不改其历史结果、证据截止或未验证结论。
+
+Architecture delta 使用已正式通过的 `architecture_impact / target_native` candidate assessment，contribution 位于 `docs/architecture/contributions/908-release-v0.7.0-guru.11.md`。必须覆盖 `ARCH-CUR-051`、`ARCH-DOM-036`、`ARCH-DOM-055`、`ARCH-DOM-059`、`ARCH-INT-015`、`ARCH-INT-020`、`ARCH-GOV-009` 的实际 after。`ADR-POSTCOMMIT-INDEPENDENT-REVIEW` 保留 #794 attribution、决策 1–3/5–6、证据和替代边界；决定 4 的旧 Delivery Review readiness 以历史/替代关系呈现，当前 Publication readiness 明确来自 R900/D900 与 #900。同步修正 ADR“窄替代与保持”阶段的 Delivery Review 责任句，并把“当前只有候选方案”改为带截止的历史观察，再从 `proposed` 晋升为 accepted/current。必须完整读取并核对 `docs/architecture/README.md`、system、ownership、workflow-context、distribution、change-contract、rules 和四份 RDT knowledge/task-lifecycle consumers；`ARCH-GOV-008`、`ARCH-CUR-070`、`ARCH-DOM-053` 与 distribution 的 proposed-status 说明在 promotion 后仍准确。历史 `ARCH-CUR-032`、旧 #435 阶段描述、contribution、roadmap 和 evidence 保留原身份。final_plan 必须独立评估更新后的完整 design、实际 contribution 和 ADR promotion，不能复用 candidate assessment 作为最终通过。原 Architecture owner 在 TaskCommit 前 final-integrate/readback，并只输出允许的 `integrated_pending_review` 或等价 pending 状态。
 
 ### D1-V6：完整交付
 
@@ -113,7 +116,7 @@ RDT delta 必须包含实际 lifecycle 三层的完整受影响正文，而不�
 - 私有发布链与当前 registry/workflow 不一致：停在本批 private consumer writer。
 - source validator、平台根、来源样本或 installed validation 失败：保留原始 stdout/stderr，修复本批源；不手改样本或留给 D2。
 - Architecture 新事实或机制变化：停止实现，交原 Architecture candidate/conflict 路径。
-- RDT 发现需求或行为变化：交原 Clarify/Author，不把文档同步当业务变更。
+- Architecture/RDT 发现需求、归属或行为变化超出当前 owner graph 同步：交原 Clarify/Author 或 Architecture 冲突路径，不把文档同步当业务变更。
 - Review finding 或 content change：由原 writer 形成后继内容，TaskCommit/Review 的当前结果按原合同失效并刷新。
 - Git/GitHub 输出丢失：由原 TaskCommit、Publication 或 Merge owner 回复同一操作/结果，不重复副作用。
 
@@ -133,16 +136,29 @@ RDT delta 必须包含实际 lifecycle 三层的完整受影响正文，而不�
 
 strategy 为 **delta_first**。
 
-实际受影响的长效知识为：
+实际受影响的长效 Knowledge 为：
 
 - `docs/requirements/current/task-delivery-lifecycle.md`：R531/R636/R637/R794/R900 中仍把 readiness 描述为独立 Delivery Review 的现行句子；改由 R900 的 `guru-publish-task-delivery` readiness 统一承接。
 - `docs/design/current/task-delivery-lifecycle.md`：D531/D636/D637/D794/D900 的对应 owner 描述。
 - `docs/test/current/task-delivery-lifecycle.md`：T531/T636/T637/T794/T900 中过期的独立阶段表述和当前 Publication 场景。
+- `docs/requirements/current/knowledge-maintenance.md` 与 `docs/design/current/knowledge-maintenance.md`：当前阶段读取和 Review result 消费中把独立 Delivery Review 写成 current owner 的正文。
+- `docs/requirements/current/completion-closure.md`、`docs/design/current/completion-closure.md` 与 `docs/test/current/completion-closure.md` 的 `T669-06`：当前 Delivery Review 维度判断、后续 consumer 和观察边界中的旧阶段名称。
+- `docs/test/current/runtime-location.md` 的 `#813`：当前观察边界中的 `Branch/Delivery Review` 旧阶段名称。
 - `docs/{requirements,design,test}/current/codex-skill-distribution.md`：R724/D724/T724 已承载私有 Skill 排除公共分发、匹配安装与局部证据边界，本批只复核，不复制私有 release 规则。
 
-Task-local contribution 由原 RDT owner 在计划批准后建立，包含每份受影响 current 文件的完整 proposed after 或可唯一定位到完整 proposed target 的最小索引。最终整合前重新读取 live current、贡献和历史条件；由原 RDT owner 写入/readback，状态只到 `integrated_pending_review`。直接 consumer 是 TaskCommit 和固定 committed candidate 的独立 Review。
+实际受影响的长效 Architecture 为：
 
-Architecture candidate 为 `no_architecture_impact`，`ARCH-INT-009/015` 已定义私有发布组合和 D1/D2。final_plan 仍独立判断当前 design；如发现新的 owner、状态、兼容或边界变化，回到原 Architecture owner，不沿用本计划。
+- `docs/architecture/01-current/system.md` 的 `ARCH-CUR-051`。
+- `docs/architecture/03-domains/ownership.md` 的 `ARCH-DOM-036`、`ARCH-DOM-055`、`ARCH-DOM-059`。
+- `docs/architecture/04-integrations/distribution.md` 的 `ARCH-INT-015`、`ARCH-INT-020`。
+- `docs/architecture/06-governance/rules.md` 的 `ARCH-GOV-009`。
+- `docs/architecture/adr/postcommit-independent-review.md` 的 decision-authority 状态。
+
+上述正文中的旧独立 Delivery Review current owner/gate 描述必须改为 Branch Review 后由 `guru-publish-task-delivery` 承接 readiness 与发布。`ADR-POSTCOMMIT-INDEPENDENT-REVIEW` 必须修正决定 4 和“窄替代与保持”阶段句，把“验证与重评”的唯一候选断言改为带截止的历史观察，明确当前决定来源为 R900/D900 与 #900，再晋升为 accepted/current；完整核对 `docs/architecture/README.md`、system、ownership、workflow-context、distribution、change-contract、rules 与四份 RDT knowledge/task-lifecycle consumers，纯引用在 promotion 后复核，仍含旧阶段或 proposed 自述的正文实际更新。不得继续让 current 正文依赖 proposed 决定。历史 `ARCH-CUR-032`、旧 #435 阶段描述、contribution、roadmap 和 evidence 保留原身份。
+
+Task-local Architecture contribution/proposed target 与原 RDT contribution 由各自 owner 在计划批准后建立，包含每份受影响 current 文件的完整 proposed after 或可唯一定位到完整 proposed target 的最小索引。最终整合前重新读取 live current、贡献和历史条件；由原 owners 写入/readback，状态只到 `integrated_pending_review`。直接 consumer 是 TaskCommit 和固定 committed candidate 的独立 Review。
+
+旧 `no_architecture_impact` 已因冲突失效；fresh candidate 必须重新判断 impact/change path，final_plan 必须独立评估本设计。`ARCH-INT-009` 和修订后的 `ARCH-INT-015` 继续承接私有发布组合和 D1/D2，但不能替代上述 owner graph 同步与 ADR 身份收敛。
 
 Docs Plan 不修改 public managed dogfood 副本、共享根索引或生成清单来制造完成；这些由 D2 的实际 tools 采用和适用验证承接。
 
@@ -154,8 +170,8 @@ Docs Plan 不修改 public managed dogfood 副本、共享根索引或生成清�
 - Author `planning-body.md` 和适用模板；
 - 当前 private release contract；
 - `guru-publish-task-delivery` 当前 contract/Interface；
-- RDT `current-knowledge.md` 与 lifecycle 三份 current units；
-- Architecture baseline contract/current-knowledge；
+- RDT `current-knowledge.md`、lifecycle 三份 current units、Requirements/Design `knowledge-maintenance.md`、Requirements/Design/Test `completion-closure.md` 与 Test `runtime-location.md`；
+- Architecture baseline contract/current-knowledge，以及 `README.md`、`system.md`、`ownership.md`、`workflow-context.md`、`distribution.md`、`change-contract.md`、`rules.md` 的命中 current units 和 `ADR-POSTCOMMIT-INDEPENDENT-REVIEW`；
 - `quality-guidelines.md` 的适用验证章节；
 - 实际会被实施的版本 producer/consumer 和 private test。
 

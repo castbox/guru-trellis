@@ -168,7 +168,7 @@ trellis/skills/guru-team/runtime` 选定受管 Python；需要 Fork 的 suite �
 
 首次新增 full-chain 测试在 Creation 前调用了不存在的 component shell wrapper，未到产品断言；修正为原 runtime/launch.sh dispatcher 后完整链通过。一次同时运行共享 resolver 的验证在进入 composition 测试前返回 runtime_dependency_missing；随后顺序执行通过。本轮实际 Agent 的首个 recorder transport 命令因 Python argv 装配错误未调用产品入口，随后完整原序列成功；Readiness 首个显示捕获额度不足，未把截断文本当 receipt，通过同源原 recorder 重取完整结果。这些设施问题保留，不能列为产品修复前对照或声称所有尝试一次通过。
 
-当前观察不预写正式 committed Check、Branch/Delivery Review、Publication、Merge、Completion 或 #813 Closure/Finish。完整多平台安装/升级/Release 与业务采用不在本项；本地安装仍有 formal_fork_source_lock 限制。后继结论消费原 owner 的真实公共结果，不追加第二完成台账。
+当前观察不预写正式 committed Check/Branch Review、Publication readiness/execute、Merge、Completion 或 #813 Closure/Finish。完整多平台安装/升级/Release 与业务采用不在本项；本地安装仍有 formal_fork_source_lock 限制。后继结论消费原 owner 的真实公共结果，不追加第二完成台账。
 
 ## 原生 context 采用的验证与观察（#814）
 

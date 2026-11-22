@@ -268,7 +268,7 @@ Architecture 保留 Planning candidate_assessment/final_plan 和实质边界扩�
 
 合规 reviewer 仍独立时可接续后继，读可核验覆盖、完整差额和受影响依赖；影响不明或覆盖丢失时补足完整判断。工程命令事实按真实定义/输入/环境等采用，当前 project checks仍亲自判断。publication/acceptance_finish 原 owner核实际 authority/candidate/review/integration状态，只消费 no_change 或 reviewed_promoted；caller或阶段变化不重做同实施评估。
 
-职责与代价见 [ADR-POSTCOMMIT-INDEPENDENT-REVIEW](../adr/postcommit-independent-review.md)；ADR-028/034 的固定范围和覆盖采用保留。Planning、原维护单写、Delivery Review/readiness和终态不变，无 reviewer ledger、授权存储或第二质量状态机。
+职责与代价见 [ADR-POSTCOMMIT-INDEPENDENT-REVIEW](../adr/postcommit-independent-review.md)；ADR-028/034 的固定范围和覆盖采用保留。Planning、原维护单写、Publication readiness/execute 和终态不变，无 reviewer ledger、授权存储或第二质量状态机。
 
 ## #382 根因候选资格增量（.79）
 

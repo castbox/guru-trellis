@@ -79,7 +79,7 @@ Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精�
 
 ## D649：阶段成果与原终态边界
 
-**D649-03 / CON649-DIMENSIONS** 承接 R649-04。原 Delivery Review contract 与 Completion Skill 分别在原 evidence／reason／summary 中说明适用六维及依据、环境或不适用理由。部署或入口探针只证明实际观察层；启用、采用和业务 E2E 保留独立要求。不新增六维 schema、公共 DTO 或统一证明表。
+**D649-03 / CON649-DIMENSIONS** 承接 R649-04。Publication readiness contract 与 Completion Skill 分别在原 evidence／reason／summary 中说明适用六维及依据、环境或不适用理由。部署或入口探针只证明实际观察层；启用、采用和业务 E2E 保留独立要求。不新增六维 schema、公共 DTO 或统一证明表。
 
 **D649-04 / CON649-GAP** 承接 R649-05。Completion 先比较整个 accepted scope、所有真实 Delivery 和必要证据，再使用原 implementation／additional Delivery、Author／Architecture、Clarify、evidence_refresh 或 completed consumer。必要实现遗漏和无依据机制前置不伪装成外部待补证据；局部 gate 只影响真实依赖 operation。
 

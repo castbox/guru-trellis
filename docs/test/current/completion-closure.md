@@ -47,7 +47,7 @@
 | T669-03 / R669-04/06 → D669-03 | 成功输出丢失、同操作重试、receipt丢失后的合法公共后继 | 不重复增代、不创建第二 incarnation；自身合法 metadata 写入不误报原 dirty drift |
 | T669-04 / R669-05 → D669-01/02/03 | 普通 HEAD/branch/仓库/PR/前驱/冲突后继/ownership 失配 | 具体停止并保留现场，无未声明远端写或清理 |
 | T669-05 / R669-07 → D669-04 | canonical/dogfood/installed、reapply/drift/sidecar | matching 独立输入/输出/平台投影一致；不扩完整 Release 矩阵 |
-| T669-06 / R669-07 → D669-04 | 一次代表完整安装、真实 Git/受控 gh、实际 AI 原生公开入口 | 安装与实际恢复分别有证据，不预填当前正式 Delivery Review，不声称真实 GitHub/backend/生产效果 |
+| T669-06 / R669-07 → D669-04 | 一次代表完整安装、真实 Git/受控 gh、实际 AI 原生公开入口 | 安装与实际恢复分别有证据，不预填当前正式 Publication readiness/result，不声称真实 GitHub/backend/生产效果 |
 
 实际结果唯一见 [#669 Test](../../requirements-design-test-contributions/669-existing-implementation-reactivation/test.md)。源码/fixture、安装和 Agent 原生行为是不同证据；本表不预填通过。
 

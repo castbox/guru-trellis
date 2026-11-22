@@ -14,3 +14,17 @@
 {"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "审核当前测试正文"}
 {"file": "docs/test/current/codex-skill-distribution.md", "reason": "审核私有排除与安装证据边界"}
 {"file": ".trellis/spec/docs/public-docs.md", "reason": "审核公开说明分工"}
+{"file": "docs/architecture/contributions/908-release-v0.7.0-guru.11.md", "reason": "审查 Architecture contribution、七个 current units 与 ADR 晋升"}
+{"file": "docs/architecture/01-current/system.md", "reason": "审查 ARCH-CUR-051/070 before/after"}
+{"file": "docs/architecture/03-domains/ownership.md", "reason": "审查 ARCH-DOM-036/053/055/059 before/after"}
+{"file": "docs/architecture/03-domains/workflow-context.md", "reason": "审查 ADR current consumer 连续性"}
+{"file": "docs/architecture/04-integrations/distribution.md", "reason": "审查 ARCH-INT-015/020 和 ADR status observation"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "审查 change path、consumer 和 promotion contract"}
+{"file": "docs/architecture/06-governance/rules.md", "reason": "审查 ARCH-GOV-008/009 current governance"}
+{"file": "docs/architecture/adr/postcommit-independent-review.md", "reason": "审查 ADR 决定 4、状态、历史与替代关系"}
+{"file": "docs/requirements/current/knowledge-maintenance.md", "reason": "审查 ADR consumer 与 RDT current semantics"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "审查 ADR consumer 与 Review result 承接"}
+{"file": "docs/requirements/current/completion-closure.md", "reason": "审查 Completion/Publication current responsibilities"}
+{"file": "docs/design/current/completion-closure.md", "reason": "审查 Completion/Publication current responsibilities"}
+{"file": "docs/test/current/completion-closure.md", "reason": "审查 T669-06 当前阶段观察与历史边界"}
+{"file": "docs/test/current/runtime-location.md", "reason": "审查 #813 当前阶段观察与历史边界"}
