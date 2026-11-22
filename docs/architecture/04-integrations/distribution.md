@@ -103,7 +103,7 @@
   PR identity与publication state投影给Delivery Merge；Merge通过受控two-parent merge commit trailers记录stable
   task identity、schema version与reviewed head，并从target-base first-parent history结合GitHub PR/merge identity、
   repository/base和parents重建Delivery fact。三个packages已进入canonical、installed与平台投影，但workflow edge
-  保持deferred；#434 activation前不得把package存在解释为production route可达，#436也不由该投影实现。
+  保持deferred；#434 activation前不得把package存在解释为production route可达，#436也不由该投影实现。#900 当前边由独立 Review 和适用 Architecture 资格直接进入 Publication。Publication 单写 readiness 和准确预览，确认后执行远端动作。只有合并资格实质成立才进入正常 Merge。旧操作及同 PR 的恢复见 MIGRATION-900。
 
 - `ARCH-INT-021`：#436 将 Completion -> Closure -> Finish -> Cleanup/Reactivate 组织为五个独立
   package-level projections；各边只传递 task/receipt/route 所需的最小字段，owner-private recovery 不跨包读取。

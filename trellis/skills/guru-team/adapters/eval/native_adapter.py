@@ -84,7 +84,7 @@ def additional_authoring_module(skill_id: str, case_id: str | None = None):
     if skill_id == phase2_authoring.SKILL and case_id in phase2_authoring.STATEFUL_CASES:
         from adapters.eval import phase2_candidate_final
         return phase2_candidate_final
-    if skill_id in {"guru-review-task-delivery", "guru-review-task-completion"}:
+    if skill_id == "guru-review-task-completion":
         from adapters.eval import stage_result_authoring
         return stage_result_authoring
     if str(case_id or "").startswith("native-implementation-"):

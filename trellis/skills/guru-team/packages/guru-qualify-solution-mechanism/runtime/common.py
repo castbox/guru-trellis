@@ -38,7 +38,7 @@ RESUME_TARGETS = {
     "base_impact_candidate_set": "guru-reconcile-task-base",
     "phase2_candidate_set": "guru-check-task",
     "branch_review_candidate_set": "guru-review-branch",
-    "publication_candidate_set": "guru-review-task-delivery",
+    "publication_candidate_set": "guru-publish-task-delivery",
 }
 CONSUMERS = {
     "classified": {"kind": "workflow", "id": "guru-solution-mechanism-classified-router"},

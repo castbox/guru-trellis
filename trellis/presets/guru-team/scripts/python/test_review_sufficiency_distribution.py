@@ -35,7 +35,7 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
             "guru-clarify-requirements", "guru-review-change-request",
             "guru-approve-task-plan",
             "guru-review-change", "guru-check-task", "guru-review-branch",
-            "guru-review-task-delivery", "guru-review-task-completion",
+            "guru-publish-task-delivery", "guru-review-task-completion",
             "guru-maintain-architecture-baseline",
             "guru-maintain-requirements-design-test-ssot",
             "guru-verify-extension-installation",

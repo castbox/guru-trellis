@@ -33,7 +33,6 @@ class CommandReceiptTests(unittest.TestCase):
         # shapes must remain payload, irrespective of their status/exit fields.
         cases = [
             ("guru-discover-change-context", "record-context-discovery", {"schema_version": "1.0", "typed_exit": "context_ready"}),
-            ("guru-review-task-delivery", "check-task-delivery-review", {"status": "passed", "typed_exit": "ready"}),
             ("guru-create-task", "create-task", {"exit_id": "created", "task_id": "sample"}),
             ("guru-rebind-task-branch", "recover-task-branch-result", {"exit_id": "rebound"}),
             ("guru-sync-base", "check-base-sync", {"status": "validated"}),

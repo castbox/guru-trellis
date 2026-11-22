@@ -184,12 +184,18 @@ class DeliveryFlow(unittest.TestCase):
         return self.wrapper('guru-review-branch', 'invoke.sh', '--input', self.write('review.json', public))
 
     def readiness(self, reviewed):
-        p = SKILLS / 'packages/guru-review-task-delivery'
-        semantic = json.loads((p / 'examples/semantic-ready.json').read_text())
-        semantic['pr_payload']['body'] = semantic['pr_payload']['body'].replace('Refs #435', '')
-        public = {'profile': 'delivery_delivery_review', 'mode': 'workflow', 'task_ref': self.task_ref,
-                  'delivery_key': self.key, 'full_review_result_id': reviewed['full_review_result_id'], 'branch_review_commit': self.head}
-        return self.wrapper('guru-review-task-delivery', 'invoke.sh', '--input', self.write('readiness.json', public), '--semantic-result', self.write('readiness-owner.json', semantic))
+        # Establish the public readiness precondition for the downstream
+        # integration tests. Publication tests cover actual readiness authoring.
+        from runtime.delivery_projection.gates import record_gate
+
+        current = self.projection.resolve(self.key)
+        self.assertEqual(reviewed["full_review_result_id"], current["results"]["full_review"]["result_id"])
+        result_id = "readiness:fixture:" + reviewed["full_review_result_id"]
+        record_gate(self.projection, self.key, "readiness", result_id, "ready",
+                    [authority_ref(self.repo / "requirements.md", self.repo)], [])
+        return {"exit_id": "ready", "readiness_result_id": result_id,
+                "pr_title": "交付当前切片", "pr_body": "本切片已通过指定的工程验证。",
+                "remaining_work_state": "none"}
 
     def test_readiness_and_no_delivery_required_completion(self):
         reviewed = self.single_review()
@@ -226,7 +232,7 @@ class DeliveryFlow(unittest.TestCase):
     def test_withdrawal_at_each_later_owner_recovers_without_git_mutation(self):
         for skill, stage, flag in (
             ('guru-review-branch', 'review', '--owner-result'),
-            ('guru-review-task-delivery', 'review', '--semantic-result'),
+            ('guru-publish-task-delivery', 'review', '--review-input'),
             ('guru-publish-task-delivery', 'ready', '--review-input'),
             ('guru-merge-task-delivery', 'ready', '--review-input'),
         ):
@@ -253,13 +259,9 @@ class DeliveryFlow(unittest.TestCase):
         self.assertEqual(stale,owner.project_review_stale(self.repo,stale))
         self.assertEqual('reviewing',self.projection.resolve(self.key)['phase'])
         self.assertIsNone(self.projection.resolve(self.key)['results']['readiness'])
-        p = SKILLS/'packages/guru-review-task-delivery'
-        semantic=json.loads((p/'examples/semantic-ready.json').read_text())
-        semantic['pr_payload']['body']=semantic['pr_payload']['body'].replace('Refs #435','')
-        public={'profile':'delivery_readiness_refresh','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'reentry_reason':'metadata_changed'}
-        output=self.wrapper('guru-review-task-delivery','invoke.sh','--input',self.write('refresh.json',public),'--semantic-result',self.write('refresh-owner.json',semantic))
-        self.assertEqual('ready',output['exit_id']);self.assertEqual('publishing',self.projection.resolve(self.key)['phase'])
-
+        refreshed = self.readiness(self.single_review())
+        self.assertEqual("ready", refreshed["exit_id"])
+        self.assertEqual("publishing", self.projection.resolve(self.key)["phase"])
 
 
     def provider_response(self, *, body, merged=False):

@@ -57,20 +57,10 @@ class PublicWrapperErrors(unittest.TestCase):
         self.assertTrue(all(Path(row[0]).name == "git" and row[1] == "rev-parse" for row in calls), calls)
         return completed.returncode, output
 
-    def test_missing_readiness_has_schema_location_before_task_or_publication(self):
-        public = public_input()
-        public.pop("readiness_result_id")
-        status, output = self.invoke(json.dumps(public))
+    def test_retired_review_ready_is_rejected_before_task_or_publication(self):
+        status, output = self.invoke(json.dumps(public_input()))
         self.assertEqual(status, 2)
-        self.assertEqual((output["code"], output["field_path"]), ("schema_mismatch", "input.readiness_result_id"))
-
-    def test_closing_keyword_has_body_location_before_task_or_publication(self):
-        public = public_input()
-        public["pr_body"] = "Closes #435"
-        status, output = self.invoke(json.dumps(public))
-        self.assertEqual(status, 3)
-        self.assertEqual((output["code"], output["field_path"]), ("closing_keyword_forbidden", "input.pr_body"))
-        self.assertIn("Refs", output["remediation"])
+        self.assertEqual((output["code"], output["field_path"]), ("schema_mismatch", "input"))
 
     def test_invalid_json_retains_shared_reader_contract(self):
         status, output = self.invoke("{")
@@ -152,18 +142,6 @@ class DirectCommandErrors(unittest.TestCase):
             status, output = self.command("execute-task-delivery-publication", "--input", json.dumps(public_input()), "--gate", "unused")
         self.assertEqual((status, output["code"]), (4, "external_command_failed"))
         self.assertNotIn(sentinel, json.dumps(output))
-
-    def test_formal_invocation_keeps_internal_reprepare_route(self):
-        from runtime.command import main
-        review = (PACKAGE / "examples/semantic-review.json").read_text()
-        output = io.StringIO()
-        with patch.object(self.owner, "task_context", side_effect=self.owner.WorkflowError("Task checkout changed.", code="task_identity_stale")), redirect_stdout(output):
-            status = main(PACKAGE, ["invoke-guru-publish-task-delivery", "--root", str(REPO),
-                                    "--input", json.dumps(public_input()), "--review-input", review])
-        self.assertEqual(status, 0)
-        result = json.loads(output.getvalue())
-        self.assertEqual(result, {"exit_id": "reprepare_required", "task_ref": public_input()["task_ref"],
-                                  "delivery_key": public_input()["delivery_key"], "reason_code": "task_identity_stale"})
 
     def test_migration_preserves_json_schema_and_private_state_categories(self):
         source = self.temporary / "input.json"

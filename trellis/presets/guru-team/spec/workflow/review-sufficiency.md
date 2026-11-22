@@ -20,7 +20,7 @@ does not supply a semantic pass.
 
 The applicable Guru owners are Issue Clarify, change-request readiness, contract
 wording, Planning Approval, independent change review, Check, Branch Review,
-Delivery Review, Completion, Architecture, Requirements/Design/Test maintenance,
+Publication readiness, Completion, Architecture, Requirements/Design/Test maintenance,
 and extension-installation evidence review. Apply these rules to each owner's
 actual review responsibility. A wording review remains a wording review; an
 installation review does not become a business-code review. External specialist

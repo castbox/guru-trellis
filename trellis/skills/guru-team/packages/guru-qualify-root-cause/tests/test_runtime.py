@@ -62,7 +62,7 @@ class RootCauseRuntimeTest(unittest.TestCase):
             "requirements_scope_set": "guru-clarify-requirements", "change_request_candidate_set": "guru-review-change-request",
             "author_candidate_set": "guru-author-task-plan", "planning_scenario_set": "guru-approve-task-plan", "implementation_discovery": "guru-phase2-implementation-coordinator",
             "base_impact_candidate_set": "guru-reconcile-task-base", "phase2_candidate_set": "guru-check-task",
-            "branch_review_candidate_set": "guru-review-branch", "publication_candidate_set": "guru-review-task-delivery",
+            "branch_review_candidate_set": "guru-review-branch", "publication_candidate_set": "guru-publish-task-delivery",
         }
         planning_paths = [".trellis/tasks/current/prd.md", ".trellis/tasks/current/design.md", ".trellis/tasks/current/implement.md"]
         planning_identity = qualification_common.file_set_identity(self.repo, planning_paths) if profile != "author_candidate_set" else "0" * 64

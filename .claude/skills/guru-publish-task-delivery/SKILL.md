@@ -1,9 +1,12 @@
 ---
 name: guru-publish-task-delivery
-description: Publish current readiness through the original recoverable transaction.
+description: Assess Delivery readiness, present the exact PR preview, and execute or recover Publication.
 ---
 
 # Guru Publish Task Delivery
+
+Read the complete provider's `review-sufficiency.md` and
+`.trellis/spec/workflow/causal-completion-semantics.md` before judging readiness.
 
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
 in full and apply it within this entry's existing scope. Until that read succeeds,
@@ -22,61 +25,58 @@ retains its own current judgment, formal result and action boundary.
 
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
-Final Ready requires `guru-review-task-delivery:ready`. Early Draft uses its independent entry. Read
-`references/contract.md` before invocation.
+## Current preparation and execution
 
-1. Run `preview-task-delivery-publication` and review the exact repository,
-   branch, PR classification, metadata convergence, Ready action, and maximum
-   side effects.
-2. Complete the semantic review and obtain dialogue-local confirmation for the
-   preview identity when the plan still contains a remote mutation.
-3. Invoke `invoke-guru-publish-task-delivery` once with the reviewed input,
-   semantic review, and confirmed preview identity.
+1. Resolve the exact Delivery and candidate. On continuation, first read its
+   public Publication, existing PR and original transaction status through
+   this owner. If the attributable PR is already MERGED, enter the applicable
+   original Merge recovery. A pending action uses the current preparation path.
+2. Read the actual passed full Review and Publication-stage Architecture
+   qualification for this candidate. Read the accepted task scope, current
+   Delivery plan and all three planning bodies. Load the installed shared
+   planning body and its Delivery templates. Review the available evidence,
+   the fixed candidate, remaining Task responsibility, source and live GitHub
+   facts. Adopt any still-applicable independent evidence. Return to the
+   original owner for any missing or stale prerequisite.
+3. Judge readiness in all ten original dimensions. Author the result using
+   `schemas/semantic-publication-readiness-1.0.schema.json`. Use actual Chinese
+   PR title/body, Refs for the exact source Issue, current slice summary,
+   remaining responsibility and unverified boundaries. Apply the three
+   original qualifier applicability conditions to any real candidates. Use
+   `publication_candidate_set` only for an applicable nonempty set. Scope,
+   planning, implementation and evidence gaps retain their original routes.
+4. Invoke `delivery_prepare_publication` through `scripts/invoke.sh --input ...
+   --review-input ...`. The runtime checks the supplied judgment and current
+   facts, records readiness and returns `publication_prepared` with the exact
+   actions. Preparation performs no push or PR mutation.
+5. Present the actual repo, base/head, reviewed commit, existing PR or its
+   planned creation, remote head, concrete pending actions and the exact
+   displayed PR text and disclosures. Obtain dialogue-local confirmation if
+   any pending action writes to the remote. Submit the exact prepared object
+   to `delivery_execute_publication` with the passed publication action
+   review. Pass its objective `preview_identity` as
+   `--confirmed-preview-sha256` only after confirmation when actions remain.
+   The executor rereads the current facts. When the preview or pending action
+   set has materially changed, prepare and present it again before execution.
+   Never put confirmation wording or authorization into any carrier.
+6. Consume `ready_for_merge` only when the current Publication matches its
+   prescribed Merge input. Merge confirms its own action. Use the original
+   Closure for the source Issue after Task Completion.
 
-The owner persists its private transaction before mutation and advances only
-through the selected action to its Draft or final Ready terminal. A same-plan retry resumes that transaction. In particular, an unbound
-`bind_pr` transaction may recover the unique same-repository Open PR whose
-head already equals the reviewed head, persist the binding and convergence
-decision, and continue without another push or PR create.
+If readiness advanced the phase but the preview was lost before the original
+transaction existed, verify current full Review and re-enter
+`delivery_prepare_publication` on the same key. Publication resets the
+readiness role through its existing legal rework and records one fresh result.
+If an original transaction exists, first recover its completed facts. Refresh
+the preview for remaining actions using the exact same transaction and PR.
+Use `delivery_same_plan_resume` with the original reference when available.
+Use `delivery_reprepare_publication` for the same Delivery when a refreshed
+entry is required. Recovering a terminal fact requires only readback.
 
-This Skill never archives or completes a task, closes an Issue, emits a closing
-keyword, merges a PR, runs Finish, or cleans branches/worktrees. Unknown,
-multiple, fork-owned, terminal, stale, or unmapped state fails closed.
-
-Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
-Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
-
-## Early Draft and Ready revision
-
-New early Draft publication is retired. Current input aggregate4.0 has no
-`delivery_draft_publish` profile. No unreviewed candidate can push or create a
-PR. First complete the fixed committed independent Review and original
-Delivery Review/readiness, then use `delivery_review_ready`.
-MIGRATION-794 fixes the complete old provider for recovering already executed
-old Draft transactions. Retain actual PR, remote HEAD and metadata. Pending
-remote actions receive no eligibility from the old transaction or a relabeled
-pass; return to current committed Review/readiness before those actions.
-
-Before a publishing Delivery receives unreviewed changes, use independent
-`delivery_return_to_draft` with concrete revision_reason. Read the original
-same PR/HEAD/state and review the exact revision boundary. This owner confirms
-Draft and lawfully reworks publication to implementation, invalidating
-check/full_review/readiness while retaining Planning, identity and history.
-The review route is draft_revision_ready. Its output returns task/key/repo/PR
-to implementation. A new HEAD cannot use old readiness.
-
-Current same-plan resume keeps the original supported action/exit and reads actual state after
-lost push/create/edit/Draft/Ready output. It accepts the original preimage or
-completed postimage. No second PR, repeated push or empty commit restores
-stdout. Recover an old action before previewing a new one. The next action
-verifies and retires the prior completed transaction; no action journal or
-second Delivery store remains.
-
-Final delivery_review_ready still requires current candidate-bound readiness.
-Only actual Ready records PublicationFact, and only current gates permit
-ready_for_merge. Early feedback/analysis cannot supply a gate. One-time matching
-1.0 transaction conversion is defined by MIGRATION-636.
-
+Historical normal `delivery_review_ready` uses the prior complete provider.
+See MIGRATION-900 for the active cutover and MIGRATION-794 for retired early
+Draft actions. See [the contract](references/contract.md) for the exact current
+inputs, exits and recovery cases.
 
 ## Current-stage scope revision
 
@@ -105,7 +105,7 @@ Use its independent `delivery_remote_draft_recovery` or
 Review the complete B..H/source/local deltas and public identity/Planning before
 invocation. Remote PR head and local binding are separate facts. Retain the
 same PR and original executor. Ready may complete remaining actions after
-current readiness. Draft recovery2.0 only reports already completed exact
+a current applicable readiness result. Draft recovery2.0 only reports already completed exact
 PR/HEAD/payload facts and performs no remote action. Pending Draft work returns
 to current committed Review/readiness. No remaining remote mutation means no
 new confirmation. Missing applicability returns to its original owner;

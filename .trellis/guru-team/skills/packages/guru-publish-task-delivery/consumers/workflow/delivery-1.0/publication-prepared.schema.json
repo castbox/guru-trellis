@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-consumer-guru-publish-task-delivery-publication-prepared-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "mode",
+    "task_ref",
+    "delivery_key",
+    "reviewed_head",
+    "readiness_result_id",
+    "pr_title",
+    "pr_body",
+    "remaining_work_state",
+    "architecture_assessment",
+    "slice_summary",
+    "remaining_work",
+    "unverified_boundaries",
+    "target",
+    "preview_identity"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "publication_prepared"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "delivery_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "delivery_id"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "reviewed_head": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "readiness_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pr_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pr_body": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remaining_work_state": {
+      "enum": [
+        "none",
+        "remaining"
+      ]
+    },
+    "architecture_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "head",
+        "content_identity",
+        "promotion_state"
+      ],
+      "properties": {
+        "head": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "content_identity": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "promotion_state": {
+          "enum": [
+            "no_change",
+            "reviewed_promoted"
+          ]
+        }
+      }
+    },
+    "slice_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remaining_work": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unverified_boundaries": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "base_branch",
+        "head_branch",
+        "remote_head",
+        "pr_number",
+        "actions"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remote_head": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pr_number": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "push_content",
+              "create_pr",
+              "converge_metadata",
+              "mark_ready"
+            ]
+          }
+        }
+      }
+    },
+    "preview_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

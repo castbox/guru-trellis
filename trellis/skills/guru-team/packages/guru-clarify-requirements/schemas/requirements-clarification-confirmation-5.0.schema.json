@@ -732,7 +732,7 @@
             "guru-review-branch",
             "guru-review-change-request",
             "guru-review-contract-wording",
-            "guru-review-task-delivery",
+            "guru-publish-task-delivery",
             "guru-standalone-caller"
           ]
         },

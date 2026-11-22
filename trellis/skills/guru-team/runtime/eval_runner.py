@@ -1892,7 +1892,7 @@ if stage_bound_fixtures:
         staged = Path(request['workdir']) / fixture
         if (not request.get('case_id', '').startswith('native-stage-')
                 or request['skill_id'] not in {
-                    'guru-check-task', 'guru-review-task-delivery',
+                    'guru-check-task',
                     'guru-review-task-completion', 'guru-execute-task-free-change'}
                 or staged != public_input_path(request)
                 or not bound_input.is_file()

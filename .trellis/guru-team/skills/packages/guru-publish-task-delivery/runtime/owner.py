@@ -357,8 +357,10 @@ def validate_transaction(transaction: dict[str, Any]) -> None:
         raise WorkflowError("Private transaction digest is stale.", code="private_state_invalid")
 
 
-def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
-    if public_input["profile"].removeprefix("delivery_") == "reprepare_publication":
+def plan_from_input(root: Path, public_input: dict[str, Any], *, prepared_transaction=None) -> dict[str, Any]:
+    if prepared_transaction is not None:
+        ref, existing = prepared_transaction
+    elif public_input["profile"].removeprefix("delivery_") == "reprepare_publication":
         existing = unique_task_transaction(root, public_input["task_ref"], public_input.get("delivery_key"))
         ref = existing["transaction_ref"]
     else:
@@ -380,7 +382,7 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
                 if exc.code == "private_state_invalid":
                     exc.payload["retire_transaction_ref"] = ref
                 raise
-            if existing.get("input") != source:
+            if prepared_transaction is None and existing.get("input") != source:
                 raise WorkflowError("Publication transaction input drifted.", code="private_state_invalid")
 
     if source["profile"] == "delivery_draft_publish":
@@ -482,6 +484,27 @@ def expected_publication_exit(root, public):
     return {"delivery_remote_draft_recovery": "draft_published", "delivery_return_to_draft": "draft_revision_ready"}.get(source["profile"], "ready_for_merge")
 
 
+def published_transaction_recorded(root, transaction):
+    source = transaction["input"]
+    if "delivery_key" not in source:
+        return False
+    projection = DeliveryProjection(root, source["task_ref"])
+    stored = projection.resolve(source["delivery_key"])["publication_result"]
+    original = transaction.get("public_publication")
+    if original is not None:
+        return stored == original
+    binding = transaction.get("bound_pr") or {}
+    return stored is not None and all((
+        stored["result_id"] == "publication:" + transaction["transaction_ref"],
+        stored["repo_ref"] == transaction["repo_ref"],
+        stored["pr_number"] == binding.get("number"),
+        stored["reviewed_head"] == transaction["reviewed_head"],
+        stored["target_ref"] == transaction["base_branch"],
+        stored["candidate"] == transaction.get("public_candidate"),
+        stored["publication_ref"]["revision"] == "sha256:" + hashlib.sha256(source["pr_body"].encode()).hexdigest(),
+    ))
+
+
 def retire_completed(root, new_transaction):
     """Keep one same-operation recovery result per Delivery, not a journal."""
     directory = transaction_path(root, new_transaction["transaction_ref"]).parent
@@ -497,7 +520,8 @@ def retire_completed(root, new_transaction):
         if old["stage"] not in TERMINALS:
             raise WorkflowError("Recover the unfinished original publication action before a new action.", code="private_state_invalid")
         if old["terminal"] == "ready":
-            ready_output(root, old)
+            if not published_transaction_recorded(root, old):
+                ready_output(root, old)
         else:
             from draft import output
             output(root, old)
@@ -730,9 +754,12 @@ def execute(root: Path, context: dict[str, Any]) -> dict[str, Any]:
         else:
             transaction = initial_transaction(context)
         retire_completed(root, transaction)
+        if context.get("prepared_execution") and context["candidate_pr"]:
+            transaction["existing_pr_number"] = context["candidate_pr"]["number"]
         save_transaction(root, transaction)
     validate_transaction(transaction)
-    exact_context(root, transaction)
+    if not context.get("prepared_execution"):
+        exact_context(root, transaction)
     while True:
         stage = transaction["stage"]
         if stage == "ensure_draft":
@@ -842,7 +869,7 @@ def parser(kind: str) -> argparse.ArgumentParser:
     value.add_argument("--root")
     value.add_argument("--input", required=True)
     if kind in {"record", "invoke"}:
-        value.add_argument("--review-input", required=True)
+        value.add_argument("--review-input", required=(kind == "record"))
     if kind == "invoke":
         value.add_argument("--confirmed-preview-sha256")
     if kind in {"check", "execute"}:

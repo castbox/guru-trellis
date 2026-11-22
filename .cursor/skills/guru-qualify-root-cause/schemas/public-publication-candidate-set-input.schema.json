@@ -23,7 +23,7 @@
       ]
     },
     "caller": {
-      "const": "guru-review-task-delivery"
+      "const": "guru-publish-task-delivery"
     },
     "target_locator": {
       "type": "string",

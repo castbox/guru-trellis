@@ -72,43 +72,5 @@ class ContractTests(unittest.TestCase):
                 schema = self.load(target_path)
                 jsonschema.Draft202012Validator.check_schema(schema)
 
-    def test_review_stale_projection_authoring_matches_delivery_review_profile(self) -> None:
-        interface = self.interface()
-        consumer = next(
-            item for item in interface["public_contracts"]["consumer_inputs"]
-            if item["id"] == "review_stale_input"
-        )
-        authoring = self.load(PACKAGE / consumer["contract"]["authoring_example"]["path"])
-        projection = next(
-            item for item in interface["public_contracts"]["projections"]
-            if item["id"] == "project_review_stale"
-        )
-        self.assertEqual(consumer["contract"]["profile_id"], "delivery_readiness_refresh")
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "delivery_key", "reentry_reason"])
-        self.assertEqual(consumer["contract"]["authoring_fields"], ["profile", "mode"])
-        self.assertEqual(set(authoring), {"profile", "mode"})
-        self.assertEqual([mapping["source"] for mapping in projection["mappings"]], ["task_ref", "delivery_key", "stale_reason"])
-
-    def test_review_stale_projection_matches_review_owned_profile(self) -> None:
-        interface = self.interface()
-        consumer = next(
-            item
-            for item in interface["public_contracts"]["consumer_inputs"]
-            if item["id"] == "review_stale_input"
-        )
-        projection = next(
-            item
-            for item in interface["public_contracts"]["projections"]
-            if item["id"] == "project_review_stale"
-        )
-        self.assertEqual(consumer["contract"]["profile_id"], "delivery_readiness_refresh")
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "delivery_key", "reentry_reason"])
-        self.assertEqual(consumer["contract"]["authoring_fields"], ["profile", "mode"])
-        self.assertEqual(
-            [mapping["source"] for mapping in projection["mappings"]],
-            ["task_ref", "delivery_key", "stale_reason"],
-        )
-
-
 if __name__ == "__main__":
     unittest.main()

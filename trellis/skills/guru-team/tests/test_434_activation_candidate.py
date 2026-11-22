@@ -274,11 +274,11 @@ class ActivationCandidateTests(unittest.TestCase):
         self.assertEqual(next(row for row in change["external_exits"] if row["id"] == "ready")["consumer"],
                          {"kind": "workflow", "id": "guru-task-intake-router"})
         self.assertEqual(next(row for row in branch["external_exits"] if row["id"] == "passed")["consumer"],
-                         {"kind": "skill", "id": "guru-review-task-delivery"})
+                         {"kind": "workflow", "id": "guru-publication-entry-router"})
         self.assertEqual(next(row for row in branch["external_exits"] if row["id"] == "archived_review_passed")["consumer"],
                          {"kind": "stop", "id": "legacy-archived-review-disposition-required"})
         for skill, exit_id in (("guru-review-change-request", "ready"),
-                               ("guru-review-branch", "archived_review_passed")):
+                               ("guru-review-branch", "archived_review_passed"), ("guru-review-branch", "passed")):
             interface = self.interfaces[skill]
             output = next(row for row in interface["public_contracts"]["outputs"] if row["exit_id"] == exit_id)
             projection = next(row for row in interface["public_contracts"]["projections"] if row["exit_id"] == exit_id)
@@ -288,19 +288,13 @@ class ActivationCandidateTests(unittest.TestCase):
             value = read_json(PACKAGES / skill / output["example"]["path"])
             for contract in (output["schema"], consumer["contract"]):
                 Draft202012Validator(read_json(PACKAGES / skill / contract["path"])).validate(value)
-        passed = read_json(PACKAGES / "guru-review-branch/examples/public-passed-output.json")
-        authored = read_json(PACKAGES / "guru-review-branch/examples/public-delivery-review-authoring.json")
-        self.assertEqual({key: authored[key] for key in ("task_ref", "branch_review_commit")},
-                         {key: passed[key] for key in ("task_ref", "branch_review_commit")})
-        Draft202012Validator(read_json(PACKAGES / "guru-review-task-delivery/schemas/public-delivery-review-input.schema.json")).validate(authored)
-
-    def test_publication_qualification_outputs_route_to_delivery_review(self) -> None:
+    def test_publication_qualification_outputs_route_to_publication(self) -> None:
         for skill, prefix in (("guru-qualify-normal-scenario", "normal-scenario"),
                               ("guru-qualify-solution-mechanism", "solution-mechanism")):
             package = PACKAGES / skill
             publication_input = read_json(package / "examples/public-publication-candidate-set-input.json")
             self.assertEqual(publication_input["profile"], "publication_candidate_set")
-            self.assertEqual(publication_input["caller"], "guru-review-task-delivery")
+            self.assertEqual(publication_input["caller"], "guru-publish-task-delivery")
             Draft202012Validator(read_json(package / "schemas/public-publication-candidate-set-input.schema.json")).validate(publication_input)
             for exit_id, example, producer_schema, consumer in (
                 ("classified", "public-classified-output.json", "public-classified-output.schema.json", f"{prefix}-classified-router.schema.json"),

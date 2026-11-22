@@ -893,7 +893,7 @@
             "guru-reconcile-task-base",
             "guru-check-task",
             "guru-review-branch",
-            "guru-review-task-delivery"
+            "guru-publish-task-delivery"
           ]
         }
       }

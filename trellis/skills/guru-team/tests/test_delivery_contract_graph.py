@@ -144,9 +144,13 @@ class DeliveryGraphTests(unittest.TestCase):
                                       ("guru-merge-task-delivery", "review_refresh_required", "reason_code")]:
             contract = json.loads((SKILLS / "packages" / name / "interface.json").read_text())["public_contracts"]
             projection = next(x for x in contract["projections"] if x["exit_id"] == exit_id)
-            target = next(x["contract"] for x in contract["consumer_inputs"] if x["id"] == projection["consumer_input_id"])
-            self.assertEqual(target["profile_id"], "delivery_readiness_refresh")
-            self.assertIn({"source": reason, "target": "reentry_reason"}, projection["mappings"])
+            target = next(x for x in contract["consumer_inputs"] if x["id"] == projection["consumer_input_id"])
+            self.assertEqual(target["consumer"], {"kind": "workflow", "id": "guru-publication-review-router"})
+            output = next(x for x in contract["outputs"] if x["exit_id"] == exit_id)
+            package = SKILLS / "packages" / name
+            value = json.loads((package / output["example"]["path"]).read_text())
+            self.assertEqual(value[reason], project_output(value, projection)[reason])
+
     def test_relative_schema_refs_resolve_and_validate_both_versions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

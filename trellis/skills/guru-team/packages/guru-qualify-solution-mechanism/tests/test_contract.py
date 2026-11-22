@@ -83,7 +83,7 @@ class SolutionMechanismQualificationContractTest(unittest.TestCase):
         schema = self.load(PACKAGE / "schemas/public-publication-candidate-set-input.schema.json")
         example = self.load(PACKAGE / "examples/public-publication-candidate-set-input.json")
         self.assertEqual("publication_candidate_set", example["profile"])
-        self.assertEqual("guru-review-task-delivery", example["caller"])
+        self.assertEqual("guru-publish-task-delivery", example["caller"])
         self.assert_valid(example, schema)
         retired = copy.deepcopy(example)
         retired["caller"] = "guru-review-task-publication"
@@ -91,11 +91,11 @@ class SolutionMechanismQualificationContractTest(unittest.TestCase):
         for name in ("public-classified-output", "public-mechanism-revision-required-output", "public-scope-confirmation-required-output"):
             output_schema = self.load(PACKAGE / "schemas" / f"{name}.schema.json")
             targets = output_schema["properties"]["resume_target"].get("enum", output_schema.get("$defs", {}).get("resumeTarget", {}).get("enum"))
-            self.assertIn("guru-review-task-delivery", targets)
+            self.assertIn("guru-publish-task-delivery", targets)
             self.assertNotIn("guru-review-task-publication", targets)
         delivery_evals = [row for row in self.load(PACKAGE / "evals/evals.json")["evals"] if row["input_profile_id"] == "publication_candidate_set"]
         self.assertEqual(16, len(delivery_evals))
-        self.assertTrue(all("fixed caller guru-review-task-delivery" in row["prompt"] for row in delivery_evals))
+        self.assertTrue(all("fixed caller guru-publish-task-delivery" in row["prompt"] for row in delivery_evals))
 
     def test_selector_binding_is_closed_mutually_exclusive_and_value_free(self) -> None:
         interface = self.load(PACKAGE / "interface.json")

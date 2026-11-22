@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "读取完整技术写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "读取规划正文和来源合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核对适用规划正文模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核对适用规划正文模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对适用规划正文模板"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "核对 retired consumer 与固定旧 provider 退出"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "选择实际验收与安装证据"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "承接当前候选、复用证据和副作用边界"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "核对架构单写与当前检查"}
+{"file": "trellis/presets/guru-team/MIGRATION-794.md", "reason": "保留已执行远端事实及在途迁移"}

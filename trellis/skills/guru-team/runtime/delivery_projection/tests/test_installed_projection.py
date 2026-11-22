@@ -30,7 +30,7 @@ from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
 OWNERS = {
     "task_scope": "guru-task-scope-projection", "creation": "guru-create-delivery",
     "planning": "guru-activate-delivery", "implementation": "guru-delivery-implementation-projection",
-    "check": "guru-check-task", "full_review": "guru-review-branch", "readiness": "guru-review-task-delivery",
+    "check": "guru-check-task", "full_review": "guru-review-branch", "readiness": "guru-publish-task-delivery",
     "publication": "guru-publish-task-delivery", "delivery": "guru-merge-task-delivery",
     "completion": "guru-review-task-completion", "closure": "guru-complete-task-closure",
 }

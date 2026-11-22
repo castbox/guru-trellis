@@ -529,7 +529,7 @@ owners. These results are engineering/integration facts pending independent revi
 they do not supply Check or full_review pass.
 
 No new push or PR is permitted before the committed independent review and original
-Delivery Review readiness. For existing early Draft operations, load the matching
+Publication readiness. For existing early Draft operations, load the matching
 provider's migration contract: source `trellis/presets/guru-team/MIGRATION-794.md`
 or installed `.trellis/guru-team/MIGRATION-794.md`. Original owners recover already
 executed effects and route pending new actions to the current review.
@@ -690,8 +690,8 @@ candidate and does not edit it. Original owners form successor commits for repai
 The same still-independent reviewer may retain verifiable coverage and review the
 actual delta and affected consumers under the shared candidate contract.
 
-Only the original checker and public wrapper current `passed` enters Delivery
-Review. A check-slot write alone, integration fact, historical pass or bounded
+Only the original checker and public wrapper current `passed` enters Publication
+preparation through the Architecture eligibility route. A check-slot write alone, integration fact, historical pass or bounded
 continuity never supplies current full_review. Follow all other declared exits
 to their unique original consumers; no Finish, archive or journal route intervenes.
 
@@ -701,24 +701,21 @@ fact conditions; changed obligations return to the affected review owner.
 
 #### 3.6 Delivery review and publication
 
-After Branch Review, mandatory invoke
+Send current Branch Review `passed` to `guru-publication-entry-router`. It obtains
+the current publication Architecture result from
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=publication)`.
-Only fresh `baseline_current` with `promotion_state=no_change` or
-`reviewed_promoted` enters `guru-review-task-delivery`. The semantic owner
-checks the current independently deliverable slice, remaining task work,
-validation and unverified boundaries, then authors the exact Chinese PR
-title/body with `Refs` only. Missing or stale Architecture evidence returns
-to its owner; task-content changes return to the affected Phase 2 and Review
-owners under the shared candidate contract.
+The Architecture current router hands applicable `no_change` or
+`reviewed_promoted` evidence and the adjacent Review result to
+`guru-publish-task-delivery:delivery_prepare_publication`. Publication owns
+readiness, the exact Chinese Refs-only PR payload, and the publish preview.
 
-The final checked `ready` DTO enters `guru-publish-task-delivery:delivery_review_ready`, whose own
-preview/confirmation, exact HEAD, remote branch and PR transaction govern
-push, Draft/Ready transition, and output-loss recovery. It never archives
-the task or closes its source Issue. Only its current `ready_for_merge` enters
-`guru-merge-task-delivery`; independent expected-head merge confirmation
-remains mandatory. Merge output loss is recovered against the same PR and
-merge identity. A task-work finding returns directly to the active
-implementation owner; there is no archived-task restore step.
+Present `publication_prepared` through its preview router. After any required
+confirmation for the concrete remote actions, invoke
+`guru-publish-task-delivery:delivery_execute_publication` with the exact preview.
+Publication owns stale preview, rework, and same-transaction recovery. For an
+actual merged PR, its declared Merge recovery exit supplies the exact PR.
+A current `ready_for_merge` enters the independent expected-head Merge gate.
+Merge returns a Delivery result to whole-task Completion.
 
 #### 3.7 Completion, Closure and Finish
 
@@ -784,7 +781,7 @@ manual disposition without bridging old DTOs.
     "implementation": "guru-delivery-implementation-projection",
     "check": "guru-review-branch",
     "full_review": "guru-review-branch",
-    "readiness": "guru-review-task-delivery",
+    "readiness": "guru-publish-task-delivery",
     "publication": "guru-publish-task-delivery",
     "delivery": "guru-merge-task-delivery",
     "completion": "guru-review-task-completion",
@@ -828,7 +825,7 @@ Without an adjacent output, use only the current obligation's entry:
 | current / planning | Phase step 1.1; its actual Author/Architecture/Approval obligation; current approved alone enters step 1.5. |
 | current / implementing | Phase step 2.1. |
 | current / checking | Phase step 3.5 with the complete committed candidate. Missing local commit returns to its original TaskCommit/implementation owner; phase grants no pass. |
-| current / reviewing | Phase step 3.5; recover the same committed candidate and original Review result projections before Delivery Review. |
+| current / reviewing | Phase step 3.5; recover the same committed candidate and original Review result projections before Publication preparation. |
 | current / publishing | Phase step 3.6 and the original Publication/Merge transaction. |
 | no_current_delivery or terminal_delivery | [Bound formal Task / Delivery continuation](#bound-formal-task--delivery-continuation) for this actual availability; no automatic new slice. |
 | no_current_task | [Caller entry details](#caller-entry-details), preserving task-free and independent requests. |
@@ -973,8 +970,8 @@ or deliberate selection. PR or Task inventory never selects a Task or Delivery.
 | `current / planning` | Resume the same Delivery's unique Author, Architecture and Approval. Only its current `approved` enters `guru-activate-delivery`. |
 | `current / implementing` | Resume implementation, engineering self-check and necessary original-owner knowledge integration. Exact local pre-review commit follows; no push/PR before current independent review/readiness. |
 | `current / checking` | Original guru-review-branch reviews the complete committed candidate once and records actual check/full_review. Missing local commit returns to its original commit/implementation owner; phase supplies no pass. |
-| `current / reviewing` | Original Review recovers any missing same-candidate projection or completes the current full_review, then original Delivery Review. A check-slot fact alone is insufficient. |
-| `current / publishing` | Original Delivery Review/Publication/Merge transaction. A revision returns through lawful rework; new remote actions require current independent review and readiness. |
+| `current / reviewing` | Original Review recovers any missing same-candidate projection or completes the current full_review, then Publication preparation. A check-slot fact alone is insufficient. |
+| `current / publishing` | Original Publication or Merge transaction, according to the interrupted operation. A revision returns through lawful rework; new remote actions require current independent review and readiness. |
 | error / unknown | Fail closed with the exact identity/API/owner diagnostic. |
 
 ### Producer recovery
@@ -994,7 +991,7 @@ or deliberate selection. PR or Task inventory never selects a Task or Delivery.
 | Ready PR needs unreviewed revision | Original Publication return-to-Draft and lawful rework retain the same PR/Delivery; engineering work and a successor local commit precede current review/readiness and the next push. |
 | TaskCommit `pre_review_committed` | guru-pre-review-commit-router uses the original constructor/begin_check on the exact existing H and fixed B, then enters original independent Review. |
 | Branch Review missing/stale | Original guru-review-branch applies current fixed-range and coverage rules; it invokes the original committed Architecture assessment under the same independent reviewer. No old Check or continuity supplies current full_review. |
-| Branch Review `passed` | Invoke `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
+| Branch Review `passed` | Use the original publication Architecture eligibility and Publication preparation. The actual prepared preview precedes the remote action confirmation. |
 | Publish/Merge success output or public projection lost | Original transaction reads actual PR/HEAD/merge and retries the same public fact; no repeated remote side effect. |
 | Publication private transaction unavailable, with an explicitly selected shared source and existing Open PR | Invoke original `guru-publish-task-delivery` through its closed `delivery_remote_draft_recovery` or `delivery_remote_ready_recovery` input. The package owns current state, readiness and remaining-action judgment; no new PR. |
 | Closure private transaction unavailable, with the exact shared result input | Invoke original `guru-complete-task-closure:closure_shared_result_recovery`; consume its existing exits. The carrier does not restore authorization or prove terminal state. |
@@ -1228,7 +1225,7 @@ The mandatory `guru-maintain-requirements-design-test-ssot` owner runs
 `bootstrap_foundation` when the repository authority is absent or incompatible,
 `task_impact_sync` for an approved task delta, `promotion` for a reviewed
 isolated contribution, and `repair` for a bounded authority defect. Planning,
-Engineering integration, committed Review, Delivery Review, Completion, and Finish consume only
+Engineering integration, committed Review, Publication, Completion, and Finish consume only
 its public routes and reread the stage-applicable Requirements, Design, and
 Test authority; unrelated CURRENT advancement does not force a rewrite;
 they never read package-private owner state. Architecture inheritance uses only
@@ -1253,7 +1250,7 @@ it does not perform the first integration or edit its frozen candidate.
 
 ### External work item and closure
 
-Delivery Review owns each slice's Refs-only PR payload, including an Issue-backed
+Publication owns each slice's Refs-only PR payload, including an Issue-backed
 Delivery targeting the default branch. Delivery Publish and Merge do not close
 the source Issue, and Merge yields a Delivery result, not Task Completion.
 `guru-review-task-completion` alone reviews the whole accepted scope and
@@ -1332,7 +1329,7 @@ retains original source_selection/revision_refs and author-refined scope_action.
 For an undelivered retained slice, review actual slice anchors against accepted
 scope and invoke original current owner with delivery_scope_revision: planning
 → guru-activate-delivery; checking → guru-review-branch; reviewing → the interrupted
-guru-review-branch or guru-review-task-delivery; publishing → the interrupted
+guru-review-branch or guru-publish-task-delivery; publishing → the interrupted
 guru-publish-task-delivery or guru-merge-task-delivery. Do not select a reviewing
 or publishing owner merely by phase; retain the actual interrupted semantic step.
 Each profile takes mode/task_ref/key/scope_ref/source_selection/revision_refs and

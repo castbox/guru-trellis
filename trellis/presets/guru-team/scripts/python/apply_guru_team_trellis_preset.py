@@ -209,6 +209,10 @@ MANAGED_SPEC_PATHS = (
 )
 MANAGED_SOURCE_PATHS = (
     (
+        Path("trellis/presets/guru-team/MIGRATION-900.md"),
+        Path(".trellis/guru-team/MIGRATION-900.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/MIGRATION-850.md"),
         Path(".trellis/guru-team/MIGRATION-850.md"),
     ),

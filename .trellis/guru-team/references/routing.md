@@ -171,25 +171,24 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-check-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"workflow","id":"guru-publication-entry-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"archived_review_passed","consumer":{"kind":"stop","id":"legacy-archived-review-disposition-required"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"continuity_passed","consumer":{"kind":"workflow","id":"guru-base-continuity-passed-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-branch-review-implementation-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-branch-review-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"blocked","consumer":{"kind":"stop","id":"branch-review-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-review-task-delivery","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"ready","consumer":{"kind":"skill","id":"guru-publish-task-delivery"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"planning_revision_required","consumer":{"kind":"workflow","id":"guru-task-delivery-planning-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-task-delivery-scope-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"blocked","consumer":{"kind":"stop","id":"task-delivery-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-publish-task-delivery","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"publication_prepared","consumer":{"kind":"workflow","id":"guru-publication-preview-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"merged_recovery_required","consumer":{"kind":"skill","id":"guru-merge-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"merged_adoption_required","consumer":{"kind":"skill","id":"guru-merge-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"planning_revision_required","consumer":{"kind":"workflow","id":"guru-task-delivery-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-task-delivery-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"draft_revision_ready","consumer":{"kind":"workflow","id":"guru-draft-revision-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"draft_published","consumer":{"kind":"workflow","id":"guru-draft-feedback-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"ready_for_merge","consumer":{"kind":"skill","id":"guru-merge-task-delivery"}} -->
-<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"review_stale","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"review_stale","consumer":{"kind":"workflow","id":"guru-publication-review-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"resume_publication","consumer":{"kind":"skill","id":"guru-publish-task-delivery"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"reprepare_required","consumer":{"kind":"skill","id":"guru-publish-task-delivery"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"blocked","consumer":{"kind":"stop","id":"task-delivery-publication-blocked"}} -->
@@ -198,7 +197,7 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"delivered","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-delivery-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
-<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"review_refresh_required","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"review_refresh_required","consumer":{"kind":"workflow","id":"guru-publication-review-router"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-task-completion","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"remaining_work","consumer":{"kind":"workflow","id":"active-task-continuation"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"evidence_pending","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
@@ -233,7 +232,6 @@ on each original owner's applicability contract, as defined below.
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"reactivate_blocked","consumer":{"kind":"stop","id":"task-reactivate-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-activate-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"delivery_scope_revised","consumer":{"kind":"workflow","id":"guru-delivery-scope-revised-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-publish-task-delivery-legacy-controls-retired"}} -->
@@ -270,7 +268,7 @@ Return the owning Skill result and safe remediation, then stop this automatic ch
 
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-current-router"} -->
 
-Validate actual authority and source_profile. Planning candidate_assessment projects only the actual assessment/key to Author delivery_solution_planning; final_plan projects the actual final assessment directly to adjacent Approval. Precommit promotion returns through the original Architecture owner for actual-write/readback applicability, then original TaskCommit preparation. integrated_pending_review never enters readiness. The same new independent committed reviewer consumes matching branch_review assessment and completes original Review. Publication/Completion eligibility still requires no_change or reviewed_promoted. Bootstrap/repair retains original purpose/stage and exact recovery owner.
+Validate actual authority and source_profile. Planning candidate_assessment projects only the actual assessment/key to Author delivery_solution_planning; final_plan projects the actual final assessment directly to adjacent Approval. Precommit promotion returns through the original Architecture owner for actual-write/readback applicability, then original TaskCommit preparation. integrated_pending_review never enters readiness. The same new independent committed reviewer consumes matching branch_review assessment and completes original Review. For publication stage eligibility, require `no_change` or `reviewed_promoted`. Verify that the result's candidate head and content identity match the selected Delivery and retained full_review. Project `candidate.head` as `architecture_assessment.head` and `candidate.content_identity` as `architecture_assessment.content_identity`. Carry the actual `promotion_state` and Branch Review commit and result identity to `guru-publish-task-delivery:delivery_prepare_publication`. Completion retains its own eligibility. Bootstrap/repair retains original purpose/stage and exact recovery owner.
 
 ### guru-architecture-baseline-sync-router
 
@@ -620,7 +618,7 @@ This is an original existing Draft recovery fact under MIGRATION-794. Preserve e
 
 <!-- guru-workflow-target: {"id":"guru-draft-revision-router"} -->
 
-Consume original return-to-Draft result and resume the same Delivery through lawful implementation rework. Preserve real PR and completed effects. Engineering work, necessary integration and a successor local commit precede current independent review and Delivery Review readiness before any new push.
+Consume original return-to-Draft result and resume the same Delivery through lawful implementation rework. Preserve real PR and completed effects. Engineering work, necessary integration and a successor local commit precede current independent review and Publication readiness before any new push.
 
 ### guru-resume-implementation
 
@@ -664,11 +662,45 @@ Resume Phase 2, then repeat the downstream graph.
 
 Enter the Scope Change Gate, then repeat affected phases.
 
+### guru-publication-entry-router
+
+<!-- guru-workflow-target: {"id":"guru-publication-entry-router"} -->
+
+Retain Branch Review's exact passed task_ref, delivery_key, branch_review_commit,
+and full_review_result_id. Read the current planning_root and candidate for
+this key. Invoke the original Architecture owner with
+`delivery_task_impact_sync(stage=publication)` and its current authority inputs.
+The current Architecture router consumes the actual result.
+
+### guru-publication-preview-router
+
+<!-- guru-workflow-target: {"id":"guru-publication-preview-router"} -->
+
+Present the exact candidate and PR payload, delivery summary, remaining work,
+unverified boundaries, and concrete remote actions from `publication_prepared`.
+Invoke Publication `delivery_execute_publication` with the unchanged output as
+`prepared`. If remote actions remain, obtain confirmation in the current
+dialogue before this call and pass `--confirmed-preview-sha256` with the
+prepared output's `preview_identity`. For a changed preview with remote actions,
+present the refreshed plan and obtain confirmation again before execution.
+
+### guru-publication-review-router
+
+<!-- guru-workflow-target: {"id":"guru-publication-review-router"} -->
+
+Preserve the selected task_ref and delivery_key from Publication `review_stale`
+or Merge `review_refresh_required`. Reread the current selected Delivery and
+any recorded PR before considering pending remote actions. If the exact PR is
+MERGED, use the original Merge recovery route. If the full_review result is
+missing or stale, return to its original Branch Review owner. If it remains
+applicable, enter Publication through current publication Architecture
+eligibility and the same-Delivery preparation or recovery paths.
+
 ### guru-task-delivery-planning-router
 
 <!-- guru-workflow-target: {"id":"guru-task-delivery-planning-router"} -->
 
-Copy Delivery Review planning_revision_required task_ref/delivery_key unchanged and rename reason_refs to revision_refs for `guru-author-task-plan:delivery_delivery_plan_revision`, adding current mode and revision_reason=delivery_policy_gap. Consume the Review owner's actual same-Delivery planning rework; preserve total accepted scope.
+Copy Publication planning_revision_required task_ref/delivery_key unchanged and rename reason_refs to revision_refs for `guru-author-task-plan:delivery_delivery_plan_revision`, adding current mode and revision_reason=delivery_policy_gap. Consume Publication's actual same-Delivery planning rework; preserve total accepted scope.
 
 ### guru-task-delivery-scope-router
 
@@ -838,11 +870,6 @@ Return the owning Skill result and safe remediation, then stop this automatic ch
 
 Return the owning Skill result and safe remediation, then stop this automatic chain until authority or external state changes. Do not guess another route or expose package-private state. An independently requested operation retains the Manual Git/GitHub Operations entry in the workflow.
 
-### task-delivery-review-blocked
-
-<!-- guru-stop-target: {"id":"task-delivery-review-blocked"} -->
-
-Return the owning Skill result and safe remediation, then stop this automatic chain until authority or external state changes. Do not guess another route or expose package-private state. An independently requested operation retains the Manual Git/GitHub Operations entry in the workflow.
 
 ### task-delivery-publication-blocked
 
@@ -1033,7 +1060,7 @@ self-authoring, a prior-stage DTO or an overall gate for that invocation.
 | Qualified implementation expansion | `delivery_task_impact_sync(stage=implementation_discovery)` | `guru-phase2-implementation-coordinator` |
 | Precommit integration | Original `delivery_promotion(stage=final_integration)` for necessary complete changes after engineering preparation | Original TaskCommit; integrated_pending_review is not a pass |
 | Committed Review | `delivery_task_impact_sync(stage=branch_review)` over fixed complete B..H under the same new independent reviewer | Original Review completes all Check/full_review duties once |
-| Delivery Review | `delivery_task_impact_sync(stage=publication)` | `guru-review-task-delivery` |
+| Publication | `delivery_task_impact_sync(stage=publication)` | `guru-publish-task-delivery:delivery_prepare_publication` |
 | Completion/Finish | Actual Task `task_impact_sync(stage=acceptance_finish)` when no Delivery; selected Delivery uses `delivery_task_impact_sync` | `guru-review-task-completion` / `guru-finish-task` after Closure |
 
 Every `baseline_current` carries `constitution_status=current` and its exact
@@ -1062,7 +1089,7 @@ content enters TaskCommit and the committed Review. Only a real affected
 dependency is reconsidered.
 Promotion's own expected-current write mismatch remains local to promotion.
 
-Delivery Review rejects missing or stale Architecture evidence, every conflict,
+Publication rejects missing or stale Architecture evidence, every conflict,
 incomplete contract, fitness regression, and `promotion_state=reviewed_candidate`.
 Completion/Finish accepts a long-term Architecture change only as
 `reviewed_promoted`, or accepts a current `no_change` proof when shared current
@@ -1103,7 +1130,7 @@ current judgment. The workflow consumes the original declared exits only.
 | `base_impact_candidate_set` | base-impact finding, validation obligation, or route | `guru-reconcile-task-base` |
 | `phase2_candidate_set` | Explicit pinned-old Check recovery only; not the active development graph | Original supported Check provider |
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
-| `publication_candidate_set` | Delivery Review finding, task-work return, or blocker | `guru-review-task-delivery` |
+| `publication_candidate_set` | Publication readiness finding, task-work return, or blocker | `guru-publish-task-delivery` |
 
 For the seven Task/Delivery rows, each current invocation supplies the original
 caller's complete `target.delivery_key` under input 2.0 / aggregate 3.0.

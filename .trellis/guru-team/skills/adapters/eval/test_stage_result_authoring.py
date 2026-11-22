@@ -1147,31 +1147,6 @@ class StageResultTransportTests(unittest.TestCase):
             finally:
                 values[9].set(); values[8].join(timeout=2)
 
-    def test_delivery_review_transport_reaches_original_schema_without_host_result(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            req = request(Path(temporary), 'guru-review-task-delivery', 'd01')
-            values = native_adapter.build_context(req, 'codex')
-            try:
-                protocol = json.loads(values[4].read_text())
-                owner = Path(protocol['owner_repository'])
-                facts = json.loads((owner / stage.FACTS).read_text())
-                projection = DeliveryProjection(owner, facts['task_ref'])
-                self.assertIsNone(projection.resolve(facts['delivery_key'])['results']['readiness'])
-                semantic = owner / '.trellis/.runtime/guru-team/evals/missing-semantic.json'
-                semantic.write_text('{}')
-                relay = stage.ImplementationCommands(owner,
-                    {**os.environ, 'TRELLIS_CONTEXT_ID': protocol['implementation_context_id']},
-                    Path(temporary) / 'receipts.json', facts_relative=stage.FACTS)
-                result = relay.forward({'skill_id': 'guru-review-task-delivery', 'command': 'invoke',
-                    'arguments': ['--root', str(owner), '--input', stage.PUBLIC_INPUT,
-                                  '--semantic-result', str(semantic)], 'stdin': ''})
-                self.assertNotEqual(result['returncode'], 0)
-                self.assertIn('schema_mismatch', result['stdout'] + result['stderr'])
-                self.assertTrue(relay.terminal)
-                self.assertIsNone(projection.resolve(facts['delivery_key'])['results']['readiness'])
-            finally:
-                values[9].set(); values[8].join(timeout=2)
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,7 +5,7 @@
 The #434 canonical candidate selects the active registry, Interface and
 `trellis/workflows/guru-team/workflow.md` graph as current contracts. One active
 TaskId may have ordered Delivery cycles: `guru-review-branch:passed` ->
-`guru-review-task-delivery:ready` -> `guru-publish-task-delivery:ready_for_merge`
+publication Architecture eligibility -> `guru-publish-task-delivery:ready_for_merge`
 -> `guru-merge-task-delivery:delivered` -> `guru-review-task-completion`.
 Delivery PRs use `Refs` only. A merge is a Delivery fact, not a whole-task pass,
 Issue closure, or archive. Completion's `completed` alone enters
@@ -996,7 +996,7 @@ profile/caller mismatch, stale identity, or consumer mismatch fails closed.
 
 No schema defines a qualification result/report/checkpoint locator. The checked
 result is process-local stdout and expires when the invocation ends. Current
-Branch Review and Delivery Review record only terminal qualified/rejected
+Branch Review and Publication record only terminal qualified/rejected
 classifications for their own direct consumers. The retired Phase 2 gate is
 read only by its matching pinned provider or explicit original recovery owner.
 Every row contains unique `candidate_ref`, one terminal decision, a six-field
@@ -1182,8 +1182,8 @@ handoff or archive artifact.
 ## External Work Item Effect
 
 In the #434 graph, every business Delivery PR has a reviewed `Refs`-only
-payload, including a PR targeting the default branch. Delivery Review owns
-that payload; Publish preserves it; Delivery Merge verifies the exact PR/head
+payload, including a PR targeting the default branch. Publication owns
+that payload. Delivery Merge verifies the exact PR/head
 and returns only a Delivery result. Neither PR creation nor merge closes the
 Issue, archives the task, or asserts Completion. Completion evaluates the
 entire accepted scope and current evidence after the Delivery result. Only its
@@ -1375,7 +1375,7 @@ there is no separate pre-commit Check or second checkpoint. `passed` 2.0
 requires both exact current results, complete applicable adequacy, no open
 current-scope finding and no blocking unverified boundary. Its DTO contains
 only task_ref, delivery_key, branch_review_commit and full_review_result_id.
-Its unique consumer is Delivery Review.
+Its declared consumer routes through current Architecture eligibility to Publication.
 
 A partial projection retains this one checkpoint. Same-candidate retry verifies
 it and records only the missing slot. After checkpoint retirement, matching
@@ -1601,7 +1601,7 @@ staging, hooks or commit creation. Authorization stays in the current
 conversation. Retired draft/final profiles and old receipts use the original
 complete pinned provider for actual same-operation recovery under MIGRATION-794.
 No current Commit output permits early Publication. New push/PR actions require
-current independent Review and original Delivery Review readiness. Historical
+current independent Review and Publication readiness. Historical
 Publication transactions remain original-owner recovery facts, not current pass.
 
 ## Historical PR Merge Gate And Results (Pinned-Old-Only)
@@ -1814,7 +1814,7 @@ gate judgments. The recorder/checker validate objective facts only. Public
 invoke sequentially records Check with Planning predecessor and full_review
 with that Check predecessor. Both slots represent the same real review.
 The passed 2.0 DTO exposes only task_ref, delivery_key, branch_review_commit
-and full_review_result_id to Delivery Review. No private gate crosses Skills.
+and full_review_result_id to the publication eligibility and preparation route. No private gate crosses Skills.
 Same-candidate partial projection records only missing results; matching actual
 public results recover lost output after checkpoint retirement. Historical
 result slots or a recovered stdout do not create a new current pass.
@@ -1953,7 +1953,7 @@ candidate tree. After current-dialogue confirmation, the deterministic executor
 creates one local reconciliation commit. The bounded continuity input then
 requires `task_head == HEAD`, prior review and new base ancestry, and exact tree
 equality. The prior review remains owner-private gate evidence; its output sets
-`branch_review_commit` to the current reconciled HEAD for Delivery Review and omits
+`branch_review_commit` to the current reconciled HEAD for publication eligibility and omits
 the prior commit because no downstream consumer requires it. No authorization,
 complete review body, or private checkpoint crosses either public boundary.
 
@@ -1961,7 +1961,7 @@ The prior same-graph base-evolution adaptation was pinned-old-only: Publication
 stale reasons were classified by that graph's owner. The #434 graph never
 adapts those Publication/Finalizer results into Delivery. An old in-flight
 task needs pinned-old completion or reviewed manual disposition; current
-reconcile/continuity follows the selected Delivery Review route without
+reconcile/continuity follows the declared publication eligibility route without
 reading another package's private state.
 
 ## Closeout Invocation State (Historical Publication/Finalizer/Merge Portion)

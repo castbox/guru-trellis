@@ -255,7 +255,7 @@ retains the same recovery input/gate; retries never repeat an already successful
 merge and do not demand a current gate to record historical fact. `delivered`
 contains only `task_ref` and `task_key` beside the exit; whole-task Completion
 rereads all public facts, and Merge never declares overall completion.
-`review_refresh_required.reason_code` goes directly to Readiness refresh;
+`review_refresh_required.reason_code` goes to `guru-publication-review-router`;
 implementation re-entry uses this fixed delivery owner and public rework.
 
 ### Scope withdrawal in the current stage
@@ -288,7 +288,7 @@ confirmation, expected-head mutation, merge-message trailers, and terminal
 recovery. For a new merge it consumes the reviewed publication handoff plus live
 facts; manual MERGED recovery consumes the existing public Publication relation
 and its own current terminal-fact review.
-It does not own Delivery Review, publication, task completion, Issue closure,
+It does not own readiness, publication, task completion, Issue closure,
 archive, Finish, Reactivate, or cleanup.
 
 The current production graph invokes this owner after Delivery Publish and

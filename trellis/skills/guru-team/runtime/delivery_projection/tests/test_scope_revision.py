@@ -17,7 +17,7 @@ from runtime.delivery_projection.gates import record_gate
 
 OWNERS = {
     'planning': 'guru-activate-delivery', 'check': 'guru-check-task',
-    'full_review': 'guru-review-branch', 'readiness': 'guru-review-task-delivery',
+    'full_review': 'guru-review-branch',
     'publication': 'guru-publish-task-delivery', 'delivery': 'guru-merge-task-delivery',
 }
 
@@ -34,9 +34,9 @@ class ScopeRevisionTests(unittest.TestCase):
             (fixture.root / 'candidate.txt').write_text('Existing candidate\n')
             candidate = fixture.projection.candidate(['candidate.txt'], kind='git_free')
             fixture.projection.begin_check(key, candidate)
-        if role in ('full_review', 'readiness', 'publication', 'delivery'):
+        if role in ('full_review', 'publication', 'delivery'):
             record_gate(fixture.projection, key, 'check', 'check:existing', 'passed', [fixture.scope], [])
-        if role in ('readiness', 'publication', 'delivery'):
+        if role in ('publication', 'delivery'):
             record_gate(fixture.projection, key, 'full_review', 'review:existing', 'passed', [fixture.scope], [])
         if role in ('publication', 'delivery'):
             record_gate(fixture.projection, key, 'readiness', 'ready:existing', 'ready', [fixture.scope], [])
@@ -58,7 +58,7 @@ class ScopeRevisionTests(unittest.TestCase):
         directory.mkdir(parents=True, exist_ok=True)
         inp, sem = directory / 'input.json', directory / 'semantic.json'
         inp.write_text(json.dumps(public)); sem.write_text(json.dumps(semantic))
-        flag = '--semantic-result' if role == 'readiness' else '--review-input' if role in ('publication', 'delivery') else '--owner-result'
+        flag = '--review-input' if role in ('publication', 'delivery') else '--owner-result'
         cmd = ['bash', str(KERNEL / 'packages' / OWNERS[role] / 'scripts/invoke.sh'),
                '--root', str(fixture.root), '--input', str(inp), flag, str(sem)]
         result = subprocess.run(cmd, capture_output=True, text=True)

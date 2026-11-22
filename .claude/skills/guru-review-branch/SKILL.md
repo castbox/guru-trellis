@@ -329,9 +329,7 @@ reviewed-content identity.
 `continuity_passed` is only a bounded continuity judgment over a previously
 reviewed task plus one committed reconciliation pair. It must never be
 described as a full Branch Review.
-`passed` targets `guru-review-task-delivery` through its target-owned authoring
-seed. The workflow caller supplies current Delivery policy and live PR facts
-before invoking that owner.
+`passed` targets `guru-publication-entry-router`. It retains the exact Review result while the original Architecture owner verifies publication eligibility. Publication then reads the current Delivery policy and live PR facts.
 This package is not self-contained or portable.
 
 The public wrapper accepts only current public input, reruns the objective
@@ -352,7 +350,7 @@ For the bounded exception after an actual complete Review, use
 `delivery_promotion_reference_alignment` exactly as defined in the contract's
 Promotion reference alignment section. It emits the existing `passed` only
 after the original owner reviews all Git delta and affected dependencies.
-Delivery Review consumes the new current full_review; it never substitutes a
+Publication consumes the new current full_review; it never substitutes a
 Phase 2 result or relabels the old pass.
 
 The current Delivery aggregate dispatches independent full Review, continuity,

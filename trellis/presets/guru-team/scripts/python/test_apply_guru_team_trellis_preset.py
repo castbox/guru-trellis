@@ -305,7 +305,6 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
     testcase.assertIn("<!-- guru-team-overlay: v1 -->", text, path)
     testcase.assertIn("`.trellis/workflow.md`", text, path)
     for skill_id in (
-        "guru-review-task-delivery",
         "guru-publish-task-delivery",
         "guru-merge-task-delivery",
         "guru-review-task-completion",
@@ -315,7 +314,6 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
     ):
         testcase.assertIn(skill_id, text, path)
     for exit_id in (
-        "ready",
         "remaining_work",
         "additional_delivery_required",
         "ready_for_merge",

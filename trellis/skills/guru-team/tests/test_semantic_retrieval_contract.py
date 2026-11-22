@@ -30,7 +30,7 @@ SEMANTIC_FIXTURES = {
 NON_OWNERS = (
     "guru-review-change-request",
     "guru-create-task-commit",
-    "guru-review-task-delivery",
+    "guru-publish-task-delivery",
     "guru-publish-task-delivery",
     "guru-merge-task-delivery",
     "guru-reconcile-task-base",

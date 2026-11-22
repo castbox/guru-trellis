@@ -79,13 +79,13 @@ finding/整合修正后，原合规 reviewer 核闭合、修订差额及受影�
 
 合法来源为现有 public Task/Delivery 结果、实际原公开结果/调用对象、精确 Git 和当前正文，以及仍可核验的原命令结果。passed full_review 可定位原范围/plan/outcome；首次 implementation_required 没有 passed full_review，finding refs 只定位缺陷，已建立的理解不能补造覆盖。缺少合法依据时补真实审核；不跨 owner 读私有状态、不重建退休 checkpoint、不增加 review/test 账本、全链 digest 或授权记录。
 
-Delivery Review、Publication 和 Merge 分别核当前 payload、Issue 语义、候选及 live 事实，消费仍适用的内容判断，不重做无实质变化的业务设计审核。真实 scope、前提或依赖变化回最早受影响 owner；同 Delivery 恢复不制造新身份或空提交。唯一共享执行定义由 canonical workflow-contract 的 Candidate Applicability And Coverage 小节拥有，七个原 owner 显式读取，平台只加载/路由。matching 完整安装和在途退出按 MIGRATION-637；旧完整安装固定或沿原维护 owner 成套切换，source 编辑不热迁移开发 Task。
+Publication 和 Merge 分别核当前 payload、Issue 语义、候选及 live 事实，消费仍适用的内容判断，不重做无实质变化的业务设计审核。真实 scope、前提或依赖变化回最早受影响 owner；同 Delivery 恢复不制造新身份或空提交。唯一共享执行定义由 canonical workflow-contract 的 Candidate Applicability And Coverage 小节拥有，七个原 owner 显式读取，平台只加载/路由。matching 完整安装和在途退出按 MIGRATION-637；旧完整安装固定或沿原维护 owner 成套切换，source 编辑不热迁移开发 Task。
 
 本行为保留 R531/R567/R578/R600/R636 的有效条件、首次独立完整、同次真实 check/full_review 与各当前正式结果。只替代无因新 reviewer/完整相同重审和相邻阶段抵消复用的片段。实际 #636 接口组合由后交付项验证；#638的当前组合按T638实际验证，历史#637结果不证明该组合通过。Completion/Closure/Release 各保留独立责任。
 
 ## 交付事实与整体完成
 
-`R531-05 / BEH531-FACT`、`R434-01`、`BEH-557-01..04` 保持。Delivery Review 判断本切片 readiness、真实中文 PR 载荷、验证层次、安全和部署影响。所有业务 Delivery PR 使用 Refs-only；即使目标是默认分支且本批 full，也不提前关闭源 Issue。Publish/expected-head Merge 仅执行其已审查事务，实际远端成功、公共投影和当前 gate 适用性相互区别。输出丢失从原事务恢复同一实际结果，不重复 push/PR/merge；历史成功不制造新 pass。
+`R531-05 / BEH531-FACT`、`R434-01`、`BEH-557-01..04` 保持。Publication 判断本切片 readiness、真实中文 PR 载荷、验证层次、安全和部署影响。所有业务 Delivery PR 使用 Refs-only；即使目标是默认分支且本批 full，也不提前关闭源 Issue。Publish/expected-head Merge 仅执行其已审查事务，实际远端成功、公共投影和当前 gate 适用性相互区别。输出丢失从原事务恢复同一实际结果，不重复 push/PR/merge；历史成功不制造新 pass。
 
 已正式发布的 Delivery 后来被人工合并时，只能由原 Merge 的显式 recovery 读已有公共 Task/Delivery/Publication 关系、真实双亲合并及实际 head，记录事实并进入整体 Completion。事实不要求伪造 trailers，也不要求第二次 merge。实际内容变化、CI、gate 适用性和未覆盖范围由 Completion/受影响原 owners 判断，不能凭 MERGED 推断完成。
 
@@ -219,7 +219,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 - **R794-02 / BEH794-INDEPENDENT**：新独立 reviewer在固定committed B..H完成一次Architecture before/after、原九维与全部Branch Review；冻结候选，修复回原writer后继提交。
 - **R794-03 / BEH794-RESULTS**：原Review同时拥有check/full_review，真实通过后顺序记录两个必要公共结果；缺槽/旧pass/历史PR不能代替当前充分性。
 - **R794-04 / BEH794-COVERAGE**：原reviewer仍独立时可接续；原覆盖/工程事实按适用性采用，所有真实差额、base组合/冲突和受影响未改consumer覆盖；无法界定或覆盖丢失时补足完整审核，caller不缩B。
-- **R794-05 / BEH794-PUBLISH**：通过前无新push/PR；后仍由原Delivery Review/readiness和Publication判断载荷、实际交付、剩余责任及未验证范围，终态不合并。
+- **R794-05 / BEH794-PUBLISH**：通过前无新push/PR；后仍由Publication 判断 readiness 和载荷、实际交付、剩余责任及未验证范围，终态不合并。
 - **R794-06 / BEH794-RECOVERY**：匹配新公共版本/消费者和原provider边界显式切换；旧Check/已提交/旧Draft实际阶段及已发生动作准确恢复，不重复副作用、不改名旧pass；pending远端动作回当前审核/readiness。
 - **R794-07 / BEH794-ADOPTION**：canonical、packages/runtime/schema、spec、workflow/routing及实际受影响平台沿原owner成套采用，保Task/session/用户内容和sidecar；定向验证分清组件、实际Agent、安装及外部效果，不扩完整Release矩阵。
 
@@ -252,3 +252,14 @@ Author完成完整规划和自检后，独立Architecture final_plan直接进入
 - **R856-04 / BEH856-ADOPTION**：同一错误边界覆盖 Publish 的实际直接入口及原 migration/recover consumer。canonical 与受影响受管投影由原 tools owner 成套同步，定向验证 package/runtime、installed/reapply/drift、mode 和 sidecar。源码及 fixture 结果不证明旧业务安装、历史发布或生产效果；完整 Release 矩阵另属原 owner。
 
 职责 D856-01..03、验证 T856-01..05 位于对应生命周期单元。固定前驱为 Git `4f3d9069e0720ec94e39d1079154d2f7a7058935` 的本单元；来源和窄增加边界见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。本节保留全部未替代条件。
+
+## R900：从发布入口完成 readiness 与预览
+
+来源为 [#900](https://github.com/castbox/guru-trellis/issues/900) 和 #736 第 8 项及 AC7 的发布部分。
+
+- **R900-01 / BEH900-PREPARE**。当前固定候选有适用的独立 full_review 和 Architecture 资格后，由 Publication 判断 readiness。它核对批准范围、实际交付和验证、剩余责任与未验证边界。通过后展示实际中文 PR 标题、正文与待执行动作，保留 Refs-only。
+- **R900-02 / BEH900-CONFIRM**。按当前对话确认的候选、预览及待执行动作执行。实质变化后重新展示并确认。缺失或失效的前置和 readiness 问题分别由原职责处理。只有当前发布结果具备合并前置时进入正常 Merge。
+- **R900-03 / BEH900-RECOVER**。续接先回读同一 Delivery、发布事实和已有 PR。已经完成的动作按原事务恢复。待执行动作遵循当前前置和确认。已合并交原 Merge。保持整体 Completion、Issue Closure 和 Finish 的职责及顺序。
+- **R900-04 / BEH900-ADOPT**。正常、返工和续接入口、公开消费者、最小示例、迁移合同、声明平台及受管投影成套切换。在途采用见 [MIGRATION-900](../../../trellis/presets/guru-team/MIGRATION-900.md)。
+
+设计 D900 和测试 T900 承接这些要求。#794 的独立审查和旧 Draft 的适用处置继续有效。

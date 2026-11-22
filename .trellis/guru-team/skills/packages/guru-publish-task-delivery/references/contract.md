@@ -2,6 +2,55 @@ Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicabil
 for shared candidate coverage, engineering facts and recovery. This package
 retains its own current judgment, formal result and action boundary.
 
+## Current Publication preparation and execution
+
+The active entry is `delivery_prepare_publication`. The caller supplies the
+exact TaskRef, DeliveryKey, passed full Review identity, reviewed commit and
+current candidate-bound Publication Architecture assessment with
+`no_change` or `reviewed_promoted`. Use the matching preparation example.
+Separately submit the complete AI-authored readiness result. The schema
+preserves the original ten dimensions and outcomes. The `ready` semantic
+outcome supplies the reviewed PR payload and three required disclosures.
+The runtime records the existing public readiness role under Publication
+with the exact full Review predecessor. Its output is `publication_prepared`
+with the complete preview. The earlier standalone `ready` handoff is retired.
+
+The execute input is `{profile: "delivery_execute_publication", prepared}`.
+Supply the exact previous `publication_prepared` result unchanged. Read live
+facts and complete the AI action review. Present all pending remote effects
+and obtain confirmation before executing them. The command receives the
+previous objective preview identity for comparison only. It prints
+`reprepare_required` if the pending action set or any shown facts changed.
+Repeat preparation and presentation for the same Delivery. No authorization
+enters the input. Use a supported carrier for each JSON argument; only one
+may use stdin.
+
+Recovery first resolves the exact existing public fact or original transaction.
+An already MERGED original PR with a PublicationFact returns
+`merged_recovery_required`. If an exact transaction or explicitly selected
+PR establishes the candidate but the public PublicationFact is absent,
+`merged_adoption_required` enters original Merge adoption. Merge still
+checks its own attribution and historical requirements. Neither path writes
+a PublicationFact to give Merge additional eligibility.
+
+After readiness has been recorded, the public publishing phase on its own
+cannot recreate the PR text. If no usable preview or transaction remains,
+re-enter current preparation. Publication legally clears readiness with
+`publication` → `readiness` while full Review remains applicable, then
+records the new assessed outcome once in reviewing. If full Review is stale,
+return through the original Review owner. If only the Architecture identity
+changed, refresh that stage before preparation.
+
+An unfinished same-Delivery transaction can take a current readiness result
+after re-reading the original bound PR, target and completed postimages.
+Prepare and show only remaining remote actions. After confirmation, rebind
+the existing transaction to the new pending actions. Preserve its original
+reference, original input when superseded, and observed PR identity. Read
+back completed effects using their real GitHub state. Only a verified completed
+transaction may be retired by the existing retirement step. A verified Ready
+postimage can supply the original missing public projection without further
+remote actions.
+
 ## Public Delivery integration 1.0
 
 ### Bounded private transaction migration
@@ -47,10 +96,16 @@ review. This owner judges exact payload/Issue semantics, selected candidate,
 publication action and live PR facts; it does not repeat unchanged business
 design. Preserve preview, expected HEAD, transaction recovery and readback.
 
-Current profiles are `delivery_review_ready`, `delivery_same_plan_resume`, and
-`delivery_reprepare_publication`. A fresh transaction consumes the exact
-`readiness_result_id`; recovery is keyed by selected public Delivery and the
-private transaction reference. Keep publication substeps private and
+The fresh public profiles are preparation and execution above.
+`delivery_same_plan_resume` and `delivery_reprepare_publication` preserve the
+selected public Delivery and original transaction reference. They recover
+terminal facts or return the currently affected step for preparation. When the
+same PR is already Draft, same-plan resume records the original Revision rework
+and recovers its result. If the Draft action remains pending, preview that
+action through the original return-to-Draft profile and confirm the exact
+action before executing it.
+The prior `delivery_review_ready` payload remains an internal transaction
+source shape and a historical public contract for the complete prior provider. Keep publication substeps private and
 preserve same-PR adoption and metadata convergence. Bind provider queries and
 mutations to the actual repository; no implicit target guessing.
 
@@ -86,7 +141,7 @@ the identical stored stop result and releases selection without another stop.
 New early Draft publication is retired. Current input aggregate4.0 has no
 `delivery_draft_publish` profile. No unreviewed candidate can push or create a
 PR. First complete the fixed committed independent Review and original
-Delivery Review/readiness, then use `delivery_review_ready`.
+Publication preparation, then execute its exact displayed action.
 MIGRATION-794 fixes the complete old provider for recovering already executed
 old Draft transactions. Retain actual PR, remote HEAD and metadata. Pending
 remote actions receive no eligibility from the old transaction or a relabeled
@@ -107,7 +162,7 @@ stdout. Recover an old action before previewing a new one. The next action
 verifies and retires the prior completed transaction; no action journal or
 second Delivery store remains.
 
-Final delivery_review_ready still requires current candidate-bound readiness.
+Final publication execution still requires current candidate-bound readiness.
 Only actual Ready records PublicationFact, and only current gates permit
 ready_for_merge. Early feedback/analysis cannot supply a gate. One-time matching
 1.0 transaction conversion is defined by MIGRATION-636.
@@ -186,7 +241,10 @@ lifecycle without adding a command, exit, journal or recovery store.
 Merge rereads the PR by repository and number and uses the body digest as its
 minimal freshness token.
 
-`review_stale` returns the task plus a stale reason to Delivery Review.
+`review_stale` returns the Task and Delivery plus a stale reason to the
+Publication review router. The router refreshes Publication when the full
+Branch Review remains applicable. Otherwise it returns to the original stale
+stage owner.
 `resume_publication` returns the task plus private transaction reference to this
 same owner. `reprepare_required` returns a task plus reason code when the
 current call no longer matches the recoverable private plan. `blocked` is a
@@ -244,7 +302,7 @@ Use `delivery_remote_ready_recovery` with the same explicit task/key/PR/source,
 current `readiness_result_id`, `reviewed_head`, title/body and
 `remaining_work_state`. Neither entry creates a PR or changes a branch binding.
 Their original outputs retain the same unique consumers: Draft feedback router,
-Delivery Review for stale readiness, same-owner resume, or Merge for current
+the applicable original prerequisite or Publication preparation for stale readiness, same-owner resume, or Merge for current
 `ready_for_merge`.
 
 The AI reads the exact source and candidate commits, complete fixed B..H range,

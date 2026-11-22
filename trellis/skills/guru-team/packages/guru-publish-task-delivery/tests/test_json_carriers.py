@@ -100,16 +100,12 @@ class PublicationCarrierTests(unittest.TestCase):
             private_reader('{"private_state":"inline is not a locator"}')
         self.assertEqual(error.exception.code, "invalid_json")
 
-    def test_formal_selector_consumes_input_once_and_review_stdin_recovers_same_draft(self):
-        public = self.public()
-        encoded = json.dumps(public)
-        context = self.entry("check", "preview-task-delivery-publication", ["--input", encoded])
-        review_path = self.f.write("carrier-review.json", self.review())
-        published = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", "-", "--review-input", review_path, "--confirmed-preview-sha256", context["confirmation_identity"]], encoded)
-        recovered = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", encoded, "--review-input", "-"], json.dumps(self.review()))
-        self.assertEqual(published["exit_id"], "ready_for_merge")
-        self.assertEqual(published, recovered)
-        self.assertEqual(self.effects, ["push", "create", "ready"])
+    def test_retired_review_ready_stdin_is_read_once_and_performs_no_writes(self):
+        with self.assertRaises(owner.WorkflowError) as retired:
+            self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", "-", "--review-input", json.dumps(self.review())],
+                       json.dumps(self.public()))
+        self.assertEqual("schema_mismatch", retired.exception.code)
+        self.assertEqual([], self.effects)
 
     def test_invalid_public_carriers_keep_parameter_diagnostics(self):
         from runtime.io import CommandError
@@ -122,25 +118,6 @@ class PublicationCarrierTests(unittest.TestCase):
         with self.assertRaises(CommandError) as review_error:
             self.entry("record", "record-task-delivery-publication-gate", ["--input", json.dumps(self.public()), "--review-input", "-"], "{")
         self.assertEqual((review_error.exception.code, review_error.exception.field_path), ("invalid_json", "review_input"))
-
-    def test_direct_invoke_resumes_same_transaction_after_each_lost_mutation_output(self):
-        public = self.public()
-        preview = self.entry("check", "preview-task-delivery-publication", ["--input", json.dumps(public)])
-        arguments = ["--review-input", json.dumps(self.review()), "--confirmed-preview-sha256", preview["confirmation_identity"]]
-        self.drop = "push"
-        interrupted = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(public), *arguments])
-        self.assertEqual(interrupted["exit_id"], "resume_publication")
-        reference = interrupted["transaction_ref"]
-        resume = {"profile": "delivery_same_plan_resume", "mode": "workflow", "task_ref": public["task_ref"],
-                  "delivery_key": public["delivery_key"], "transaction_ref": reference}
-        for action in ("create", "ready"):
-            self.drop = action
-            interrupted = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(resume), *arguments])
-            self.assertEqual((interrupted["exit_id"], interrupted["transaction_ref"]), ("resume_publication", reference))
-        completed = self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(resume), *arguments])
-        self.assertEqual(completed["exit_id"], "ready_for_merge")
-        self.assertEqual(completed, self.entry("invoke", "invoke-guru-publish-task-delivery", ["--input", json.dumps(resume), *arguments]))
-        self.assertEqual(self.effects, ["push", "create", "ready"])
 
     def test_legacy_formal_selector_passes_the_same_single_stdin_object(self):
         public = {"profile": "legacy_history_verification", "root": str(self.f.repo),
