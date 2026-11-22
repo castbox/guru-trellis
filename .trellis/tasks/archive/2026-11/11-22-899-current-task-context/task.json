@@ -1,0 +1,455 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-22-899-current-task-context",
+  "id": "899-current-task-context",
+  "name": "899-current-task-context",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 899,
+    "disposition": "exact_source"
+  },
+  "title": "当前 Task 续接通过一次只读调用解析身份与位置",
+  "description": "为当前 Task 的标准续接提供一次公开只读解析。",
+  "dev_type": null,
+  "scope": "仅交付 castbox/guru-trellis #899 的行为要求和验收。保留原 Task、session、checkout、Delivery 的状态和写入恢复职责。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-22",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+    "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+  },
+  "deliveries": [
+    {
+      "id": "050593ef-310d-408c-b2a4-a2c0d58330fb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+          "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/design.md",
+        "revision": "sha256:276750ffe684eae2460ad5eb99f3276a7edeb977369a56dde294e9b7a6f9f008"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:9c708d4c4aea648d7bc6023d82996c48dd17244b64a5c373147668d03161bcbd",
+        "paths": [
+          ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+          ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+          ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
+          ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+          ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
+          ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
+          ".trellis/workflow.md",
+          "docs/architecture/03-domains/workflow-context.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+          "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+          "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+          "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+          "trellis/skills/guru-team/tests/test_read_continuation_context.py",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/bash/read-continuation-context.sh",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "head_ref": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+        "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:aad3c8b7-6f64-4ae9-a769-9245ccac622b",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+              "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/design.md",
+            "revision": "sha256:276750ffe684eae2460ad5eb99f3276a7edeb977369a56dde294e9b7a6f9f008"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/prd.md",
+              "revision": "sha256:364265b9e41b904c166c896c50db90fc875bb8631ba6d0ebe2e4358f1208ea79"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/design.md",
+              "revision": "sha256:276750ffe684eae2460ad5eb99f3276a7edeb977369a56dde294e9b7a6f9f008"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/implement.md",
+              "revision": "sha256:012358be45bee1dbdd4ca8edb90c9fa2911a963ac65ffe210377131df5e59915"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:c16c625321b6721166190105978b2b12a4746d9b7f6c85b717993876b6650a5d",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+              "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/design.md",
+            "revision": "sha256:276750ffe684eae2460ad5eb99f3276a7edeb977369a56dde294e9b7a6f9f008"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:9c708d4c4aea648d7bc6023d82996c48dd17244b64a5c373147668d03161bcbd",
+            "paths": [
+              ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+              ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+              ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
+              ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+              ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
+              ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+              "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+              "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+              "trellis/skills/guru-team/tests/test_read_continuation_context.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/scripts/bash/read-continuation-context.sh",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+            "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7"
+          },
+          "predecessor_result_id": "planning-accepted:aad3c8b7-6f64-4ae9-a769-9245ccac622b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/implement.md",
+              "revision": "sha256:012358be45bee1dbdd4ca8edb90c9fa2911a963ac65ffe210377131df5e59915"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:c16c625321b6721166190105978b2b12a4746d9b7f6c85b717993876b6650a5d",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+              "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/design.md",
+            "revision": "sha256:276750ffe684eae2460ad5eb99f3276a7edeb977369a56dde294e9b7a6f9f008"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:9c708d4c4aea648d7bc6023d82996c48dd17244b64a5c373147668d03161bcbd",
+            "paths": [
+              ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+              ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+              ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
+              ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+              ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
+              ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+              "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+              "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+              "trellis/skills/guru-team/tests/test_read_continuation_context.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/scripts/bash/read-continuation-context.sh",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+            "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7"
+          },
+          "predecessor_result_id": "check:c16c625321b6721166190105978b2b12a4746d9b7f6c85b717993876b6650a5d",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/implement.md",
+              "revision": "sha256:012358be45bee1dbdd4ca8edb90c9fa2911a963ac65ffe210377131df5e59915"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:1d2484dc1f068f76c3769588eb43864cc7784b0803dea85d924074a673a07120",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+              "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/design.md",
+            "revision": "sha256:276750ffe684eae2460ad5eb99f3276a7edeb977369a56dde294e9b7a6f9f008"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:9c708d4c4aea648d7bc6023d82996c48dd17244b64a5c373147668d03161bcbd",
+            "paths": [
+              ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+              ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+              ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
+              ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+              ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
+              ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+              "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+              "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+              "trellis/skills/guru-team/tests/test_read_continuation_context.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/scripts/bash/read-continuation-context.sh",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+            "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7"
+          },
+          "predecessor_result_id": "full-review:c16c625321b6721166190105978b2b12a4746d9b7f6c85b717993876b6650a5d",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-899-current-task-context/deliveries/050593ef-310d-408c-b2a4-a2c0d58330fb/implement.md",
+              "revision": "sha256:012358be45bee1dbdd4ca8edb90c9fa2911a963ac65ffe210377131df5e59915"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:150dcf10a690c101c6493efa353a74c553e3070f1863e5f068db5d21112c4d0c",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/902",
+            "revision": "sha256:e6f7fbd9018b515ef5916260a2044e61969b81898061b4276fb8222b38303e78"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+          "content_ref": "sha256:9c708d4c4aea648d7bc6023d82996c48dd17244b64a5c373147668d03161bcbd",
+          "head_ref": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+            ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+            ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
+            ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+            ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
+            ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
+            ".trellis/workflow.md",
+            "docs/architecture/03-domains/workflow-context.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+            "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+            "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+            "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+            "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+            "trellis/skills/guru-team/tests/test_read_continuation_context.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/scripts/bash/read-continuation-context.sh",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 902,
+        "reviewed_head": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/902",
+          "revision": "sha256:e6f7fbd9018b515ef5916260a2044e61969b81898061b4276fb8222b38303e78"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:dfee502743e871104bede2ee8af67e647cb9988c",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/902",
+            "revision": "dfee502743e871104bede2ee8af67e647cb9988c"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+          "content_ref": "sha256:9c708d4c4aea648d7bc6023d82996c48dd17244b64a5c373147668d03161bcbd",
+          "head_ref": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+            ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+            ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
+            ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+            ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
+            ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
+            ".trellis/workflow.md",
+            "docs/architecture/03-domains/workflow-context.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+            "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+            "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
+            "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+            "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+            "trellis/skills/guru-team/tests/test_read_continuation_context.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/scripts/bash/read-continuation-context.sh",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 902,
+        "reviewed_head": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a",
+        "merge_commit": "dfee502743e871104bede2ee8af67e647cb9988c",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:dfee502743e871104bede2ee8af67e647cb9988c",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/902",
+          "revision": "dfee502743e871104bede2ee8af67e647cb9988c"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/45032269221",
+          "revision": "d200dd3e3f25c0d7a35d573bb6a8684105acea0a"
+        },
+        {
+          "locator": "docs/test/current/task-delivery-lifecycle.md",
+          "revision": "dfee502743e871104bede2ee8af67e647cb9988c"
+        },
+        {
+          "locator": "docs/architecture/03-domains/workflow-context.md",
+          "revision": "dfee502743e871104bede2ee8af67e647cb9988c"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-22-899-current-task-context/prd.md",
+        "revision": "sha256:747e13d509aed4fe4ac1a1c6efe07a568d98ca60503bbe1c20d1906dbd40f2e2"
+      },
+      "delivery_result_ids": [
+        "delivery:dfee502743e871104bede2ee8af67e647cb9988c"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:629b856525dbc7318fec9c27",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/899",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-22-899-current-task-context/closeout/closure/Y2xvc3VyZTo2MjliODU2NTI1ZGJjNzMxOGZlYzljMjc.json",
+          "revision": "sha256:411f3ff34b2e82d05546ee1d4a8d6cb86cbae7ed9b067a8ac9f90514bf18b6aa"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:dfee502743e871104bede2ee8af67e647cb9988c",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/899",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
