@@ -44,6 +44,9 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
         source_spec = fixture.guru_root / "trellis/presets/guru-team/spec/workflow/review-sufficiency.md"
         canonical = source_spec.read_bytes()
         target_spec = repo / spec_relative
+        method_relative = Path(".trellis/spec/workflow/quality-guidelines.md")
+        method_source = fixture.guru_root / "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        method_canonical = method_source.read_bytes()
         user_file = repo / "docs/project-notes.md"
         user_file.parent.mkdir(parents=True)
         user_bytes = b"# Existing project notes\r\nKeep these bytes.\r\n"
@@ -56,6 +59,11 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
                 manifest["install"]["managed_asset_hashes"][spec_relative.as_posix()],
                 hashlib.sha256(canonical).hexdigest(),
             )
+            self.assertEqual((repo / method_relative).read_bytes(), method_canonical)
+            self.assertEqual(
+                manifest["install"]["managed_asset_hashes"][method_relative.as_posix()],
+                hashlib.sha256(method_canonical).hexdigest(),
+            )
             roots = [
                 fixture.install_dst / "skills/packages",
                 *(repo / root for root in selected_skill_roots(platforms)),
@@ -67,9 +75,9 @@ class ReviewSufficiencyDistributionTest(unittest.TestCase):
                         # Compare canonical and installed bytes; this does not
                         # prove that an Agent loads the semantic rules.
                         self.assertEqual(entry.read_bytes(), (source_packages / consumer / "SKILL.md").read_bytes())
-                method_relative = Path("guru-review-change/references/review-method.md")
-                method = root / method_relative
-                self.assertEqual(method.read_bytes(), (source_packages / method_relative).read_bytes())
+                review_relative = Path("guru-review-change/references/review-method.md")
+                method = root / review_relative
+                self.assertEqual(method.read_bytes(), (source_packages / review_relative).read_bytes())
                 links = re.findall(r"\]\(([^)]+)\)", method.read_text())
                 for link in links:
                     linked = (method.parent / link.split("#", 1)[0]).resolve()

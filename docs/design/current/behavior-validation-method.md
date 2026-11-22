@@ -47,3 +47,9 @@ Identity：RDT-DES-BEHAVIOR-VALIDATION；别名：D735/CON735。原语义 owner�
 承接 R747-D2-02。共用方法要求原审核者观察实际进入的路径和产生的结果，并把结论限制在实际触达范围。比较替身差异时，只追踪当前验收依赖的语义。样本覆盖按已接受范围和目标构建的实际能力判断。共用审核规范的独立推导、读取顺序和证据复用仍按原职责执行。Architecture 的职责连接见对应域。去敏示例扩展手势、异步、媒体样本和简单 API 裁剪，真实观察使用分开的中性材料。分发沿既有 managed-spec 和 Author package。
 
 对应 [R747-D2-01 和 R747-D2-02](../../requirements/current/behavior-validation-method.md) 及 [T747-D2-01 至 T747-D2-03](../../test/current/behavior-validation-method.md)。
+
+## D826-01 / CON826-METHOD
+
+承接R826-01/02。唯一生产正文仍为quality-guidelines Test And Validation Value下项目验证与维护、真实Agent对照方法；Author/实施/Review按原职责消费，同源引用不复制标准。项目本地说明服从已有约定，真实执行和维护证明可用。实验host持标准和映射，执行者只读自然任务与对应方法，匿名评价先于揭示映射；工具只运输事实，原owner判断。复用原生入口/采集及受管分发，不新增Skill、runtime、DTO、总控或评分器。规则变化只重验实际受影响范围。关系：R826-01/02，T826-01..04。
+
+本单元的826增量由原RDT owner在本Task实施与真实Sol medium案例验证后完成整合及回读；正式提交后独立Review与Delivery/Completion仍待各原owner，不从本文推定最终通过。
