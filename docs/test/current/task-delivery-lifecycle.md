@@ -253,6 +253,17 @@ Agent读完整来源及整体/切片要求，由Author写规划，独立Architec
 
 实际工程结果由 [#856 Test](../../requirements-design-test-contributions/856-publication-error-boundary/test.md) 定位。本单元定义预期，不预填 Check、committed Review、安装采用或生产通过；历史 G10 首次异常及旧 Draft 不追加真实重放义务。固定前驱和窄增加关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。
 
+## T900：发布入口、准确预览和原事务恢复
+
+| 场景 | 真实入口与输入 | 应观察的结果 |
+| --- | --- | --- |
+| T900-01 → R900-01/02、D900-01/02 | Publication 准备与执行入口，固定已审候选、适用 Architecture，受控 Git 与 gh | 直接产出 readiness 和准确预览。确认前无远端写入，确认后执行预览中的动作。Merge 接收已达资格的准确结果。 |
+| T900-02 → R900-02、D900-02 | 正常缺失或失效的前置、readiness 不通过、预览后待执行动作变化 | 唯一回程，停止待执行写入。实质变化返回新预览并重新确认。 |
+| T900-03 → R900-03、D900-03 | readiness 落盘后预览未交付、事务部分成功、同一 Open PR 或已合并续接 | 保持同 key 和同 PR，读回已完成动作，剩余动作只按本次确认执行。已合并结果由原 Merge 归属校验。 |
+| T900-04 → R900-04、D900-04 | 源码、受管安装和声明平台入口 | 当前生产调用方使用匹配公开合同。reapply 保留 Task/session，并核对受管 sidecar、executable mode 和 drift。 |
+
+受控依赖、实际 Agent 判断、安装读回及 GitHub 实际效果分别保留观察来源。
+
 ## T899 续接行为验证
 
 覆盖 [R899](../../requirements/current/task-delivery-lifecycle.md#r899-标准续接上下文) 和 [D899](../../design/current/task-delivery-lifecycle.md#d899-一次解析与精确后续读取)。公开 CLI 真实 Git 工作树和已安装上游 API 测试 7/7。用例覆盖同会话重用、正常 Task 切换和 Delivery 改选、显式查询、缺绑定、普通冲突和旧记录。检查查询前后的 Task、会话及 Git 状态。精确记录与原结果及门禁适用性一致。

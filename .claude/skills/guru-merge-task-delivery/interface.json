@@ -486,8 +486,8 @@
       "id": "review_refresh_required",
       "evidence": "the current Delivery review authority is stale and must be rebuilt for the active task",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-review-task-delivery"
+        "kind": "workflow",
+        "id": "guru-publication-review-router"
       }
     },
     {
@@ -892,28 +892,14 @@
       {
         "id": "delivery_review_seed",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-review-task-delivery"
+          "kind": "workflow",
+          "id": "guru-publication-review-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-task-delivery/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "delivery_readiness_refresh",
-          "seed_fields": [
-            "task_ref",
-            "delivery_key",
-            "reentry_reason"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode"
-          ],
-          "authoring_example": {
-            "id": "review_refresh_required_delivery_authoring",
-            "path": "examples/authoring-delivery-review-refresh-required-1.0.json"
-          }
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-merge-task-delivery-review_refresh_required-publication-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-refresh-required-publication.schema.json"
         }
       },
       {
@@ -1028,21 +1014,7 @@
         "id": "project_review_refresh_required",
         "exit_id": "review_refresh_required",
         "consumer_input_id": "delivery_review_seed",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "delivery_key",
-            "target": "delivery_key"
-          },
-          {
-            "source": "reason_code",
-            "target": "reentry_reason"
-          }
-        ]
+        "operation": "direct"
       },
       {
         "id": "project_delivery_stopped",

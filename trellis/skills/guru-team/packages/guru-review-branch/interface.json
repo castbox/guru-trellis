@@ -504,8 +504,8 @@
       "id": "passed",
       "evidence": "The current independent reviewer completed all applicable nine-dimensional and full-range coverage, all qualified findings are closed, and both actual public results exist.",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-review-task-delivery"
+        "kind": "workflow",
+        "id": "guru-publication-entry-router"
       }
     },
     {
@@ -931,29 +931,14 @@
       {
         "id": "delivery_seed_input",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-review-task-delivery"
+          "kind": "workflow",
+          "id": "guru-publication-entry-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-task-delivery/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "delivery_delivery_review",
-          "seed_fields": [
-            "task_ref",
-            "delivery_key",
-            "full_review_result_id",
-            "branch_review_commit"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode"
-          ],
-          "authoring_example": {
-            "id": "delivery_review_authoring_fields",
-            "path": "examples/authoring-delivery-review-seed-2.0.json"
-          }
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-review-branch-passed-publication-1.0",
+          "path": "consumers/workflow/delivery-1.0/passed-publication.schema.json"
         }
       },
       {
@@ -1113,25 +1098,7 @@
         "id": "project_passed",
         "exit_id": "passed",
         "consumer_input_id": "delivery_seed_input",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "delivery_key",
-            "target": "delivery_key"
-          },
-          {
-            "source": "full_review_result_id",
-            "target": "full_review_result_id"
-          },
-          {
-            "source": "branch_review_commit",
-            "target": "branch_review_commit"
-          }
-        ]
+        "operation": "direct"
       },
       {
         "id": "project_implementation_required",

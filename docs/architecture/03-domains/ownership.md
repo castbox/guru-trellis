@@ -18,7 +18,7 @@
 | `ARCH-DOM-014` | post-review base continuity | Reconcile 独占 compatible base advance 的 semantic classification 与确认后的 local reconciliation commit；Review Branch 独占 bounded continuity judgment；Publication 独占 current reviewed-content acceptance；Finalizer 只投影 prior review identity，不复制任一 owner 的判断或写入；此为旧默认，固定内容/实际触发的当前责任以后继 ARCH-DOM-048 为准 |
 | `ARCH-DOM-015` | Issue reference and closure ownership | Guru lifecycle 内，current user/live external authority 与 lifecycle owner持有 requirement/source reference；Publication 独占 Issue reference/closure intent；Finalizer 执行 reviewed payload并投影 exact body SHA-256；GitHub 执行默认分支 closing keyword；Merge mutation前验证 live body identity且只验证 live result；无 task-local classification aggregate 或第二 closure owner |
 | `ARCH-DOM-016` | active-task continuation | Guru workflow独占detailed continuation；adjacent DTO的consumer、deterministic producer recovery、semantic owner fresh rerun与activation owner各保持单写；upstream独占extractor和thin entries |
-| `ARCH-DOM-017` | active-task Delivery capability | Delivery Review独占slice readiness与PR payload truth；Delivery Publish独占push/PR/Draft/Ready及同计划恢复；Delivery Merge独占merge readiness、受控merge commit与Delivery result；Reconcile独占resolved-tree commit；#434独占production graph activation，#436独占Completion及其后续lifecycle |
+| `ARCH-DOM-017` | active-task Delivery capability | Publication 独占 slice readiness、PR 载荷、精确预览、确认后的 push/PR/Draft/Ready 和同一事务恢复；Delivery Merge独占merge readiness、受控merge commit与Delivery result；Reconcile独占resolved-tree commit；#434独占production graph activation，#436独占Completion及其后续lifecycle |
 | `ARCH-DOM-018` | post-delivery terminal lifecycle | Completion、Closure、Finish、Cleanup与Reactivate各自拥有独立semantic judgment、最小DTO与owner-private recovery；#434独占production graph activation，shared authority promotion仍由Architecture/RDT owners串行完成 |
 | `ARCH-DOM-019` | task identity session binding | official Trellis task/session store拥有稳定task identity与底层resolver/persistence；`guru-bind-task-session`独占lifecycle-aware resume/rebind/switch/reactivate/manual-recovery判断与最小runtime write；独立 final_plan 的一次性对象评审由原 Architecture 本地入口只读核验，不产生绑定或第二writer，普通执行恢复仍保本owner必要runtime写入；#438保留creation attach，#436保留terminal lifecycle receipts，#434独占production route activation |
 | `ARCH-DOM-020` | platform inventory and exact selection | pinned upstream `AI_TOOLS` owns the complete 22-platform inventory and canonical `AITool`/`cliFlag` mapping；Guru preset owns projection descriptors and managed paths；each installed repository manifest/provenance owns its exact selected set；dogfood consumes only Claude/Codex/Cursor；OpenCode remains explicit-only for guru-trellis；Codex 的 current Skill root 是共享 `.agents/skills`，专属包适用性仍由 target exact selection 决定；原 installer/maintenance owner 拥有旧受管根的有界退出和冲突恢复，不新增分发 owner |
@@ -87,7 +87,7 @@ C2-C4 拥有 TaskId、live checkout、branch binding，C5 ledger 与 Fixed Fork 
 ownership 和 schema-2 persistence。Bind 不从 TaskRef、路径、branch/HEAD 或旧 mapping 派生新 authority；
 manual recovery 只补官方 pointer。E434 才将新 owner 接入 production graph。
 
-`ARCH-DOM-029`（#434 current）：Delivery Review/Publish/Merge 单写每轮业务交付，Completion
+`ARCH-DOM-029`（#434、#900 current）：Publication 与 Merge 分别单写发布和合并，Completion
 单写 whole-task 判定；Closure 单写 Issue action set，Finish 单写 bookkeeping/archive/seal，Cleanup
 单写同代 Guru-owned 资源移除，Reactivate 单写新代控制态。#434 只拥有全局边、精确 consumer
 投影与旧边退休，不复制 #435/#436/#443 或 D443/D436 的 step-local semantics。

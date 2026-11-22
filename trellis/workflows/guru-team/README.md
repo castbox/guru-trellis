@@ -179,7 +179,7 @@ Issue 创建与修订共用原 Clarify package 的
 
 原知识 owners 在工程自检后、提交前整合必要文档并读回；整合事实等待提交后独立审核。
 原 `guru-review-branch` 在固定提交上一次完成 Check 与 Branch Review 的全部适用职责，
-包括一次实现后独立 Architecture 判断，再由原 Delivery Review 记录 readiness。
+包括一次实现后独立 Architecture 判断。发布时，Publication 使用适用的架构资格判断 readiness。
 普通晋升保留稳定 identity、single-writer 和实际 expected-current/readback；
 当前与在途采用边界见 [MIGRATION-794](../../presets/guru-team/MIGRATION-794.md)，历史来源和原验证截止点保持。
 源码变更不证明安装、实际 Agent 行为或外部采用。
@@ -191,7 +191,7 @@ Issue 创建与修订共用原 Clarify package 的
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)
 与同 package 的 `templates/` 定义整体 Task PRD 和 Delivery 三正文；原 Clarify、
-原内容 owner、Approval、实施、完整 Review、Delivery Review 与 Completion 在各自职责内实际
+原内容 owner、Approval、实施、完整 Review、Publication 与 Completion 在各自职责内实际
 读取同源合同和必要引用。workflow 只编排和定位，不复制正文规则或改变公共 I/O。
 `examples/planning-body/` 是带来源与修订过程的去敏教学材料，不是实际 V1–V7
 执行证据。验收分别报告真实 Agent 写作/审核、确定性检查和安装投影；一个代表平台
@@ -262,7 +262,7 @@ this workflow retains invocation/transition ownership and does not define
 causal completion or infer it from a Delivery merge.
 
 Normal revision and recovery follow the single continuation block in
-`workflow.md`. Check execution-fact reuse and Delivery Review anchor recovery
+`workflow.md`. Check execution-fact reuse and Publication's handling of the committed Review anchor
 are owned by their respective canonical Skill contracts, not this README.
 The historical #531 development candidate consumes upstream Task schema 2.0 / Delivery API 1.0 and
 requires the matching reviewed API source. The
@@ -309,7 +309,7 @@ Agent 行为或耗时改善。#636 已有接口需命中组合验证，#638 未�
 ## 提交后一次独立完整审核
 
 当前顺序是实现/工程自检、必要知识整合、本地提交、一次独立完整 Review，
-然后原 Delivery Review/readiness 与 Publication。未独立通过前不新 push、不创建 PR。
+然后由 Publication 判断 readiness 并展示实际 PR 预览。确认后执行对应的远端动作。
 原 TaskCommit 的待审提交和干净重入保留精确事务、hook 与同提交恢复。
 早期 Draft 新发布路径退出；既有 PR/HEAD 和已执行动作由原 owner 准确恢复，
 pending 新远端动作回当前审核/readiness。完整版本、退休入口和在途处置见
@@ -321,7 +321,7 @@ pending 新远端动作回当前审核/readiness。完整版本、退休入口�
 Intake -> task identity/scope -> Delivery creation -> Delivery Planning -> implementation
   -> engineering self-check / knowledge integration -> local Task Commit
   -> one independent complete committed Review
-  -> Delivery Review -> Publish Delivery -> Merge Delivery
+  -> Publication (readiness, preview, and confirmed remote actions) -> Merge Delivery
   -> Completion -> (remaining work / another Delivery / Closure)
   -> Finish -> Cleanup
 ```

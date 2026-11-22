@@ -1,7 +1,7 @@
 {
   "profile": "publication_candidate_set",
   "mode": "workflow",
-  "caller": "guru-review-task-delivery",
+  "caller": "guru-publish-task-delivery",
   "target_locator": ".trellis/tasks/example-task",
   "target": {
     "repo_locator": ".",

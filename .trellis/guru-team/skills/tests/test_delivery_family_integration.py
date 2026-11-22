@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import importlib.util
 import re
 import unittest
 from pathlib import Path
@@ -10,7 +9,7 @@ from pathlib import Path
 SKILLS = Path(__file__).resolve().parents[1]
 REPO = SKILLS.parents[2]
 PACKAGE_IDS = (
-    "guru-review-task-delivery",
+    "guru-review-branch",
     "guru-publish-task-delivery",
     "guru-merge-task-delivery",
 )
@@ -36,37 +35,27 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
         return read_json(self.package(skill_id) / profile["schema"]["path"])
 
     def assert_schema_shape(self, payload: dict, schema: dict) -> None:
-        self.assertEqual(set(payload), set(schema["required"]))
+        self.assertLessEqual(set(schema["required"]), set(payload))
         self.assertFalse(set(payload) - set(schema["properties"]))
         for field, rules in schema["properties"].items():
             if "const" in rules:
                 self.assertEqual(payload[field], rules["const"])
-            if "pattern" in rules:
+            if "pattern" in rules and field in payload:
                 self.assertRegex(str(payload[field]), re.compile(rules["pattern"]))
 
-    def project_seed(self, producer_id: str, projection_id: str) -> tuple[dict, dict]:
+    def edge(self, producer_id: str, exit_id: str) -> tuple[dict, dict, dict]:
         package = self.package(producer_id)
         interface = self.interface(producer_id)
-        projection = next(
-            item for item in interface["public_contracts"]["projections"]
-            if item["id"] == projection_id
-        )
-        consumer_input = next(
-            item for item in interface["public_contracts"]["consumer_inputs"]
-            if item["id"] == projection["consumer_input_id"]
-        )
-        output = next(
-            item for item in interface["public_contracts"]["outputs"]
-            if item["exit_id"] == projection["exit_id"]
-        )
+        outputs = interface["public_contracts"]["outputs"]
+        projections = interface["public_contracts"]["projections"]
+        inputs = interface["public_contracts"]["consumer_inputs"]
+        output = next(item for item in outputs if item["exit_id"] == exit_id)
+        projection = next(item for item in projections if item["exit_id"] == exit_id)
+        consumer = next(item for item in inputs if item["id"] == projection["consumer_input_id"])
         payload = read_json(package / output["example"]["path"])
-        seed = {
-            mapping["target"]: payload[mapping["source"]]
-            for mapping in projection.get("mappings", [])
-        }
-        contract = consumer_input["contract"]
-        authoring = read_json(package / contract["authoring_example"]["path"])
-        return {**seed, **authoring}, contract
+        if projection["operation"] != "direct":
+            payload = {row["target"]: payload[row["source"]] for row in projection["mappings"]}
+        return payload, consumer["consumer"], consumer["contract"]
 
     def test_packages_are_active_integrated_with_production_markers(self) -> None:
         registry = read_json(SKILLS / "registry.json")
@@ -78,57 +67,60 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
             self.assertEqual(entries[skill_id].get("workflow_integration_state", "integrated"), "integrated")
             self.assertRegex(workflow, r'"skill"\s*:\s*"'+re.escape(skill_id)+r'"')
 
-    def current_readiness(self):
-        spec=importlib.util.spec_from_file_location("delivery_family_provider",self.package("guru-publish-task-delivery")/"tests/test_early_draft.py")
-        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-        fixture=module.EarlyDraftPublication();fixture.setUp();self.addCleanup(fixture.doCleanups)
-        flow=fixture.f
-        flow.projection.begin_check(flow.key,flow.projection.candidate(["app.txt"],head_ref=flow.head,base_ref=fixture.base))
-        reviewed=flow.single_review()
-        ready=flow.readiness(reviewed)
-        return fixture,ready
+    def test_current_graph_has_one_publication_writer_and_no_split_ready_consumer(self) -> None:
+        registry = read_json(SKILLS / "registry.json")
+        active = {entry["id"] for entry in registry["skills"] if entry["state"] == "active"}
+        self.assertNotIn("guru-review-task-delivery", active)
+        workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text()
+        declaration = workflow.split("[trellis-runtime-contract]", 1)[1].split("[/trellis-runtime-contract]", 1)[0]
+        owners = json.loads(declaration)["owners"]
+        self.assertEqual(owners["readiness"], "guru-publish-task-delivery")
+        self.assertEqual(owners["publication"], "guru-publish-task-delivery")
+        payload, consumer, contract = self.edge("guru-review-branch", "passed")
+        self.assertEqual(consumer, {"kind": "workflow", "id": "guru-publication-entry-router"})
+        self.assert_schema_shape(payload, read_json(self.package("guru-review-branch") / contract["path"]))
 
-    def project_actual(self,producer_id,projection_id,payload):
-        interface=self.interface(producer_id)
-        projection=next(row for row in interface["public_contracts"]["projections"] if row["id"]==projection_id)
-        consumer=next(row for row in interface["public_contracts"]["consumer_inputs"] if row["id"]==projection["consumer_input_id"])
-        seed={row["target"]:payload[row["source"]] for row in projection["mappings"]}
-        contract=consumer["contract"]
-        authoring=read_json(self.package(producer_id)/contract["authoring_example"]["path"])
-        return {**seed,**authoring},contract
-
-    def test_review_ready_projects_to_publish_review_ready(self) -> None:
-        fixture,ready=self.current_readiness()
-        payload,contract=self.project_actual("guru-review-task-delivery","project_ready",ready)
-        self.assert_schema_shape(payload,self.profile_schema("guru-publish-task-delivery",contract["profile_id"]))
-        self.assertEqual(ready["readiness_result_id"],payload["readiness_result_id"])
-        self.assertIsNotNone(fixture.f.projection.resolve(fixture.f.key)["results"]["full_review"])
-
-    def test_publish_ready_projects_to_merge_ready(self) -> None:
-        fixture,ready=self.current_readiness()
-        public,_contract=self.project_actual("guru-review-task-delivery","project_ready",ready)
-        with fixture.provider_reads():published=fixture.invoke(public)
-        payload,contract=self.project_actual("guru-publish-task-delivery","project_ready_for_merge",published)
-        self.assert_schema_shape(payload,self.profile_schema("guru-merge-task-delivery",contract["profile_id"]))
-        self.assertEqual(published["pr_number"],payload["pr_number"])
-        self.assertIsNotNone(fixture.f.projection.resolve(fixture.f.key)["publication_result"])
-
-    def test_publish_and_merge_stale_routes_author_fresh_review_input(self) -> None:
-        for producer, projection in (
-            ("guru-publish-task-delivery", "project_review_stale"),
-            ("guru-merge-task-delivery", "project_review_refresh_required"),
-        ):
+    def test_publication_preview_and_refresh_edges_preserve_the_exact_payload(self) -> None:
+        publish = "guru-publish-task-delivery"
+        payload, consumer, contract = self.edge(publish, "publication_prepared")
+        self.assertEqual(consumer, {"kind": "workflow", "id": "guru-publication-preview-router"})
+        self.assert_schema_shape(payload, read_json(self.package(publish) / contract["path"]))
+        from sys import path as module_paths
+        if str(SKILLS) not in module_paths:
+            module_paths.insert(0, str(SKILLS))
+        from runtime.schema import validate_json
+        input_contract = self.interface(publish)["public_contracts"]["input"]
+        execute = next(profile for profile in input_contract["profiles"] if profile["id"] == "delivery_execute_publication")
+        validate_json(
+            {"profile": "delivery_execute_publication", "prepared": payload},
+            self.package(publish) / execute["schema"]["path"],
+            "execute",
+        )
+        for producer, exit_id in ((publish, "review_stale"), ("guru-merge-task-delivery", "review_refresh_required")):
             with self.subTest(producer=producer):
-                payload, contract = self.project_seed(producer, projection)
-                self.assertEqual(contract["profile_id"], "delivery_readiness_refresh")
-                self.assert_schema_shape(
-                    payload,
-                    self.profile_schema("guru-review-task-delivery", "delivery_readiness_refresh"),
-                )
+                payload, consumer, contract = self.edge(producer, exit_id)
+                self.assertEqual(consumer, {"kind": "workflow", "id": "guru-publication-review-router"})
+                self.assert_schema_shape(payload, read_json(self.package(producer) / contract["path"]))
+
+    def test_merge_receives_distinct_current_and_historical_calls(self) -> None:
+        for exit_id, profile in (
+            ("ready_for_merge", "delivery_ready_for_merge"),
+            ("merged_recovery_required", "delivery_merged_recovery"),
+            ("merged_adoption_required", "delivery_adopt_merged_pr"),
+        ):
+            with self.subTest(exit_id=exit_id):
+                producer = "guru-publish-task-delivery"
+                payload, consumer, contract = self.edge(producer, exit_id)
+                self.assertEqual(consumer, {"kind": "skill", "id": "guru-merge-task-delivery"})
+                self.assertEqual(contract["profile_id"], profile)
+                authoring_path = self.package(producer) / contract["authoring_example"]["path"]
+                authored = read_json(authoring_path)
+                inbound = {**payload, **{key: authored[key] for key in contract["authoring_fields"]}}
+                self.assert_schema_shape(inbound, self.profile_schema(consumer["id"], profile))
 
     def test_delivery_contracts_exclude_terminal_lifecycle_and_bind_identity(self) -> None:
         forbidden = {"completed", "closure", "archive", "finish", "cleanup"}
-        for skill_id in PACKAGE_IDS:
+        for skill_id in PACKAGE_IDS[1:]:
             interface = self.interface(skill_id)
             serialized = json.dumps(
                 interface["public_contracts"]["outputs"], ensure_ascii=False
@@ -137,9 +129,9 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
                 # Withdrawal has a Completion consumer, never a completion claim.
                 self.assertNotIn(token, serialized)
         ready = read_json(
-            self.package("guru-review-task-delivery") / "examples/public-ready-output.json"
+            self.package("guru-publish-task-delivery") / "examples/public-output-publication-prepared-1.0.json"
         )
-        self.assertIn("Refs #435", ready["pr_body"])
+        self.assertRegex(ready["pr_body"], r"Refs #\d+")
         self.assertNotRegex(ready["pr_body"], r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#")
         owner = (
             self.package("guru-merge-task-delivery") / "runtime/owner.py"

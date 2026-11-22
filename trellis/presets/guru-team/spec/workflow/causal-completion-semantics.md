@@ -16,7 +16,7 @@ dispositions. It owns no stage route, Skill invocation, public DTO, recorder,
 or Completion decision. Qualification owns candidate admission; each existing
 stage owner reads this authority and judges its current work and evidence;
 Task Completion alone judges the whole accepted completion definition.
-Publish executes Delivery Review's reviewed payload. Closure owns source Issue
+Publication reviews the PR payload and executes the confirmed operation. Closure owns source Issue
 actions, and Finish owns bookkeeping after Closure.
 
 Determine goals from current accepted scope and actual behavior: ordinary

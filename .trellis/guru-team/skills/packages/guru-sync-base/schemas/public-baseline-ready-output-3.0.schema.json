@@ -137,7 +137,7 @@
                     "guru-resume-implementation",
                     "guru-review-branch",
                     "guru-review-change-request",
-                    "guru-review-task-delivery"
+                    "guru-publish-task-delivery"
                   ]
                 },
                 "continuation_id": {
@@ -220,7 +220,7 @@
                     "guru-resume-implementation",
                     "guru-review-branch",
                     "guru-review-change-request",
-                    "guru-review-task-delivery"
+                    "guru-publish-task-delivery"
                   ]
                 },
                 "continuation_id": {
@@ -511,7 +511,7 @@
                       "guru-resume-implementation",
                       "guru-review-branch",
                       "guru-review-change-request",
-                      "guru-review-task-delivery"
+                      "guru-publish-task-delivery"
                     ]
                   },
                   "continuation_id": {
@@ -594,7 +594,7 @@
                       "guru-resume-implementation",
                       "guru-review-branch",
                       "guru-review-change-request",
-                      "guru-review-task-delivery"
+                      "guru-publish-task-delivery"
                     ]
                   },
                   "continuation_id": {

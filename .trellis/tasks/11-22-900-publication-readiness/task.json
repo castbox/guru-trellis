@@ -1,0 +1,101 @@
+{
+  "schema_version": "2.0",
+  "id": "900-publication-readiness",
+  "name": "900-publication-readiness",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 900,
+    "disposition": "exact_source"
+  },
+  "title": "将 Delivery Review 的 PR readiness 判断并入发布入口",
+  "description": "实现 castbox/guru-trellis #900 的发布入口收敛。",
+  "dev_type": null,
+  "scope": "将 PR readiness 与准确预览并入 Publication，迁移受影响的公开入口和合同，保留确认、返工、在途恢复以及 Merge 和 Closure 的原职责。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-22",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-22-900-publication-readiness/prd.md",
+    "revision": "sha256:f552ae3eec983608be3fba6c0939a09316f8db74810ae5c30097b86e15336961"
+  },
+  "deliveries": [
+    {
+      "id": "36e6d688-a226-45c7-9816-d93c9e5ca4a0",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-22-900-publication-readiness/prd.md",
+          "revision": "sha256:f552ae3eec983608be3fba6c0939a09316f8db74810ae5c30097b86e15336961"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/36e6d688-a226-45c7-9816-d93c9e5ca4a0",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-22-900-publication-readiness/deliveries/36e6d688-a226-45c7-9816-d93c9e5ca4a0/design.md",
+        "revision": "sha256:46cb35f6ab6b3a0260e057aa18a3d43befbb8b3899b3ef4b715344e88f6c4538"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:f316cef6-2190-47c8-8a83-b86184a808ea",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-22-900-publication-readiness/prd.md",
+              "revision": "sha256:f552ae3eec983608be3fba6c0939a09316f8db74810ae5c30097b86e15336961"
+            },
+            "anchors": [
+              "AC1",
+              "AC2"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-22-900-publication-readiness/deliveries/36e6d688-a226-45c7-9816-d93c9e5ca4a0/design.md",
+            "revision": "sha256:46cb35f6ab6b3a0260e057aa18a3d43befbb8b3899b3ef4b715344e88f6c4538"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-22-900-publication-readiness/deliveries/36e6d688-a226-45c7-9816-d93c9e5ca4a0/prd.md",
+              "revision": "sha256:170ed7e2692438f149c53720b3b56ca3f287ea3f4abd375ca365a5b7f83060d1"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-900-publication-readiness/deliveries/36e6d688-a226-45c7-9816-d93c9e5ca4a0/design.md",
+              "revision": "sha256:46cb35f6ab6b3a0260e057aa18a3d43befbb8b3899b3ef4b715344e88f6c4538"
+            },
+            {
+              "locator": ".trellis/tasks/11-22-900-publication-readiness/deliveries/36e6d688-a226-45c7-9816-d93c9e5ca4a0/implement.md",
+              "revision": "sha256:f6c92d475edf1c2ab42d7b66fe35a30679ba3a7b343e6bc22824468cdfd7f8bc"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

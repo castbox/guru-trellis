@@ -58,12 +58,12 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     def test_root_readme_routes_normal_delivery_and_release_preparation(self) -> None:
         readme = README.read_text(encoding="utf-8")
         delivery = readme.split("### 规划、检查与审查能力\n", 1)[1].split("\n### 多平台一致体验", 1)[0]
-        for skill in ("guru-review-task-delivery", "guru-publish-task-delivery",
+        for skill in ("guru-publish-task-delivery",
                       "guru-merge-task-delivery", "guru-review-task-completion"):
             self.assertIn(skill, delivery)
         self.assertNotIn("直接交给 Finalizer", delivery)
         release = readme.split("## 仓库维护者正式发布入口\n", 1)[1].split("\n## ", 1)[0]
-        self.assertIn("Delivery Review、Publish、Merge、Completion、Closure、Finish", release)
+        self.assertIn("Publication、Merge、Completion、Closure、Finish", release)
         self.assertNotIn("Publication、Finalizer 和 Merge owners", release)
 
     def test_promoted_architecture_contribution_has_only_post_promotion_gates(self) -> None:
@@ -130,7 +130,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         contract = (SPEC / "workflow-contract.md").read_text(encoding="utf-8")
         current = contract.split("## Integrated Public Graph\n", 1)[1].split("\n## ", 1)[0]
         self.assertIn(f"{self.active_count} active packages", current)
-        self.assertIn("Delivery Review\n-> Delivery Publish -> Delivery Merge -> whole-task Completion", current)
+        self.assertIn("Publication -> Delivery Merge -> whole-task Completion", current)
         self.assertIn("no current production edge", current)
         self.assertNotIn("`guru-review-branch:passed -> guru-review-task-publication`", current)
 
@@ -144,7 +144,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     def test_project_spec_index_routes_to_current_lifecycle(self) -> None:
         index = " ".join(PROJECT_INDEX.read_text(encoding="utf-8").split())
         self.assertIn(f"{self.active_count} active packages, {self.exit_count} package exits", index)
-        self.assertIn("`guru-review-task-delivery:ready`", index)
+        self.assertIn("`guru-publish-task-delivery:delivery_prepare_publication`", index)
         self.assertIn("`guru-review-task-completion`", index)
         self.assertIn("Historical IDs and old DTOs cannot be projected", index)
         self.assertIn("Each active package", index)

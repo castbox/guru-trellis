@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-output-merged-recovery-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "mode",
+    "task_ref",
+    "delivery_key",
+    "repo_ref",
+    "pr_number"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "merged_recovery_required"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "delivery_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "delivery_id"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "repo_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

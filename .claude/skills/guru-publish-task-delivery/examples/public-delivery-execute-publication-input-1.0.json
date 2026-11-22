@@ -1,0 +1,39 @@
+{
+  "profile": "delivery_execute_publication",
+  "prepared": {
+    "exit_id": "publication_prepared",
+    "mode": "workflow",
+    "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+    "delivery_key": {
+      "task_id": "example-task",
+      "lifecycle_generation": 0,
+      "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+    },
+    "reviewed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "readiness_result_id": "readiness:example",
+    "pr_title": "交付：建立 Active Task Delivery Publish owner",
+    "pr_body": "## 变更摘要\n\n- 发布一个已审查 Delivery。\n\n## Remaining Work\n\n- 后续工作保持 active。\n\nRefs #435\n",
+    "remaining_work_state": "remaining",
+    "architecture_assessment": {
+      "head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "content_identity": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "promotion_state": "no_change"
+    },
+    "slice_summary": "交付当前切片。",
+    "remaining_work": "下一切片仍待实施。",
+    "unverified_boundaries": "生产使用尚未验证。",
+    "target": {
+      "repo_ref": "example/project",
+      "base_branch": "main",
+      "head_branch": "feat/example",
+      "remote_head": null,
+      "pr_number": null,
+      "actions": [
+        "push_content",
+        "create_pr",
+        "mark_ready"
+      ]
+    },
+    "preview_identity": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  }
+}

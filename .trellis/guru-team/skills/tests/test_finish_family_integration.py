@@ -25,8 +25,8 @@ RETIRED = {
     "guru-merge-task-pr", "guru-restore-archived-task",
 }
 ROUTES = {
-    ("guru-review-branch", "passed"): ("skill", "guru-review-task-delivery"),
-    ("guru-review-task-delivery", "ready"): ("skill", "guru-publish-task-delivery"),
+    ("guru-review-branch", "passed"): ("workflow", "guru-publication-entry-router"),
+    ("guru-publish-task-delivery", "publication_prepared"): ("workflow", "guru-publication-preview-router"),
     ("guru-publish-task-delivery", "ready_for_merge"): ("skill", "guru-merge-task-delivery"),
     ("guru-merge-task-delivery", "delivered"): ("skill", "guru-review-task-completion"),
     ("guru-review-task-completion", "remaining_work"): ("workflow", "active-task-continuation"),

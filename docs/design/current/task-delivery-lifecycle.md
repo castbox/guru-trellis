@@ -77,9 +77,9 @@ Architecture 候选评估先于 Author 实质 solution；Author完成当前方�
 
 ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh reviewer/相同完整重审片段；ADR-028 固定候选、原single-writer/readback、Draft非最终结果及真实双槽predecessor保留；ADR-030/033命中时机按ADR-POSTCOMMIT-INDEPENDENT-REVIEW窄替代。实际#636/#637/#638 matching组合与其未验证边界分别报告，原 RDT/Architecture single-writer 不变。
 
-## Delivery Review / Publish / Merge
+## Publication 与 Merge
 
-`D531-05`：Readiness 由原 Delivery Review 单写中文 PR payload、scope/验证/安全/部署与 Refs-only意图。最终 Ready Publication 仅 push/创建或恢复同事务 PR，expected-head Merge 仅合精确当前候选和真实 required checks。公共 projection记录实际远端事实，不把其 phase 当门禁。
+`D531-05`：Publication 单写 readiness，审核范围、验证、安全、部署和 Refs-only 的中文 PR 载荷，然后按准确预览执行或恢复同事务 push/PR，expected-head Merge 仅合精确当前候选和真实 required checks。公共 projection记录实际远端事实，不把其 phase 当门禁。
 
 原事务在远端已成功但输出/投影丢失时，先确认实际 identity与成功结果，复用同事务完成 projection，零重复 mutation。历史 published/merged结果保留，即使当前 gate stale；该事实不代替新的 Review。已正式关联的人工双亲 merge 由原 Merge recovery读真实 actual head、Publication relation、CI/delta后记录；不再 merge。Completion 再审actual-vs-published与whole scope；独立未完成CI不被合并事实变为pass。
 
@@ -193,7 +193,7 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 ## D794：原 owner 的单次提交后审核
 
 - **D794-01 / CON794-ORDER** 承接R794-01/02：原maintenance提交前整合，TaskCommit形成精确待审H，implementation公开构造完整固定Candidate，原Review按authority-first读序在同次完成Architecture/九维/fullrange。
-- **D794-02 / CON794-RESULTS** 承接R794-03：原Review一个真实判断经两次公开record_gate顺序记录check/full_review，缺步按同对象恢复，不复制旧pass。原Delivery Review单写readiness、Publication消费。
+- **D794-02 / CON794-RESULTS** 承接R794-03：原Review一个真实判断经两次公开record_gate顺序记录check/full_review，缺步按同对象恢复，不复制旧pass。Publication 单写 readiness，并使用同一已审核载荷预览本次发布。
 - **D794-03 / CON794-COVERAGE** 承接R794-04：原Reconcile/Review各判实际归属与覆盖，保固定B和完整冲突/组合/未改consumer；有效工程结果与独立覆盖采用，失效/缺口补足。
 - **D794-04 / CON794-MIGRATION** 承接R794-05/06：matching版本与原provider逐状态边界直接迁移当前consumers，退出earlyDraft新发布；已执行结果准确恢复，pending动作先当前审核/readiness，无runtime fallback或第二状态。
 - **D794-05 / CON794-ADOPTION** 承接R794-07：原tools/installer成套采用source/workflow/packages/spec/受影响平台，保Task/session/定制/sidecar；源码、组件、真实Agent、安装及外部层次分开。
@@ -221,6 +221,15 @@ Author requirements_ready经candidate assessment回solution_planning，plan_read
 - **D856-03 / CON856-CONTINUITY** 承接 R856-02/04：保持原事务、digest、公共 DTO、成功域、生命周期与恢复资格。已完成动作回读、未知外部结果先核同事务，不新建恢复协议。原 tools owner 采用完整 matching source 同步受管投影；local_candidate 明确正式 source-lock 未验证边界。实现、安装与真实外部效果分别判断。
 
 采用原异常定义和一个 package 私有 unknown 边界，成本为静态映射、五个真实 consumer 及定向回归的维护。它不增加共享 catalog 读取、package 特判、状态或额外 I/O。实际需求若涉及跨 package 协议、owner、共享行为或新状态，返回原 Planning/Architecture 判断。来源为 #856；固定前驱及 R/D/T 关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。
+
+## D900：发布准备与同一事务执行
+
+- **D900-01 / CON900-PREPARE**。Branch Review 结果和适用的 Architecture 资格进入 Publication。AI 完成 readiness 与 PR 载荷审核。确定性运行时校验前置并使用既有 readiness 槽记录结果。槽写入后，Delivery 由 reviewing 进入 publishing。
+- **D900-02 / CON900-ACTIONS**。预览绑定确切候选、目标、载荷与待执行的远端动作。当前执行检查实际变化，复用原事务读回。变化实质影响待执行动作或载荷时重新准备和确认。
+- **D900-03 / CON900-RECOVER**。已写 readiness 但无可恢复预览或事务时，适用 full_review 允许 Publication 回 reviewing 再生成当前预览。未完成的事务保留原引用、PR 归属和完成事实，只重新准备待执行部分。已合并按是否有正式 PublicationFact 交原 Merge 对应入口。
+- **D900-04 / CON900-ADOPT**。当前 canonical Interface 明确选择新的准备与执行输入。转换原调用方，旧正常入口退出，完整前驱负责匹配版本的已执行操作恢复。分发与在途接续见 MIGRATION-900。
+
+验证见 T900。历史版本及原结果保留各自的观察边界。
 
 ## D899 一次解析与精确后续读取
 

@@ -529,7 +529,7 @@ checkpoint and empty owner directory. `implementation_required`, `planning_stale
 `scope_confirmation_required` retain the same checkpoint for their mapped
 same-owner re-entry; a
 duplicate invocation deterministically returns the same DTO and creates no
-second state. Delivery Review receives only the minimal typed DTO and live Git
+second state. Publication eligibility receives the minimal typed DTO and live Git
 facts; it never reads or deletes Branch Review private state. A failed checker
 or invalid projection retains the checkpoint for same-owner repair. Missing
 after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
@@ -544,7 +544,7 @@ Return exactly one of:
 
 - `passed`: minimal `task_ref`, `delivery_key`, `full_review_result_id`,
   and `branch_review_commit` seed for
-  `guru-review-task-delivery`, only after the current Branch Review-stage
+  `guru-publication-entry-router`, only after the current Branch Review-stage
   Architecture result passes independently;
 - `continuity_passed`: current Delivery output projects the public key, exact pair and
   candidate identity to the workflow-owned `guru-base-continuity-passed-router`,

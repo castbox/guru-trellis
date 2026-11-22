@@ -24,8 +24,8 @@ Author candidate profile defined at the end:
 fixes one caller and return owner. The caller supplies only the current target,
 candidate references, and live locators; it does not supply a decision, severity,
 approval, prior result, worker report, or mechanism classification.
-`publication_candidate_set` returns to `guru-review-task-delivery` for the
-current Delivery Review, including after scope clarification or mechanism revision.
+`publication_candidate_set` returns to `guru-publish-task-delivery` for the
+current publication readiness judgment, including after scope clarification or mechanism revision.
 
 ## Semantic review
 

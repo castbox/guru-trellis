@@ -63,7 +63,7 @@ class NormalScenarioQualificationRuntimeTest(unittest.TestCase):
             "requirements_scope_set": "guru-clarify-requirements", "change_request_candidate_set": "guru-review-change-request",
             "author_candidate_set": "guru-author-task-plan", "planning_scenario_set": "guru-approve-task-plan", "implementation_discovery": "guru-phase2-implementation-coordinator",
             "base_impact_candidate_set": "guru-reconcile-task-base", "phase2_candidate_set": "guru-check-task",
-            "branch_review_candidate_set": "guru-review-branch", "publication_candidate_set": "guru-review-task-delivery",
+            "branch_review_candidate_set": "guru-review-branch", "publication_candidate_set": "guru-publish-task-delivery",
         }
         planning_paths = [".trellis/tasks/current/prd.md", ".trellis/tasks/current/design.md", ".trellis/tasks/current/implement.md"]
         planning_identity = qualification_common.file_set_identity(self.repo, planning_paths) if profile != "author_candidate_set" else "0" * 64
@@ -173,11 +173,11 @@ class NormalScenarioQualificationRuntimeTest(unittest.TestCase):
             with self.subTest(mode=mode):
                 semantic = self.semantic("publication_candidate_set", mode=mode)
                 output = self.invoke(semantic)
-                self.assertEqual("guru-review-task-delivery", output["resume_target"])
+                self.assertEqual("guru-publish-task-delivery", output["resume_target"])
                 self.assertEqual("qualified_current", output["candidate_results"][0]["decision"])
                 for exit_id, decision in (("scope_confirmation_required", "scope_confirmation_required"), ("mechanism_revision_required", "mechanism_removed")):
                     routed = self.invoke(self.semantic("publication_candidate_set", exit_id, decision, mode))
-                    self.assertEqual("guru-review-task-delivery", routed["resume_target"])
+                    self.assertEqual("guru-publish-task-delivery", routed["resume_target"])
                 semantic["public_input"]["caller"] = "guru-review-task-publication"
                 with self.assertRaises(CommandError) as raised:
                     self.invoke(semantic)

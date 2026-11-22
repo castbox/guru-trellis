@@ -43,7 +43,6 @@ All GitHub platform operations use authenticated, explicitly repo-bound
 `gh`/`gh api` only. Do not use or fall back to App, MCP, connector, or browser
 UI; keep Git transport on `git`.
 
-- `guru-review-task-delivery`
 - `guru-publish-task-delivery`
 - `guru-merge-task-delivery`
 - `guru-review-task-completion`
@@ -53,7 +52,7 @@ UI; keep Git transport on `git`.
 
 Consume only current public typed exits and their mapped workflow consumers:
 
-- Delivery Review `ready` enters publication; a checked `ready_for_merge`
+- Publication owns readiness, preview, and the confirmed action. A checked `ready_for_merge`
   enters the expected-head Delivery merge. `delivered` enters Completion,
   never directly closes the Issue or archives the task.
 - Completion `remaining_work` retains the active task; `additional_delivery_required`

@@ -98,7 +98,7 @@ retirement call and does not import or read private ports or pending inputs.
 | delivery_active_task_scope_change | Original Clarify published scope_ready plus selection/revision_refs and affected key; revise only affected slice requirements/candidate after root requirements publication. |
 | delivery_content_revision | Actual content change_refs on this same Delivery; equivalent wording returns plan_ready; changed mechanism returns requirements_ready. |
 | delivery_approval_revision | Actual Approval revision_actions, or Check planning_stale/reapprove_plan revision_actions for every current-scope planning repair, including retained current_scope decisions and same-owner recovered or corrected handoff; execution-plan-only fixes may return plan_ready; requirements/design fixes re-enter candidate assessment. |
-| delivery_delivery_plan_revision | Delivery Review delivery_policy_gap/revision_refs; revise the same key's actual slice policy. Completion next_independent_delivery goes to Creation first, then delivery_initial_review on its new UUID. |
+| delivery_delivery_plan_revision | Publication delivery_policy_gap/revision_refs; revise the same key's actual slice policy. Completion next_independent_delivery goes to Creation first, then delivery_initial_review on its new UUID. |
 | delivery_requirements_revision | Original Clarify source_selection/revision_refs; converge the current slice without a caller-preselected decision. |
 | delivery_solution_planning | Actual current Architecture candidate_assessment; write design/implement/context using its thin assessment. |
 | delivery_architecture_conflict_resolution | Actual Architecture purpose/conflict_refs; revise the mechanism, returning to fresh candidate assessment or Clarify for a real requirement choice. |
@@ -205,7 +205,7 @@ in the Delivery PRD and this unique Policy. When responsibility remains for a
 successor, use the existing partial/staged semantics to state the actual slice,
 remaining work and whole-Task Completion conditions. Changing the Policy label
 alone does not change the implementation or acceptance boundary.
-Delivery Review and Completion inspect policy, never write it. Select one
+Publication and Completion inspect policy, never write it. Select one
 Docs SSOT strategy (ssot_first, delta_first, bootstrap_or_repair_docs,
 no_docs_update_needed) and name the original RDT writer/direct consumer.
 Integrate and read back a delta through the original maintenance owner before TaskCommit. Preserve truthful causal and completion

@@ -24,7 +24,6 @@ NATIVE_SEMANTIC_OWNERS = frozenset({
 })
 NATIVE_SEMANTIC_CASE_OWNERS = frozenset({
     ("guru-clarify-requirements", "native-implementation-authority-conflict"),
-    *(("guru-review-task-delivery", "native-stage-" + case) for case in ("d01", "d02")),
     *(("guru-review-task-completion", "native-stage-" + case) for case in ("p01", "p02", "p03", "p04", "p05", "p06")),
 })
 # Host-only corpus expectations for the bounded implementation test segments.

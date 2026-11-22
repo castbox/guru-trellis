@@ -196,7 +196,7 @@ An unrelated target advance does not replace the fixed review object or require
 integration. Real scope, design assumptions, authority or dependency changes
 return to the earliest affected original owner.
 
-Delivery Review, Publication and Merge consume applicable content review and
+Publication and Merge consume applicable content review and
 judge their own current payload, Issue semantics, candidate and live facts.
 They do not repeat unchanged business-design review. Required checks, expected
 HEAD, remote transaction readback and each side-effect boundary remain intact.
@@ -259,8 +259,8 @@ full Intake retain context/clarification/wording/change-request review.
 Issue-only request ends there, while requested work uses the formal Issue at
 fresh Sync/Readiness. `guru-create-task` for a ready Issue/standalone request ->
 identity/binding/checkout/session resolution -> Task scope -> `guru-create-delivery`
--> per-Delivery Planning and `guru-activate-delivery` -> Phase 2 check -> Task Commit -> independent Branch Review -> Delivery Review
--> Delivery Publish -> Delivery Merge -> whole-task Completion -> source Issue
+-> per-Delivery Planning and `guru-activate-delivery` -> Phase 2 check -> Task Commit -> independent Branch Review -> Architecture publication eligibility
+-> Publication -> Delivery Merge -> whole-task Completion -> source Issue
 Closure -> Finish -> Cleanup. Incomplete Completion retains the same active
 TaskId and routes to the earliest affected owner or next Delivery slice.
 Normally finished archives can enter Reactivate under a new generation.
@@ -370,7 +370,7 @@ does not imply task re-entry, Planning approval or Release qualification.
 
 Every standard Delivery invokes the original Architecture owner at Planning,
 qualified implementation-discovery expansion, necessary precommit integration,
-the single committed Review, Delivery Review and Completion/Finish. Planning
+the single committed Review, publication eligibility and Completion/Finish. Planning
 retains its two purpose-bound assessments. Precommit integration records actual
 writes/readback as integrated_pending_review. The committed independent reviewer
 reads fixed before authority and complete after content, then performs the actual
@@ -398,7 +398,7 @@ precommit integration result. A consistent write remains pending review.
 TaskCommit binds the complete candidate; the single independent committed Review
 then judges its actual before/after Architecture and all Check/full_review duties. Missing or stale Architecture evidence,
 `architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
-reach Delivery Review. Stale baseline, constitution, contribution,
+reach Publication. Stale baseline, constitution, contribution,
 expected-current, or stage identity returns `sync_required` to the Architecture
 owner. Completion/Finish requires `reviewed_promoted` for a long-term
 Architecture change or a current `no_change` proof. This is routing-only
@@ -643,24 +643,18 @@ does not reproduce step-local dimensions, severity, commands or private state sh
 ### Phase 3 — Delivery cycles and task completion
 
 Mandatory invoke `guru-create-task-commit`, then independently review the
-complete committed base-to-HEAD diff with `guru-review-branch`. A checked
-`passed` enters Delivery Review directly. The Delivery
-Review owner checks one independently deliverable slice and authors the exact
-Chinese PR title/body with `Refs` only, including when the target is the
-default branch. It discloses remaining task work and unverified boundaries;
-task-content findings return to Phase 2 and affected downstream gates.
+complete committed base-to-HEAD diff with `guru-review-branch`. The checked
+`passed` result enters Architecture publication eligibility, then
+`guru-publish-task-delivery`. Publication judges the current slice, authors
+the exact Chinese `Refs`-only PR payload, and displays the actual pending
+push/PR actions. Confirm those effects before executing them. A material
+change to the shown effects requires a fresh preview and confirmation.
 
-Only `guru-review-task-delivery:ready` enters the final Ready Publication
-profile. Early task/key/B/H enters the independent Draft profile; return-to-Draft
-uses the original publishing revision owner and lawful rework.
-That owner controls the selected HEAD push, current Draft/Ready PR, bounded
-side-effect confirmation, and same-plan recovery. Only its checked
-`ready_for_merge` enters `guru-merge-task-delivery`, which requires a separate
-expected-head merge confirmation. Its `delivered` result is one Delivery, not
-whole-task completion, Issue closure, archive authority, or cleanup permission.
-Lost outputs return to the original producer against current exact identity;
-they do not create duplicate PRs or merges. No retired Finalizer or Restore
-path is a current consumer.
+Publication recovers completed effects from the same transaction and routes
+absent or stale dependencies to their original owners. An observed merged
+PR goes to the applicable original Merge recovery. Only current
+`ready_for_merge` enters normal Merge, whose expected-head action requires
+separate confirmation. Its `delivered` result represents one Delivery.
 
 Mandatory invoke `guru-review-task-completion` after a checked Delivery result.
 It rereads the entire accepted scope, all applicable Deliveries, current
@@ -725,7 +719,7 @@ semantic coverage requires actual review. A half-written two-role operation is n
 a pass. Original #775 rollback recovery preserves cause/revision handoff without
 repeating rework. Historical Phase 2 checkpoints are not current normal inputs.
 
-Delivery Review's owner judges applicability of its still-held checked Branch
+Publication judges applicability of its still-held checked Branch
 Review anchor. Normal private checkpoint retirement alone does not invalidate that
 DTO. Lost readiness output does not mechanically rerun unaffected owners. New
 committed content requires exact current coverage under Candidate Applicability
@@ -859,11 +853,11 @@ the final reconciliation but must not perform the first merge.
 
 Stage restrictions and their release belong to the original Author and
 maintenance Skill methods. The RDT `references/current-knowledge.md` owns current
-definition and result-cutoff maintenance; Delivery Review and Completion own
+definition and result-cutoff maintenance; Publication and Completion own
 their stage-result and gap judgments. Closure and Finish retain their terminal
 responsibilities. This section only locates those methods.
 
-Delivery Review owns each slice's Refs-only PR payload, even for an Issue-backed
+Publication owns each slice's Refs-only PR payload, even for an Issue-backed
 Delivery to the default branch. Publish and Merge do not close the source
 Issue. Completion owns the whole accepted-scope judgment; only its `completed`
 result enters Closure, which reviews the exact source Issue disposition and

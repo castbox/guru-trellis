@@ -4,13 +4,13 @@
 
 The current canonical registry/Interface selectors and workflow, not the
 historical cardinalities or versioned predecessor schemas below, define the
-active package set. In the #434 candidate the business chain is Branch Review
--> `guru-review-task-delivery` -> `guru-publish-task-delivery` ->
+active package set. The business chain is Branch Review, Publication Architecture eligibility,
+`guru-publish-task-delivery` ->
 `guru-merge-task-delivery` -> `guru-review-task-completion` ->
 `guru-complete-task-closure` -> `guru-finish-task` ->
-`guru-cleanup-task-resources`. Delivery Review owns the current slice and
-`Refs`-only PR body; Publish owns its PR/push recovery; Merge produces a
-Delivery result only. Completion alone decides the whole accepted task scope.
+`guru-cleanup-task-resources`. Publication owns slice readiness, the
+`Refs`-only PR payload, preview, and the confirmed PR/push transaction. Merge
+produces a Delivery result only. Completion alone decides the whole accepted task scope.
 Closure owns Issue disposition after `completed`; Finish owns the separate
 lifecycle-only archive/bookkeeping transaction, and Cleanup owns exact resource
 removal after Finish success. `guru-reactivate-task` starts a new generation
@@ -23,8 +23,8 @@ current invocation, consumer, adapter, or output-loss recovery route. An
 in-flight old transaction must use a compatible pinned graph or a reviewed
 manual disposition; no old DTO may be projected to the current chain.
 
-The current exits stay owned by their respective Interfaces: Delivery Review
-`ready` seeds Publish; Publish `ready_for_merge` seeds Delivery Merge; Merge
+The selected Interfaces define the current exits. Publication `ready_for_merge`
+seeds Delivery Merge. Merge
 `delivered` seeds Completion. Completion's `remaining_work`,
 `evidence_pending`, `additional_delivery_required`,
 `requirements_revision_required`, and `implementation_revision_required`
@@ -865,7 +865,7 @@ checker and Activation consumes only the checked public Planning result.
 Activation enters implementation and engineering preparation. Necessary knowledge
 integration/readback precedes TaskCommit; its `pre_review_committed` enters the
 original fixed-candidate router and the single independent Review. That Review
-records the real Check and full_review roles before Delivery Review/readiness.
+records the real Check and full_review roles before Publication readiness.
 No public phase or historical manifest implies semantic pass.
 
 Dirty and clean TaskCommit entries preserve one semantic owner. Clean reentry
@@ -932,7 +932,7 @@ directly and must rerun the Skill after any relevant authority, planning,
 candidate, caller graph, diff/range, base-pair, publication payload, scope
 choice, mechanism, or finding-fix change.
 
-Phase 2, Branch Review, and Delivery Review own their selected
+Phase 2, Branch Review, and Publication own their selected
 private gates. They may directly record only the terminal classification and
 minimal witness their own immediate consumer needs; they never reference a
 qualification artifact or retain qualifier stdout. Each Guru-owned worker
@@ -1489,9 +1489,9 @@ the complete predecessor's supported recovery path; current runtime does not
 import or convert those old candidates/results.
 
 Semantic producers do not gain equivalent readers. Lost Planning wording,
-Planning Architecture, Approval, Branch Review, or Delivery Review output reruns
+Planning Architecture, Approval, Branch Review, or Publication output reruns
 the original semantic owner against current authority. Successful Branch
-Review and Delivery Review checkpoints remain retired after selected DTO
+Review checkpoints remain retired after selected DTO
 validation, so their absence is normal and never authorizes reconstruction.
 
 ## Distribution And Managed Hashes
@@ -1820,7 +1820,7 @@ The owner judges requirements, design, implementation, tests, docs_ssot, cross_l
 
 The private Delivery gate is `guru-review-branch-private-delivery-gate-2.0` (schema_version 8.0). It contains the real nine-dimension assessment and independently authored `gate_judgments.check` and `gate_judgments.full_review`. Invoke first records actual check with Planning predecessor, then actual full_review with that check predecessor. Only both real current writes permit `passed`. Same-operation recovery binds the exact candidate, scope, plan and Planning result; missing semantic evidence requires actual review. No empty slot or prior pass is converted.
 
-Each exit uses its Interface-selected minimal DTO and unique consumer. `passed` output 2.0 supplies task_ref, delivery_key, branch_review_commit and full_review_result_id to Delivery Review. Implementation, scope, planning-stale, stopped and revised exits return through their declared original owners. `planning_stale` carries only the selected reapprove_plan or clarify_requirements handoff. Historical archive and continuity outputs keep their own shapes and do not assert a second complete review.
+Each exit uses its Interface-selected minimal DTO and unique consumer. `passed` output 2.0 supplies task_ref, delivery_key, branch_review_commit and full_review_result_id to the publication eligibility and preparation route. Implementation, scope, planning-stale, stopped and revised exits return through their declared original owners. `planning_stale` carries only the selected reapprove_plan or clarify_requirements handoff. Historical archive and continuity outputs keep their own shapes and do not assert a second complete review.
 
 Commit remains the Git range/ancestry anchor. The common reviewed-content identity retains its original metadata exclusions. Private gates never become public handoffs. Original finding closure, candidate qualification, schema freshness and checkpoint retirement remain package-owned. Pinned-old Publication/Finalizer and archive contracts retain only their expressly supported historical consumers; they do not restore an active early-publication edge.
 
@@ -2205,6 +2205,6 @@ commit, payload and recovery rather than restarting or synchronizing.
 
 ## Early Draft Migration Boundary (#636 / #794)
 
-New early Draft commit, content-review and publication profiles are retired. TaskCommit aggregate 3.0 emits only `pre_review_committed` to the original review-candidate router. Delivery Review aggregate 2.0 owns readiness; Publication aggregate 4.0 consumes that actual current ready result. No Commit output enters Publication.
+New early Draft commit, content-review and publication profiles are retired. TaskCommit aggregate 3.0 emits only `pre_review_committed` to the original review-candidate router. The #794 provider used separate Delivery Review readiness. MIGRATION-900 selects Publication as the current readiness and preview owner. No Commit output enters Publication.
 
 Already-executed old Commit/Draft operations recover through the fixed complete predecessor named in MIGRATION-794. Current remote-Draft recovery 2.0 reports completed facts only; pending remote actions return review_stale and require current independent review/readiness before the original transaction proceeds. Recovery never repeats a completed action or converts Draft into final publication. Historical schemas are pinned assets, not current-runtime fallback.

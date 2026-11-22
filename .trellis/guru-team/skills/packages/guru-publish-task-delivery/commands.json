@@ -251,7 +251,7 @@
           "flag": "--confirmed-preview-sha256",
           "required": false,
           "kind": "string",
-          "description": "Dialogue-local confirmed preview identity.",
+          "description": "Exact objective identity of the current displayed publication preview.",
           "repeatable": false,
           "conflicts": []
         }
@@ -278,7 +278,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input-delivery-4.0.schema.json"
+        "schemas/public-input-delivery-5.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

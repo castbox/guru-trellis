@@ -354,7 +354,7 @@ Reconcile 仍判断实际 base归属、冲突和组合影响，caller不缩 B..H
 
 ## ARCH-CUR-075：审核前远端 Draft 路径退出
 
-当前链在提交后一次独立完整 Review 和原 Delivery Review/readiness 通过前不push、不建PR。原 TaskCommit 仅产生待审本地提交，保exact paths、敏感检查、真实hook及同提交恢复，不再直接交 early Publication。Publication 仍独占通过后的同PR/精确payload发布、Ready及同事务恢复。
+当前链在提交后一次独立完整 Review、适用的发布 Architecture 资格与 Publication readiness 通过后展示准确预览。确认后由 Publication 执行对应远端动作。原 TaskCommit 仅产生待审本地提交，保留精确路径、敏感检查、实际 hook 和同提交恢复。Publication 负责同一 PR 的载荷、Ready 与事务恢复。
 
 旧#636 Draft已有push/PR/绑定/metadata事实保留，由固定完整provider准确恢复，不重复副作用、不变成最终通过；尚未执行的远端动作先回当前独立Review/readiness再按同PR原事务接续。MIGRATION-794定义逐状态边界，窄替代ADR-033审核前远端资格。原#636来源、结果和未知范围保留历史，不制造current fallback或新审核pass。
 

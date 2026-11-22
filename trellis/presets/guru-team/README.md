@@ -123,7 +123,7 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 
 原知识 owners 在工程自检后、提交前整合必要文档并读回；整合事实等待提交后独立审核。
 原 `guru-review-branch` 在固定提交上一次完成 Check 与 Branch Review 的全部适用职责，
-包括一次实现后独立 Architecture 判断，再由原 Delivery Review 记录 readiness。
+包括一次实现后独立 Architecture 判断。发布时，Publication 使用适用的架构资格判断 readiness。
 普通晋升保留稳定 identity、single-writer 和实际 expected-current/readback；
 当前与在途采用边界见 [MIGRATION-794](MIGRATION-794.md)，历史来源和原验证截止点保持。
 源码变更不证明安装、实际 Agent 行为或外部采用。
@@ -202,7 +202,7 @@ the existing managed-spec installer. Qualification and stage packages read
 that one source; apply/reapply distributes their stage-local contracts.
 
 Normal revision/recovery contracts live in `guru-review-branch` and
-`guru-review-task-delivery`; apply/reapply projects those canonical packages
+`guru-publish-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
 it does not replace the cumulative Upgrade/Release matrix.
 The historical #531 development candidate uses the upstream Task schema 2.0 / Delivery API 1.0.
@@ -255,11 +255,11 @@ Agent 行为或耗时改善。#636 已有接口需命中组合验证，#638 未�
 ## 提交后一次独立完整审核
 
 当前顺序是实现/工程自检、必要知识整合、本地提交、一次独立完整 Review，
-然后原 Delivery Review/readiness 与 Publication。未独立通过前不新 push、不创建 PR。
+然后由 Publication 判断 readiness，展示实际 PR 预览。确认后才执行对应的 push 和 PR 操作。
 原 TaskCommit 的待审提交和干净重入保留精确事务、hook 与同提交恢复。
 早期 Draft 新发布路径退出；既有 PR/HEAD 和已执行动作由原 owner 准确恢复，
 pending 新远端动作回当前审核/readiness。完整版本、退休入口和在途处置见
-[MIGRATION-794](MIGRATION-794.md)；不把旧 pass 机械转换为新通过。
+[MIGRATION-794](MIGRATION-794.md) 说明原审核切换。[MIGRATION-900](MIGRATION-900.md) 说明发布入口的成套采用和在途恢复。
 
 ## 构建所选 Fork
 

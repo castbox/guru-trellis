@@ -136,18 +136,15 @@ a GitHub-error or business Delivery/Completion route.
 
 ### Current Delivery And Task Closeout Commands (#434)
 
-`guru-review-task-delivery` owns each active-task slice's semantic readiness and
-exact Chinese `Refs`-only PR payload. Its normal public entry is
-`invoke-guru-review-task-delivery`; record/check are owner-local diagnostic and
-test commands. A checked `ready` goes only to `guru-publish-task-delivery`.
-Current new remote actions, including Draft creation, require the committed
-independent Review and this readiness result. Old early-Draft operations recover
-only through the complete pinned predecessor provider under MIGRATION-794.
-The Publication owner previews the exact remote/PR action with
-`preview-task-delivery-publication`, obtains current-dialogue confirmation for
-remote mutation, and invokes `invoke-guru-publish-task-delivery`. Its private
-transaction binds push, PR metadata and Draft/Ready recovery without archiving
-the task or closing the Issue. Only `ready_for_merge` enters
+`guru-publish-task-delivery` owns slice readiness and the exact Chinese
+`Refs`-only PR payload. Its current preparation profile consumes independent
+Review and applicable Architecture eligibility. The AI decides readiness and
+reviews the preview of the actual outstanding effects. The deterministic
+transaction writer checks that preview against current facts and executes the
+matching operation after the conversation boundary. It recovers the exact
+completed push/PR facts, including Draft/Ready changes. Older operations use
+the matching provider and recovery boundaries in MIGRATION-900 and MIGRATION-794.
+Only `ready_for_merge` enters
 `guru-merge-task-delivery`, which owns `preview-task-delivery-merge`, exact-head
 merge confirmation, `invoke-guru-merge-task-delivery`, and same-result recovery.
 The `delivered` result is a Delivery fact, not Completion or Issue closure.
@@ -1544,26 +1541,20 @@ validated projection. This read-only profile does not restore the task or
 mutate the archive, PR, or Issue. It does not loosen current Delivery gate validation, blocked semantics or
 re-entry behavior.
 
-## Delivery Review, Publish, And Merge Invocation
+## Publication And Merge Invocation
 
-After current full_review, the active Delivery Review owner uses
-`record-task-delivery-review` and
-`check-task-delivery-review` only after its AI semantic gate; the normal wrapper
-is `invoke-guru-review-task-delivery`. Review owns the current independently
-deliverable slice, remaining task work, evidence, findings, PR title/body and
-`Refs`-only effect. The checker validates objective freshness without selecting
-semantic sufficiency. A checked `ready` hands the minimal DTO to Publish. New push/PR actions require
-this readiness and the current independent Review. Delivery Review does not
-push, create a PR or inspect another owner's private checkpoint.
+Publication first reads the exact Delivery, existing transaction and PR when
+applicable. A current independent full_review and applicable Architecture
+eligibility enter the original Publication AI for slice readiness, PR text
+and accurate preview. The package Interface selects command inputs and
+review and recovery exits. Runtime records the AI result in the existing
+readiness slot and compares the preview with current pending effects. Exact
+dialogue confirmation precedes any push or PR mutation.
 
-Publish owns `preview-task-delivery-publication`,
-`record-task-delivery-publication-gate`,
-`check-task-delivery-publication-gate`, `execute-task-delivery-publication`,
-and the normal `invoke-guru-publish-task-delivery` wrapper. Its private
-same-plan transaction precedes external mutation and recovers exact push,
-Open-PR binding, metadata convergence, and Ready transition without repeating
-completed actions. Stale review returns to Delivery Review; resume/reprepare
-stay with Publish. Only its checked `ready_for_merge` enters Merge.
+Publication's existing private transaction recovers completed effects before
+resuming pending actions. A materially changed pending operation requires a
+fresh preview. An observed MERGED PR goes to the matching original Merge
+recovery; a current publication eligible for merge returns `ready_for_merge`.
 
 Merge owns `preview-task-delivery-merge`, `record-task-delivery-merge`,
 `check-task-delivery-merge`, `discover-task-deliveries`,
@@ -1898,7 +1889,7 @@ Current Task Commit uses public aggregate 3.0, private delivery-4.0 pre_review
 candidate and delivery-3.0 receipt. Its minimal pre_review_committed output goes
 to the fixed-candidate router, implementation constructor/begin_check and one
 independent Review. The same Review records real check/full_review; original
-Delivery Review then owns readiness. No new push or PR creation occurs before
+Publication then owns readiness under MIGRATION-900. No new push or PR creation occurs before
 those gates. Current pre-review Commit and Review do not expose early Draft
 analysis or Publication exits.
 

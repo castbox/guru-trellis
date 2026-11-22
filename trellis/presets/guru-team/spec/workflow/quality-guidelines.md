@@ -218,7 +218,7 @@ business repositories or a new full-chain gate for every change.
 
 Apply this method within every original writing and review owner's current
 scope, including requirements, solution, Architecture, Planning Approval,
-implementation, Check, independent review, Branch Review, Delivery Review and
+implementation, Check, independent review, Branch Review, Publication and
 Completion. Workflow or standalone mode, a different Agent, session recovery,
 another review round and draft provenance create no exemption. Issue-specific
 authoring, creation and body revisions use the complete original Issue content
@@ -520,7 +520,7 @@ universal E2E requirement, per-test proof file or new review stage.
 
 For stage-result changes, the original `guru-check-task` contract owns review
 of current behavior, guidance and assertions after a real restriction ends.
-The original Delivery Review and Completion Skills own applicable result
+The original Publication and Completion Skills own applicable result
 dimensions, evidence gaps and claims. Read those methods within their existing
 scope; this guideline adds no new gate or evidence schema.
 
@@ -560,7 +560,7 @@ its own accepted scope. Validation ownership is split as follows:
 
 Changes to the reviewed-content identity contract require one real Git fixture
 at one exact `HEAD` that calls the production package wrappers for Branch
-Review, Delivery Review, Publish and Merge. The test obtains identities
+Review, Publication and Merge. The test obtains identities
 from wrapper output or normal owner/checker flow and compares those observed
 values; it must not copy an expected digest, import a test-only algorithm, or
 replace a wrapper call with a direct package-local helper test.
@@ -936,10 +936,10 @@ issue-create executor and that recorder/checker do not generate semantic
 decisions.
 When changing Branch Review recording or gate validation, add or update tests
 that prove the semantic owner records only one compact owner-private checkpoint
-under ignored runtime. Delivery Review consumes the minimal typed exit and live
-facts, not that checkpoint. The Branch Review public wrapper must delete its own
+under ignored runtime. Publication consumes the minimal applicable public results
+and live facts. The Branch Review public wrapper must delete its own
 checkpoint only after the selected typed output passes schema validation; tests
-must prove Delivery Review succeeds without it. Routine independent-agent assignment, liveness,
+must prove Publication preparation succeeds after checkpoint retirement. Routine independent-agent assignment, liveness,
 per-round raw reports, final rollups, reviewer metadata, and Git-derived facts
 must not be persisted. Tracked `review-gate.json`, `agent-assignment.json`,
 `reviews/*.md`, and `review.md` are invalid current owner inputs; no recorder,
@@ -989,9 +989,11 @@ not an old-value correctness whitelist. Actual Agent choices and command
 observations are required; fixed-text assertions or a green DTO alone do not
 prove this behavior.
 
-Delivery recovery coverage must distinguish loss of Delivery Review output
-with an applicable held Branch Review DTO from loss of that DTO itself; normal
-checkpoint retirement cannot force unaffected semantic owners to rerun. New
+Publication recovery coverage distinguishes a missing preview after readiness,
+partially completed publication and a missing Branch Review result. Check that
+recovery uses actual readback, the same Delivery and PR, and the applicable
+original owner for missing dependencies. Normal checkpoint retirement does
+not require unaffected owners to rerun. New
 committed content receives its first complete exact-range Branch Review. The
 original Branch Review owner's narrow promotion-reference alignment may then
 review the complete alignment delta and affected dependencies and produce a
@@ -1226,10 +1228,12 @@ compatibility, deployment_and_operations and verification_completeness. Review:
 - Scope/implementation/Planning-stale routes and original #775 recovery, retaining
   actual cause/revision facts without repeated rollback. Public DTOs do not expose
   private checkpoints. Routine assignments, liveness and raw reports are transient.
-- Delivery Review's actual readiness and exact Chinese PR payload. Publish consumes
-  current full_review/readiness; unreviewed, half-reviewed, changed HEAD or merely
-  integrated_pending_review candidates cannot release remote actions. Delivery
-  uses Refs only and discloses remaining Task work and unverified boundaries.
+- Publication's actual readiness and exact Chinese PR payload. Its public entry
+  consumes the current complete review and applicable Architecture result. The
+  preview shows the exact pending effects, remaining Task work and unverified
+  boundaries. Verify that a material change in preview effects requires a fresh
+  confirmation and that the transaction only executes reviewed actions. Delivery
+  uses Refs only.
 - Original same-operation Commit/Publication/Merge recovery, including fixed old
   complete provider recovery. Completed actions are not repeated. Pending old
   Draft remote actions require current review/readiness before continuation.
@@ -1377,12 +1381,12 @@ wording before readiness may pass.
 ## Task Delivery And Completion Quality (#434)
 
 Run the current public wrappers in graph order: Branch Review `passed` ->
-`guru-review-task-delivery:ready` ->
+Architecture publication eligibility ->
 `guru-publish-task-delivery:ready_for_merge` ->
 `guru-merge-task-delivery:delivered` -> `guru-review-task-completion`.
-The review must independently assess one approved slice and remaining scope,
+Publication judges one approved slice and remaining scope,
 produce an exact Chinese `Refs`-only PR payload, and report validation limits.
-Publish must bind its preview, dialogue-local remote confirmation, exact branch
+Publication must bind its actual pending effects, remote confirmation, exact branch
 and PR, metadata/Ready convergence, and same-transaction output-loss recovery.
 Merge requires a separate expected-head confirmation and must verify the same
 PR/merge identity without treating a successful merge as Task Completion.

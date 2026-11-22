@@ -39,7 +39,7 @@ shared-current integration 自身绑定写前 live expected-current；错配只�
 - `dedicated_refactor_slice`：在行为/API/规则不变前提下，以单一主写的小切片收敛旧实现，要求可验证、可观测、可回滚和明确删除条件。
 - `no_architecture_impact`：只记录 current baseline/constitution、task/stage 与可审核理由，不创建 contribution、ADR 或 project-check burden。
 
-阶段顺序为 Planning candidate_assessment→Author solution→final_plan→Approval/Activation→implementation/完整隔离拟写与工程自检→原 owners final_integration/readback→TaskCommit→完整 committed candidate/begin_check→同次独立 Architecture before/after 与九维/full Review→Delivery Review/readiness→Publication→Merge/整体终态。首次 reviewer 新开且未参与实现，审查期间冻结 B/H 不写候选。修复由原 owner 形成后继提交；仍独立的同 reviewer 按 ADR-034 采用可核验覆盖，补审全部差额和影响，覆盖丢失或影响不明补足完整审核。提交前 integrated_pending_review 不得进入 readiness/Publication/Finish；只有真实 no_change 或 reviewed_promoted 可进入原下游资格判断。
+阶段顺序为 Planning candidate_assessment→Author solution→final_plan→Approval/Activation→implementation/完整隔离拟写与工程自检→原 owners final_integration/readback→TaskCommit→完整 committed candidate/begin_check→同次独立 Architecture before/after 与九维/full Review→发布 Architecture 资格→Publication readiness、预览与确认执行→Merge/整体终态。首次 reviewer 新开且未参与实现，审查期间冻结 B/H 不写候选。修复由原 owner 形成后继提交；仍独立的同 reviewer 按 ADR-034 采用可核验覆盖，补审全部差额和影响，覆盖丢失或影响不明补足完整审核。提交前 integrated_pending_review 不得进入 readiness/Publication/Finish；只有真实 no_change 或 reviewed_promoted 可进入原下游资格判断。
 
 ## Current project-check descriptor
 
@@ -89,7 +89,7 @@ RDT 与 Architecture 的原维护方分别维护自身正文；新增、修改�
 
 ## 审查前远端路径退出与原事务恢复（ADR-033 的窄替代）
 
-当前链在一次独立完整 Review 通过前不 push、不创建 PR。原 early Draft 新发布边退出，不通过改变旧 profile 含义继续使用。原 Delivery Review 保留 readiness 和真实 payload/剩余责任/证据边界判断；Publication 只消费当前 ready/readiness，再执行已审精确动作。
+当前链在一次独立完整 Review 通过前不 push、不创建 PR。原 early Draft 新发布边退出，不通过改变旧 profile 含义继续使用。Publication 在现有架构资格下判断 readiness、载荷、剩余责任和证据边界，展示精确预览并执行对应确认的动作。
 
 旧 Draft 已发生 push、PR、metadata 或绑定事实由原完整 provider 准确恢复，不重复外部动作、不把 Draft 变最终通过。尚未发生的远端动作停止，交 MIGRATION-794 原迁移 owner 接回当前独立 Review/readiness后，按同 PR 和原事务资格接续。既有 PR/remote HEAD 保留；没有 current fallback、旧 pass 转换、第二状态 authority 或扩大的发布权限。
 

@@ -44,7 +44,7 @@ def public_reads(package):
 
 
 class ImplementationCommands(implementation.ImplementationCommands):
-    owners = (*implementation.OWNERS, 'guru-review-task-delivery',
+    owners = (*implementation.OWNERS,
               'guru-review-task-completion', 'guru-review-branch',
               'guru-create-task-commit', 'guru-publish-task-delivery',
               'guru-merge-task-delivery')
