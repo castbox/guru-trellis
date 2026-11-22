@@ -133,7 +133,7 @@ class ContractTest(unittest.TestCase):
             item["consumer_input_id"]: item
             for item in interface["public_contracts"]["projections"]
         }
-        self.assertEqual(set(consumers), {"merge_blocked_stop_input", "implementation_router_input", "scope_revised_input", "legacy_controls_retired_input", "verified_legacy_history_input", "unverified_legacy_history_input"})
+        self.assertEqual(set(consumers), {"delivery_review_seed", "merge_blocked_stop_input", "implementation_router_input", "scope_revised_input", "legacy_controls_retired_input", "verified_legacy_history_input", "unverified_legacy_history_input"})
         for consumer_id, consumer in consumers.items():
             with self.subTest(consumer=consumer_id):
                 schema_path = PACKAGE / consumer["contract"]["path"]
@@ -157,30 +157,27 @@ class ContractTest(unittest.TestCase):
                     consumer_id,
                 )
 
-    def test_review_refresh_authors_current_delivery_review_input(self) -> None:
+    def test_review_refresh_routes_unchanged_to_publication(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text())
         consumer = next(
             item for item in interface["public_contracts"]["consumer_inputs"]
             if item["id"] == "delivery_review_seed"
         )
-        contract = consumer["contract"]
-        self.assertEqual(contract["profile_id"], "delivery_readiness_refresh")
-        self.assertEqual(contract["seed_fields"], ["task_ref", "delivery_key", "reentry_reason"])
-        self.assertEqual(
-            contract["authoring_fields"],
-            ["profile", "mode"],
-        )
+        self.assertEqual(consumer["consumer"], {
+            "kind": "workflow",
+            "id": "guru-publication-review-router",
+        })
+        self.assertEqual(consumer["contract"]["kind"], "json_schema")
         projection = next(
             item for item in interface["public_contracts"]["projections"]
             if item["id"] == "project_review_refresh_required"
         )
-        self.assertEqual(projection["operation"], "rename")
-        self.assertEqual(
-            projection["mappings"],
-            [{"source": "task_ref", "target": "task_ref"},
-             {"source": "delivery_key", "target": "delivery_key"},
-             {"source": "reason_code", "target": "reentry_reason"}],
-        )
+        self.assertEqual(projection, {
+            "id": "project_review_refresh_required",
+            "exit_id": "review_refresh_required",
+            "consumer_input_id": "delivery_review_seed",
+            "operation": "direct",
+        })
 
     def test_command_surface_has_one_public_mutation_entry(self) -> None:
         commands = json.loads((PACKAGE / "commands.json").read_text())["commands"]
