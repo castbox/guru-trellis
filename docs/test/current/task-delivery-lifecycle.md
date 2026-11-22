@@ -224,6 +224,12 @@ T792-01/02/03是长期回归，T792-04/06是本项语义/实际行为观察。�
 
 Agent读完整来源及整体/切片要求，由Author写规划，独立Architecture candidate/final和Approval各自判断。真实遗漏交原writer，修订后依实际出口刷新必要依赖，不重标旧pass。保切片边界、条件/例外、Policy/Docs Plan及提交后一次正式Review顺序。同切片content_revision及在途恢复区分wrapper和实际Agent；不手改hash/state，不把旧provider输出给当前reader。#657等历史截止保持；隔离Planning不是真实#850 Planning/Check/Completion结果。对应R850-03/D850-03。
 
+## T822 同一任务内的小范围启用
+
+从受支持的 Agent 入口处理一个已交付实现之后的独立配置差额。用公共查询定位前序结果及当前义务。恢复已有切片时，核对原 DeliveryKey、规划内容和剩余步骤。需创建下一切片时，后续规划只展开当前差额，保留前序证据的适用条件和可解析引用。
+
+五字段样本继续采用仍适用的资金精度和物理索引证据，补验模型预算与目标配置加载。公共候选测试核对前序交付提交和本轮内容边界。当前接收测试从 final Architecture 继续完成 Approval 与 Activation，核对同一切片、规划字节和 Task 记录。原生行为、组件验证和配置检查的实际观察见 [#822 验证记录](../../requirements-design-test-contributions/822-incremental-enablement/test.md)。
+
 ## T856：Publish 分类、脱敏与原恢复入口
 
 | 场景 → requirement/design | 真实入口与正常输入 | 必须观察及边界 |
