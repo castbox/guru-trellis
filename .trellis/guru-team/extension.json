@@ -1198,11 +1198,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-22T13:25:34Z",
+  "installed_at": "2026-11-22T13:59:21Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
-    "commit": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+    "ref": "6f0d65fcd0c45d425b484e30d5d63198cde34dfe",
+    "commit": "6f0d65fcd0c45d425b484e30d5d63198cde34dfe",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -23038,7 +23038,7 @@
       {
         "path": ".trellis/guru-team/runtime/delivery_projection/continuation.py",
         "source": "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
-        "sha256": "189bb5c49e99fc832fb1fe1283859ab1e6bfa8a3c2a100f12984796298968a92",
+        "sha256": "08176f5bed851725ae39a716873b1d83431203aaec36318712415a564f94b173",
         "executable": false,
         "action": "installed"
       },

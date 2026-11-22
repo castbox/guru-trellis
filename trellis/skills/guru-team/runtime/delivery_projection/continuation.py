@@ -103,6 +103,12 @@ def _active_binding(root: Path, official: Any, facts: Any, context: str) -> Any:
     if official.record_exists(path):
         binding = official.read_record(path, root, facts)
         if binding.data["schema_version"] != 3:
+            # The native reader knows the Task behind a predecessor binding.
+            # Preserve its maintenance diagnosis before rejecting execution.
+            api = _installed_modules(root, ("session_storage", "active_task"))
+            active = api.active_task.resolve_active_task(root)
+            if active.error:
+                raise api.session_storage.SessionBindingError(active.error)
             raise LifecycleContractError("unsupported_binding_schema", "session",
                                          "Task v2 requires the original schema-3 Task/Delivery binding.")
         return binding

@@ -282,6 +282,34 @@ class ReadContinuationContextTests(unittest.TestCase):
             for field in ("key", "delivery", "gate_applicability"):
                 self.assertEqual(exact[field], native[field])
 
+    def test_git_common_predecessor_preserves_native_maintenance_route(self):
+        # Create the Task and its schema-2 session through the original writers.
+        workflow = self.root / ".trellis/workflow.md"
+        current = workflow.read_text()
+        workflow.write_text("# Predecessor workflow\n")
+        self.command([
+            sys.executable, ".trellis/scripts/task.py", "create", "Predecessor",
+            "--description", "Legacy diagnostic regression", "--slug", "predecessor",
+            "--task-id", "predecessor", "--schema-version", "legacy", "--no-start",
+        ])
+        task = next((self.root / ".trellis/tasks").glob("*-predecessor/task.json"))
+        self.command([
+            sys.executable, ".trellis/scripts/task.py", "start",
+            str(task.parent.relative_to(self.root)), "--allow-empty-context",
+        ])
+        workflow.write_text(current)
+        native = json.loads(self.command(
+            [sys.executable, ".trellis/scripts/delivery.py", "current", "--json"],
+            exit_code=1,
+        ))
+        self.assertEqual(native["code"], "maintenance_required", native)
+        self.assertIn("maintain inspect-task", native["message"])
+        result = self.query(exit_code=1)
+        self.assertEqual(result["kind"], "error")
+        self.assertEqual(result["diagnostic"]["code"], native["code"])
+        self.assertEqual(result["diagnostic"]["message"], native["message"])
+        self.assertEqual(result["diagnostic"]["owner"], "guru-maintain-legacy-task")
+
     def test_known_predecessor_passes_through_native_diagnostic(self):
         # Use the old local carrier and predecessor record shape supported by
         # the native maintenance diagnostic. The current writers reject them.
