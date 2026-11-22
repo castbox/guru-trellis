@@ -1,6 +1,6 @@
 # #822 五字段启用接续的验证记录
 
-观察基线为 `ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f`。对应 [#822](https://github.com/castbox/guru-trellis/issues/822) AC1、AC2 和 [生命周期测试策略 T822](../../test/current/task-delivery-lifecycle.md#t822同一任务内的小范围启用)。
+观察基线为 `ffbc25e32e65fa843c0ff0d75a9f16f0e0f0ea8f`。对应 [#822](https://github.com/castbox/guru-trellis/issues/822) AC1、AC2 和 [生命周期测试策略 T822](../../test/current/task-delivery-lifecycle.md#t822-同一任务内的小范围启用)。
 
 ## Codex 入口观察
 
@@ -10,7 +10,9 @@ Codex 从 `trellis-continue` 读到 Task 实际绑定和 `no_current_delivery`�
 
 首次创建写入了后续切片，但 Codex 的隔离运行返回 `blocked/delivery_projection_failed`。同一运行中的恢复仍返回该错误。宿主使用同一个 `continuation_id` 经原 `recover_creation` 成功选回已创建的切片，保留同一 DeliveryKey。随后 Codex 回读 `current/planning`，只写后续切片的增量需求。一次 Author 调用遇到旧输出形状缺少 DeliveryKey 的校验错误。Codex 改用当前 schema 后获 `requirements_ready` 并用原合同查询定位 Architecture `candidate_assessment`。
 
-隔离工作区装配、宿主恢复和实际 Agent 判断各自提供观察层证据。首次选择失败发生在该隔离运行环境中，具体原因未证实。样本未验证历史 Issue 的耗时或根因。
+第二次 Codex 会话接到同一切片的实际 `approved` 结果。它复用已审规划和前序证据，激活原切片，只改目标配置文件。它验证了五字段和模型预算，再调用原 TaskCommit，收到 `pre_review_committed`。本地读回提交为 `701f84205ffde248dcf8af0343d061a13e4ccaaf`。从前序已交付提交到本次提交，样本业务文件的变化只有目标配置。观察范围止于样本本地交付，后续审核、合并和部署需要各自的证据。
+
+首次选择失败发生在隔离运行环境中，具体原因未证实。历史 Issue 的耗时和根因仍未知。
 
 ## 定向工程验证
 
