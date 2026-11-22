@@ -362,7 +362,11 @@ Mobile/Web 的 [合同就绪条件](../../skills/guru-team/packages/guru-orchest
 分发、执行终点和个人安装迁移见
 [Issue 编排迁移说明](../../presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
 
-`v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，peeled commit 为
+`v0.7.0-guru.10` 是本轮发布准备的正式前驱，peeled commit 为
+`76198a53b4da989b66d2e5f135ff4d2b703ca3cf`。安装该版本时，workflow marketplace 与
+preset checkout 使用同一 immutable `.10` tag，并读取该 checkout 自身的 Fork lock。
+
+`v0.7.0-guru.9` 是更早的正式版本，peeled commit 为
 `ac1c823857ad6695c106daeedd25aafce4c50934`。安装该版本时，workflow marketplace 与
 preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身的 Fork lock。
 
@@ -373,10 +377,10 @@ preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身�
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前 canonical extension 与 maintenance target 为 `0.7.0-guru.10`。
-仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.10` 的非 draft、
-非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.10`
-与同一 `.10` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.11`。
+仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.11` 的非 draft、
+非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.11`
+与同一 `.11` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](../../presets/guru-team/source/trellis-source.json)。
 按 preset 的[构建所选 Fork](../../presets/guru-team/README.md#构建所选-fork)核验实际构建；
@@ -410,7 +414,7 @@ Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包�
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
 
-本轮 `.10` 发布内容以正式前驱 `v0.7.0-guru.9` 到最终候选的完整 diff 为准。
+本轮 `.11` 发布内容以正式前驱 `v0.7.0-guru.10` 到最终候选的完整 diff 为准。
 准备交付和终态簿记合入后，从届时最新 main 冻结候选；发布前 main 若推进，重新冻结并刷新受影响验证。
 不以其他 Issue 的完成、关闭、合并或归档为前置。以下 `.8` 说明保留其历史截止，不代表本轮验证结果。
 
@@ -453,7 +457,7 @@ For current-source validation, read the selected Guru checkout's own
 [source lock](../../presets/guru-team/source/trellis-source.json) and follow the
 [Fork build recipe](../../presets/guru-team/README.md#构建所选-fork).
 Use that exact build with the same reviewed Guru source. Historical `.8` installation
-uses its original source pair described above. Install `.10` only when its non-draft,
+uses its original source pair described above. Install `.11` only when its non-draft,
 non-prerelease Release exists, using the same immutable tag for workflow and preset.
 For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying

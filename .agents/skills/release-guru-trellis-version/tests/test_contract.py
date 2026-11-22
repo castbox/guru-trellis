@@ -22,7 +22,6 @@ sys.path.insert(0, str(PUBLIC_SKILLS))
 from runtime.delivery_projection.adapter import authority_ref
 
 DELIVERY_OWNERS = (
-    "guru-review-task-delivery",
     "guru-publish-task-delivery",
     "guru-merge-task-delivery",
     "guru-review-task-completion",
@@ -31,6 +30,7 @@ DELIVERY_OWNERS = (
     "guru-cleanup-task-resources",
 )
 RETIRED_OWNERS = (
+    "guru-review-task-delivery",
     "guru-review-task-publication",
     "guru-finalize-task",
     "guru-merge-task-pr",
@@ -133,6 +133,37 @@ class SkillContractTest(unittest.TestCase):
                     SKILL_ID, path.read_text(encoding="utf-8", errors="ignore")
                 )
 
+    def test_public_manifest_matches_active_registry_and_omits_retired_delivery_review(self) -> None:
+        registry = json.loads(
+            (PUBLIC_SKILLS / "registry.json").read_text(encoding="utf-8")
+        )
+        manifest = json.loads(
+            (REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        active_ids = {
+            item["id"] for item in registry["skills"] if item["state"] == "active"
+        }
+        public_api = manifest["public_api"]
+        self.assertEqual(active_ids, set(public_api["skill_contracts"]["active_skill_ids"]))
+        retired = "guru-review-task-delivery"
+        self.assertNotIn(retired, active_ids)
+        self.assertNotIn(
+            retired,
+            "\n".join(public_api["companion_scripts"]),
+        )
+        for field_name in (
+            "public_input_schema_ids",
+            "typed_output_schema_ids",
+            "private_artifact_schema_ids",
+        ):
+            with self.subTest(field=field_name):
+                self.assertFalse(
+                    any(
+                        value.startswith(retired)
+                        for value in public_api["skill_contracts"][field_name]
+                    )
+                )
+
     def test_contract_owns_current_delivery_chain_and_independent_release_boundaries(self) -> None:
         contract = (
             ROOTS["shared"] / "references/contract.md"
@@ -155,6 +186,7 @@ class SkillContractTest(unittest.TestCase):
             "Phase 2",
             "guru-create-task-commit",
             "guru-review-branch",
+            "guru-publication-entry-router",
             *DELIVERY_OWNERS,
         ):
             with self.subTest(owner=owner):
@@ -183,11 +215,14 @@ class SkillContractTest(unittest.TestCase):
             "stable_plan -> implementation_and_engineering_checks -> "
             "necessary_rdt_architecture_integration_and_readback -> "
             "guru-create-task-commit -> constructor/begin_check -> "
-            "guru-review-branch -> publication_architecture_eligibility -> "
-            "guru-review-task-delivery -> guru-publish-task-delivery -> "
+            "guru-review-branch(passed) -> publication_architecture_eligibility -> "
+            "guru-publication-entry-router -> "
+            "guru-publish-task-delivery(prepare/readiness/preview/execute) -> "
             "guru-merge-task-delivery -> guru-review-task-completion"
         )
         self.assertIn(honest_path, contract)
+        self.assertIn("delivery_prepare_publication", contract)
+        self.assertIn("delivery_execute_publication", contract)
         for responsibility in (
             "`pre_review_committed` enters only the original implementation router",
             "`check` then `full_review`",
@@ -236,13 +271,12 @@ class SkillContractTest(unittest.TestCase):
         contract = (ROOTS["shared"] / "references/contract.md").read_text()
         workflow = (REPO / ".trellis/workflow.md").read_text()
         expected = (
-            ("guru-review-branch", "passed", "guru-review-task-delivery"),
-            ("guru-review-task-delivery", "ready", "guru-publish-task-delivery"),
-            ("guru-publish-task-delivery", "ready_for_merge", "guru-merge-task-delivery"),
-            ("guru-merge-task-delivery", "delivered", "guru-review-task-completion"),
-            ("guru-review-task-completion", "completed", "guru-complete-task-closure"),
-            ("guru-complete-task-closure", "no_mutation", "guru-finish-task"),
-            ("guru-finish-task", "success", "guru-cleanup-task-resources"),
+            ("guru-review-branch", "passed", {"kind": "workflow", "id": "guru-publication-entry-router"}),
+            ("guru-publish-task-delivery", "ready_for_merge", {"kind": "skill", "id": "guru-merge-task-delivery"}),
+            ("guru-merge-task-delivery", "delivered", {"kind": "skill", "id": "guru-review-task-completion"}),
+            ("guru-review-task-completion", "completed", {"kind": "skill", "id": "guru-complete-task-closure"}),
+            ("guru-complete-task-closure", "no_mutation", {"kind": "skill", "id": "guru-finish-task"}),
+            ("guru-finish-task", "success", {"kind": "skill", "id": "guru-cleanup-task-resources"}),
         )
         for owner, exit_id, consumer in expected:
             with self.subTest(owner=owner, exit=exit_id):
@@ -250,10 +284,13 @@ class SkillContractTest(unittest.TestCase):
                     (REPO / ".agents/skills" / owner / "interface.json").read_text()
                 )
                 exits = {item["id"]: item["consumer"] for item in interface["external_exits"]}
-                self.assertEqual({"kind": "skill", "id": consumer}, exits[exit_id])
+                self.assertEqual(consumer, exits[exit_id])
                 self.assertIn(owner, workflow)
-                self.assertIn(consumer, workflow)
+                self.assertIn(consumer["id"], workflow)
                 self.assertIn(owner, contract)
+        registry = json.loads((PUBLIC_SKILLS / "registry.json").read_text())
+        self.assertNotIn("guru-review-task-delivery", {item["id"] for item in registry["skills"]})
+        self.assertNotIn("guru-review-task-delivery", workflow)
         completion = json.loads((PUBLIC_SKILLS / "packages/guru-review-task-completion/interface.json").read_text())
         consumer = next(row["consumer"] for row in completion["external_exits"]
                         if row["id"] == "additional_delivery_required")

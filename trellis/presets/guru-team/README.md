@@ -306,7 +306,11 @@ source lock 保留来源的 package-manager 声明，不据此固定执行版本
 [公开调用说明与诊断合同](../../workflows/guru-team/README.md#读取当前续接对象)
 核对匹配 workflow、Fixed Fork API 和本会话的前置条件。
 
-`v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，peeled commit 为
+`v0.7.0-guru.10` 是本轮发布准备的正式前驱，peeled commit 为
+`76198a53b4da989b66d2e5f135ff4d2b703ca3cf`。安装该版本时，workflow marketplace 与
+preset checkout 使用同一 immutable `.10` tag，并读取该 checkout 自身的 Fork lock。
+
+`v0.7.0-guru.9` 是更早的正式版本，peeled commit 为
 `ac1c823857ad6695c106daeedd25aafce4c50934`。安装该版本时，workflow marketplace 与
 preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身的 Fork lock。
 
@@ -317,10 +321,10 @@ preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身�
 Fork `ca0e8b931d19ccb87802d6866abd2113a6f707c0` / CLI-Core
 `0.7.0-castbox.6`，不包含下述 current-peer 修复。
 
-当前 canonical extension 与 maintenance target 为 `0.7.0-guru.10`。
-仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.10` 的非 draft、
-非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.10`
-与同一 `.10` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
+当前 canonical extension 与 maintenance target 为 `0.7.0-guru.11`。
+仅当 [Releases](https://github.com/castbox/guru-trellis/releases) 存在 `.11` 的非 draft、
+非 prerelease Release 时，才使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.11`
+与同一 `.11` tag 的 preset checkout 进行正式安装。否则选择实际已正式发布的 tag。
 Fork 的 repository、commit、tree、CI identity、CLI version 与 package manager
 统一读取所选 Guru checkout 自身的 [source lock](source/trellis-source.json)。
 本页不另存当前 SHA/CI 对照表；按[构建所选 Fork](#构建所选-fork)核验实际构建。
@@ -352,14 +356,14 @@ Guru candidate SHA，再从该 SHA 的 lock 构建。已发布 `.8` tag 不包�
 完整 canonical 来源经 Delivery 交付后，目标 checkout 从该干净来源加载
 `guru-upgrade-tools`，经 `source_locked` 实际采用并验证完整受管投影及保留行为。
 本地来源样本只验证来源自身安装可用性；目标采用须由目标自身的 resolver、installed
-与 native 检查证明。两者均不证明远端 `.10` marketplace 或正式 Release 通过。
+与 native 检查证明。两者均不证明远端 `.11` marketplace 或正式 Release 通过。
 各 Delivery 保留完整质量与交付责任；
 只有全部准备业务及实际采用完成，才可能通过 Task Completion 并进入终态收尾。
 未来正式发布仍由独立 Release owner 冻结 exact commit/tree，执行所需安装与
 predecessor 验证，再分别完成新 tag、tag-pinned smoke、Release 和对应 Issue closure。
 历史验收不替代新候选门禁；完整多平台矩阵与真实业务、生产验证保持独立。
 
-本轮 `.10` 发布内容以正式前驱 `v0.7.0-guru.9` 到最终候选的完整 diff 为准。
+本轮 `.11` 发布内容以正式前驱 `v0.7.0-guru.10` 到最终候选的完整 diff 为准。
 准备交付和终态簿记合入后，从届时最新 main 冻结候选；发布前 main 若推进，重新冻结并刷新受影响验证。
 不以其他 Issue 的完成、关闭、合并或归档为前置。以下 `.8` 说明保留其历史截止，不代表本轮验证结果。
 
@@ -405,7 +409,7 @@ For current-source validation, read the selected Guru checkout's own
 [source lock](source/trellis-source.json), verify its source and CI identity,
 and build that exact Fork commit. Use its CLI with that same reviewed Guru source.
 Historical `.8` installation uses its original source pair described above.
-Install `.10` only when its non-draft, non-prerelease Release exists, using the same
+Install `.11` only when its non-draft, non-prerelease Release exists, using the same
 immutable tag for workflow and preset. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. For a target meeting the ordinary current-only installation

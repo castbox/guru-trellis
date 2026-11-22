@@ -1,0 +1,115 @@
+{
+  "schema_version": "2.0",
+  "id": "release-v0.7.0-guru.11",
+  "name": "release-v0.7.0-guru.11",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 908,
+    "disposition": "reference_only"
+  },
+  "title": "准备发布 v0.7.0-guru.11",
+  "description": "按 Issue #908 完成 v0.7.0-guru.11 的仓库内发布准备，并保持 source、dogfood 与平台投影一致。",
+  "dev_type": null,
+  "scope": "同步版本清单、公开说明、dogfood 安装、Shared/Codex/Claude/Cursor 投影和仓库私有发布合同至当前 Skill graph；验证准备切片。远端 tag、smoke、GitHub Release、本地安装收敛和 Issue closure 保留为准备交付合并后的独立发布阶段。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-23",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+    "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+  },
+  "deliveries": [
+    {
+      "id": "7fa61b67-258e-49db-9db3-505f1a0c4e3e",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+          "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R6",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md",
+        "revision": "sha256:68fbbacb8a4889bf1f865b5350efc3cc827d1cd88c959969498516dea3c65061"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:13a7c8c2-a99a-4269-aafc-cbfcce7bd845",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+              "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R6",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md",
+            "revision": "sha256:68fbbacb8a4889bf1f865b5350efc3cc827d1cd88c959969498516dea3c65061"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/prd.md",
+              "revision": "sha256:af03e42175d55c8e600927a8f855345148993e54ad3db6a7c3d9186d71c7a9ec"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md",
+              "revision": "sha256:68fbbacb8a4889bf1f865b5350efc3cc827d1cd88c959969498516dea3c65061"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md",
+              "revision": "sha256:ab1f40481be6b0e4c843f15c8c42d97e54b024fc9d9d481bd6789fd481af5c0c"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

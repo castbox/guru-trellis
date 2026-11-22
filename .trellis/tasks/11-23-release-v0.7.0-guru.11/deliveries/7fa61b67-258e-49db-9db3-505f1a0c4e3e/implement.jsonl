@@ -1,0 +1,18 @@
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md", "reason": "整体 Task 需求、D1/D2 与正式发布边界"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/prd.md", "reason": "D1 完整可分发源需求与验收"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md", "reason": "D1 方案和唯一来源处置"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md", "reason": "D1 执行步骤、验证、Policy 和 Docs Plan"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整技术写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "共享规划正文与来源合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前 Delivery 设计模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前 Delivery 实施模板"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "仓库私有发布合同与 D1/D2 边界"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md", "reason": "当前 Publication readiness 与发布事务合同"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "当前 Phase 1-3 与 Publication owner 路由"}
+{"file": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "当前知识读取、整合与晋升合同"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "受影响生命周期需求正文"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "受影响生命周期设计正文"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "受影响生命周期测试正文"}
+{"file": "docs/test/current/codex-skill-distribution.md", "reason": "私有 Skill 公共排除与分发验证"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "选择实际验证与来源样本证据"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "公开 README 分工与发布版本规则"}

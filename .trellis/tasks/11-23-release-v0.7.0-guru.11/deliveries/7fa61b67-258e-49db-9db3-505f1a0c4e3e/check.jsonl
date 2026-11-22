@@ -1,0 +1,16 @@
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md", "reason": "核对整体准备范围和阶段边界"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/prd.md", "reason": "核对 D1 行为与验收"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md", "reason": "核对机制、兼容、恢复和验证设计"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md", "reason": "核对实施和验证计划"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整技术写作规范"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值、责任边界和最小证据"}
+{"file": ".trellis/spec/workflow/review-sufficiency.md", "reason": "完整独立 Review 的覆盖范围"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "候选适用性、消费者连续性和 Review 责任"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "发布合同与私有消费者边界"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md", "reason": "当前 Publication readiness 和发布事务"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "当前完整生命周期和唯一 consumer"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "审核当前需求正文"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "审核当前设计正文"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "审核当前测试正文"}
+{"file": "docs/test/current/codex-skill-distribution.md", "reason": "审核私有排除与安装证据边界"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "审核公开说明分工"}
