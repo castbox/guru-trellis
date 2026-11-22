@@ -238,6 +238,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/check-task-checkout-boundary.sh"),
     Path("scripts/bash/construct-delivery-candidate.sh"),
+    Path("scripts/bash/read-continuation-context.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/discover-skill-contract.sh"),
     Path("scripts/bash/discover-skill-evals.sh"),

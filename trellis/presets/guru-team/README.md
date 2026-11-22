@@ -302,6 +302,10 @@ source lock 保留来源的 package-manager 声明，不据此固定执行版本
 
 ## Apply And Verify
 
+标准续接的 `read-continuation-context.sh` 由此 preset 安装。按
+[公开调用说明与诊断合同](../../workflows/guru-team/README.md#读取当前续接对象)
+核对匹配 workflow、Fixed Fork API 和本会话的前置条件。
+
 `v0.7.0-guru.9` 是本轮发布准备起点的正式前驱，peeled commit 为
 `ac1c823857ad6695c106daeedd25aafce4c50934`。安装该版本时，workflow marketplace 与
 preset checkout 使用同一 immutable `.9` tag，并读取该 checkout 自身的 Fork lock。

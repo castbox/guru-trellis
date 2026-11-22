@@ -169,6 +169,9 @@ def _dirty_paths(path: Path) -> tuple[str, ...]:
 def inspect_registered_worktree(
     repository: RepositoryFacts,
     registration: WorktreeRegistration,
+    *,
+    registrations: tuple[WorktreeRegistration, ...] | None = None,
+    include_dirty: bool = True,
 ) -> WorktreeFacts:
     discovered_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     try:
@@ -176,7 +179,8 @@ def inspect_registered_worktree(
         head = _git(["rev-parse", "--verify", "HEAD^{commit}"], cwd=registration.path).stdout.strip()
         symbolic = _git(["symbolic-ref", "-q", "HEAD"], cwd=registration.path, check=False)
         branch_ref = symbolic.stdout.strip() if symbolic.returncode == 0 else None
-        registrations = list_worktree_registrations(repository)
+        if registrations is None:
+            registrations = list_worktree_registrations(repository)
         primary_path = registrations[0].path if registrations else registration.path
         return WorktreeFacts(
             path=registration.path,
@@ -185,7 +189,7 @@ def inspect_registered_worktree(
             head=head,
             branch_ref=branch_ref,
             topology="primary" if registration.path == primary_path else "linked",
-            dirty_paths=_dirty_paths(registration.path),
+            dirty_paths=_dirty_paths(registration.path) if include_dirty else (),
             discovered_at=discovered_at,
             registration=registration,
         )

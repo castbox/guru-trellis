@@ -252,3 +252,9 @@ Agent读完整来源及整体/切片要求，由Author写规划，独立Architec
 | T856-05 → R856-04、D856-03 | package 全套、共享 test_io/test_command_receipts、source/installed validation 及原 tools 同步/reapply/drift | 实际相关正常 consumer、catalog/commands、mode/sidecar 和投影保持；保 Task/session/peer。source、fixture、installed 与实际 Agent/外部效果分层，不执行完整多平台 Release 矩阵。 |
 
 实际工程结果由 [#856 Test](../../requirements-design-test-contributions/856-publication-error-boundary/test.md) 定位。本单元定义预期，不预填 Check、committed Review、安装采用或生产通过；历史 G10 首次异常及旧 Draft 不追加真实重放义务。固定前驱和窄增加关系见 [#856 追踪](../../requirements-design-test-contributions/856-publication-error-boundary/traceability.md)。
+
+## T899 续接行为验证
+
+覆盖 [R899](../../requirements/current/task-delivery-lifecycle.md#r899-标准续接上下文) 和 [D899](../../design/current/task-delivery-lifecycle.md#d899-一次解析与精确后续读取)。公开 CLI 真实 Git 工作树和已安装上游 API 测试 7/7。用例覆盖同会话重用、正常 Task 切换和 Delivery 改选、显式查询、缺绑定、普通冲突和旧记录。检查查询前后的 Task、会话及 Git 状态。精确记录与原结果及门禁适用性一致。
+
+从 #899 的实际安装运行原生 continuation 提取并执行其中的命令。观察一次上下文解析、一次精确记录读取及适用的 Planning，Task 文件、分支和 worktree 未变化。该 Delivery 尚无 Publication PR。原 Merge 恢复测试 15/15 采用隔离输入，另以 repo-bound CLI 读到历史 PR #897 为 MERGED。#899 的真实已发布恢复链待实际对象验证。代表性安装和 reapply 通过，Codex、Claude Code、Cursor 的投影与 dogfood 漂移通过。正式源锁采用与 Release 矩阵仍未验证。

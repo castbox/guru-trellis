@@ -1198,11 +1198,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-22T08:25:31Z",
+  "installed_at": "2026-11-22T13:25:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "889d79e734072e2de954bbe8bd90b94880735a1b",
-    "commit": "889d79e734072e2de954bbe8bd90b94880735a1b",
+    "ref": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
+    "commit": "f06eddb6ccf97ddd2d1a41c117692f5957cb2dc7",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1247,6 +1247,7 @@
       ".trellis/guru-team/scripts/bash/invoke-stage0-skill.sh",
       ".trellis/guru-team/scripts/bash/prepare-task-commit.sh",
       ".trellis/guru-team/scripts/bash/preview-change-context-history.sh",
+      ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
       ".trellis/guru-team/scripts/bash/record-agent-recovery.sh",
       ".trellis/guru-team/scripts/bash/record-change-request-review.sh",
       ".trellis/guru-team/scripts/bash/record-context-discovery.sh",
@@ -1433,7 +1434,7 @@
       {
         "id": "guru-ensure-task-checkout",
         "interface_sha256": "a9cf8619f1549bf7eee1a2d52d0b30030e0001a902f22becd0be6e8ac271967f",
-        "tree_sha256": "3613d3680d873520a04142ee867018a50e30fc7ba13ef3055780e45e341abe26"
+        "tree_sha256": "dc634a64d9cb48ea5061877ff89d1e5b13d6e07e9d35ec083e198db1e1f8d0e4"
       },
       {
         "id": "guru-establish-task-branch-binding",
@@ -9688,7 +9689,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
-        "sha256": "505fe04e79f2645f8e8dba62534b75455a8980c09ea6e50ff52f5dee46fd15b7",
+        "sha256": "ec99455d6c9a2a30ae3dc1970b9ae3ea5c1148e508571b02d1d29e17d68688ef",
         "executable": false,
         "action": "installed"
       },
@@ -23035,6 +23036,20 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/runtime/delivery_projection/continuation.py",
+        "source": "trellis/skills/guru-team/runtime/delivery_projection/continuation.py",
+        "sha256": "189bb5c49e99fc832fb1fe1283859ab1e6bfa8a3c2a100f12984796298968a92",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/runtime/delivery_projection/continuation_cli.py",
+        "source": "trellis/skills/guru-team/runtime/delivery_projection/continuation_cli.py",
+        "sha256": "1c7007e3d19d5c9eb2c9a8b07165daaa6327cd5add718f4c1abcce515a6170ab",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/runtime/delivery_projection/gates.py",
         "source": "trellis/skills/guru-team/runtime/delivery_projection/gates.py",
         "sha256": "f6fe8e3a06fedde144f7c4179604d65c3471d8ecae71d48eba8494816e73a646",
@@ -23065,7 +23080,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/active_checkout.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/active_checkout.py",
-        "sha256": "c1178103b8e06767c357788cc56b811f9699011e4267243ca0d9b56fde30b98d",
+        "sha256": "388b4c273d929015efe6946a6804ce9230f91b52e5d62cde0ff7924daf19adff",
         "executable": false,
         "action": "installed"
       },
@@ -23121,7 +23136,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
-        "sha256": "7ba46dc5bd44f695c7709b8ef93219e7999e06147cee812fc48f001d457fdda8",
+        "sha256": "fb881469fde683cfc7bf56ba5860b3961bc4204c573a4f22ba5eb46a3e010203",
         "executable": false,
         "action": "installed"
       },

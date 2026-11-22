@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本批文档与报告写作规则"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "受影响入口和有限安装验证"}
+{"file": ".trellis/workflow.md", "reason": "原标准续接、恢复入口及正式阶段边界"}
+{"file": "docs/architecture/03-domains/workflow-context.md", "reason": "续接查询和上游职责归属"}
+{"file": "docs/architecture/adr/035-current-continuation-scope-routing.md", "reason": "原身份、选择和恢复消费者"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "来源、验证和交付范围承接"}
