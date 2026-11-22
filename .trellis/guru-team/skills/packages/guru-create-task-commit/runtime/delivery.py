@@ -7,6 +7,7 @@ from pathlib import Path
 from common import git, status_records
 from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.io import CommandError
+from runtime.parent_git import preserved_worktree_paths
 from runtime.reviewed_content import reviewed_content_metadata_path
 from runtime.schema import validate_json
 from runtime.task_lifecycle import resolve_active_task_checkout
@@ -45,8 +46,9 @@ def clean_candidate(projection, public):
     for marker in ("MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply", "sequencer"):
         if Path(git(repo, "rev-parse", "--path-format=absolute", "--git-path", marker).stdout.strip()).exists():
             raise CommandError("stale_identity", "git_operation_state", "Finish the current Git operation with its owner.", 3)
-    if any(not reviewed_content_metadata_path(row[1]) or (row[2] and not reviewed_content_metadata_path(row[2]))
-           for row in status_records(repo)):
+    preserved = preserved_worktree_paths(repo)
+    if any(not reviewed_content_metadata_path(path) and path not in preserved
+           for row in status_records(repo) for path in (row[1], row[2]) if path):
         raise CommandError("stale_identity", "worktree", "Use exact dirty candidate commit before committed reentry.", 3)
     record = projection.read_record()
     base = record["base_branch"]
