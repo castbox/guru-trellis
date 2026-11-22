@@ -89,7 +89,7 @@ class ReceivingSessionTests(unittest.TestCase):
         self.assertEqual({p: p.read_bytes() for p in plans}, plans)
         self.assertEqual(subprocess.check_output(["git", "show-ref"], cwd=chain.root), refs)
 
-    def test_existing_plan_resumes_wording_approval_and_activation_on_same_key(self):
+    def test_existing_plan_resumes_final_architecture_approval_and_activation_on_same_key(self):
         chain = self.chain
         candidate = chain.architecture(self.candidate)
         planned = chain.author({"profile": "delivery_solution_planning", "mode": "workflow",
@@ -100,13 +100,13 @@ class ReceivingSessionTests(unittest.TestCase):
         self.assertEqual(planned["exit_id"], "plan_ready")
         before = self.projection.read_record()
         plans = {p: p.read_bytes() for p in chain.directory.iterdir() if p.is_file()}
-        # This receiver's outstanding work is Wording/final Architecture/Approval,
-        # so recovery never calls initial Author again.
+        # This receiver resumes the existing plan at final Architecture.
         with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "existing-plan-receiver"}):
             self.assertEqual(self.bind_receiver()["exit_id"], "session_rebound")
             self.select_receiver()
-            self.assertEqual(chain.wording()["exit_id"], "pass")
-            approved = chain.approve(chain.architecture())
+            final = chain.architecture()
+            self.assertEqual(final["planning_purpose"], "final_plan")
+            approved = chain.approve(final)
             self.assertEqual(approved["exit_id"], "approved")
             self.assertEqual(self.projection.read_record(), before)
         with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "activation-receiver"}):
