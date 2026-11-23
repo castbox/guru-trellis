@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "应用项目写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "读取正式规划正文合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "读取切片需求的适用模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "读取切片设计的适用模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "读取切片执行与验证模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md", "reason": "核对真实冲突候选与投影合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "核对定向验证与证据采用边界"}
