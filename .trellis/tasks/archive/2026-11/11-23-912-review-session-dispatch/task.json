@@ -1,0 +1,386 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-23-912-review-session-dispatch",
+  "id": "912-review-session-dispatch",
+  "name": "912-review-session-dispatch",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 912,
+    "disposition": "exact_source"
+  },
+  "title": "修复正式 Guru 步骤的子代理派发遗漏会话绑定与 Delivery 选择",
+  "description": "修复正式步骤跨会话交接的 Task 绑定及 Delivery 选择前置",
+  "dev_type": null,
+  "scope": "交付 Issue #912 的现有派发与接回路径修复及定向验证",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-23",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+    "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+  },
+  "deliveries": [
+    {
+      "id": "d6e7b65a-814e-4ed6-a80f-4a692408721a",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+          "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+        },
+        "anchors": [
+          "AC01",
+          "AC02",
+          "AC03"
+        ]
+      },
+      "planning_root": "deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/design.md",
+        "revision": "sha256:d4bb19ff049c0e878e31dd6add4a06ce536b9064253fe00204e128f4c43463fe"
+      },
+      "candidate": {
+        "base_ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+        "content_ref": "sha256:856f5c37dd2dea6934a06439935367dee29bb2e1888ef1de8367a357263ceb0c",
+        "head_ref": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-review-branch/SKILL.md",
+          ".claude/skills/guru-review-branch/SKILL.md",
+          ".cursor/skills/guru-review-branch/SKILL.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+          ".trellis/workflow.md",
+          "docs/architecture/03-domains/workflow-context.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:3db7b9c5-ca78-4cb2-9ae9-6a8b58789092",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+              "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/design.md",
+            "revision": "sha256:d4bb19ff049c0e878e31dd6add4a06ce536b9064253fe00204e128f4c43463fe"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/prd.md",
+              "revision": "sha256:b7c3ba24f9ee9598ff1fcc8b0c664a235e70f47f2475eb2e30f210ace33de58e"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/design.md",
+              "revision": "sha256:d4bb19ff049c0e878e31dd6add4a06ce536b9064253fe00204e128f4c43463fe"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/implement.md",
+              "revision": "sha256:f1631cc88a0b66db587d1e6fa5439b791d9e231901ee617142093e8ee938abb6"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:de6673e43fb9f377513d91c2f13f7f20da46fe62319cfb4542d8a303a0ec2393",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+              "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/design.md",
+            "revision": "sha256:d4bb19ff049c0e878e31dd6add4a06ce536b9064253fe00204e128f4c43463fe"
+          },
+          "candidate": {
+            "base_ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+            "content_ref": "sha256:856f5c37dd2dea6934a06439935367dee29bb2e1888ef1de8367a357263ceb0c",
+            "head_ref": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:3db7b9c5-ca78-4cb2-9ae9-6a8b58789092",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/implement.md",
+              "revision": "sha256:f1631cc88a0b66db587d1e6fa5439b791d9e231901ee617142093e8ee938abb6"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:de6673e43fb9f377513d91c2f13f7f20da46fe62319cfb4542d8a303a0ec2393",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+              "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/design.md",
+            "revision": "sha256:d4bb19ff049c0e878e31dd6add4a06ce536b9064253fe00204e128f4c43463fe"
+          },
+          "candidate": {
+            "base_ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+            "content_ref": "sha256:856f5c37dd2dea6934a06439935367dee29bb2e1888ef1de8367a357263ceb0c",
+            "head_ref": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "check:de6673e43fb9f377513d91c2f13f7f20da46fe62319cfb4542d8a303a0ec2393",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/implement.md",
+              "revision": "sha256:f1631cc88a0b66db587d1e6fa5439b791d9e231901ee617142093e8ee938abb6"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:966792a683cc97fb1e3de027f5dff4db35816d0b273e498f7750eabb0e5fbff3",
+          "owner_role": "readiness",
+          "owner_id": "guru-publish-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+              "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/design.md",
+            "revision": "sha256:d4bb19ff049c0e878e31dd6add4a06ce536b9064253fe00204e128f4c43463fe"
+          },
+          "candidate": {
+            "base_ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+            "content_ref": "sha256:856f5c37dd2dea6934a06439935367dee29bb2e1888ef1de8367a357263ceb0c",
+            "head_ref": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/workflow.md",
+              "docs/architecture/03-domains/workflow-context.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:de6673e43fb9f377513d91c2f13f7f20da46fe62319cfb4542d8a303a0ec2393",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-912-review-session-dispatch/deliveries/d6e7b65a-814e-4ed6-a80f-4a692408721a/implement.md",
+              "revision": "sha256:f1631cc88a0b66db587d1e6fa5439b791d9e231901ee617142093e8ee938abb6"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:4e015efbdc2c3f4a49b596897e4d51917fe1cfbd696218844ab38d03016f7351",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/913",
+            "revision": "sha256:d8c401f621e9d1a6e6fba4352cbec3ab5d7f5f5a18e2322b1646b80172027287"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+          "content_ref": "sha256:856f5c37dd2dea6934a06439935367dee29bb2e1888ef1de8367a357263ceb0c",
+          "head_ref": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-review-branch/SKILL.md",
+            ".claude/skills/guru-review-branch/SKILL.md",
+            ".cursor/skills/guru-review-branch/SKILL.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+            ".trellis/workflow.md",
+            "docs/architecture/03-domains/workflow-context.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 913,
+        "reviewed_head": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/913",
+          "revision": "sha256:d8c401f621e9d1a6e6fba4352cbec3ab5d7f5f5a18e2322b1646b80172027287"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:9ff19e0ce19360bac33acea5a6662abd652e9cb7",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/913",
+            "revision": "9ff19e0ce19360bac33acea5a6662abd652e9cb7"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+          "content_ref": "sha256:856f5c37dd2dea6934a06439935367dee29bb2e1888ef1de8367a357263ceb0c",
+          "head_ref": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-review-branch/SKILL.md",
+            ".claude/skills/guru-review-branch/SKILL.md",
+            ".cursor/skills/guru-review-branch/SKILL.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+            ".trellis/workflow.md",
+            "docs/architecture/03-domains/workflow-context.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 913,
+        "reviewed_head": "a2643182f19e90f09ca07f1ffd81f09c487e34a9",
+        "merge_commit": "9ff19e0ce19360bac33acea5a6662abd652e9cb7",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:912-review-session-dispatch:0",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/913",
+          "revision": "9ff19e0ce19360bac33acea5a6662abd652e9cb7"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/45122905791",
+          "revision": "success:a2643182f19e90f09ca07f1ffd81f09c487e34a9"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-23-912-review-session-dispatch/prd.md",
+        "revision": "sha256:940a2fda78b9570a178d8a97ed86358520d3029e4c1814dce5c15270f3c66689"
+      },
+      "delivery_result_ids": [
+        "delivery:9ff19e0ce19360bac33acea5a6662abd652e9cb7"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:279f981dc789ffcda46b57fc",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/912",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-912-review-session-dispatch/closeout/closure/Y2xvc3VyZToyNzlmOTgxZGM3ODlmZmNkYTQ2YjU3ZmM.json",
+          "revision": "sha256:d0c9b0f653332e298cdc6afb72f40fe2ebd6238595a36edbf4e817fb6612a332"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:912-review-session-dispatch:0",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/912",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
