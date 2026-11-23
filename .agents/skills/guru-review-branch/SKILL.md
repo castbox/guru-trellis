@@ -75,9 +75,15 @@ Enter after TaskCommit pre_review_committed and the original implementation
 constructor/begin_check. Freeze the complete fixed B..H Candidate. The first
 reviewer must be newly opened and must not have authored or implemented it.
 Before Task narratives or implementer pass claims, read the fixed B Architecture
-Baseline, constitution and change contract in full. Read H, the full diff and
-necessary unchanged consumers next; then read exact selected Delivery plans,
-root accepted scope, current source authority, acceptance and contributions.
+Baseline, constitution and change contract in full. The executing reviewer
+then applies the installed workflow's `Explicit receiving-session continuation`
+for this Task and Delivery. Verify the matching selection and fixed committed
+candidate before the first Architecture, Delivery qualification, or Branch
+Review call that depends on current session state. Original session owners
+perform any necessary binding or selection writes. Preserve the frozen
+candidate during recovery. Read H, the full diff and necessary unchanged
+consumers next, then read exact selected Delivery plans, root accepted scope,
+current source authority, acceptance and contributions.
 Perform the authority-first committed Architecture assessment first, then this
 complete current review, in the same independent invocation. Planning
 Architecture remains separate. Material later changes refresh affected judgments.

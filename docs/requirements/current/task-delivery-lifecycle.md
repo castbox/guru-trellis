@@ -269,3 +269,7 @@ Author完成完整规划和自检后，独立Architecture final_plan直接进入
 标准会话续接通过一次公开读取定位已验证的 Task、checkout 和适用 Delivery。区分当前、无 Delivery、终态、无 Task 和缺少必要绑定。原显式读取、权限、写入恢复及阶段门禁继续由既有入口处理。
 
 同会话可传回先前成功结果。只有仍满足当前依赖的部分可复用。TaskId、generation、绑定、checkout、当前 Delivery 或相关来源变化时刷新受影响事实。查询不写 Task、会话或 Git 资源。普通失配与旧记录保留诊断和原负责方。设计承接见 [D899](../../design/current/task-delivery-lifecycle.md#d899-一次解析与精确后续读取)，验证见 [T899](../../test/current/task-delivery-lifecycle.md#t899-续接行为验证)。
+
+## R912 正式步骤跨会话交接
+
+首次派发、替换调用者或主会话接回时，实际调用者应在第一次依赖会话状态的正式调用前满足原入口的 Task 绑定及适用的 Delivery 选择。缺少状态时按 R679 恢复同一对象。匹配直接复用，真实冲突保留并交原 owner。Task-only、显式只读和工程证据入口按原职责执行。正式结果由原语义 owner 产生并交给原消费者。验收见 T912，职责见 D912。

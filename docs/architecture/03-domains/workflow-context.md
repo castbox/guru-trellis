@@ -211,3 +211,7 @@ ordinary smoke须调用新Interface包原wrapper并消费实际receipt。只更�
 本项不以特定发布Task为验收依赖；独立合法Task/Delivery场景使用真实producer和正式出口，fixture语义输入与实际产物分层。
 原Check按当前验收判断充分性，不新增实际Agent或远端业务证明前置。
 本扩展无新resolver、wrapper Skill、通用表达式、状态或授权存储，未验证层保持其原边界。
+
+## 正式步骤的接收会话（#912）
+
+现有只读上下文查询提供实际接收会话的事实。Workflow 编排初次派发、替换和接回，在实际调用者首次依赖会话状态时消费其原步骤前置。若同一对象缺少绑定或选择，原 Identity、Ensure、Bind 与 Selection 按现有职责接续。正式 Branch Review 从独立评审会话执行适用检查，并保留固定候选与原语义职责。独立 final_plan 沿 ADR-EXPLICIT-REVIEW-OBJECT。Task-only 入口只要求 Task 前置。各阶段继续消费原正式出口，使用现有会话状态存储和阶段合同。本次承接 Issue #912、ADR-035 和 ADR-POSTCOMMIT-INDEPENDENT-REVIEW。

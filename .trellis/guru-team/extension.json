@@ -1188,11 +1188,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-23T01:51:15Z",
+  "installed_at": "2026-11-23T05:50:41Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "13d72b5425070fe841c1046d1e677d8323481eec",
-    "commit": "13d72b5425070fe841c1046d1e677d8323481eec",
+    "ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+    "commit": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1238,6 +1238,7 @@
       ".trellis/guru-team/scripts/bash/invoke-stage0-skill.sh",
       ".trellis/guru-team/scripts/bash/prepare-task-commit.sh",
       ".trellis/guru-team/scripts/bash/preview-change-context-history.sh",
+      ".trellis/guru-team/scripts/bash/read-continuation-context.sh",
       ".trellis/guru-team/scripts/bash/record-agent-recovery.sh",
       ".trellis/guru-team/scripts/bash/record-change-request-review.sh",
       ".trellis/guru-team/scripts/bash/record-context-discovery.sh",
@@ -1514,7 +1515,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "3690c8ed446442ceb7dbcdfd9f3f610fb804cc0379f1bfb3f1aba787c5749dfc",
-        "tree_sha256": "a600d6c804ca343c882003f179e27540f10697c0a9f30990d94ab2972859dc23"
+        "tree_sha256": "a1be6c44c5a091c01a4328740839a5db433fb0540b57fd1b5d3912aa7b8d0356"
       },
       {
         "id": "guru-review-change",
@@ -18116,7 +18117,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "d452eace931afd61c51da3912326f6bc35e96b3dba883c4951cd2daa22ebba43",
+        "sha256": "89a93d833b808a64b2b1f99f84ead585981c462587b5da174bb51e1c5449509d",
         "executable": false,
         "action": "installed"
       },
@@ -60508,7 +60509,7 @@
       {
         "path": ".agents/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "d452eace931afd61c51da3912326f6bc35e96b3dba883c4951cd2daa22ebba43",
+        "sha256": "89a93d833b808a64b2b1f99f84ead585981c462587b5da174bb51e1c5449509d",
         "executable": false,
         "action": "installed"
       },
@@ -61523,7 +61524,7 @@
       {
         "path": ".claude/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "d452eace931afd61c51da3912326f6bc35e96b3dba883c4951cd2daa22ebba43",
+        "sha256": "89a93d833b808a64b2b1f99f84ead585981c462587b5da174bb51e1c5449509d",
         "executable": false,
         "action": "installed"
       },
@@ -62538,7 +62539,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "d452eace931afd61c51da3912326f6bc35e96b3dba883c4951cd2daa22ebba43",
+        "sha256": "89a93d833b808a64b2b1f99f84ead585981c462587b5da174bb51e1c5449509d",
         "executable": false,
         "action": "installed"
       },
