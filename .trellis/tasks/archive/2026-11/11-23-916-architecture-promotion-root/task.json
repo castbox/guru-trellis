@@ -1,0 +1,124 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-23-916-architecture-promotion-root",
+  "id": "916-architecture-promotion-root",
+  "name": "916-architecture-promotion-root",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 916,
+    "disposition": "exact_source"
+  },
+  "title": "修复独立架构单元晋升时误改共享根入口",
+  "description": "核对并修复原 Architecture 晋升入口写前目标审查及实际读回",
+  "dev_type": null,
+  "scope": "仅覆盖 castbox/guru-trellis#916，复用原晋升 owner 和 #711 定位规则，保留临时仓库三组可重跑验收。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-23",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/prd.md",
+    "revision": "sha256:42cb60a1596973fd89544245c844bf62f8ecce71aa2abf4e1b599125571edd75"
+  },
+  "deliveries": [
+    {
+      "id": "db9f3523-4ec8-4141-93fa-017c946289d3",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/prd.md",
+          "revision": "sha256:f7af8353bc1d3e26765af427dfcf5c32ec44c8a6d2d46db5a75543bace2d575a"
+        },
+        "anchors": [
+          "AC1",
+          "AC2"
+        ]
+      },
+      "planning_root": "deliveries/db9f3523-4ec8-4141-93fa-017c946289d3",
+      "profile": "pull_request",
+      "phase": "stopped",
+      "plan_ref": null,
+      "candidate": null,
+      "results": {
+        "planning": null,
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": {
+        "result_id": "stop:916-verification-closeout",
+        "evidence": [
+          {
+            "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/deliveries/db9f3523-4ec8-4141-93fa-017c946289d3/research/baseline-evidence.md",
+            "revision": "sha256:042bc3ab470cdc2057a172ce10dd770e4c02a601578221bda08b50070f586e25"
+          }
+        ],
+        "reason": {
+          "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/prd.md",
+          "revision": "sha256:42cb60a1596973fd89544245c844bf62f8ecce71aa2abf4e1b599125571edd75"
+        },
+        "scope_decision": {
+          "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/prd.md",
+          "revision": "sha256:42cb60a1596973fd89544245c844bf62f8ecce71aa2abf4e1b599125571edd75"
+        },
+        "owner_id": "guru-activate-delivery"
+      }
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:916-verification",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/prd.md",
+          "revision": "sha256:42cb60a1596973fd89544245c844bf62f8ecce71aa2abf4e1b599125571edd75"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/deliveries/db9f3523-4ec8-4141-93fa-017c946289d3/research/baseline-evidence.md",
+          "revision": "sha256:042bc3ab470cdc2057a172ce10dd770e4c02a601578221bda08b50070f586e25"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/prd.md",
+        "revision": "sha256:42cb60a1596973fd89544245c844bf62f8ecce71aa2abf4e1b599125571edd75"
+      },
+      "delivery_result_ids": [],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:63cdb3df5e59abe09b07db41",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/916",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-916-architecture-promotion-root/closeout/closure/Y2xvc3VyZTo2M2NkYjNkZjVlNTlhYmUwOWIwN2RiNDE.json",
+          "revision": "sha256:3e86b5a36a814267f03c584f9be5d386fbf764248290bff56361595dafd185e7"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:916-verification",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/916",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
