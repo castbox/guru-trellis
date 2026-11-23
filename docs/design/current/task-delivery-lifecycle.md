@@ -47,11 +47,11 @@ Architecture 候选评估先于 Author 实质 solution；Author完成当前方�
 
 `D636-01`：原 TaskCommit current pre-review profiles 拥有精确内容、中文消息、敏感检查、真实hook/隔离事务和同提交恢复。它们以批准Planning、真实工程和知识整合完成事实决定是否形成待审本地H，不要求先验Check、不声称独立通过；clean reentry不stage或重复commit。正式output只交implementation固定完整candidate/begin_check，不交Publication。旧early profiles的直接发布边由MIGRATION-794显式退出。
 
-`D636-02`：当前原Publication只在独立完整Review及Delivery Review/readiness通过后执行新push/PR/Ready。既有Draft已执行的PR、HEAD、metadata和状态由固定原provider恢复同操作真实结果，零重复mutation；pending远端动作先回当前审查/readiness再按同PR/原事务接续。历史Ready/Draft不生成当前资格，原same repo/base/head、lineage、exact payload和readback保留。旧private可用走原事务，缺失但共享事实充分走原明确恢复入口，不建第二ledger或当前双reader。
+`D636-02`：当前原Publication在独立完整Review和适用的Architecture资格之后自行判断readiness，再按确认预览执行新push/PR/Ready。既有Draft已执行的PR、HEAD、metadata和状态由固定原provider恢复同操作真实结果，零重复mutation；pending远端动作先回当前审查与Publication preparation再按同PR/原事务接续。历史Ready/Draft不生成当前资格，原same repo/base/head、lineage、exact payload和readback保留。旧private可用走原事务，缺失但共享事实充分走原明确恢复入口，不建第二ledger或当前双reader。
 
 `D636-03`：固定分支H与目标T/组合M仍是不同验证对象，风险匹配命令与内容读取按当前适用性采用。冲突/无merge ref/CI未触发保留HEAD入口和具体组合缺口。旧早期分析只供事实和修复，不自动生成当前full_review；新的独立Review在固定候选完成全部实际判断。
 
-`D636-04/05`：workflow只编排显式stable owners和唯一typedconsumer。原Delivery Review保真实载荷/readiness，Publication执行，Merge核当前精确候选与live资格。Refs-only、Closure、整体Completion/Finish保持。matching公共I/O和实际平台成套切换，旧操作准确恢复而不转换pass。
+`D636-04/05`：workflow只编排显式stable owners和唯一typedconsumer。Publication preparation保真实载荷与readiness，并执行后续发布事务；Merge核当前精确候选与live资格。Refs-only、Closure、整体Completion/Finish保持。matching公共I/O和实际平台成套切换，旧操作准确恢复而不转换pass。
 
 ## 提交前整合、精确 Commit 与合并 Review
 
@@ -67,13 +67,13 @@ Architecture 候选评估先于 Author 实质 solution；Author完成当前方�
 
 ## 候选适用性职责与正式结果
 
-`D637-01..04 / CON637-01..04`：唯一共享规则位于 canonical workflow-contract 的 Candidate Applicability And Coverage。Architecture、TaskCommit、合并完整 Branch Review、Delivery Review、Publication、Merge 在原 step-local 职责中读取并执行；workflow/continuation/平台入口只路由，不复制判断。公共 Skill/profile/exit、GateResult、Task schema 和确定性 runtime 保持，不增加覆盖 DTO、reviewer 状态、第二 reader 或长期 cache。
+`D637-01..04 / CON637-01..04`：唯一共享规则位于 canonical workflow-contract 的 Candidate Applicability And Coverage。Architecture、TaskCommit、合并完整 Branch Review、Publication、Merge 在原 step-local 职责中读取并执行；workflow/continuation/平台入口只路由，不复制判断。公共 Skill/profile/exit、GateResult、Task schema 和确定性 runtime 保持，不增加覆盖 DTO、reviewer 状态、第二 reader 或长期 cache。
 
 原完整覆盖与 Hr..Hi 全部差额、真实冲突双方/组合语义及受影响未改 consumers 组成当前完整覆盖。当前 owner 自己建立范围、风险和检查集合，分别判断工程事实、当前语义和 Git/PR 事实。合法公开结果/原调用对象、Git/正文定位范围；原始命令结果另核定义/版本、输入/依赖、环境/工具链/参数/期望，不能以计划 ref 推断执行。证据不足补审或补跑命中项；组合影响不明完整审。同次实际审查的 check/full_review 仍绑定真实当前 candidate 和 predecessor，不将旧输出换标签。
 
 独立性是未参与当前实现的实际职责；首次完整独立及原 Architecture first-read order 保留，合规 reviewer 后继可接续并依次承担 Architecture 和 Branch Review。finding 闭合与当前最终覆盖是两个实际判断，可以由同合规 reviewer 完成；保留 introduced_head/fix_head/closure_head 及原验证，matching 的 fresh_final_review 不再强制换人和相同全量重做。缺原通过覆盖或已消费私有状态时不补造 pass；实际公开来源不足则补真实工作。
 
-原阶段用原 summary/evidence 或必要 owner-private 短期 checkpoint 承接结论；不跨读、不重建退休数据。Delivery Review/Publish/Merge 核自身 payload/Issue/candidate/live 资格并消费适用内容结论。真实 authority/scope/依赖改变回最早 owner；普通 HEAD/阶段/身份或无关 target 前进只触发适用性判断。MIGRATION-637 成套切换 matching workflow/preset/packages/consumers，先由原 producer 恢复已经发生的事务，再同 key 原阶段重判当前结果，零重复 mutation 或空提交。source/dogfood 编辑不代表活动 Task 已采用。
+原阶段用原 summary/evidence 或必要 owner-private 短期 checkpoint 承接结论；不跨读、不重建退休数据。Publication/Merge 核自身 payload/Issue/candidate/live 资格并消费适用内容结论。真实 authority/scope/依赖改变回最早 owner；普通 HEAD/阶段/身份或无关 target 前进只触发适用性判断。MIGRATION-637 成套切换 matching workflow/preset/packages/consumers，先由原 producer 恢复已经发生的事务，再同 key 原阶段重判当前结果，零重复 mutation 或空提交。source/dogfood 编辑不代表活动 Task 已采用。
 
 ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh reviewer/相同完整重审片段；ADR-028 固定候选、原single-writer/readback、Draft非最终结果及真实双槽predecessor保留；ADR-030/033命中时机按ADR-POSTCOMMIT-INDEPENDENT-REVIEW窄替代。实际#636/#637/#638 matching组合与其未验证边界分别报告，原 RDT/Architecture single-writer 不变。
 
@@ -95,7 +95,7 @@ ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh revi
 
 Publish 的 `delivery_remote_draft_recovery` 与 `delivery_remote_ready_recovery` 各自使用闭合输入，显式选择已有 `pr_ref` 与承载 Task/Delivery/必要代码的 `source_commit`。source 未入 main 仍可合法；它与 candidate head 不同时，核完整历史关系和内容差额。PR 的 remote head ref 与本地 binding 分开，不用 B 的 branch 查找或新建第二 PR，不改 B 的 binding。
 
-旧 Draft recovery 按MIGRATION-794读取精确repository/base/head/key和真实已执行事实。已完成部分只读回；尚未执行的push/PR/metadata动作先当前独立Review/readiness，再由原事务核资格补剩余。Ready recovery 核当前公共 candidate/readiness、reviewed head、payload 和实际 PR 状态；当前资格缺失返回原合并 Review/Delivery Review，不能从历史 Ready/phase 恢复 pass。确有剩余 Ready/metadata 动作时仍用原 writer。两个入口均不创建 PR，remote 更新仍受精确 full ref/expected-head 与当前动作边界约束。
+旧 Draft recovery 按MIGRATION-794读取精确repository/base/head/key和真实已执行事实。已完成部分只读回；尚未执行的push/PR/metadata动作先当前独立Review与Publication preparation/readiness，再由原事务核资格补剩余。Ready recovery 核当前公共 candidate/readiness、reviewed head、payload 和实际 PR 状态；当前资格缺失返回原合并 Review 或 Publication preparation，不能从历史 Ready/phase 恢复 pass。确有剩余 Ready/metadata 动作时仍用原 writer。两个入口均不创建 PR，remote 更新仍受精确 full ref/expected-head 与当前动作边界约束。
 
 MERGED 保留原 `delivery_merged_recovery`：公共 Publication 与真实 PR 双亲、actual head、target 历史相互关联后只补 Delivery fact，不再次 merge。Completion 独立判断 actual 差额、CI 和整体范围。Closure 的最小共享输入及正式 Finish 历史由终态单元定义；它们不成为 Publication 的第二状态模型。
 
@@ -111,7 +111,7 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 
 **D649-01 / CON649-LIMIT** 承接 R649-01。原 Author 的 planning-body、authoring、Delivery implement 模板及既有示例拥有五项阶段限制写作方法。Policy 定义本批及后继责任，Docs Plan 定位当前规范、指南及派生说明；global workflow 和平台入口不复制方法。
 
-**D649-02 / CON649-CONVERGE** 承接 R649-02/03。实施 owner 修复行为及断言；原 RDT／Architecture owners 在各自知识边界准备完整 proposed 定义。原提交后独立完整 Review 读取有效预期、实现、当前说明和真实 consumer，判断过期限制及错误断言；绿色命令不替代判断。Delivery Review 的阶段成果方法归其原 contract，整体维度和缺口路由归 [终态设计](completion-closure.md#d649阶段成果与原终态边界)。公共 API、profile、DTO、state、exit 和 recorder 不改变。
+**D649-02 / CON649-CONVERGE** 承接 R649-02/03。实施 owner 修复行为及断言；原 RDT／Architecture owners 在各自知识边界准备完整 proposed 定义。原提交后独立完整 Review 读取有效预期、实现、当前说明和真实 consumer，判断过期限制及错误断言；绿色命令不替代判断。Publication preparation 的阶段成果方法归其当前 contract，整体维度和缺口路由归 [终态设计](completion-closure.md#d649阶段成果与原终态边界)。公共 API、profile、DTO、state、exit 和 recorder 不改变。
 
 ## 流程合同连续性职责
 
@@ -164,7 +164,7 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 
 **D713-04 / CON713-EVAL** 承接 R713-04/05：测试辅助与生产能力逐职责对照。当前 profile 导航归原生产合同，完整 Candidate 归原公开构造，私有 recorder 身份不由 eval 补给模型。既有 isolated owner tests 保留合法历史 fixture/透明运输及其证明边界；它们不证明 N1 首次正确或完整模型生命周期。当前 owner 核对已有 source、组件、原命令、consumer、安装、synthetic 与局部 native 结果的实际适用性；缺失或变化只补命中检查。真实 Agent 的当前语义前提仍由实际原 owner 完成，host 仅承担合法环境、provider/transport 与观测。取消 #713 追加 N1/N3 原生链、非等价 native 代表、旧 fixture 接续及 R5 模型方法补证；保留首次失败、部分成功、污染、未知退出码和方法证据不足，不将取消项改记为 passed。
 
-**D713-05 / CON713-ADOPTION** 承接 R713-05：原 tools owner 维护已有 Task/session 的本仓 dogfood，原 installer 维护 matching 安装、reapply、冲突与 mode。固定 B 的 43/127/180 声明清单、当前候选差额和 F1–F13 证据对应留在原规划/验证位置，不生成公共 DTO 或独立长期 manifest。采用完整且仍匹配的既有安装/投影、reapply/drift/sidecar/mode 实绩，仅刷新实际变更依赖；不为取消项再次安装、恢复损坏 clean 或准备环境。旧成功 consumer 保留既有合同；成功语义变化先显式迁移，无 consumer 的 deprecated 资产经原 owner 核实后退出。RDT/Architecture完整隔离拟写经各原owner final_integration/readback后TaskCommit；完整actual committed after绑定后执行一次独立Review、Delivery Review/readiness、发布/交付及 Completion/Closure/Finish。合并前保留 fresh merge gate；本项取消验收不新增必需后续切片或 native 支线。
+**D713-05 / CON713-ADOPTION** 承接 R713-05：原 tools owner 维护已有 Task/session 的本仓 dogfood，原 installer 维护 matching 安装、reapply、冲突与 mode。固定 B 的 43/127/180 声明清单、当前候选差额和 F1–F13 证据对应留在原规划/验证位置，不生成公共 DTO 或独立长期 manifest。采用完整且仍匹配的既有安装/投影、reapply/drift/sidecar/mode 实绩，仅刷新实际变更依赖；不为取消项再次安装、恢复损坏 clean 或准备环境。旧成功 consumer 保留既有合同；成功语义变化先显式迁移，无 consumer 的 deprecated 资产经原 owner 核实后退出。RDT/Architecture完整隔离拟写经各原owner final_integration/readback后TaskCommit；完整actual committed after绑定后执行一次独立Review、Publication preparation/readiness/preview/execute、Merge及Completion/Closure/Finish。合并前保留 fresh merge gate；本项取消验收不新增必需后续切片或 native 支线。
 
 这些职责沿既有D531/ADR-028及#710 recorder决定，不修改官方Trellis、全局包或node_modules实现。精确argv/profile/schema仍由canonical原package/step单写；此单元不复制私有算法或测试expected输出。
 

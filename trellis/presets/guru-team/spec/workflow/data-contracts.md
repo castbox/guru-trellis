@@ -1211,8 +1211,8 @@ an Issue-close API.
 
 `check-commit-messages --json` is an explicit standalone quality diagnostic for
 objective commit subject/body shape. `guru-create-task-commit` still validates
-the exact message it is about to create, but Branch Review and Delivery Review
-do not rerun range-level message parsing or use subject/body/`Refs` as
+the exact message it is about to create, but Branch Review and Publication
+readiness do not rerun range-level message parsing or use subject/body/`Refs` as
 freshness authority. Message-only deviation therefore cannot require a metadata
 commit while reviewed content identity is unchanged. The diagnostic must not
 decide whether implementation, Phase 2 check, Branch Review, or PR readiness is
@@ -1696,7 +1696,7 @@ python3 -m json.tool trellis/index.json
   `DEFAULTS`.
 - Adding an alternate task identity reader instead of using current
   `task.json.id`, lifecycle generation, TaskBranchBinding, and live Git facts.
-- Letting Delivery Publish/Merge decide Completion or Closure from PR state;
+- Letting Publication/Merge decide Completion or Closure from PR state;
   in the pinned-old graph, Finalizer/Merge likewise could not re-decide
   Publication's reviewed effect.
 - Recording review-gate evidence that does not mention deployment impact.

@@ -83,23 +83,29 @@ For every actual preparation Delivery, execute this current owner chain:
    responsibilities and full Branch Review in the same complete review.
    Actual passing judgments are recorded as `check` then `full_review`;
    either missing result prevents a complete `passed`.
-5. Only current complete Review with zero open P0-P3 findings enters the
-   Architecture publication eligibility check and `guru-review-task-delivery`.
-   Delivery Review judges the slice, remaining preparation and release work,
-   exact diff, real validation and reviewed-content identity, and authors the
-   truthful Chinese Refs-only PR title/body. Only its checked `ready` enters
-   `guru-publish-task-delivery`.
-6. Publish owns its reviewed push, PR binding and Ready transaction. Only its
+5. Only current complete Review with zero open P0-P3 findings enters
+   `guru-publication-entry-router`. The router obtains the current publication
+   Architecture eligibility and passes the applicable result and adjacent
+   Review result to
+   `guru-publish-task-delivery:delivery_prepare_publication`. Publication
+   judges the slice, remaining preparation and release work, exact diff, real
+   validation, reviewed-content identity and readiness. A `ready` outcome
+   authors the truthful Chinese Refs-only PR title/body and produces the exact
+   `publication_prepared` preview.
+6. Present the prepared preview and obtain confirmation for its displayed
+   remote actions before invoking
+   `guru-publish-task-delivery:delivery_execute_publication`. Publication owns
+   its reviewed push, PR binding, metadata and Ready transaction. Only its
    checked `ready_for_merge` enters `guru-merge-task-delivery`, which owns the
    independently confirmed expected-head merge. Only its checked `delivered`
    enters `guru-review-task-completion`. Output loss returns to the original
-   TaskCommit, Review, Publish or Merge owner for the same operation, key,
+   TaskCommit, Review, Publication or Merge owner for the same operation, key,
    fixed base and actual commit/PR facts; it does not repeat completed effects.
 
 The per-Delivery honest path is:
 
 ```text
-stable_plan -> implementation_and_engineering_checks -> necessary_rdt_architecture_integration_and_readback -> guru-create-task-commit -> constructor/begin_check -> guru-review-branch -> publication_architecture_eligibility -> guru-review-task-delivery -> guru-publish-task-delivery -> guru-merge-task-delivery -> guru-review-task-completion
+stable_plan -> implementation_and_engineering_checks -> necessary_rdt_architecture_integration_and_readback -> guru-create-task-commit -> constructor/begin_check -> guru-review-branch(passed) -> publication_architecture_eligibility -> guru-publication-entry-router -> guru-publish-task-delivery(prepare/readiness/preview/execute) -> guru-merge-task-delivery -> guru-review-task-completion
 ```
 
 There is no separate candidate/final Check, fixed pre/post-promotion second
@@ -183,8 +189,9 @@ loop.
 ### Stage 2: Post-Merge Exact Candidate
 
 After Stage 1 Delivery and Finish bookkeeping merges, discard the preparation
-branch HEAD, Branch Review, Delivery Review result, and all earlier release
-evidence. Fresh-fetch `origin/main`, prove its live merge/base lineage (including
+branch HEAD, Branch Review result, Publication preparation/readiness/execution
+results, and all earlier release evidence. Fresh-fetch `origin/main`, prove its
+live merge/base lineage (including
 the terminal archive), and freeze one exact candidate
 commit and tree. Every release check and later mutation must bind that same
 candidate identity; the preparation reviewed HEAD is never substituted for it.
@@ -310,8 +317,9 @@ release ledger or tracked status file.
 
 Use the existing `guru-reviewed-content-1.0` owner contract. Changes to actual
 delivery bytes, durable README or Docs authority, configuration, schema,
-scripts, or tests make every affected Phase 2, Branch Review, Delivery Review,
-Publish, Merge, Completion, Finish, or exact-candidate gate stale and require
+scripts, or tests make every affected Phase 2, Branch Review, Publication
+readiness/execute, Merge, Completion, Finish, or exact-candidate gate stale and
+require
 its owner to rerun.
 
 Changes confined to `.trellis/tasks/**`, `.trellis/workspace/**`,

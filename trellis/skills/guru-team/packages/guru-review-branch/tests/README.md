@@ -15,7 +15,7 @@ Old normal Task calls/checkpoints are checked only for their retirement
 rejection; fixed old providers remain the owners of their historical behavior.
 
 Run test_promotion_alignment.py for the current input2.0 and passed2.0 narrow
-alignment producer and actual Delivery Review consumer. Original full coverage
+alignment producer and actual Publication preparation/readiness consumer. Original full coverage
 plus its reviewed delta remains a semantic responsibility.
 
 The source-private performance harnesses below describe their pinned pre-794
@@ -100,7 +100,7 @@ performance thresholds; use the selected Delivery's pre-implementation contract.
 ## Promotion reference alignment
 
 `test_promotion_alignment.py` runs the actual public Full Review, legal Check
-rework, reference-alignment recorder/checker/invocation and Delivery Review on
+rework, reference-alignment recorder/checker/invocation and Publication readiness on
 one Git fixture. It checks current Check/candidate binding, original-output
 recovery after checkpoint retirement, the cleared old full_review slot, full
 Git-delta consistency, stale/missing input, and original-owner stop. Run it with

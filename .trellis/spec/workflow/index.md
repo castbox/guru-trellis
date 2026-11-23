@@ -85,10 +85,11 @@ Before editing workflow behavior:
   exits, and the ignored current schema 5.0 `phase2-check.json` owner checkpoint;
   unchanged official `trellis-check` workers provide ephemeral evidence only.
 - `guru-review-branch` owns the independent committed full-diff review and
-  bounded continuity. Its current `passed` exit enters Delivery Review;
+  bounded continuity. Its current `passed` exit enters publication
+  Architecture eligibility and Publication preparation/readiness;
   historical archived-review output stops for explicit legacy disposition.
-- `guru-review-task-delivery` reviews one slice and its Refs-only PR payload;
-  `guru-publish-task-delivery` owns push/PR recovery and
+- `guru-publish-task-delivery` owns the slice readiness, exact Refs-only PR
+  payload, preview, publication execution and same-transaction recovery;
   `guru-merge-task-delivery` returns a Delivery result, not Task Completion.
 - `guru-review-task-completion` judges the entire accepted task scope across
   Deliveries. Only `completed` enters `guru-complete-task-closure`, the separate
@@ -139,8 +140,8 @@ repository actually grows those assets.
 
 The durable contracts for `guru-review-branch` are split across:
 
-- `skill-package-contract.md`: selected public I/O, current Delivery Review
-  handoff, private state and routing discriminator;
+- `skill-package-contract.md`: selected public I/O, current Publication
+  preparation/readiness handoff, private state and routing discriminator;
 - `workflow-contract.md`: thin Phase 3.5 invocation and typed consumers;
 - `data-contracts.md`: scenario/disposition/finding artifact shapes;
 - `companion-scripts.md`: deterministic recorder/checker boundary;
@@ -148,8 +149,8 @@ The durable contracts for `guru-review-branch` are split across:
 
 ## Delivery And Task Closeout Owners
 
-The current Delivery Review, Publish, Merge, Completion, Closure, Finish,
-Cleanup, and Reactivate contracts are split across `skill-package-contract.md`,
+The current Publication preparation/readiness/execute, Merge, Completion,
+Closure, Finish, Cleanup, and Reactivate contracts are split across `skill-package-contract.md`,
 `workflow-contract.md`, `data-contracts.md`, `companion-scripts.md`, and
 `quality-guidelines.md`. The workflow invokes each stable Skill id and consumes
 its typed exits; entry conditions, semantic judgments, recovery, and private

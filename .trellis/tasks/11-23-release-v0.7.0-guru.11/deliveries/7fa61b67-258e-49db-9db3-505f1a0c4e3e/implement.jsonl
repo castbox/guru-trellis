@@ -1,0 +1,47 @@
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md", "reason": "整体 Task 需求、D1/D2 与正式发布边界"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/prd.md", "reason": "D1 完整可分发源需求与验收"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md", "reason": "D1 方案和唯一来源处置"}
+{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md", "reason": "D1 执行步骤、验证、Policy 和 Docs Plan"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整技术写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "共享规划正文与来源合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前 Delivery 设计模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前 Delivery 实施模板"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "仓库私有发布合同与 D1/D2 边界"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md", "reason": "当前 Publication readiness 与发布事务合同"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "当前 Phase 1-3 与 Publication owner 路由"}
+{"file": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "当前知识读取、整合与晋升合同"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "受影响生命周期需求正文"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "受影响生命周期设计正文"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "受影响生命周期测试正文"}
+{"file": "docs/test/current/codex-skill-distribution.md", "reason": "私有 Skill 公共排除与分发验证"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "选择实际验证与来源样本证据"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "公开 README 分工与发布版本规则"}
+{"file": "docs/architecture/contributions/908-release-v0.7.0-guru.11.md", "reason": "#908 Architecture 隔离贡献、target_native 与 ADR 晋升边界"}
+{"file": "docs/architecture/01-current/system.md", "reason": "ARCH-CUR-051 与 ARCH-CUR-070 current authority"}
+{"file": "docs/architecture/03-domains/ownership.md", "reason": "ARCH-DOM-036/053/055/059 current authority"}
+{"file": "docs/architecture/03-domains/workflow-context.md", "reason": "ADR current execution-order consumer"}
+{"file": "docs/architecture/04-integrations/distribution.md", "reason": "ARCH-INT-015/020 与 ADR status observation"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Architecture change path、consumer 与 promotion contract"}
+{"file": "docs/architecture/06-governance/rules.md", "reason": "ARCH-GOV-008/009 current governance"}
+{"file": "docs/architecture/adr/postcommit-independent-review.md", "reason": "待修正并晋升的 current ADR authority"}
+{"file": "docs/requirements/current/knowledge-maintenance.md", "reason": "ADR current consumer 与 RDT 阶段读取"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "ADR current consumer 与 Review result 承接"}
+{"file": "docs/requirements/current/completion-closure.md", "reason": "Completion/Publication 当前阶段与维度"}
+{"file": "docs/design/current/completion-closure.md", "reason": "Completion/Publication 当前职责"}
+{"file": "docs/test/current/completion-closure.md", "reason": "T669-06 当前观察边界"}
+{"file": "docs/test/current/runtime-location.md", "reason": "#813 当前观察边界"}
+{"file": "trellis/guru-team-extension.json", "reason": "F1/F2 canonical public schema and companion inventory"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "F1/F2 manifest/interface and retired companion regressions"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py", "reason": "F3 current Publication stale remediation"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json", "reason": "F3 current Publication stale remediation catalog"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_public_errors.py", "reason": "F3 remediation contract regression"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/owner.py", "reason": "F3 current Merge stale-body recovery route"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md", "reason": "F3 current Merge production graph consumer"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md", "reason": "F3 current post-Approval Publication responsibility"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md", "reason": "F3 current review and Publication responsibility scope"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md", "reason": "F3 archived-review result must not feed retired Delivery Review"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/tests/README.md", "reason": "F3 current alignment test consumer terminology"}
+{"file": "trellis/presets/guru-team/spec/workflow/data-contracts.md", "reason": "F3 canonical current review/Publication semantics"}
+{"file": "trellis/presets/guru-team/spec/workflow/workflow-contract.md", "reason": "F3 canonical current Publication/Merge route"}
+{"file": "trellis/presets/guru-team/spec/workflow/clear-technical-writing.md", "reason": "F3 current Review terminology"}
+{"file": ".trellis/spec/workflow/index.md", "reason": "F3 tracked non-managed workflow spec route projection"}

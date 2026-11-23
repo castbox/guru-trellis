@@ -69,12 +69,12 @@ T636-01..07稳定身份和#636原专项结果保留，当前受#794窄替代的�
 | Test identity | 正常入口与输入 | 当前必须观察及边界 |
 | --- | --- | --- |
 | T636-01 / R636-01/03 | 激活implementing，工程/知识整合完成但无先验Check，原TaskCommit pre-review invoke | 真实精确非空本地提交、中文消息/敏感/hook/paths正确；只交固定候选Review，无push/PR或独立pass。 |
-| T636-02 / R636-03/04 | 旧同PR Draft/Ready中有实际已执行和pending动作，当前新HEAD未审 | 原迁移owner保同PR/key/历史，不因pending先push；新远端动作待当前独立Review/readiness。 |
+| T636-02 / R636-03/04 | 旧同PR Draft/Ready中有实际已执行和pending动作，当前新HEAD未审 | 原迁移owner保同PR/key/历史，不因pending先push；新远端动作待当前独立Review与Publication preparation/readiness。 |
 | T636-03 / R636-04/06 | 原commit/push/create/edit/状态已成功但输出丢失 | 同操作精确readback、零重复commit/PR/mutation；已执行事实不变成新pass，SKIP/失败保持。 |
 | T636-04 / R636-02/05 | 固定B/H和真实target/组合缺口 | HEAD内容审核/命中命令与组合T/M分开；目标前进不缩范围，冲突/无merge-ref/CI未触发保缺口，不推定业务CI。 |
-| T636-05 / R636-04/06 | 当前独立Review后原readiness/Publication/Merge；full/partial/目标对照 | 全部Delivery Refs-only；旧Draft/Ready/merge不证明Task完成；只有当前适用full_review/readiness可新发布。 |
+| T636-05 / R636-04/06 | 当前独立Review后Publication preparation/readiness/preview/execute与Merge；full/partial/目标对照 | 全部Delivery Refs-only；旧Draft/Ready/merge不证明Task完成；只有当前适用full_review/readiness可新发布。 |
 | T636-06 / R636-07 | matching packages/workflow/runtime、平台/dogfood/reapply | 真实I/O/唯一consumer匹配，mode/sidecar/drift正确；source不证明业务采用。 |
-| T636-07 / R636-06/07 | 旧Check/已提交/已审、Draft实际已执行或pending、正常输出丢失 | 固定provider与MIGRATION-794明确原owner/阶段处置；不转换pass、不重复外部动作，pending回当前审核/readiness。 |
+| T636-07 / R636-06/07 | 旧Check/已提交/已审、Draft实际已执行或pending、正常输出丢失 | 固定provider与MIGRATION-794明确原owner/阶段处置；不转换pass、不重复外部动作，pending回当前独立Review与Publication preparation。 |
 
 历史实际结果唯一在 [#636 Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md)，当前差额结果在 [#794 Test](../../requirements-design-test-contributions/794-postcommit-review/test.md)；两者不互相回填。
 
@@ -87,7 +87,7 @@ T636-01..07稳定身份和#636原专项结果保留，当前受#794窄替代的�
 | T637-03 / R637-03 | 正常共享 Runtime/事务实现缺陷，原命令缺失或环境改变 | 扩审未改 consumers 并检出具体缺陷；缺项补跑，其余可核验事实按当前适用性采用。 |
 | T637-04 / R637-02/07 | 实际同树新提交、无关 target 前进、公开输出恢复与已退休 checkpoint | 固定 B/同 Delivery；只刷新必要绑定、不假定环境；旧 gate 不冒充当前，缺覆盖补审，无私有跨读或重建。 |
 | T637-05 / R637-04/05/08 | 旧/新完整安装的同初始实际 Agent 样本 | 先比较充分性/检错，再分别实测语义、命令、正式记录、远端等待和重复动作；fixture/scanner 不证明 Agent 行为，不预设收益比例。 |
-| T637-06 / R637-06/07 | 旧#636实际事务与当前同PR/HEAD审查后发布入口 | 同key/PR准确恢复已执行事实，pending远端动作先当前独立Review/readiness，真实双槽predecessor与payload/live资格；#638当前组合按T638实际证明，不从历史通过推断。 |
+| T637-06 / R637-06/07 | 旧#636实际事务与当前同PR/HEAD审查后发布入口 | 同key/PR准确恢复已执行事实，pending远端动作先当前独立Review与Publication preparation，真实双槽predecessor与payload/live资格；#638当前组合按T638实际证明，不从历史通过推断。 |
 | T637-07 / R637-08 | canonical/声明平台、单 clean matching、reapply/drift/mode/sidecar 与在途恢复 | 完整 matching 投影和实际 installed owner 运行，旧完整安装固定或原 owner 显式成套迁移；不推定全平台实际 Agent、业务/生产或完整 Release 矩阵。 |
 
 本轮实际命令、首次失败、Agent/fixture/installed/remote 层次、分阶段耗时及未验证边界唯一由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)维护。本文定义完整策略，不将规划、旧结果或知识晋升当作通过证据。
@@ -103,7 +103,7 @@ T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳�
 | 稳定身份 | 正常入口和输入 | 必须观察 |
 | --- | --- | --- |
 | T635-02 / R635-01/03 | 已提交但未入默认分支的 source ref/commit；无 A session/binding/checkpoint 的独立 common-dir B | 原 Identity/Establish/Ensure/Bind 继续同 Task/generation 和实际 Delivery；只补受影响判断/命中检查，不重开 Intake/Planning，不继承 pass。 |
-| T635-03 / R635-03 | 精确既有 Draft/metadata 未完与 Ready 已成 PR，B local branch 不同；原私有交易缺失；公共 MERGED 对照 | 原 Publish 显式 source/PR 恢复并只补剩余动作；已完成 create/push/edit/Ready 零重复，当前 readiness 仍审；MERGED 原 recovery 零 merge，只交 Completion。 |
+| T635-03 / R635-03 | 精确既有 Draft/metadata 未完与 Ready 已成 PR，B local branch 不同；原私有交易缺失；公共 MERGED 对照 | 原 Publication 显式 source/PR 恢复并只补剩余动作；已完成 create/push/edit/Ready 零重复，当前 readiness 仍审；MERGED 原 recovery 零 merge，只交 Completion。 |
 | T635-04 / R635-04 | 两 common-dir 同名 local branch、旧资源 pending、新代不同合法资源、推进后的 remote full ref、两独立 Task | ownership 不串认；旧 expected head/generation 保留新提交/新代；不同 Task runtime 缺失与 Cleanup pending 不改写或阻止另一方。 |
 | T635-05 / R635-01/03/04 | 实际不可获取 ref/commit、未发布必要代码、归属不唯一、当前语义或 provider 条件变化 | 返回准确缺口与原 owner，保留无关环境；可恢复共享事实不以原机隐藏目录为前置，不把缺语义资格变成绿色。 |
 | T635-07 / R635-05 | matching source、完整 packages/workflow、原工具维护、最多一个代表安装、reapply/drift/sidecar | source、installed/native、Agent、GitHub 和完整 Release 分层；旧安装按显式迁移；不批量迁移无关档或手改版本绕过前置。 |
@@ -178,7 +178,7 @@ T713-03 的 #775历史恢复差额按固定旧provider复用原生产Check fixtu
 
 本节定义 #713 当前保留验收，不预填本轮通过。观察截止于已有原命令/run 的实际记录及本 Task 验证结果，后续正式结果由原 owner 输出承接。原首输入、命令/退出状态/双输出、读取、消费与出口保持在原记录；最终 typed exit 或 no-source-read 断言单独不证明模型行为。源码工程诊断和 #710 旧 native 不计本轮正常入口通过；新修正不改写旧失败。
 
-N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不足/resume execution_error/Drift fitness_regression，以及污染、未知退出码和部分成功均保留原边界。R3 仅 runtime 准备通过，未启动 native；旧 clean 后续损坏不证明 installer 缺陷，也不证明当前可用。取消或缺失的 native 不记为 passed，不再作为本项必须补跑的验收。已知正确性缺陷仍须修复，当前范围仍须完成原知识final_integration/readback、TaskCommit、完整committed candidate的一次独立Review、Delivery Review/readiness、发布/交付和 Completion/Closure/Finish，合并前保留 fresh merge gate。受控 GitHub 替身只证明本地层次，不证明真实 GitHub 发布、部署或业务生产效果。
+N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不足/resume execution_error/Drift fitness_regression，以及污染、未知退出码和部分成功均保留原边界。R3 仅 runtime 准备通过，未启动 native；旧 clean 后续损坏不证明 installer 缺陷，也不证明当前可用。取消或缺失的 native 不记为 passed，不再作为本项必须补跑的验收。已知正确性缺陷仍须修复，当前范围仍须完成原知识final_integration/readback、TaskCommit、完整committed candidate的一次独立Review、Publication preparation/readiness/preview/execute、Merge及Completion/Closure/Finish，合并前保留 fresh merge gate。受控 GitHub 替身只证明本地层次，不证明真实 GitHub 发布、部署或业务生产效果。
 
 
 ## T779：委托方法与受管投影
@@ -208,8 +208,8 @@ T792-01/02/03是长期回归，T792-04/06是本项语义/实际行为观察。�
 
 | 场景 → requirement/design | 真实入口与正常输入 | 必须观察及证据边界 |
 | --- | --- | --- |
-| T794-01 / V1 → R794-01/02/03、D794-01/02 | 原公开提交→constructor/begin_check→独立Review→readiness链；无先验Check | 文档实际整合/精确本地提交进入固定B/H；同次九维/Architecture/fullrange真实判断，顺序两槽结果；通过前无push/PR。真实Git/API组件不证明Agent已独立读序。 |
-| T794-02 / V2 → R794-05、D794-04 | 未通过/已通过/HEAD正常变化候选，原Publication边界及可观察executor替身 | 未通过无新远端动作；当前通过仍readiness和精确payload；替身只证明本地资格/调用，不证明GitHub。 |
+| T794-01 / V1 → R794-01/02/03、D794-01/02 | 原公开提交→constructor/begin_check→独立Review→Publication preparation/readiness链；无先验Check | 文档实际整合/精确本地提交进入固定B/H；同次九维/Architecture/fullrange真实判断，顺序两槽结果；通过前无push/PR。真实Git/API组件不证明Agent已独立读序。 |
+| T794-02 / V2 → R794-05、D794-04 | 未通过/已通过/HEAD正常变化候选，Publication preparation边界及可观察executor替身 | 未通过无新远端动作；当前通过仍由Publication判断readiness并形成精确payload；替身只证明本地资格/调用，不证明GitHub。 |
 | T794-03 / V3 → R794-04、D794-03 | 真实finding修复后继、原reviewer仍独立、base组合/冲突、覆盖不可得或影响不明 | 保B/完整范围，采用可核验原覆盖/工程事实，补真实差额/受影响未改consumer，必要时完整补审，不只看新增行。 |
 | T794-04 / V4 → R794-03/06、D794-02/04 | 旧check/已提交/已审、旧Draft已执行/pending，单次双槽记录中断/输出丢失 | matching原provider、同key/B/H/候选和真实结果，只补缺步或准确恢复；必要语义丢失真实补审，无旧pass转换、重复副作用或未审pending发布。 |
 | T794-05 / V5 → R794-01/03、D794-01/02 | 原Architecture/RDT正常targets、expected-current、partial/output-loss、真实committed before/after | 整合只pending，实际readback/原单写与同intent恢复保留；committed独立判断后才reviewed_promoted；pending不能下游readiness。 |

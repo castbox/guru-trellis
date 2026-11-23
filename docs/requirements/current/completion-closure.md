@@ -87,7 +87,7 @@ Reactivate 先读当前可获取后继。唯一合法后继继续其 generation�
 
 ## R649：阶段成果维度与缺口分类
 
-**R649-04 / BEH649-DIMENSIONS**：原 Delivery Review 和 Completion 按实际对象、能力、operation、环境及声明，分别判断合同 authority、源码实现、制品部署／入口可达、初始化／启用、消费者采用和原业务请求 E2E。每项使用实际证据，或说明不适用的对象及理由；不新增统一证据字段或表格门禁。合同合入、源码存在、部署成功均不推出其余维度。未启用只阻断实际依赖该状态的启用、采用、验收或完成声明，不否定已独立成立的合同、源码及部署。
+**R649-04 / BEH649-DIMENSIONS**：Publication readiness 和 Completion 按实际对象、能力、operation、环境及声明，分别判断合同 authority、源码实现、制品部署／入口可达、初始化／启用、消费者采用和原业务请求 E2E。每项使用实际证据，或说明不适用的对象及理由；不新增统一证据字段或表格门禁。合同合入、源码存在、部署成功均不推出其余维度。未启用只阻断实际依赖该状态的启用、采用、验收或完成声明，不否定已独立成立的合同、源码及部署。
 
 **R649-05 / BEH649-GAP**：Completion 先确定未满足的 requirement、能力和 operation，再区分四类责任。必要消费者或代码未实现，回原实施／真实后续 Delivery；有效要求已确定而方案自加无依据前置，回原 Author／Architecture 修订机制；来源或 accepted scope 真正冲突，回原 Clarify；有有效要求且必要的外部证据尚未取得，沿原 evidence_refresh，说明缺口、原获取 owner 和恢复条件。无关未知仅保留边界，范围满足时可以合法完成。以上行为消费既有出口，不增加新 disposition 或状态。
 

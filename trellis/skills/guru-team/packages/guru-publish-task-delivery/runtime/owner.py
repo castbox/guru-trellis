@@ -37,7 +37,7 @@ PUBLIC_ERRORS = {
     "invalid_json": ("publication", "Use a readable UTF-8 JSON file containing one object.", 2),
     "schema_mismatch": ("input", "Rebuild the object from current package schemas.", 2),
     "closing_keyword_forbidden": ("input.pr_body", "Use Refs only; Completion owns later closure decisions.", 3),
-    "publication_stale": ("publication", "Rerun Delivery Review or reprepare the publication transaction.", 3),
+    "publication_stale": ("publication", "Rerun the current Branch Review and Publication preparation/readiness.", 3),
     "external_command_failed": ("publication", "Resume the same transaction after the external blocker clears.", 4),
     "unsafe_path": ("publication", "Use the exact repository-local Task or publication transaction locator.", 2),
     "task_not_active": ("task", "Return to the original Task owner and select the active Task before publication.", 3),

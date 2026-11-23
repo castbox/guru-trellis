@@ -63,7 +63,7 @@ Planning 在实质 solution 写入前先取得真实 candidate 的独立 Archite
 
 新的独立 reviewer 未参与当前实现，审查期间冻结B/H不改候选。它先完整读固定B的constitution/baseline/change contract，再读H、完整diff和实际受影响未改consumers，形成implementation Architecture before/after判断后才读必要Task叙述解释归属。它在同次完整Review承接requirements、design、implementation、tests、docs_ssot、cross_layer、compatibility、deployment_and_operations、verification_completeness九维、完整固定区间、减法/可维护性/兼容与全部Branch Review职责。Planning独立candidate/final Architecture保留，不成为当前通过。命令绿色、九个true、旧pass或作者自检不替代当前充分性。
 
-真实通过后，同一原Review owner先记录check（predecessor=Planning），再记录full_review（predecessor=该check）；两槽都是一次实际判断的真实投影，不是两个独立审查步骤。只有两结果都完成才输出passed并交原Delivery Review。Architecture只有实际整合完成且该committed before/after独立判断通过才reviewed_promoted；pending不能readiness/Publication/Finish。实施缺陷回原implementation修复和后继提交，真实Planning修订回最早原Author/Architecture/Approval，实际scope变化回原Clarify；保合法Planning、固定B和仍适用覆盖，不因finding自动扩scope。
+真实通过后，同一原Review owner先记录check（predecessor=Planning），再记录full_review（predecessor=该check）；两槽都是一次实际判断的真实投影，不是两个独立审查步骤。只有两结果都完成才输出passed，并由guru-publication-entry-router交当前Publication preparation。Architecture只有实际整合完成且该committed before/after独立判断通过才reviewed_promoted；pending不能readiness/Publication/Finish。实施缺陷回原implementation修复和后继提交，真实Planning修订回最早原Author/Architecture/Approval，实际scope变化回原Clarify；保合法Planning、固定B和仍适用覆盖，不因finding自动扩scope。
 
 没有候选使用真正空集，全rejected不自动通过。每个适用职责都判断范围和充分性，工程结果只证明其实际层次。窄reference alignment只承接原窄条件，不替代完整或实质正文审核。新CURRENT不能以自身证明符合原约束，完整before authority保持比较起点。输出丢失核同key/B/H/候选与真实结果，只补尚缺步骤或恢复同结果；必要语义覆盖丢失须真实补审，不补造full_review，不循环写Review SHA。
 
@@ -116,7 +116,7 @@ Delivery 合并只产生 slice 结果。Task 未分配范围、未完成要求�
 
 remote branch 是 repository identity 与完整 remote ref 标识的共享资源。旧 Cleanup 继续核 generation、ownership 和 expected head；ref 已推进或属于新代时保留新提交并交原资源 owner。A 的旧资源 pending 不否定已证明的共享终态，也不阻止 B 使用不同合法资源；同一确有未完责任的资源仍受原冲突检查。两个 Task 的独立绑定、checkpoint 和清理不得互设准入；B 接续不授予清理 A 的权限。
 
-`R657-04 / BEH657-CONTRACT`：Discovery 当前身份使用 TaskId/generation、common-dir binding 和唯一 checkout，不要求 metadata branch 或旧 Task development status。Delivery Review 使用真实 current candidate/gates；standalone verifier 的旧输入诊断回合法 source_repository_verification 准备，旧在途事务仍归其固定原 owner。公共 I/O、唯一 consumer、matching native/Guru packages、workflow、spec、平台和完整 preset 成套迁移。旧完整安装沿 pinned 原 owner 或匹配维护路径处理在途事务，不转换旧 pass。source 采用、实际安装、原生 Agent 和完整 Release 证据分别报告。共享 Finish 与指定旧格式的完整条件由 Completion/Closure 单元拥有。
+`R657-04 / BEH657-CONTRACT`：Discovery 当前身份使用 TaskId/generation、common-dir binding 和唯一 checkout，不要求 metadata branch 或旧 Task development status。Publication preparation 使用真实 current candidate、full_review 与适用 Architecture 资格；standalone verifier 的旧输入诊断回合法 source_repository_verification 准备，旧在途事务仍归其固定原 owner。公共 I/O、唯一 consumer、matching native/Guru packages、workflow、spec、平台和完整 preset 成套迁移。旧完整安装沿 pinned 原 owner 或匹配维护路径处理在途事务，不转换旧 pass。source 采用、实际安装、原生 Agent 和完整 Release 证据分别报告。共享 Finish 与指定旧格式的完整条件由 Completion/Closure 单元拥有。
 
 ## 关系和来源边界
 
@@ -128,7 +128,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 **R649-02 / BEH649-CONVERGE**：后继工作满足解除条件时，实施 owner 更新实际行为和适用断言，原 RDT／Architecture owner 在各自边界维护完整当前定义、指南及派生说明。当前正文不再继续指示已解除的限制；旧阶段观察保留来源和截止点，不改写成当时已完成。某能力未交付、未启用或证据缺失，不能泛化为同范围其它能力均不可用。
 
-**R649-03 / BEH649-CHECK**：原提交后独立完整 Review 从有效合同确定正确预期，检查实际行为、当前说明、断言及受影响未改 consumer 是否一致。测试仍保护旧限制时，即使命令通过也须指出缺陷。Delivery Review 分别判断本切片适用成果维度；维度及整体缺口的完整定义见 [Completion](completion-closure.md#r649阶段成果维度与缺口分类)。任何局部结果均不替代整体 accepted scope。
+**R649-03 / BEH649-CHECK**：原提交后独立完整 Review 从有效合同确定正确预期，检查实际行为、当前说明、断言及受影响未改 consumer 是否一致。测试仍保护旧限制时，即使命令通过也须指出缺陷。Publication preparation 分别判断本切片 readiness、真实载荷及适用成果维度；维度及整体缺口的完整定义见 [Completion](completion-closure.md#r649阶段成果维度与缺口分类)。任何局部结果均不替代整体 accepted scope。
 
 ## 正常流程合同连续性
 
@@ -181,7 +181,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 本节承接 #713 的 S1–S5、AC1–AC4、缩减后的 AC6–AC8 与 AC9；AC5 取消。取消的是本项新增验收，生产职责、公开支持域、已知正确性修复和原生命周期条件保持。N1 首装配失败、N3 public-only 不充分、F10/H2 非通过、R5 方法不足/resume execution_error/Drift fitness_regression，以及旧 clean 后续损坏保留原观察边界；R3 仅 runtime 准备通过，未启动 native。不清理、续跑或改写这些结果，不将旧 clean 损坏归因 installer 或称其当前可用。
 
-本节保留 #710 正常语义 authoring 与完整结果消费职责，当前由合并 Review 的 matching 合同承接；旧11字段/完整6.0结果只按其固定provider合法消费和恢复，不转换新pass。设计D713、测试T713保各自历史含义。当前原知识final_integration/readback→TaskCommit→完整committed candidate→一次独立Review→Delivery Review/readiness→Publication/Delivery及Completion/Closure/Finish继续；合并前保fresh merge gate，无新状态authority、wrapper或账本。
+本节保留 #710 正常语义 authoring 与完整结果消费职责，当前由合并 Review 的 matching 合同承接；旧11字段/完整6.0结果只按其固定provider合法消费和恢复，不转换新pass。设计D713、测试T713保各自历史含义。当前原知识final_integration/readback→TaskCommit→完整committed candidate→一次独立Review→Publication preparation/readiness/preview/execute→Merge及Completion/Closure/Finish继续；合并前保fresh merge gate，无新状态authority、wrapper或账本。
 
 
 ## R779：委托后的结果承接

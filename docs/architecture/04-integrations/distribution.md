@@ -42,8 +42,9 @@
 - `ARCH-INT-015`：repository-private release orchestration 的每个实际准备 Delivery 采用当前原链：
   stable Planning/Activation -> 实现与工程自检 -> 必要 Architecture/RDT 完整整合及 readback -> 原 TaskCommit
   -> 原 constructor/begin_check 固定完整 B..H -> 同次新独立 Review 的 Architecture、九维及完整范围判断
-  -> 真实 check/full_review 两槽 -> publication Architecture eligibility/Delivery Review readiness
-  -> Publication -> expected-head Merge -> Completion。知识整合仅 integrated_pending_review；实际提交后
+  -> 真实 check/full_review 两槽 -> publication Architecture eligibility
+  -> guru-publish-task-delivery readiness -> Publication preview/confirmation/execute
+  -> expected-head Merge -> Completion。知识整合仅 integrated_pending_review；实际提交后
   独立 before/after 通过才是 reviewed_promoted。真实后继内容仍须提交并补足受影响独立覆盖。
   不建立独立 candidate/final Check、固定晋升前后第二轮或 early Draft/source-only TaskCommit 路线。
 
@@ -63,7 +64,8 @@
   本条现行关系由 #808 私有消费者采用 #794 后承接；有效依据为当前 ARCH-DOM-053、ARCH-GOV-008/009、
   change-contract 与 MIGRATION-794。#392 的 pre/post 两轮和 expected `.47` 是其历史完整 provider 的流程，
   不再作为当前唯一顺序；旧合法在途操作仍按 MIGRATION-794 的完整 matching provider 恢复，不转换旧 pass。
-  仍为 proposed 的 ADR-POSTCOMMIT-INDEPENDENT-REVIEW 不被本条改状态，也不单独证明已接受。
+  ADR-POSTCOMMIT-INDEPENDENT-REVIEW 已收敛为 accepted/current；本条与该决定、R900/D900 和 #900
+  共同承接当前 readiness/execute 关系，同时保留 #794 的原始归属和历史观察。
   取舍是复用原 owner、公共阶段和 staged Delivery 以去除来源/采用循环；代价为每个真实切片完整验证和审查。
   上游改变来源锁定、Delivery 完成定义或 TaskCommit consumer 时，由原范围/Architecture owner 重评。
   具体入口及恢复只由私有 release 合同与各原公共 Skill 单写，本单元不复制 schema、增加公共协议或发布账本。
@@ -99,8 +101,9 @@
   candidate提供extractor和thin entry，Guru只提供workflow内容与Guru-owned package projection。#410在#419
   merge后的fresh main独立执行install/update/switch/reapply Release Gate，不消费#419定向证据。
 
-- `ARCH-INT-020`：#435 将Delivery Review的reviewed payload投影给Delivery Publish，再将exact reviewed head、
-  PR identity与publication state投影给Delivery Merge；Merge通过受控two-parent merge commit trailers记录stable
+- `ARCH-INT-020`：#900 当前将 Review 后的 Publication readiness/result 交给 `guru-publish-task-delivery`，
+  再将 exact reviewed head、PR identity 与 publication state 投影给 Delivery Merge；#435 原 Delivery Review
+  edge 仅保留历史/deferred 身份。Merge通过受控two-parent merge commit trailers记录stable
   task identity、schema version与reviewed head，并从target-base first-parent history结合GitHub PR/merge identity、
   repository/base和parents重建Delivery fact。三个packages已进入canonical、installed与平台投影，但workflow edge
   保持deferred；#434 activation前不得把package存在解释为production route可达，#436也不由该投影实现。#900 当前边由独立 Review 和适用 Architecture 资格直接进入 Publication。Publication 单写 readiness 和准确预览，确认后执行远端动作。只有合并资格实质成立才进入正常 Merge。旧操作及同 PR 的恢复见 MIGRATION-900。
