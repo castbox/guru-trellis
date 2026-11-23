@@ -110,3 +110,33 @@ python3 trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_n
 `carrier.jsonl` 提供带时间的工具调用及原结果，`state.json` 保留结果状态。
 证据只来自实际轨迹。夹具未启动协调器、模型不可用、超时、脚本退出码或最后总结
 均不能单独证明行为。Git 只写输出目录内的独立仓库；Issue 写回只更新合成状态。
+
+## 重跑并行合并通知
+
+从同源 checkout 运行下列命令。需要可用的 Codex CLI、已配置的
+provider 和支持 `merge-tree --write-tree` 的 Git。复用当前
+配置的模型与推理设置，也可以用 `--model` 和 `--effort` 显式指定。
+输出目录须尚未创建。
+
+```bash
+python3 trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py \
+  --root . --output /tmp/guru-notification-run
+```
+
+运行器依次执行 `dispatch`、`receive` 和 `conflict`。用
+`--case <名称>` 单独重跑，每次选择新的输出目录。运行器在各自的本地
+bare origin 上推进目标，保存起始证据、通知、实际 Agent 轨迹及 Git
+bundle。每次运行结束后清理本次产生的临时 Git 仓库。输出目录中的
+`source/` 保留该轮实际读取的合同正文。
+
+审核人读取各场景的 `carrier.jsonl`、Agent 轨迹和 `end.json`，核对以下结果。
+
+- `dispatch` 的实际协调派发原样保留通知中的同步条件和核实事实。派发继续原审核。
+- `receive` 的原审核读到通知后继续固定候选，保留适用的先前证据。工具轨迹应显示实际审核动作。
+- `conflict` 以 `merge_tree` 的退出状态和冲突路径为事实。核对 Agent 对原
+  `execute-base-candidate.sh` 的实际调用、锁定的目标 OID 和返回结果。
+  该场景止于原入口调用。
+
+`run.json` 保存进程结果及超时情况。语义结论由审核人根据实际轨迹作出。
+这些场景覆盖本地 Git 与隔离 Agent 的通知行为。Codex App 原生消息传输和
+真实 GitHub 回调属于其他验证层。

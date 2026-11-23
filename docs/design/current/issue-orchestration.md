@@ -69,3 +69,9 @@ canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话
 R883-01 由 [共享编排方法](../../../trellis/presets/guru-team/spec/workflow/issue-orchestration.md#dag-action-authorization-and-handoff) 定义运行条件和顺序。DAG 入口引用它，由现有协调者作出语义判断并复用原生消息、观察和回读。消息需要确认且独立工作尚未收妥时，协调者使用宿主已有的非终结消息，然后回到同一轮观察。DAG 的依赖、槽位和失败传播仍由本地合同拥有，Sequence 保持串行。
 
 原节点执行者拥有 Git 预览、限定清理与恢复；原 Issue 审核与写入 owner 拥有正文读写及 Intake 刷新。工具提供事实或执行，不赋予业务权限。保留既有目标仓规则；新增边界不引入公共字段、持久授权或调度器。关联架构：ARCH-DOM-DAG-LOCAL-DISPOSITIONS、ADR-DAG-LOCAL-DISPOSITIONS。实际验收由 T883-01..04 承担。
+
+## D917-01 / CON917-MERGE-NOTICE：派发与原阶段判断
+
+R917-01 由 [共享编排方法](../../../trellis/presets/guru-team/spec/workflow/issue-orchestration.md#fresh-merge-gate-and-integration)和 [Guru workflow](../../../trellis/workflows/guru-team/workflow.md#fixed-content-and-actual-integration)承接。共享方法负责核对合并事实并在原派发中传递用户的原条件。执行会话以原阶段入口核对其当前适用的事实。通知和目标推进不自动改变阶段。确认存在实际触发条件时，原阶段负责人把精确目标交给原 Reconcile。
+
+两处直接调整分别覆盖协调派发与直接通知。复用 [ADR-028](../../architecture/adr/028-fixed-content-baseline.md) 的固定候选与现有整合职责，继续以原合并资格、任务边界和证据适用性处理实际推进。T917-01 至 T917-03 按临时仓库的真实 Git 事实及实际 Agent 动作验证。

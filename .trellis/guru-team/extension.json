@@ -1188,11 +1188,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-23T13:08:29Z",
+  "installed_at": "2026-11-23T14:04:42Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
-    "commit": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+    "ref": "85ee117097645ebbe8af4177aa393d2bfb48335e",
+    "commit": "85ee117097645ebbe8af4177aa393d2bfb48335e",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1273,7 +1273,7 @@
     "managed_asset_hashes": {
       ".trellis/spec/workflow/clear-technical-writing.md": "f2edfbcb102197993483f42f6f1d72301aa96fa08ac45e9d05c3cf4ce6c2fef2",
       ".trellis/spec/workflow/review-sufficiency.md": "b5e34f83bd9ac6adf0b6ccd38051937294aa9a234e8784ea3fa0ad0c58b86425",
-      ".trellis/spec/workflow/issue-orchestration.md": "06e1ccfb9d27b60e593bb27e7f199a2aa9027595580ed0852520f1edbc3df17f",
+      ".trellis/spec/workflow/issue-orchestration.md": "80e6b5867082ef43232300d6f4b927a32c03a2402717152aa4807d42db34f868",
       ".trellis/spec/workflow/bootstrap-repository-ssot.md": "1986906accbd3fb6bee7a025d4ae5e7a875d97c7d0f1be24b1493d94d1391653",
       ".trellis/spec/workflow/task-delivery-migration.md": "aa63f94fee3e6b67ef3dce7859b3e6b00ab448c783f7badcbf02e72388a118f9",
       ".trellis/spec/workflow/task-delivery-early-draft-migration.md": "fdad191ca9e429836b03e2900924cb56c84c5f5e8caa4cb73822d8ee8277c03f",

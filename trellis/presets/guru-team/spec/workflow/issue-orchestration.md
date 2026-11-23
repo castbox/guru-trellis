@@ -254,7 +254,8 @@ product or authority choice.
 On resume, legitimate prior work may have changed the base or dirtied child
 worktrees. Do not rerun initial clean/equal-OID requirements against an active
 run. Recover exact owners, candidate/base identities, current remote state and
-affected gate freshness. Reconcile through original repository owners.
+the applicability of existing gate results. Apply the target workflow's actual
+integration conditions through the original stage owner.
 
 The AI reviews scope, completeness, dependencies, isolation, tool capability,
 current human boundary and truthful evidence before entering live execution.
@@ -376,6 +377,8 @@ Repository: <owner/repo>
 Issue: #<number>
 Selected base: <remote>/<branch> (PR and completion target)
 Starting state: <actual source, only if separately specified>
+Synchronization condition: <the user's exact condition, when supplied>
+Confirmed facts: <relevant live facts already checked, when available>
 Coordinator: <current formal chat identity>
 Position/prerequisites: <only this child's sequence position or repository-qualified prerequisite refs>
 Completion overrides: <only this Issue's additional accepted gates>
@@ -385,9 +388,10 @@ Use this repository's complete current Trellis workflow. Read live Issue body,
 accepted comments, linked delivery, AGENTS.md, workflow and relevant specs.
 Read the installed clear-technical-writing.md in full where required. Recover
 existing Task/Delivery identity through its original owner. Use this dedicated
-worktree and independent branch binding; reconcile the current selected base
-and verify predecessor results before implementation. Keep PRs and merge proof
-on that target; do not synchronize unrelated branches.
+worktree and independent branch binding. Verify required predecessor results
+before implementation. Apply the user's synchronization condition through
+the target workflow's original stage owner. Keep PRs and merge proof on the
+selected target.
 
 Own only this Issue. Preserve other agents' changes, resources and evidence.
 Do not write shared journals or unrelated Task metadata. Stop at the specified
@@ -650,11 +654,19 @@ original Merge Skill, semantic confirmation gate, expected-head transaction and
 any explicit direct-human-only exception. `auto` and a previous `确认继续`
 neither establish merge scope nor waive readiness.
 
-After a same-repository sibling merge, reconcile that evolved base and refresh
-affected gates through the waiting child’s normal owners. Retain that
-repository’s integration owner until its live result and immediately required
-shared-base closeout have known dispositions. Do not send another merge in
-that repository while its original transaction is unresolved. Keep observing
+After a same-repository sibling merge, verify the repository, target and
+actual merge facts. When dispatching to a waiting child, pass the user's
+synchronization condition verbatim and relay only the facts already checked.
+Keep requests to watch for a merge or to synchronize if needed conditional.
+Have the original stage owner continue its step and apply the target
+workflow's actual integration conditions. A merge notice, changed target SHA
+or overlapping paths alone give no instruction to reconcile or refresh
+still-applicable gate results.
+
+Retain that repository’s integration owner until its live result and
+immediately required shared-base closeout have known dispositions. Do not
+send another merge in that repository while its original transaction is
+unresolved. Keep observing
 and advancing other independent repositories; a pending result does not create
 a dependency or shared resource constraint between them.
 Recover original transaction and GitHub state after lost results; do not repeat

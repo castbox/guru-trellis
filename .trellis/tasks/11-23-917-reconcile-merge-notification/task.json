@@ -1,0 +1,124 @@
+{
+  "schema_version": "2.0",
+  "id": "917-reconcile-merge-notification",
+  "name": "917-reconcile-merge-notification",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 917,
+    "disposition": "exact_source"
+  },
+  "title": "修复并行 PR 合并通知触发无依据的 Reconcile",
+  "description": "修复协调派发和执行会话接收合并通知时的 Reconcile 误触发。",
+  "dev_type": null,
+  "scope": "仅处理 #917。保留 #567 的触发条件和原 Reconcile 入口。用临时仓库重跑两个无实际阻塞入口与实际冲突调用，保留起始提交、通知、派发和调用结果。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-23",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+    "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+  },
+  "deliveries": [
+    {
+      "id": "f24d99c7-b46a-4234-a5cd-e91c93c17fbb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+          "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3"
+        ]
+      },
+      "planning_root": "deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+        "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+      },
+      "candidate": {
+        "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+        "content_ref": "sha256:336170487889d557a4ab50087ab85e36511b5e07ba7241f8927ea1256c5f2495",
+        "head_ref": "8fcca44bc8d765d3ab176acf66281a96d88d3312",
+        "kind": "git",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/spec/workflow/issue-orchestration.md",
+          ".trellis/workflow.md",
+          "docs/design/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+          "docs/requirements/current/issue-orchestration.md",
+          "docs/test/current/issue-orchestration.md",
+          "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:149fd7bd-e882-48f8-b35e-71223071931c",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+              "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+            "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/prd.md",
+              "revision": "sha256:f65df3c8a521436dfdddc1ec8fde73f77a1047c453080c185981d3b914d708d4"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+              "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/implement.md",
+              "revision": "sha256:7d259f28175c2eebf16ac441b13f26cb74ae997dadd71d7d3da45f19fed5cdab"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

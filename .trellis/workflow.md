@@ -982,6 +982,11 @@ Ordinary recovery permits the original Bind/Selection owners' necessary
 session runtime writes. It does not authorize business, planning or shared
 baseline writes by the receiving reviewer.
 
+When a dispatch or handback includes a parallel merge notice, retain its
+synchronization condition and confirmed facts. Apply [Fixed content and actual
+integration](#fixed-content-and-actual-integration) within the original phase
+after verifying the receiving object.
+
 Return to the original unfinished profile/purpose with its still-applicable
 producer output and source selection. Existing planning does not restart
 initial Author; lost/stale output returns to its original producer. Restoring
@@ -1246,12 +1251,21 @@ Normal stage exits go directly to their declared consumer, without pair guards,
 ancestry qualification, temporary integration or synchronization commits.
 An owner completes its in-flight fixed candidate despite a shared fetch.
 
+When a parallel PR merge notice arrives in flight or at continuation, keep the
+current Task, Delivery and phase. The original stage owner checks the
+applicable facts at that stage's entry. If the notice, a changed target SHA or
+overlapping paths are the only new facts, continue the original step with its
+fixed candidate and still-applicable evidence. Honor a request to watch for a
+merge or to synchronize if needed under its stated condition.
+
 Invoke `guru-reconcile-task-base` only for actual merge conflict, concrete
 required-check integration failure, the original merge owner’s confirmed existing
 server update requirement, explicit dependency/requirement incorporation, or
 user-requested synchronization. Its contract owns fixed-operation target
 selection, ordinary/resolved execution, bounded validation and recovery.
-Behind or a different target SHA alone is not a trigger.
+When a trigger applies, identify it and select one fixed integration target
+before invoking the original profile. Preserve that profile's existing entry
+and action boundaries.
 
 Original candidate/Check/Review owners handle actual content evolution and
 necessary affected re-entry, retaining same-Delivery identity and valid prior
