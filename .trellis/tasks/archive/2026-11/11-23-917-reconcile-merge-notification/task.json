@@ -1,0 +1,432 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-23-917-reconcile-merge-notification",
+  "id": "917-reconcile-merge-notification",
+  "name": "917-reconcile-merge-notification",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 917,
+    "disposition": "exact_source"
+  },
+  "title": "修复并行 PR 合并通知触发无依据的 Reconcile",
+  "description": "修复协调派发和执行会话接收合并通知时的 Reconcile 误触发。",
+  "dev_type": null,
+  "scope": "仅处理 #917。保留 #567 的触发条件和原 Reconcile 入口。用临时仓库重跑两个无实际阻塞入口与实际冲突调用，保留起始提交、通知、派发和调用结果。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-23",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+    "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+  },
+  "deliveries": [
+    {
+      "id": "f24d99c7-b46a-4234-a5cd-e91c93c17fbb",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+          "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3"
+        ]
+      },
+      "planning_root": "deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+        "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+      },
+      "candidate": {
+        "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+        "content_ref": "sha256:eb7dbb0928d2898ef3746b24293c5af92899c0489909807e7e2009d12f63f64a",
+        "head_ref": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-reconcile-task-base/SKILL.md",
+          ".claude/skills/guru-reconcile-task-base/SKILL.md",
+          ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+          ".trellis/spec/workflow/issue-orchestration.md",
+          ".trellis/workflow.md",
+          "docs/design/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+          "docs/requirements/current/issue-orchestration.md",
+          "docs/test/current/issue-orchestration.md",
+          "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:149fd7bd-e882-48f8-b35e-71223071931c",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+              "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+            "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/prd.md",
+              "revision": "sha256:f65df3c8a521436dfdddc1ec8fde73f77a1047c453080c185981d3b914d708d4"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+              "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/implement.md",
+              "revision": "sha256:7d259f28175c2eebf16ac441b13f26cb74ae997dadd71d7d3da45f19fed5cdab"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:86edaae2633b74971eb969dc821df7d15b431963a409c390bb2edf74959a2c83",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+              "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+            "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+          },
+          "candidate": {
+            "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+            "content_ref": "sha256:eb7dbb0928d2898ef3746b24293c5af92899c0489909807e7e2009d12f63f64a",
+            "head_ref": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              ".trellis/workflow.md",
+              "docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+              "docs/requirements/current/issue-orchestration.md",
+              "docs/test/current/issue-orchestration.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:149fd7bd-e882-48f8-b35e-71223071931c",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/implement.md",
+              "revision": "sha256:7d259f28175c2eebf16ac441b13f26cb74ae997dadd71d7d3da45f19fed5cdab"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:86edaae2633b74971eb969dc821df7d15b431963a409c390bb2edf74959a2c83",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+              "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+            "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+          },
+          "candidate": {
+            "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+            "content_ref": "sha256:eb7dbb0928d2898ef3746b24293c5af92899c0489909807e7e2009d12f63f64a",
+            "head_ref": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              ".trellis/workflow.md",
+              "docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+              "docs/requirements/current/issue-orchestration.md",
+              "docs/test/current/issue-orchestration.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "check:86edaae2633b74971eb969dc821df7d15b431963a409c390bb2edf74959a2c83",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/implement.md",
+              "revision": "sha256:7d259f28175c2eebf16ac441b13f26cb74ae997dadd71d7d3da45f19fed5cdab"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:8f5f019381c5cb47bbd7b30b1d491dfaa0ac9ce01efe11335d782d6868b07bea",
+          "owner_role": "readiness",
+          "owner_id": "guru-publish-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+              "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/design.md",
+            "revision": "sha256:e7accf7de43696bdda13994f23639fb609987c4a78a4abbdbac7188f25fb66b3"
+          },
+          "candidate": {
+            "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+            "content_ref": "sha256:eb7dbb0928d2898ef3746b24293c5af92899c0489909807e7e2009d12f63f64a",
+            "head_ref": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              ".trellis/workflow.md",
+              "docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+              "docs/requirements/current/issue-orchestration.md",
+              "docs/test/current/issue-orchestration.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:86edaae2633b74971eb969dc821df7d15b431963a409c390bb2edf74959a2c83",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/deliveries/f24d99c7-b46a-4234-a5cd-e91c93c17fbb/implement.md",
+              "revision": "sha256:7d259f28175c2eebf16ac441b13f26cb74ae997dadd71d7d3da45f19fed5cdab"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:1909020753daae43510e693f164161a7e8c23cf293c4931bfb807cec48a52546",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/921",
+            "revision": "sha256:888a79d03a1208f5d96c5be865f20ec25cca4b03ea6ab38c40f758653bc6fa99"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+          "content_ref": "sha256:eb7dbb0928d2898ef3746b24293c5af92899c0489909807e7e2009d12f63f64a",
+          "head_ref": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-reconcile-task-base/SKILL.md",
+            ".claude/skills/guru-reconcile-task-base/SKILL.md",
+            ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+            ".trellis/spec/workflow/issue-orchestration.md",
+            ".trellis/workflow.md",
+            "docs/design/current/issue-orchestration.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+            "docs/requirements/current/issue-orchestration.md",
+            "docs/test/current/issue-orchestration.md",
+            "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 921,
+        "reviewed_head": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/921",
+          "revision": "sha256:888a79d03a1208f5d96c5be865f20ec25cca4b03ea6ab38c40f758653bc6fa99"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:f8f2cb88d51a11ccaf195b1f6a10306cf99689d1",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/921",
+            "revision": "f8f2cb88d51a11ccaf195b1f6a10306cf99689d1"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+          "content_ref": "sha256:eb7dbb0928d2898ef3746b24293c5af92899c0489909807e7e2009d12f63f64a",
+          "head_ref": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-reconcile-task-base/SKILL.md",
+            ".claude/skills/guru-reconcile-task-base/SKILL.md",
+            ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+            ".trellis/spec/workflow/issue-orchestration.md",
+            ".trellis/workflow.md",
+            "docs/design/current/issue-orchestration.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/design/current/issue-orchestration.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/requirements/current/issue-orchestration.md",
+            "docs/requirements-design-test-contributions/917-reconcile-merge-notification/proposed/docs/test/current/issue-orchestration.md",
+            "docs/requirements/current/issue-orchestration.md",
+            "docs/test/current/issue-orchestration.md",
+            "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+            "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_merge_notification.py",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 921,
+        "reviewed_head": "32935fd778dbb681fd80283262ed17fd1ab01e1a",
+        "merge_commit": "f8f2cb88d51a11ccaf195b1f6a10306cf99689d1",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:917:f8f2cb88d51a11ccaf195b1f6a10306cf99689d1",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/921",
+          "revision": "f8f2cb88d51a11ccaf195b1f6a10306cf99689d1"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/917-reconcile-merge-notification/contribution.md",
+          "revision": "sha256:4ed289c8ea9d58ddc52b554ccceb95d05baf31a5d0740af6016c76e94d15e293"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/45192419712",
+          "revision": "32935fd778dbb681fd80283262ed17fd1ab01e1a"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/prd.md",
+        "revision": "sha256:3fd03c881f711ab22ef5a63ef84ef1be4c3299b1f8442128cb7894ea27839b7e"
+      },
+      "delivery_result_ids": [
+        "delivery:f8f2cb88d51a11ccaf195b1f6a10306cf99689d1"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:907b70227cb6883ffe3a82f0",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/917",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-917-reconcile-merge-notification/closeout/closure/Y2xvc3VyZTo5MDdiNzAyMjdjYjY4ODNmZmUzYTgyZjA.json",
+          "revision": "sha256:7d951230464d6c86f0facbe101f9fccbb68ff181ac86a0465f4e4632e698152d"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:917:f8f2cb88d51a11ccaf195b1f6a10306cf99689d1",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/917",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
