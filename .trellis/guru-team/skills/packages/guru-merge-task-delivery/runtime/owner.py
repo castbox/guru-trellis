@@ -288,7 +288,7 @@ def live_facts(root: Path, package_root: Path, public: dict[str, Any], *, histor
     if not historical and pr["state"] != "MERGED" and (pr["head_branch"] != task["branch"] or pr["base_branch"] != task["base_branch"]):
         raise CommandError("stale_identity", "github.pr.branches", "Rebuild publication for the active task's current head and base branches.", 3)
     if hashlib.sha256(pr["body"].encode("utf-8")).hexdigest() != public["publication_body_sha256"]:
-        raise CommandError("stale_identity", "publication_body_sha256", "Re-enter Delivery Review and Publish for the current PR body.", 3)
+        raise CommandError("stale_identity", "publication_body_sha256", "Re-enter the current Branch Review and Publication preparation for the current PR body.", 3)
     if CLOSING_KEYWORD.search(pr["body"]):
         raise CommandError("merge_precondition_failed", "github.pr.body", "Use a Refs-only Delivery PR body without closing keywords.")
 

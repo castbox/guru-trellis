@@ -28,7 +28,7 @@
       "trigger": "Task, Git, GitHub, review, plan, or transaction identity changed.",
       "exit_status": 3,
       "locator": "field_path",
-      "remediation": "Rerun Delivery Review or reprepare the publication transaction."
+      "remediation": "Rerun the current Branch Review and Publication preparation/readiness."
     },
     {
       "code": "closing_keyword_forbidden",
