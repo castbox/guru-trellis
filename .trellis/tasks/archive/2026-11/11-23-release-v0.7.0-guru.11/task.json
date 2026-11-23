@@ -1,5 +1,6 @@
 {
   "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-23-release-v0.7.0-guru.11",
   "id": "release-v0.7.0-guru.11",
   "name": "release-v0.7.0-guru.11",
   "lifecycle_generation": 0,
@@ -650,12 +651,56 @@
       },
       "planning_root": "deliveries/3af1fa43-d718-43ed-abf4-693194ebed22",
       "profile": "pull_request",
-      "phase": "implementing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/design.md",
         "revision": "sha256:d577f66c66514821fef384f73654014086ce08c2f9b2a824fe5fc3403d4a4b63"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "13d72b5425070fe841c1046d1e677d8323481eec",
+        "content_ref": "sha256:092811490e25624941b1799d7f18e42e4088b2f715ce2cb35e5851af4066ab2d",
+        "head_ref": "8009d33307513473529843e4fd5bcab9b386f44a",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-clarify-requirements/references/contract.md",
+          ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+          ".agents/skills/guru-merge-task-delivery/references/contract.md",
+          ".agents/skills/guru-review-branch/SKILL.md",
+          ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".claude/skills/guru-clarify-requirements/references/contract.md",
+          ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+          ".claude/skills/guru-merge-task-delivery/references/contract.md",
+          ".claude/skills/guru-review-branch/SKILL.md",
+          ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+          ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+          ".cursor/skills/guru-review-branch/SKILL.md",
+          ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+          ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".trellis/spec/workflow/clear-technical-writing.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ]
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:05e6fc88-86a0-440d-9d42-66b58bc01017",
@@ -696,15 +741,428 @@
             }
           ]
         },
-        "check": null,
-        "full_review": null,
-        "readiness": null
+        "check": {
+          "result_id": "check:75f5c89b543407d23dbab107b5d1677d6fab6d3c9c8e72416c3f50a636304d79",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+              "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+            },
+            "anchors": [
+              "R5",
+              "R7",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/design.md",
+            "revision": "sha256:d577f66c66514821fef384f73654014086ce08c2f9b2a824fe5fc3403d4a4b63"
+          },
+          "candidate": {
+            "base_ref": "13d72b5425070fe841c1046d1e677d8323481eec",
+            "content_ref": "sha256:092811490e25624941b1799d7f18e42e4088b2f715ce2cb35e5851af4066ab2d",
+            "head_ref": "8009d33307513473529843e4fd5bcab9b386f44a",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-merge-task-delivery/references/contract.md",
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-merge-task-delivery/references/contract.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/spec/workflow/clear-technical-writing.md",
+              ".trellis/spec/workflow/data-contracts.md",
+              ".trellis/spec/workflow/workflow-contract.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:05e6fc88-86a0-440d-9d42-66b58bc01017",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/implement.md",
+              "revision": "sha256:7ece69e2ed378a2827659450bf8a7d57c9e9ad44fce8fa15dfafbe18e0bc55b9"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:75f5c89b543407d23dbab107b5d1677d6fab6d3c9c8e72416c3f50a636304d79",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+              "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+            },
+            "anchors": [
+              "R5",
+              "R7",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/design.md",
+            "revision": "sha256:d577f66c66514821fef384f73654014086ce08c2f9b2a824fe5fc3403d4a4b63"
+          },
+          "candidate": {
+            "base_ref": "13d72b5425070fe841c1046d1e677d8323481eec",
+            "content_ref": "sha256:092811490e25624941b1799d7f18e42e4088b2f715ce2cb35e5851af4066ab2d",
+            "head_ref": "8009d33307513473529843e4fd5bcab9b386f44a",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-merge-task-delivery/references/contract.md",
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-merge-task-delivery/references/contract.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/spec/workflow/clear-technical-writing.md",
+              ".trellis/spec/workflow/data-contracts.md",
+              ".trellis/spec/workflow/workflow-contract.md"
+            ]
+          },
+          "predecessor_result_id": "check:75f5c89b543407d23dbab107b5d1677d6fab6d3c9c8e72416c3f50a636304d79",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/implement.md",
+              "revision": "sha256:7ece69e2ed378a2827659450bf8a7d57c9e9ad44fce8fa15dfafbe18e0bc55b9"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:899860ab67c8e52b3ae265c6246723021041ef4267c799205547aa68d5877549",
+          "owner_role": "readiness",
+          "owner_id": "guru-publish-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+              "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+            },
+            "anchors": [
+              "R5",
+              "R7",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/design.md",
+            "revision": "sha256:d577f66c66514821fef384f73654014086ce08c2f9b2a824fe5fc3403d4a4b63"
+          },
+          "candidate": {
+            "base_ref": "13d72b5425070fe841c1046d1e677d8323481eec",
+            "content_ref": "sha256:092811490e25624941b1799d7f18e42e4088b2f715ce2cb35e5851af4066ab2d",
+            "head_ref": "8009d33307513473529843e4fd5bcab9b386f44a",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-merge-task-delivery/references/contract.md",
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-merge-task-delivery/references/contract.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+              ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/spec/workflow/clear-technical-writing.md",
+              ".trellis/spec/workflow/data-contracts.md",
+              ".trellis/spec/workflow/workflow-contract.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:75f5c89b543407d23dbab107b5d1677d6fab6d3c9c8e72416c3f50a636304d79",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/3af1fa43-d718-43ed-abf4-693194ebed22/implement.md",
+              "revision": "sha256:7ece69e2ed378a2827659450bf8a7d57c9e9ad44fce8fa15dfafbe18e0bc55b9"
+            }
+          ]
+        }
       },
-      "publication_result": null,
-      "delivery_result": null,
+      "publication_result": {
+        "result_id": "publication:8eafc18ffa353ef76bc783d7acf1ef744113c29699b861c21d562bbe9ae54444",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/910",
+            "revision": "sha256:1fb4a2f3f10ffd1d8aae9f0cc3bd53f2f7ea4ad27e5da09c87a3febaf42a182f"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "13d72b5425070fe841c1046d1e677d8323481eec",
+          "content_ref": "sha256:092811490e25624941b1799d7f18e42e4088b2f715ce2cb35e5851af4066ab2d",
+          "head_ref": "8009d33307513473529843e4fd5bcab9b386f44a",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-merge-task-delivery/references/contract.md",
+            ".agents/skills/guru-review-branch/SKILL.md",
+            ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-merge-task-delivery/references/contract.md",
+            ".claude/skills/guru-review-branch/SKILL.md",
+            ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+            ".cursor/skills/guru-review-branch/SKILL.md",
+            ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".trellis/spec/workflow/clear-technical-writing.md",
+            ".trellis/spec/workflow/data-contracts.md",
+            ".trellis/spec/workflow/workflow-contract.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 910,
+        "reviewed_head": "8009d33307513473529843e4fd5bcab9b386f44a",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/910",
+          "revision": "sha256:1fb4a2f3f10ffd1d8aae9f0cc3bd53f2f7ea4ad27e5da09c87a3febaf42a182f"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:27d89fe3d3bc7f9879091db081d1055b9e427c89",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/910",
+            "revision": "27d89fe3d3bc7f9879091db081d1055b9e427c89"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "13d72b5425070fe841c1046d1e677d8323481eec",
+          "content_ref": "sha256:092811490e25624941b1799d7f18e42e4088b2f715ce2cb35e5851af4066ab2d",
+          "head_ref": "8009d33307513473529843e4fd5bcab9b386f44a",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-merge-task-delivery/references/contract.md",
+            ".agents/skills/guru-review-branch/SKILL.md",
+            ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-merge-task-delivery/references/contract.md",
+            ".claude/skills/guru-review-branch/SKILL.md",
+            ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-merge-task-delivery/references/contract.md",
+            ".cursor/skills/guru-review-branch/SKILL.md",
+            ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
+            ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+            ".trellis/spec/workflow/clear-technical-writing.md",
+            ".trellis/spec/workflow/data-contracts.md",
+            ".trellis/spec/workflow/workflow-contract.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 910,
+        "reviewed_head": "8009d33307513473529843e4fd5bcab9b386f44a",
+        "merge_commit": "27d89fe3d3bc7f9879091db081d1055b9e427c89",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
-  "completion_results": [],
-  "closure_results": []
+  "completion_results": [
+    {
+      "result_id": "completion:release-v0.7.0-guru.11:preparation",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "github:castbox/guru-trellis#pull/909",
+          "revision": "merged@df638d19d458bbab11642b5626d293df30075ea1"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md",
+          "revision": "sha256:cc5613963432ebf99a94afa19711451db6bbef5b2679129cb68af97e9cefc42b"
+        },
+        {
+          "locator": "review:full-review:df357708b6f2088c54cfc99904a16d1e29bc5341a0aa094b35b63859abfa7a7e",
+          "revision": "passed@13d72b5425070fe841c1046d1e677d8323481eec"
+        },
+        {
+          "locator": "github:castbox/guru-trellis/actions/runs/45089265110",
+          "revision": "ubuntu=success;macos=success;windows=success"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/910",
+          "revision": "merged@27d89fe3d3bc7f9879091db081d1055b9e427c89"
+        },
+        {
+          "locator": "review:full-review:75f5c89b543407d23dbab107b5d1677d6fab6d3c9c8e72416c3f50a636304d79",
+          "revision": "passed@8009d33307513473529843e4fd5bcab9b386f44a"
+        },
+        {
+          "locator": "validation:preparation-checkout",
+          "revision": "source_locked 0.7.0-guru.11 from 13d72b54; installed/native, complete projections, ownership, drift and actual preset reapply verified"
+        },
+        {
+          "locator": "git:main",
+          "revision": "both merged trees equal their exact reviewed heads; current RDT and Architecture from D1 remain applicable; D2 no_change"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+        "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+      },
+      "delivery_result_ids": [
+        "delivery:df638d19d458bbab11642b5626d293df30075ea1",
+        "delivery:27d89fe3d3bc7f9879091db081d1055b9e427c89"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:b346961b5c8a6250a01e0988",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md",
+          "revision": "sha256:5add93db60209f876e4e1cfbf2715dec719c5b2f3313da65c7925407c2f71f6d"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-release-v0.7.0-guru.11/closeout/closure/Y2xvc3VyZTpiMzQ2OTYxYjVjOGE2MjUwYTAxZTA5ODg.json",
+          "revision": "sha256:34253b142096b26255d29169ab5b50f463c79345d2db81d81ddc12f772d9738d"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:release-v0.7.0-guru.11:preparation",
+      "disposition": "no_mutation",
+      "source_result": null
+    }
+  ]
 }

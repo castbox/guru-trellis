@@ -1,7 +1,7 @@
-{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/prd.md", "reason": "核对整体准备范围和阶段边界"}
-{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/prd.md", "reason": "核对 D1 行为与验收"}
-{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md", "reason": "核对机制、兼容、恢复和验证设计"}
-{"file": ".trellis/tasks/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md", "reason": "核对实施和验证计划"}
+{"file": ".trellis/tasks/archive/2026-11/11-23-release-v0.7.0-guru.11/prd.md", "reason": "核对整体准备范围和阶段边界"}
+{"file": ".trellis/tasks/archive/2026-11/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/prd.md", "reason": "核对 D1 行为与验收"}
+{"file": ".trellis/tasks/archive/2026-11/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/design.md", "reason": "核对机制、兼容、恢复和验证设计"}
+{"file": ".trellis/tasks/archive/2026-11/11-23-release-v0.7.0-guru.11/deliveries/7fa61b67-258e-49db-9db3-505f1a0c4e3e/implement.md", "reason": "核对实施和验证计划"}
 {"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整技术写作规范"}
 {"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值、责任边界和最小证据"}
 {"file": ".trellis/spec/workflow/review-sufficiency.md", "reason": "完整独立 Review 的覆盖范围"}
