@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "适用写作规范"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证范围与证据判定"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文所有权"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求的规划口径"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计的规划口径"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批计划与验证口径"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "固定候选与执行会话接收边界"}
+{"file": "trellis/presets/guru-team/spec/workflow/issue-orchestration.md", "reason": "协调派发及同仓合并后的入口"}
+{"file": "docs/architecture/adr/028-fixed-content-baseline.md", "reason": "固定候选和原 Reconcile 的架构约束"}

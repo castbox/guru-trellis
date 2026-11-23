@@ -73,3 +73,11 @@ DAG 的每个节点以 canonical repository 与 Issue 组成身份，依赖、�
 来源：[Issue #883](https://github.com/castbox/guru-trellis/issues/883)，2026-11-19T07:01:56Z。选定 DAG 节点的原 owner 提出具体动作时，协调者应用现有委托与目标规则。已覆盖动作及时安排并回读。确需用户确认的动作只暂停自身及依赖；仍有合法独立工作或有效有界等待时，协调者发出不结束轮次的请求，再继续观察并承接实际结果。
 
 当前节点的限定失效 Git 注册清理和已收敛的 Issue 正文修订可按各自条件直接安排原 owner；其他动作继续遵守原权限和用户本人确认边界。实际中断后仍恢复同一节点和原操作。资格、顺序及所有例外条件以 [共享编排方法](../../../trellis/presets/guru-team/spec/workflow/issue-orchestration.md#dag-action-authorization-and-handoff) 为唯一运行定义。设计与验收见 D883-01、T883-01..04。
+
+## R917-01 / BEH917-MERGE-NOTICE：合并通知按实际条件处理
+
+来源为 [Issue #917](https://github.com/castbox/guru-trellis/issues/917) 及其[有效讨论](https://github.com/castbox/guru-trellis/issues/917#issuecomment-7100737709)。协调者在派发时保留用户原样给出的同步条件和已核对的事实。执行会话在收到通知或接回任务时，由原阶段负责人核对适用事实。仅有合并通知、目标 SHA 变化或路径重叠时，保留固定候选和仍适用的审核证据，继续原步骤。
+
+实际合并冲突、必需检查发现具体集成失败、原 Merge 负责人确认服务端要求更新、明确需要纳入依赖或需求，以及用户明确要求同步，继续按 [#567 触发条件](../../requirements-design-test-contributions/567-fixed-development-baseline/requirements.md)进入原 Reconcile。原负责人指出依据并选定一次目标提交。关注合并或「必要时同步」按用户原条件执行。
+
+D917-01 承接上述职责，T917-01 至 T917-03 分别验证实际协调派发、执行会话继续审核及真实冲突调用。冲突场景验收到调用原入口。
