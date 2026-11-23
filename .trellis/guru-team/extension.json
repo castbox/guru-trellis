@@ -1188,11 +1188,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-23T05:50:41Z",
+  "installed_at": "2026-11-23T13:08:29Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
-    "commit": "1174ab49c7187ead613eb338ef1bb5ef1eb0e994",
+    "ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+    "commit": "8604558695dfd9d8ea2181406a87ece70d9eea63",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1510,7 +1510,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "ea39269a110135651a8982bce386656f6cbb996c556c5c68a2389ea530eb3ad3",
-        "tree_sha256": "e144e23fbda4d1eee2f1de88d375ec0395631e86a477bdd2f98b5714c3c4517c"
+        "tree_sha256": "83efd11d537f5dcf20e6bff33319f2c52128119b9a833af6253d57363fda9eed"
       },
       {
         "id": "guru-review-branch",
@@ -17263,7 +17263,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "5133a33fa13c01e8d223a22ab958d6cd61cdc544c7b1b1c173990d1aa499fbdf",
+        "sha256": "e1099a75a830ac923de26200def0d5c570c8d368d91b4153e135cccfd05f434f",
         "executable": false,
         "action": "installed"
       },
@@ -58388,7 +58388,7 @@
       {
         "path": ".agents/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "5133a33fa13c01e8d223a22ab958d6cd61cdc544c7b1b1c173990d1aa499fbdf",
+        "sha256": "e1099a75a830ac923de26200def0d5c570c8d368d91b4153e135cccfd05f434f",
         "executable": false,
         "action": "installed"
       },
@@ -59095,7 +59095,7 @@
       {
         "path": ".claude/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "5133a33fa13c01e8d223a22ab958d6cd61cdc544c7b1b1c173990d1aa499fbdf",
+        "sha256": "e1099a75a830ac923de26200def0d5c570c8d368d91b4153e135cccfd05f434f",
         "executable": false,
         "action": "installed"
       },
@@ -59802,7 +59802,7 @@
       {
         "path": ".cursor/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "5133a33fa13c01e8d223a22ab958d6cd61cdc544c7b1b1c173990d1aa499fbdf",
+        "sha256": "e1099a75a830ac923de26200def0d5c570c8d368d91b4153e135cccfd05f434f",
         "executable": false,
         "action": "installed"
       },
