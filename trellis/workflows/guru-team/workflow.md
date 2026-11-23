@@ -521,7 +521,9 @@ mode/profile. Neither a stopped slice nor the projection decides Completion.
 
 Load `.trellis/spec/workflow/workflow-contract.md#phase-2--implementation-and-check`
 for delegated execution and result consumption before dispatching or continuing
-delegated work.
+delegated work. Apply [Explicit receiving-session continuation](#explicit-receiving-session-continuation)
+when the delegated worker or the caller receiving its result takes over a formal
+step with a Task or Delivery session prerequisite.
 
 Complete implementation and the Planning-selected engineering checks before local commit.
 Execute necessary knowledge integration through the original RDT and Architecture
@@ -685,8 +687,10 @@ rework, recovery and the two real upstream result projections. The workflow does
 not invoke a separate candidate, final or postcommit Check.
 
 Name the independent reviewer, exact committed base/head and review target in the
-current conversation before dispatch. The reviewer has not implemented the
-candidate and does not edit it. Original owners form successor commits for repairs.
+current conversation before dispatch. Hand off under
+[Explicit receiving-session continuation](#explicit-receiving-session-continuation).
+The reviewer has not implemented the candidate and does not edit it. Original
+owners form successor commits for repairs.
 The same still-independent reviewer may retain verifiable coverage and review the
 actual delta and affected consumers under the shared candidate contract.
 
@@ -701,7 +705,10 @@ fact conditions; changed obligations return to the affected review owner.
 
 #### 3.6 Delivery review and publication
 
-Send current Branch Review `passed` to `guru-publication-entry-router`. It obtains
+Send current Branch Review `passed` to `guru-publication-entry-router`. When the
+next formal caller changes, apply
+[Explicit receiving-session continuation](#explicit-receiving-session-continuation)
+to that caller and the actual next entry. The router obtains
 the current publication Architecture result from
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=publication)`.
 The Architecture current router hands applicable `no_change` or
@@ -720,6 +727,9 @@ Merge returns a Delivery result to whole-task Completion.
 #### 3.7 Completion, Closure and Finish
 
 `guru-merge-task-delivery:delivered` feeds `guru-review-task-completion`.
+Apply [Explicit receiving-session continuation](#explicit-receiving-session-continuation)
+on a change of caller for Completion, Closure or Finish when its entry requires
+a current session binding. Use that entry's own Task or Delivery prerequisite.
 Completion fresh reads the entire accepted scope, all business Delivery facts,
 current evidence and requirements authority. A Reactivate generation with only
 new validation uses its verified prior terminal archive and fresh current
@@ -916,17 +926,46 @@ binding/selection recovery below as a prerequisite for that one-off review.
 Only its declared successful final-plan result enters adjacent Approval;
 Approval still satisfies its own execution selection entry.
 
-Before dispatching the original Author, Architecture, Approval or
-Activation entry in ordinary execution, mandatory invoke `guru-establish-task-identity` and
-`guru-ensure-task-checkout` for the explicit TaskId/generation. Consume their
-actual exits to resolve one current TaskRef and registered checkout. Then read
-the receiving caller's own public Delivery current query. A producer's binding,
-explicit key or working directory never substitutes for this caller's facts.
+Apply this route when a caller continues an explicit Task or Delivery or takes
+over a formal step that requires current session state. This includes initial
+dispatch, replacement of a worker, and handback to the main session. Select the
+prerequisites from the actual receiving Skill and profile. For Task-only
+entries apply only Task preconditions. For engineering evidence, research, and
+explicit read-only work, follow the selected entry's own rules.
+
+The dispatcher gives the receiving caller its execution role, the original
+Skill and profile, the exact TaskId/generation and registered checkout, and the
+DeliveryKey, planning_root or fixed candidate when the profile needs them.
+Identify the required result type and the applicable write boundary. The
+original Bind and Selection owners may write necessary receiving-session state
+when their entry applies. Preserve the review or worker's approved candidate
+and content boundaries and any independent first-read order. Engineering
+evidence returns to its formal owner for the next judgment. For a delegated
+formal step, return the actual public typed exit to its declared consumer.
+After handback, the next formal caller satisfies its own session prerequisites.
+
+For ordinary execution, the receiving caller invokes
+`guru-establish-task-identity` and `guru-ensure-task-checkout` for the explicit
+TaskId/generation. Consume the actual exits to resolve one current TaskRef and
+registered checkout. Before the first invocation that depends on current
+session state, read that session with the existing public current query:
+
+```bash
+bash .trellis/guru-team/scripts/bash/read-continuation-context.sh --root .
+```
+
+Read current state without a target Delivery assertion, then compare the
+result to the received object. A producer's binding, explicit key or working
+directory does not establish the receiver's state. If no current Task is
+reported and context availability must be resolved, use the same query's
+existing `continue_session` input with the explicit Task triple and no
+`delivery_id`. This distinguishes `binding_required` from the supported
+explicit mode without making a Delivery selection.
 
 | Receiving caller fact | Mandatory original owner and continuation |
 | --- | --- |
 | Resolver confirms no context key | Use the existing explicit-task projection for the deliberately supplied key; verify current generation, C4, public relationship and supported profile. Do not write a session. |
-| `no_current_task` with an explicit current Task | Invoke `guru-bind-task-session:delivery_rebind_missing_session`, then reread current. This restores only the missing Task binding; it does not select a Delivery. |
+| `binding_required` for the explicit Task in this session | Invoke `guru-bind-task-session:delivery_rebind_missing_session`, then reread current. This restores only the missing Task binding. |
 | Same Task/generation, `no_current_delivery`, and an explicit applicable nonterminal key | Invoke `guru-create-delivery:delivery_selection` on that key, then reread current. Do not allocate another slice. |
 | `current` matching the explicit Task/generation/key | Reuse the facts without another binding or selection write; reread phase, scope and public planning_root before the original entry. |
 | Another Task/key, `terminal_delivery`, or real generation/phase/scope mismatch | Return to the original selection, terminal/release, lifecycle, stage or scope owner for that actual condition. Never overwrite a valid selection or reopen a terminal slice as missing-binding recovery. |
@@ -935,8 +974,10 @@ explicit key or working directory never substitutes for this caller's facts.
 Each invoked Skill owns its entry checks, semantic judgment and writer; this
 table owns only their mandatory cross-Skill order. After a successful Bind or
 Selection, recheck all remaining conditions against the same explicit object.
-Task-only requirements have no selection step. A same-object recovery needs no
-new scope choice or repeated continuation question.
+For Task-only entry, proceed once the Task prerequisites match. For Delivery
+entry, check the selected key, phase, scope, planning_root and applicable
+candidate against the original entry. A same-object recovery uses the original
+requirements and the existing continuation.
 Ordinary recovery permits the original Bind/Selection owners' necessary
 session runtime writes. It does not authorize business, planning or shared
 baseline writes by the receiving reviewer.

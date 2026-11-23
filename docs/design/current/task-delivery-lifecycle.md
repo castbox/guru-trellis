@@ -236,3 +236,7 @@ Author requirements_ready经candidate assessment回solution_planning，plan_read
 承接 [R899](../../requirements/current/task-delivery-lifecycle.md#r899-标准续接上下文)。同一公开命令组合现有 Task、session、C4/C5、登记 checkout 和 Delivery 读取。前次事实由当次依赖逐项核对，依赖失配后重建相应定位。显式只读结果不改变会话选择。结果中的错误指向既有读取或恢复负责人。
 
 标准 Workflow 运行一次上下文解析。后续使用已定位对象读取精确官方 Delivery 和门禁适用性。存在 Publication PR 时通过原 repo-bound GitHub 读取核对状态。真实已合并先进入原恢复，实际 delivered 才能进入 Completion。可执行示例见 [Guru workflow 公开说明](../../../trellis/workflows/guru-team/README.md#读取当前续接对象)。
+
+## D912 接收会话前置
+
+Workflow 的 Explicit receiving-session continuation 统一协调初次派发、替换和接回。派发交接执行角色、原入口、确切对象、适用的候选和预期结果类型，并允许原会话 owner 执行必要的状态写入。接收者先读本会话实际状态，再按显式对象比对。只在确实缺少 Task 时进入 Bind，只在原入口需要选择且同一 Task 未选择时进入 Delivery Selection。Branch Review 在独立 Architecture、资格判定及自身 recorder/invoke 首次依赖状态前校验。各原阶段合同保留其自身的权限及读序。实际调用者更换时重新应用适用前置。

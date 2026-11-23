@@ -269,3 +269,7 @@ Agent读完整来源及整体/切片要求，由Author写规划，独立Architec
 覆盖 [R899](../../requirements/current/task-delivery-lifecycle.md#r899-标准续接上下文) 和 [D899](../../design/current/task-delivery-lifecycle.md#d899-一次解析与精确后续读取)。公开 CLI 真实 Git 工作树和已安装上游 API 测试 7/7。用例覆盖同会话重用、正常 Task 切换和 Delivery 改选、显式查询、缺绑定、普通冲突和旧记录。检查查询前后的 Task、会话及 Git 状态。精确记录与原结果及门禁适用性一致。
 
 从 #899 的实际安装运行原生 continuation 提取并执行其中的命令。观察一次上下文解析、一次精确记录读取及适用的 Planning，Task 文件、分支和 worktree 未变化。该 Delivery 尚无 Publication PR。原 Merge 恢复测试 15/15 采用隔离输入，另以 repo-bound CLI 读到历史 PR #897 为 MERGED。#899 的真实已发布恢复链待实际对象验证。代表性安装和 reapply 通过，Codex、Claude Code、Cursor 的投影与 dogfood 漂移通过。正式源锁采用与 Release 矩阵仍未验证。
+
+## T912 正式交接验证
+
+从当前安装派发独立候选 Architecture 和正式 Branch Review。对每一入口观察新接收者自己的状态读回及原正式结果。验收要求在首次依赖会话状态的调用前完成确认和必要续接。定向观察仅缺选择时补齐、匹配时复用和不同合法选择保留。Task-only、显式对象和工程证据使用原边界。会话状态契约测试与实际 Agent 派发证据分别核对。安装投影、phase/step 读取及 drift 证明 matching 来源实际分发。
