@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-23T14:00:58Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-23-915-reconcile-resolved-review",
+    "title": "修复 Reconcile 解冲突后到独立审核的接续",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-23-915-reconcile-resolved-review",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/915-reconcile-resolved-review",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "修复 Reconcile 解冲突后到独立审核的接续",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review",
+          ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review/prd.md",
+          ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#915"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/915-reconcile-resolved-review"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review",
+        ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review/prd.md",
+        ".trellis/tasks/archive/2026-11/11-23-915-reconcile-resolved-review/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复 Reconcile 解冲突后到独立审核的接续；#915；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}

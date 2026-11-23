@@ -1,0 +1,344 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-23-915-reconcile-resolved-review",
+  "id": "915-reconcile-resolved-review",
+  "name": "915-reconcile-resolved-review",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 915,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Reconcile 解冲突后到独立审核的接续",
+  "description": "对齐 Reconcile 入口和受管安装投影，验证真实 Git 冲突后接续一次独立审核。",
+  "dev_type": null,
+  "scope": "仅 #915：保留同一 Task、Delivery、Planning 和固定内容基线，通过原整合回执及投影进入一次独立审核，并在临时仓库验证同一整合 HEAD 的 Check 和 Branch Review。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-23",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+    "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+  },
+  "deliveries": [
+    {
+      "id": "1aae0e51-76c6-46aa-af62-3ce9dab375a1",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+          "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+        },
+        "anchors": [
+          "AC915-1"
+        ]
+      },
+      "planning_root": "deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/design.md",
+        "revision": "sha256:61b6a89c07a5642781b1700bbba0f5e4a8e52203a04b7326fc5216424eb6d078"
+      },
+      "candidate": {
+        "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+        "content_ref": "sha256:0bbb935cfd072208b654ad292b57eea07fda1ac160bda5e9f5be1122d67d5d65",
+        "head_ref": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+        "kind": "git",
+        "paths": [
+          ".agents/skills/guru-reconcile-task-base/SKILL.md",
+          ".claude/skills/guru-reconcile-task-base/SKILL.md",
+          ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md"
+        ]
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:6c0dfd47-3d30-4d91-a228-eb152812ca0e",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+              "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+            },
+            "anchors": [
+              "AC915-1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/design.md",
+            "revision": "sha256:61b6a89c07a5642781b1700bbba0f5e4a8e52203a04b7326fc5216424eb6d078"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/prd.md",
+              "revision": "sha256:5a2524b532abf2c2dbde746a7a8dbc9b1bc47c7f0a85e44e7b212ddfb38c1118"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/design.md",
+              "revision": "sha256:61b6a89c07a5642781b1700bbba0f5e4a8e52203a04b7326fc5216424eb6d078"
+            },
+            {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/implement.md",
+              "revision": "sha256:24eb8004aef0c97000ad459e2391e1a8e8fd2028a0b179d7656dd1d1aa214d9f"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:10fa8169d0e9d220ce4759c6bc4dd75a3933c224d49cb55ed8d535937978b61b",
+          "owner_role": "check",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+              "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+            },
+            "anchors": [
+              "AC915-1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/design.md",
+            "revision": "sha256:61b6a89c07a5642781b1700bbba0f5e4a8e52203a04b7326fc5216424eb6d078"
+          },
+          "candidate": {
+            "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+            "content_ref": "sha256:0bbb935cfd072208b654ad292b57eea07fda1ac160bda5e9f5be1122d67d5d65",
+            "head_ref": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:6c0dfd47-3d30-4d91-a228-eb152812ca0e",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/implement.md",
+              "revision": "sha256:24eb8004aef0c97000ad459e2391e1a8e8fd2028a0b179d7656dd1d1aa214d9f"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:10fa8169d0e9d220ce4759c6bc4dd75a3933c224d49cb55ed8d535937978b61b",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+              "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+            },
+            "anchors": [
+              "AC915-1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/design.md",
+            "revision": "sha256:61b6a89c07a5642781b1700bbba0f5e4a8e52203a04b7326fc5216424eb6d078"
+          },
+          "candidate": {
+            "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+            "content_ref": "sha256:0bbb935cfd072208b654ad292b57eea07fda1ac160bda5e9f5be1122d67d5d65",
+            "head_ref": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md"
+            ]
+          },
+          "predecessor_result_id": "check:10fa8169d0e9d220ce4759c6bc4dd75a3933c224d49cb55ed8d535937978b61b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/implement.md",
+              "revision": "sha256:24eb8004aef0c97000ad459e2391e1a8e8fd2028a0b179d7656dd1d1aa214d9f"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:eca9d79f64d9cbb2afb501fd949c9342e0e2702e82fb830ad600214249f276d5",
+          "owner_role": "readiness",
+          "owner_id": "guru-publish-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+              "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+            },
+            "anchors": [
+              "AC915-1"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/design.md",
+            "revision": "sha256:61b6a89c07a5642781b1700bbba0f5e4a8e52203a04b7326fc5216424eb6d078"
+          },
+          "candidate": {
+            "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+            "content_ref": "sha256:0bbb935cfd072208b654ad292b57eea07fda1ac160bda5e9f5be1122d67d5d65",
+            "head_ref": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+            "kind": "git",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/SKILL.md",
+              ".claude/skills/guru-reconcile-task-base/SKILL.md",
+              ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md"
+            ]
+          },
+          "predecessor_result_id": "full-review:10fa8169d0e9d220ce4759c6bc4dd75a3933c224d49cb55ed8d535937978b61b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/deliveries/1aae0e51-76c6-46aa-af62-3ce9dab375a1/implement.md",
+              "revision": "sha256:24eb8004aef0c97000ad459e2391e1a8e8fd2028a0b179d7656dd1d1aa214d9f"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:68bb84440cec9b9b48f81836a20e4f8f9e46bdff34bce73c259922e0fe573df6",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/918",
+            "revision": "sha256:342a5134aaca14fdfec4f676742d930659af46e042b5e5f2e681f99bcb62ec10"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+          "content_ref": "sha256:0bbb935cfd072208b654ad292b57eea07fda1ac160bda5e9f5be1122d67d5d65",
+          "head_ref": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-reconcile-task-base/SKILL.md",
+            ".claude/skills/guru-reconcile-task-base/SKILL.md",
+            ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 918,
+        "reviewed_head": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/918",
+          "revision": "sha256:342a5134aaca14fdfec4f676742d930659af46e042b5e5f2e681f99bcb62ec10"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:1afb4cfe4306ace8caa4a0838c27e769e81bbeef",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/918",
+            "revision": "1afb4cfe4306ace8caa4a0838c27e769e81bbeef"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "8604558695dfd9d8ea2181406a87ece70d9eea63",
+          "content_ref": "sha256:0bbb935cfd072208b654ad292b57eea07fda1ac160bda5e9f5be1122d67d5d65",
+          "head_ref": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-reconcile-task-base/SKILL.md",
+            ".claude/skills/guru-reconcile-task-base/SKILL.md",
+            ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 918,
+        "reviewed_head": "2739d59171bb58a0233141f350b32fbe0dbcedc7",
+        "merge_commit": "1afb4cfe4306ace8caa4a0838c27e769e81bbeef",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:1afb4cfe4306ace8caa4a0838c27e769e81bbeef",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/918",
+          "revision": "1afb4cfe4306ace8caa4a0838c27e769e81bbeef"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/45185968170",
+          "revision": "2739d59171bb58a0233141f350b32fbe0dbcedc7"
+        },
+        {
+          "locator": "validation:AC915-1/throwaway",
+          "revision": "full-review:a1faefe0f7c8643440c48f59ff889d19356f7f74df0829783aac947ca21e016c"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/prd.md",
+        "revision": "sha256:07fb8a04a0ce864e24ffa190161f5ffe00fa6f70d4c95dcaeb6df99e45c7b505"
+      },
+      "delivery_result_ids": [
+        "delivery:1afb4cfe4306ace8caa4a0838c27e769e81bbeef"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:8518e35307954c84d3c66fa1",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/915",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-23-915-reconcile-resolved-review/closeout/closure/Y2xvc3VyZTo4NTE4ZTM1MzA3OTU0Yzg0ZDNjNjZmYTE.json",
+          "revision": "sha256:17c2d928213e73cea8d1ef051876361197f26b432d41d53eff8ce4c360030b96"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:1afb4cfe4306ace8caa4a0838c27e769e81bbeef",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/915",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
