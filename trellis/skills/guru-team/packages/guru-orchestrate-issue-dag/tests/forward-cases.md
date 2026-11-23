@@ -28,9 +28,9 @@ Do not launch live chats, automations, or GitHub writes just to validate a skill
 | Replayed pending/idle event | No duplicate chat or duplicate disposition. |
 | Temporary capacity error in one child | Same child/model retries after a later bounded wait and observation; siblings remain observed. |
 | One child blocks | Descendants wait; independent work follows the chosen failure policy. |
-| Two PRs ready; first merges | Second passes current-base reconciliation before its separate merge disposition. |
+| Two same-repository PRs ready; first merges; no actual integration trigger applies to the second | Relay the checked merge facts and any user synchronization condition. The second PR's original owner retains the fixed candidate and still-applicable evidence, then continues its separate Merge gate. |
 | Squash merge completes | Verify actual resulting commit and candidate mapping, not ancestry of the old feature HEAD. |
-| Resume after legitimate base movement | Recover existing children and reconcile; do not require initial OIDs or clean active worktrees. |
+| Resume after legitimate base movement with no actual integration trigger | Recover the existing children and continue each affected child's original stage with its fixed candidate and still-applicable evidence. Do not require the initial OIDs or clean active worktrees. |
 | Graph has cycle or missing hard edge | Read-only blocked result, no launch. |
 | More children than one wait batch | Every child receives an observation or an explicit observation error in the cycle. |
 | Human requested only a graph/dry-run | No child, automation, ref, or file mutation. |
