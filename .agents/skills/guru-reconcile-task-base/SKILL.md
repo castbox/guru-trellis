@@ -118,14 +118,26 @@ inventory preimage and returns to the original tools owner. Do not stage that
 preimage as the final manifest; final installation and resolved-candidate checks
 remain required.
 
-For the post-implementation `delivery_resolved_candidate` profile supplied by
-the Check owner, run the resolved executor. The original implementation owner
-retains B and binds actual committed HEAD; the Check owner judges applicable
-prior evidence plus the resolution delta and records the actual new Check.
-Then run `project-resolved-full-review`. That deterministic package command emits the
-complete existing `guru-review-branch:branch_review` input directly; it is not
-an additional Reconcile typed exit and never enters Task Commit or bounded
-base continuity.
+For the post-implementation `delivery_resolved_candidate` profile, follow
+[the resolved-candidate contract](references/contract.md#post-implementation-conflict-resolved-candidate).
+
+1. The original Reconcile owner runs `execute-resolved-base-reconciliation`
+   to create the integration commit. Retain the actual executor receipt.
+2. The original implementation owner retains the same Task, Delivery,
+   applicable Planning and fixed content base B. Re-enter implementation
+   through the original stage owner when required, then use `begin_check`
+   to bind the complete candidate at the actual integration HEAD.
+3. Once `begin_check` binds the candidate, the caller runs
+   `project-resolved-full-review` with the original resolved input, the
+   executor receipt's `result`, and current Review authoring. Use the
+   projection receipt's `result` as the input to
+   `guru-review-branch:delivery_branch_review`.
+4. That single independent review covers the conflict resolution, combined
+   behavior and affected consumers. The original reviewer may continue
+   while still independent. Adopt verifiable prior coverage and validation
+   that still apply, and supplement changed, missing or uncertain coverage.
+   On pass, Branch Review records Check and full Review for the same
+   integration HEAD.
 
 
 At this candidate boundary, apply the original
