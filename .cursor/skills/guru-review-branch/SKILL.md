@@ -212,7 +212,7 @@ commands. The dedicated closed `archived-1.0` gate admits only
 checkpoint. Both exits retire the owner checkpoint after validated projection.
 The success output carries only task_ref, A, the exact title/body snapshot,
 delivery_key and reviewed_base_head B. In the current graph this archived-review result
-stops for pinned-old or manual disposition; it does not feed Delivery Review.
+stops for pinned-old or manual disposition; it does not feed current Publication preparation/readiness.
 Changed A/content-B/PR payload, non-Ready
 state, dirty archive or mismatched archive Task/summary identity fail closed without repair.
 

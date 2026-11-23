@@ -725,7 +725,7 @@ DTO. Lost readiness output does not mechanically rerun unaffected owners. New
 committed content requires exact current coverage under Candidate Applicability
 And Coverage. Already covered engineering work is adopted after applicability
 judgment. Pinned-old operations follow MIGRATION-794 without converting old pass.
-Delivery Publish/Merge recovery belongs to the original owner and
+Publication/Merge recovery belongs to the original owner and
 current PR/HEAD transaction. A current checked Delivery result enters
 Completion; evidence-only changes use Completion's evidence-refresh entry,
 not a fabricated Delivery. Closure, Finish and Cleanup retain their own
@@ -858,7 +858,7 @@ their stage-result and gap judgments. Closure and Finish retain their terminal
 responsibilities. This section only locates those methods.
 
 Publication owns each slice's Refs-only PR payload, even for an Issue-backed
-Delivery to the default branch. Publish and Merge do not close the source
+Delivery to the default branch. Publication and Merge do not close the source
 Issue. Completion owns the whole accepted-scope judgment; only its `completed`
 result enters Closure, which reviews the exact source Issue disposition and
 performs a separate confirmed close when applicable. No-Issue, reference-only,
@@ -957,9 +957,9 @@ rejudges affected conclusions. #569 alone owns history-query preparation.
 Each current package's Interface-declared public invocation is the normal
 entry; component record/check/execute commands remain diagnostics or bounded
 recovery, not an alternate workflow. Task Commit keeps its reviewed
-`prepare-task-commit` and `invoke-guru-create-task-commit` entry. Delivery
-Review, Publish and Merge, then Completion, Closure, Finish and Cleanup use
-their own current public contracts and mapped exits. A command may reuse
+`prepare-task-commit` and `invoke-guru-create-task-commit` entry. Publication
+preparation/readiness/execute and Merge, then Completion, Closure, Finish and
+Cleanup use their own current public contracts and mapped exits. A command may reuse
 facts only for one current authority identity and mutation boundary. Recovery
 may consume a mapped same-plan result only after the original owner proves
 the side-effect set unchanged; material scope, payload, HEAD, authority or

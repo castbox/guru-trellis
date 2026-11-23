@@ -754,8 +754,9 @@ undelivered commit presented as a delivered predecessor cannot narrow them.
 
 Clarify owns this allocation judgment. The current stage owner executes its
 legal rework/stop, Author writes the actual slice boundary and unique Policy,
-and Creation owns successor creation. Approval and Delivery Review retain
-their independent-delivery judgments; the workflow only routes existing exits.
+and Creation owns successor creation. Approval and the later Publication
+readiness/execute retain their current responsibility boundaries; the workflow
+only routes existing exits.
 Carry the result through the existing source_selection/revision_refs,
 scope_action, scope_ref and planning bodies without adding an allocation field,
 ledger or review step. Whole-Task acceptance still follows the Author and

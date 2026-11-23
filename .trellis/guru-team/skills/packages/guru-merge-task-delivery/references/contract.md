@@ -291,7 +291,7 @@ and its own current terminal-fact review.
 It does not own readiness, publication, task completion, Issue closure,
 archive, Finish, Reactivate, or cleanup.
 
-The current production graph invokes this owner after Delivery Publish and
+The current production graph invokes this owner after Publication execution and
 routes `delivered` to Completion. Its other exits have the unique workflow or
 stop consumers declared by the active interface.
 
