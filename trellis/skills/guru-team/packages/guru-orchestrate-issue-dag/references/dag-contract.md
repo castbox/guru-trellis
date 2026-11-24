@@ -62,22 +62,26 @@ without adding that Issue to the run or requiring its full completion. These
 inputs identify ordinary prerequisites, not a readiness assertion or new state
 artifact. Omitting the field preserves existing explicit completion edges.
 
-At preflight, before affected dispatch and on every observation cycle or recovery,
-read the current contract and relevant accepted clarifications. The coordinator
+At preflight and before first affected dispatch, use the applicable current
+contract and accepted clarifications. Reuse a verified revision for both
+consumers while it remains current. When a change or recovery calls its
+applicability into question, refresh only the affected evidence. The coordinator
 AI judges whether it describes the consuming work's request/response shape,
 field meaning, errors, authentication and state behavior where applicable well
 enough to implement against Mock data. A document's existence, a child saying
 "contract ready", or the provider Issue's status alone is insufficient. Do not
 require unrelated API details or deployment evidence for that judgment.
 
-When the contract is usable, promptly instruct the Mobile/Web owner to build
-Mock interface data from it and advance the supported work in parallel with
-backend implementation, subject to slots and actual exclusions. Include the
-contract locator, consuming work and current gaps in that child's operational
-prerequisites or continuation. Do not wait for the backend Issue to close,
-merge, deploy or go live merely to begin this work. Reading an available
-provider-owned contract does not authorize consuming its unmerged implementation
-or changing the frontend's selected base.
+When the accepted contract is usable, promptly dispatch or continue each affected
+App/Web owner, subject to slots, hard edges and actual exclusions. Give the owner
+the exact contract revision or locator, supported work and any local hold.
+Ask the owner to exercise the normal product entry through its actual client
+wiring and replace only the relevant network responses with contract-based Mock
+data. A standalone component, preview route or bypass of the real client does
+not prove that path. Do not wait for the backend Issue to close, merge, deploy
+or go live merely to begin this work. Reading an available provider-owned
+contract does not authorize consuming its unmerged implementation or changing
+the frontend's selected base.
 
 A partial contract gap holds only the work that needs the missing detail.
 Admit or continue the same frontend owner for independently supported work,
@@ -87,6 +91,8 @@ normal slot rules. Request the concrete missing contract detail from its
 existing provider owner within current delegation; do not create another owner
 or widen the run. Pending contract production by a selected eligible provider
 is a schedulable wait, not by itself an invalid graph or a whole-run block.
+Identify the producer's expected result and when to recheck it. Ask the original
+owner to report the changed contract and its locator when it becomes available.
 A dry-run states the first ready set, pending contract work and recheck
 condition. If no supported producer or ready work can advance, use the existing
 preflight or runtime blocked route with the exact missing condition.
@@ -97,8 +103,66 @@ work moving under the failure policy. Provider implementation failure, reopening
 or an incomplete deployment does not invalidate an independently usable
 contract. Conversely, provider completion does not prove contract sufficiency.
 Contract readiness and Mock progress never release a completion edge or prove
-Issue completion. This start condition adds no acceptance, integration-test or
-control-Issue responsibility; those remain with current authority.
+real integration, joint acceptance or Issue completion. Current accepted scope
+still owns acceptance, integration-test and control-Issue responsibilities.
+
+## Target Business Readiness And Acceptance Preparation
+
+For a required real integration segment, use the accepted target environment
+and the original owner's evidence that the relevant business operation works
+there with the required identity, route, sample and business result. A merge,
+deployment, health check, anonymous authentication response or technical smoke
+does not establish this. Do not infer readiness for another operation from one
+successful call. When the evidence is current and applicable, promptly dispatch
+or continue the affected segment on its existing owner and within existing
+slot and authority limits. Do not wait for provider Issue closure unless a
+hard edge requires it. Readiness starts integration; only actual accepted
+end-to-end evidence can establish joint acceptance.
+
+If the target or tested operation materially changes, reassess only the
+affected real integration. Keep unaffected results and Mock work. Have the
+original owner report the next bounded recheck condition when readiness is missing.
+
+At startup, identify from accepted scope the actual target environment and
+access path, release owner, normal entry and build, and any required account,
+sample or effective-time input. Give each unresolved item to its existing
+responsible owner for preparation in parallel with independent work. Keep only
+the affected work, missing condition, owner and next observable result in the
+conversation. Do not copy credentials. This preparation is not a launch gate
+or an extra acceptance obligation. Hold only the segment that needs a missing
+input; a target business-path failure does not hold contract Mock or unrelated
+work. Deployment, environment writes and other effects keep their existing
+authorization. In a dry-run, report preparation needs without dispatching them.
+
+## DAG Observation
+
+Use the shared native observation bounds and timer migration. Use compact
+native batches with each child's host and cursor. Make an immediate snapshot
+for a new formal binding. Reuse the current batch's coverage before a disposition;
+snapshot only uncovered targets needed to complete that coverage. Rotate batches
+fairly when the platform limit is smaller than the active set.
+
+Treat a timeout as no event, not as a changed child or a new dispatch condition.
+On an unchanged batch, continue bounded observation without reopening chat
+history, Issue bodies, contracts or resolved dispositions. Check an owned
+external condition when its recheck is due or a relevant change is reported,
+even if child text did not change. Respect the shared direct-confirmation
+profile and its independent-operation readback. A fixed timer, serial short
+polls and repeat snapshots do not supplement a covered native wait.
+
+Ask each DAG child to report its changed result, evidence locator, affected
+work and next condition with the shared minimal stop report. For a new fact
+that affects a decision, consume that owner's decision-relevant delta. Use a
+sufficient native result; otherwise read the smallest relevant turn or original
+fact. Leave raw logs and full evidence at their owner. Read further only to
+resolve a concrete gap, conflict, missed event, recovery or required gate.
+Unchanged idle output does not justify sending the same instruction again.
+Before a side effect or terminal result, preserve all shared fresh checks and
+exact-operation recovery. A changed child result is a reason to verify a gate,
+not a pass. Before instructing a merge, verify the required original-owner
+results for the exact current candidate under the shared fresh merge gate.
+After interruption, recover current binding and facts;
+reuse complete current contracts, and reload missing or uncertain text.
 
 ## Membership And Repository Bindings
 
@@ -147,6 +211,16 @@ provisioning. Global capability/authority gaps still hold all affected work. Exc
 contain only included Issue identities and do not create dependency edges. File overlap alone does not prove
 that independent worktrees cannot run in parallel.
 
+Before a DAG dispatch that writes, verify the target's existing Issue/Task,
+Delivery, branch and checkout boundary as applicable. Give the child only its
+own authorized write scope, including any Task metadata or research it owns.
+If another independent candidate owns changes in the registered checkout, use
+the target workflow's existing checkout/owner route to isolate the writes or
+hold the conflicting segment. Do not write either set into a shared candidate,
+move another owner's changes, or create a second owner for the same Issue.
+Continue independent work that has a suitable boundary. A separated checkout
+does not waive formal Review or change the selected base.
+
 Full Issue completion is the goal. If the human explicitly limits the current
 segment to an earlier stage, test every edge against full predecessor completion.
 If A must stop at PR publication while B needs A's completed result, report that
@@ -173,8 +247,8 @@ Calculate eligibility from live proof:
 eligible(v) = v has no existing admitted owner
               AND every depends_on predecessor is verified completed
               AND external prerequisites pass
-              AND some permitted work has all of its contract inputs usable
-              AND the node’s repository environment is verified ready
+              AND some permitted work has its applicable work-scoped inputs ready
+              AND the node’s repository execution environment is verified ready
               AND v is not blocked or a completion descendant of a blocked node
               AND failure policy allows admission
               AND no occupied node shares an exclusive group with v
@@ -183,9 +257,10 @@ occupied = creating + running
 free = max_parallel - count(occupied)
 ```
 
-For work without contract inputs, the contract condition is satisfied. A partial
-contract hold remains work-scoped rather than marking an otherwise actionable
-node blocked. Contract providers do not count as completion predecessors unless
+Work-scoped inputs are the applicable contract, target business readiness and
+acceptance preparation inputs described above. Work without such a prerequisite
+does not wait for it. A partial hold does not mark an otherwise actionable node
+blocked. Contract providers do not count as completion predecessors unless
 there is also a completion edge. Readiness does not reserve or free a slot:
 with `max_parallel: 1`, a running backend still occupies the one slot. Do not
 claim simultaneous execution, exceed the limit or manufacture backend completion
@@ -232,9 +307,9 @@ establish a node block or a terminal DAG result. For action authorization,
 use `DAG Action Authorization And Handoff` in the same-provider shared method.
 
 For a genuine block, identify the node, failed requirement, and transitive
-completion descendants. Those descendants cannot start. Apply contract failures
-only to their consuming work under Contract Readiness And Mock Development;
-a blocked provider does not poison a consumer whose contract remains usable.
+completion descendants. Those descendants cannot start. Apply work-scoped
+prerequisite gaps only to their consuming work. A blocked provider does not
+invalidate a current usable contract or an unaffected target operation.
 Already completed siblings stay complete
 unless current evidence invalidates their own completion.
 

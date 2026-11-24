@@ -428,13 +428,16 @@ chat, message, wait and live-read capabilities remain required; an unavailable
 required capability retains its concrete preflight or recovery gap.
 
 Immediately snapshot each newly formal child with `wait_threads` and
-`timeoutMs: 0`. Before a multi-child disposition, snapshot all admitted
-unfinished children without blocking one behind another. Preserve each child's
+`timeoutMs: 0`. Before a multi-child disposition, obtain current coverage of
+all admitted unfinished children without blocking one behind another. DAG may
+reuse native batch coverage; Sequence takes a snapshot. Preserve each child's
 formal identity, `hostId` and returned cursor in this conversation. For later
 observation, use a bounded native event wait with the current cursors, at most
 60 seconds per call, within the tool's actual supported limits. When an event
-arrives or the wait times out, perform the complete observation cycle below.
-A timeout means recheck current facts; it does not prove failure or completion.
+arrives or the wait times out, apply the observation steps below. DAG applies
+its local `DAG Observation` profile to coverage, result reads and condition
+checks. Sequence performs the complete cycle and rechecks current facts on
+timeout. A timeout does not prove failure or completion.
 Do not substitute a two-second polling loop, shell scheduler, watchdog or new
 persistent coordination store.
 
@@ -483,8 +486,9 @@ requires exact-operation recovery.
 
 ### Observation After An Interruption
 
-On every resumed execution, first observe all admitted unfinished children and
-read changed or idle results. Act on each actionable idle child in this cycle
+On every resumed execution, first observe all admitted unfinished children.
+For DAG, read decision-relevant results or recover any missing result. For
+Sequence, read changed or idle results. Act on each actionable idle child in this cycle
 under its current gates. Do not wait for another timer or human reminder.
 
 Compare the current time with the last actual observation available in this

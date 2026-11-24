@@ -33,8 +33,9 @@ operation remains failed: recover_operation reads it and does not retry it.
 The input catalog is the repository's actual data; old paths can be obsolete.
 verify executes the scoped fixture check and returns its actual result.
 record_gate stores the child's own semantic decision and explanation with
-evidence refs, for check, review, readiness or completion. A passing recorder
-response is only storage, never a semantic verdict. Merge requires check,
+evidence refs, for check, review, readiness or completion. Use status "passed"
+only when the original owner has actually passed that gate. A recorder response
+confirms storage only, never a semantic verdict. Merge requires check,
 review and readiness results plus successful verification. Merge is a separate
 coordinator-selected segment: stop before it until the coordinator instructs
 this exact action. Finish requires merge and the child's completion decision.
@@ -333,7 +334,8 @@ source_branch and target_branch), read_child (child_id), send_message (child_id,
 only), observe_external (issue), wait_events
 (seconds, at most 2).
 For child only: inspect, inspect_inputs, inspect_provider, recover_operation
-(operation_id), execute (input_path), verify, record_gate (stage, status,
+(operation_id), execute (input_path), verify, record_gate (stage, status: exact
+literal "passed" for an actual semantic pass,
 explanation, evidence array), verify_supplement (fixture-output-checksum), merge,
 finish, hold. Child messages run a genuine
 Agent; sending a message never selects an action or advances a workflow itself.
