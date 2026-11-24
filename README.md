@@ -29,11 +29,11 @@ GitHub Issue、PR 等操作还需要已安装并登录的 GitHub CLI（`gh`）�
 Guru 的 GitHub 操作使用显式绑定仓库的 `gh` / `gh api`；Git 传输使用 `git`。
 
 先从 [Releases](https://github.com/castbox/guru-trellis/releases) 选择正式 tag。
-仅当该页面存在 `v0.7.0-guru.11` 的非 draft、非 prerelease Release 时，才执行以下
-`.11` 示例；否则先将 `GURU_REF` 改为实际已正式发布的 tag。目录按本机情况设置：
+仅当该页面存在 `v0.7.0-guru.12` 的非 draft、非 prerelease Release 时，才执行以下
+`.12` 示例；否则先将 `GURU_REF` 改为实际已正式发布的 tag。目录按本机情况设置：
 
 ```bash
-GURU_REF=v0.7.0-guru.11
+GURU_REF=v0.7.0-guru.12
 GURU_SOURCE=/absolute/path/to/guru-trellis
 FORK_SOURCE=/absolute/path/to/Trellis
 TARGET_REPO=/absolute/path/to/business-repo
@@ -79,10 +79,10 @@ AI 应先说明拟写入 `.trellis/spec/` 的内容，再确认现在执行或�
 <a id="guru-team-extension-version"></a>
 <a id="发布身份边界"></a>
 
-当前 canonical extension 与维护目标为 `0.7.0-guru.11`。
-正式业务安装选择实际已正式发布的 tag。`.11` 安装示例以对应的非 draft、非
+当前 canonical extension 与维护目标为 `0.7.0-guru.12`。
+正式业务安装选择实际已正式发布的 tag。`.12` 安装示例以对应的非 draft、非
 prerelease Release 存在为执行条件。
-`v0.7.0-guru.10` 是本轮发布准备的正式前驱；更早的 `v0.7.0-guru.9` 历史来源见
+`v0.7.0-guru.11` 是本轮发布准备的正式前驱。更早的正式版本见
 [preset 指南](trellis/presets/guru-team/README.md#apply-and-verify)。
 
 - **稳定安装**：workflow marketplace 与 preset checkout 使用同一个正式 Guru tag。
