@@ -201,7 +201,7 @@ resource constraint.
 
 Apply the same-provider `issue-orchestration.md` shared preflight and AI Gate.
 Check the requested `max_parallel` before creating or dispatching any child.
-If the user explicitly sets it to 1, return `dry_run_blocked`. Recommend
+An explicit setting of 1 fails the check. Recommend
 `guru-orchestrate-issue-sequence` when the user wants a strict Issue order in
 one repository and each Issue can finish before the next begins. For a
 cross-repository graph or work that must overlap, ask the user to select a DAG
@@ -218,11 +218,25 @@ can reach the same wait and still hold a slot. Include the slots needed by
 the backend children that must run to release that wait. A consumer that
 cannot start before its provider finishes, or that can release its slot
 before the wait, does not count toward this overlap.
-If the limit cannot cover that group, return `dry_run_blocked` before new
-dispatch. Tell the user which Issues need to overlap, the selected limit and
-the minimum for that group. Ask the user to choose a sufficient limit.
+If the limit cannot cover that group, tell the user which Issues need
+to overlap, the requested limit and the minimum for that group. Ask the user
+to choose a sufficient limit.
 For example, three consumers that can all hold slots while waiting for one
 selected backend child need at least four slots.
+
+If the slot check fails before any child or creation operation exists for
+the run, return `dry_run_blocked` before dispatch. On same-run recovery with
+existing children or a pending creation, reject the proposed limit and retain
+the last valid limit for slot accounting. Recover the original bindings and
+operations, then observe every admitted unfinished child. Hold new admissions
+affected by the unresolved limit. Continue permitted work and readback for
+existing children within the current human instructions. If the human requests
+a wider hold, apply it to the specified work and continue the observation and
+safe settlement it requires. Send the user the slot gap through the shared
+quiet-notification rules. Keep the observation loop active while work or
+settlement remains observable. For a necessary handback before safe settlement,
+use the existing `progressing` path and include the limit choice needed to
+resume affected admissions.
 
 Also verify graph membership and acyclicity, each contract's provider,
 consuming work and current readiness, a feasible slot limit, independent

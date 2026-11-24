@@ -1188,11 +1188,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-24T11:29:59Z",
+  "installed_at": "2026-11-24T13:16:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ccea16726cba88add9322474f946357a21ea15f0",
-    "commit": "ccea16726cba88add9322474f946357a21ea15f0",
+    "ref": "4c58bad36c0974b3d1198ea04b424d19fab8f69e",
+    "commit": "4c58bad36c0974b3d1198ea04b424d19fab8f69e",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1470,7 +1470,7 @@
       {
         "id": "guru-orchestrate-issue-dag",
         "interface_sha256": "c5fb1985fb2ecd6789f24816e906f6cccded1858ea9120c9a33d1ff1356e14cc",
-        "tree_sha256": "3e25ef1f7c2b9659dacc4ae63037b8ac3337f532ea17220bf397ead99adb1820"
+        "tree_sha256": "1bf00cea076286d53c16c66055307188f688e19921de99b8343bfd2476b60c60"
       },
       {
         "id": "guru-orchestrate-issue-sequence",
@@ -14001,7 +14001,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
         "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
-        "sha256": "c19166518cfdb530d80d9ba64c01dd6d6e38403cccc726b598103e74df612904",
+        "sha256": "9ed7eb41906f1be46c8f2e1b4a0c24c2dd7e186ed1840ee7c45d76219e2b7fa0",
         "executable": false,
         "action": "unchanged"
       },
@@ -50156,7 +50156,7 @@
       {
         "path": ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
         "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
-        "sha256": "c19166518cfdb530d80d9ba64c01dd6d6e38403cccc726b598103e74df612904",
+        "sha256": "9ed7eb41906f1be46c8f2e1b4a0c24c2dd7e186ed1840ee7c45d76219e2b7fa0",
         "executable": false,
         "action": "unchanged"
       },
