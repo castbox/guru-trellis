@@ -200,9 +200,33 @@ resource constraint.
 ## Preflight And Endpoint Compatibility
 
 Apply the same-provider `issue-orchestration.md` shared preflight and AI Gate.
-Additionally verify completion-graph membership/acyclicity, each contract's
-provider, consuming work and current readiness, feasible positive-integer
-concurrency, independent child branches/worktrees and Task/session evidence,
+Check the requested `max_parallel` before creating or dispatching any child.
+If the user explicitly sets it to 1, return `dry_run_blocked`. Recommend
+`guru-orchestrate-issue-sequence` when the user wants a strict Issue order in
+one repository and each Issue can finish before the next begins. For a
+cross-repository graph or work that must overlap, ask the user to select a DAG
+limit of at least 2. Keep the graph and requested limit as supplied until the
+user makes that choice. Do not launch Sequence automatically.
+On resume, preserve a one-slot limit already recorded for the same run under
+the former contract. Apply the new minimum to new runs and explicit changes
+to the limit.
+
+If the user selects a limit below the default, check whether it leaves room
+for the backend work needed by the selected graph. Use the accepted work
+dependencies and the applicable slot rules. Count the consumer children that
+can reach the same wait and still hold a slot. Include the slots needed by
+the backend children that must run to release that wait. A consumer that
+cannot start before its provider finishes, or that can release its slot
+before the wait, does not count toward this overlap.
+If the limit cannot cover that group, return `dry_run_blocked` before new
+dispatch. Tell the user which Issues need to overlap, the selected limit and
+the minimum for that group. Ask the user to choose a sufficient limit.
+For example, three consumers that can all hold slots while waiting for one
+selected backend child need at least four slots.
+
+Also verify graph membership and acyclicity, each contract's provider,
+consuming work and current readiness, a feasible slot limit, independent
+child branches and worktrees, Task and session evidence,
 and explicit shared-resource exclusions where required. Apply shared environment
 readiness per repository. An initial environment gap holds its nodes and
 descendants; it does not make an otherwise valid graph invalid or suppress
@@ -261,11 +285,10 @@ Work-scoped inputs are the applicable contract, target business readiness and
 acceptance preparation inputs described above. Work without such a prerequisite
 does not wait for it. A partial hold does not mark an otherwise actionable node
 blocked. Contract providers do not count as completion predecessors unless
-there is also a completion edge. Readiness does not reserve or free a slot:
-with `max_parallel: 1`, a running backend still occupies the one slot. Do not
-claim simultaneous execution, exceed the limit or manufacture backend completion
-to admit the frontend; use the next normally available slot. An already admitted
-frontend can resume its ready work within its existing occupied slot.
+there is also a completion edge. Readiness does not reserve or free a slot.
+When all allowed slots are occupied, use the next normally available slot.
+Do not exceed the limit or mark a backend complete to admit the frontend.
+An already admitted frontend can continue ready work in its occupied slot.
 
 Admit the earliest eligible nodes until no slot or eligible node remains. Count
 a creation attempt before making its tool call. If `free < 0` after recovery,
@@ -277,7 +300,7 @@ resource reservation remains if unresolved side effects still use that resource.
 An earlier-stage node releases its execution slot when its stage proof and
 inactive safe disposition are verified, with no unresolved operation. Keep its
 existing child and resources. This permits the next independent node to run,
-including PR-only runs with `max_parallel: 1`. Do not mark it `completed`,
+including in a PR-only run. Do not mark it `completed`,
 resume it past the endpoint, or use it to satisfy a dependency. A resource still
 in use retains its reservation. Whole-run stage completion follows Endpoint
 Verification And Settlement below and the shared settlement method; reaching
@@ -381,7 +404,7 @@ or legacy execution path. Multi-repository configuration does not apply one
 repository’s base or path to another. Keep this shorthand for existing callers;
 removing it requires an explicit breaking change and caller migration.
 
-Both forms accept optional positive-integer `max_parallel` (default 3), `mode`
+Both forms accept optional integer `max_parallel` of at least 2 (default 5), `mode`
 (dry-run/auto/live; default auto), supported `child_model`/`child_thinking`,
 `exclusive_groups`, `completion_overrides`, `failure_policy` (default
 continue_independent), and explicit same-run resume selection. Equivalent graph

@@ -70,8 +70,9 @@ reachability. A stale unrelated `main` needs no fast-forward or exemption.
 
 ## Other Graph Shapes
 
-- Serial: `101 -> 102 -> 103`; `max_parallel: 1` also limits any graph to one
-  admitted unfinished node at a time.
+- Hard completion edges: `101 -> 102 -> 103` preserves that order within a
+  DAG. For a strict serial run in one repository, use
+  `guru-orchestrate-issue-sequence`. DAG requires `max_parallel` of at least 2.
 - Independent: three nodes with `depends_on: []`; admit up to the slot limit.
 - Multiple roots and join: `101 -> 103`, `102 -> 103`; 103 waits for both roots.
 - Resource exclusion: `exclusive_groups: [[102, 103]]` prevents those Issues

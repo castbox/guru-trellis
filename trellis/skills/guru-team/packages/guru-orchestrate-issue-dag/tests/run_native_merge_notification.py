@@ -271,7 +271,7 @@ class Run:
                     prompt = f"""Explicitly invoke the Guru Issue DAG Skill from
 trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md.
 Resume one admitted node, {REPOSITORY}#{ISSUE}, with no dependencies, mode auto,
-max_parallel 1, failure_policy continue_independent. Use the existing child
+max_parallel 2, failure_policy continue_independent. Use the existing child
 {CHILD} on fixture-host, model {self.model}, effort {self.effort}. The user's
 current instruction is the condition in this received merge notice:
 {json.dumps(notice, ensure_ascii=False)}
