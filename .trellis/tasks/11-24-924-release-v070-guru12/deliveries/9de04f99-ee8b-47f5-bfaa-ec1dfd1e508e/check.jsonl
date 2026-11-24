@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "公开版本与安装说明"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "发版源码和定向安装合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前交付需求模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前交付设计模板"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前交付实施模板"}

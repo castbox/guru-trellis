@@ -1,0 +1,99 @@
+{
+  "schema_version": "2.0",
+  "id": "924-release-v070-guru12",
+  "name": "924-release-v070-guru12",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 924,
+    "disposition": "reference_only"
+  },
+  "title": "准备 Guru Trellis v0.7.0-guru.12 正式发布",
+  "description": "以远端 main 为基线完成 #924 的发布准备与合并。",
+  "dev_type": null,
+  "scope": "依次交付可分发的版本源码、公开说明和验证，以及实际 dogfood 受管安装采用和验证。完成准备任务归档，后续由发布合同冻结最终 main 候选。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-24",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-24-924-release-v070-guru12/prd.md",
+    "revision": "sha256:9b2ec6323689c9e8d3525a5cddfd3673b6b7e953838192dcc4aa68dc9b92d966"
+  },
+  "deliveries": [
+    {
+      "id": "9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-24-924-release-v070-guru12/prd.md",
+          "revision": "sha256:9b2ec6323689c9e8d3525a5cddfd3673b6b7e953838192dcc4aa68dc9b92d966"
+        },
+        "anchors": [
+          "AC01"
+        ]
+      },
+      "planning_root": "deliveries/9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-24-924-release-v070-guru12/deliveries/9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e/design.md",
+        "revision": "sha256:ea9ef2eae920ff1501afb4ab035b1afc5285077087fb85fa279665b58435377e"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:93033a9a-70c8-40b4-8e7d-9db247d0bb5a",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-24-924-release-v070-guru12/prd.md",
+              "revision": "sha256:9b2ec6323689c9e8d3525a5cddfd3673b6b7e953838192dcc4aa68dc9b92d966"
+            },
+            "anchors": [
+              "AC01"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-24-924-release-v070-guru12/deliveries/9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e/design.md",
+            "revision": "sha256:ea9ef2eae920ff1501afb4ab035b1afc5285077087fb85fa279665b58435377e"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-24-924-release-v070-guru12/deliveries/9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e/prd.md",
+              "revision": "sha256:b306f1e0f54297c28225e2438659de358a10fd6550fff96a744de157f81f85e7"
+            },
+            {
+              "locator": ".trellis/tasks/11-24-924-release-v070-guru12/deliveries/9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e/design.md",
+              "revision": "sha256:ea9ef2eae920ff1501afb4ab035b1afc5285077087fb85fa279665b58435377e"
+            },
+            {
+              "locator": ".trellis/tasks/11-24-924-release-v070-guru12/deliveries/9de04f99-ee8b-47f5-bfaa-ec1dfd1e508e/implement.md",
+              "revision": "sha256:f20265fc761904d745cb2e68baecf37b6795505942da6a58c9d1b6c2241e8659"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
