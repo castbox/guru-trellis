@@ -1,0 +1,6 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "交付需求"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "交付设计"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "交付验证"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "发布合同"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "正式采用合同"}
