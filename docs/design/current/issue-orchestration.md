@@ -58,11 +58,13 @@ canonical spec/workflow/issue-orchestration.md 独占整体终点、当前对话
 
 ## 当前聊天原生监督承接
 
-共享方法直接拥有 native wait/observation loop：新formal child先取timeout 0快照，后续保留host/cursor并调用当前工具支持的有界事件等待，每次最多60秒。事件或超时均回到覆盖全部unfinished child的完整观察轮次，再由AI判断原owner动作和调度。工具返回只提供事实；不增加脚本调度器、持久checkpoint或第二套判断。
+共享方法拥有原生观察边界。新子会话有正式 ID 后先取零超时快照。后续保留 host 和游标，每次有界事件等待最多 60 秒。Sequence 保留完整观察轮次；DAG 复用批量覆盖，对变化或到期条件读取必要证据。工具提供事实，AI 判断动作和调度。不新增脚本调度器或持久记录。
+
+DAG 包合同定义工作段的就绪条件。Mock 保留正常产品入口和实际客户端接线，只替换网络响应。真实联调读取原 owner 提供的目标环境业务结果，不以部署或健康探针代替。派发前核对现有 Task／Delivery、分支、工作树和写入归属；有冲突时由原 checkout owner 隔离或暂停受影响工作。
 
 原public skill id、输入与typed exit id及consumer保留。auto_started由child绑定与即时观察条件承接，不再输出heartbeat身份；终局以child/operation安全收口承接。此变化是现有provider的直接合同迁移：完整更新共享方法、两package及投影；已有旧timer仅恢复和停止，不重建或激活。中断后复用原chat/Task/Delivery并补观察，不声称未执行期间持续在线。
 
-本轮来源：2026-11-15 的 task-free 原生监督修订。当前宿主禁止用 automation 跟踪具体工作直至完成，因此在原 Markdown owner 内直接替换 timer 前置；未变更 #847/#848 的实现范围，也不声明这两项已交付。
+原生监督迁移来源：2026-11-15 的 task-free 修订。该修订在原 Markdown owner 内替换 timer 前置，未变更 #847/#848 的实现范围，也不声明这两项已交付。
 
 ## D883-01 / CON883-LOCAL-DISPOSITION：处置与观察的责任交接
 

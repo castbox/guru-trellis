@@ -20,7 +20,7 @@ root is `trellis/presets/guru-team/spec/workflow`; the installed root is
 `.trellis/spec/workflow`. Until loading succeeds, give only a short progress or
 missing-file diagnostic. After recovery, load it and continue without new approval.
 
-Before preflight, live execution, each observation cycle or recovery, have that same
+Before preflight, live execution or recovery, have that same
 provider's `issue-orchestration.md` and this package's
 [complete DAG contract](references/dag-contract.md) fully loaded. Package-local references
 come from `trellis/skills/guru-team/packages/guru-orchestrate-issue-dag` in source
@@ -60,24 +60,27 @@ when bindings change and whenever supervision resumes.
    breaks ties among eligible nodes, never creates implicit edges. Clarify only
    actual ambiguous dependencies or choices before affected admission.
 2. Perform the shared read-only preflight and AI Gate for the entire graph.
-   Resolve each repository’s selected base, environment readiness and the
-   full-completion goal. Investigate missing environments through the shared
+   Resolve each repository’s selected base, checkout readiness and the
+   full-completion goal. Identify preparation for accepted validation under
+   the local contract. Investigate missing checkout environments through the shared
    supported-capability method; hold affected nodes and descendants under the
    failure policy while independent ready work can proceed. Verify acyclicity, hard
    prerequisites, exclusions and any explicit execution-limit compatibility.
    A dry-run returns `dry_run_ready|dry_run_blocked` and stops. Auto/live consume
    ready preflight internally and launch only within current human instructions.
-3. Establish the shared native-wait observation loop in this current chat.
-   Recompute eligibility; reserve each slot before creating its child.
+3. Establish the native-wait loop in this chat under the local `DAG Observation`
+   profile. Before dispatch, verify the independent write boundary under the
+   local contract. Reserve each slot before creating its child.
    Preserve pending bindings and immediately observe each newly formal child.
    Fill available slots without creating blocked descendants or duplicate owners.
-4. Apply the shared progress and active-unblocking method each cycle, following
-   owner actions to their actual results and rechecking real wait conditions.
+4. Apply the shared progress and active-unblocking method to changed results
+   and due external checks. Follow owner actions to their actual results.
    Apply the shared `Confirmation While Independent Work Remains` section
    when a live owner proposal requires direct human confirmation.
-   Recheck contract readiness for waiting and admitted consumers. When a usable
-   contract permits work, dispatch or continue its frontend owner with Mock
-   development as soon as slots permit, without waiting for backend completion.
+   When an accepted contract is usable, advance the affected App/Web work
+   through normal-entry contract Mock. When the target business path is callable,
+   advance the affected real integration work. Neither action waits for backend
+   Issue completion unless a hard edge independently requires it.
    Observe every admitted unfinished node; use the local failure policy for
    affected nodes while keeping other permitted work moving. One busy child,
    merge or repair cannot starve other observations.
