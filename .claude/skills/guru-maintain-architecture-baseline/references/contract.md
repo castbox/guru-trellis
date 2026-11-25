@@ -305,6 +305,41 @@ or finish, or its result is missing/mismatched, stop through the existing
 blocked/re-entry route; never degrade to the caller authoring the assessment.
 Do not add a reviewer ledger, public reviewer fields or another state machine.
 
+Before the first large authority read, the actual executor checks its native
+prelude and object/execution facts under the minimum engineering rules. Use the
+original Review package's `scripts/inspect-review-execution.sh` with exact root,
+Task/Delivery and `--purpose planning --planning-purpose candidate_assessment|final_plan`,
+or `--purpose branch_review --base-ref <B> --head-ref <H>` for that original
+purpose. Request `--probe-writes` only for the actual original write duties.
+For `final_plan`, the complete explicit object retains the read-only exception:
+no session/Task/checkpoint write probe or missing binding/selection recovery,
+even with a context key and an unwritable session directory. An exact existing
+selection is reused; another selection, corrupt state or a real error retains
+its original owner. Other purposes retain their original context-dependent
+binding and selection duties. The query supplies intermediate facts only; the
+AI judges capability and returns a real gap to the existing owner. It cannot
+form impact, quality pass, route authority or execution selection. After a
+correction, resume the same object and retain still-applicable coverage.
+
+The original Review contract's [execution conditions](../../guru-review-branch/references/contract.md#review-execution-conditions)
+own the necessary metadata write locations, explicit temporary probes and
+launcher range guidance. Formal calls still report their own actual failure.
+Do not read PRD, acceptance or implementer conclusions to perform this check;
+semantic judgment retains the authority-first order below. The actual design
+object or `design_facts` is a lawful candidate input after authority, not a
+forbidden pass narrative. Historical passes for other Tasks in authority do
+not establish this candidate's pass and are not automatically pollution.
+
+An already assigned generic/CLI executor performs this assessment directly,
+without recursively dispatching the same responsibility. Diagnose absent
+feedback using the original invocation handle, stage events and actual result
+or blocker, then use its original blocked/re-entry route. No unchanged wait
+loop, model guess or repeated replacement supplies a missing result. A clean
+supported carrier may be used only after checking its real prelude and
+capability; do not patch hooks, pretend to forget a polluted context or create
+a general fallback framework. Reuse complete applicable authority actually
+visible to this reviewer and the original current-knowledge/history rules.
+
 The reviewer reads and judges in this order:
 
 1. current project constitution, Architecture Baseline and change contract;

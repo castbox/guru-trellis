@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "审核当前输出与源码说明的来源角色、语义保持及真实证据"}
+{"file": ".trellis/spec/workflow/review-sufficiency.md", "reason": "原质量责任内覆盖实际行为与消费者，不以字段/绿色DTO替代真实判断"}
+{"file": "docs/architecture/contributions/929-review-execution.md", "reason": "原Architecture final/committed评估所需真实贡献与完整拟写；不是shared-current/pass"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本Delivery正文完整性与来源条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求正文与验收责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计职责与例外"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批步骤验证和Policy"}

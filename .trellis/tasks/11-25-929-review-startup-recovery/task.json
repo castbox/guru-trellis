@@ -1,0 +1,109 @@
+{
+  "schema_version": "2.0",
+  "id": "929-review-startup-recovery",
+  "name": "929-review-startup-recovery",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 929,
+    "disposition": "exact_source"
+  },
+  "title": "修复独立审查启动的沙箱绑定失败并降低重复恢复成本",
+  "description": "依据Issue929调查并修复Guru独立审查启动、诊断与同候选恢复，候选机制在原规划和架构阶段核定。",
+  "dev_type": null,
+  "scope": "仅Guru独立审查启动及正式结果承接；保留原writer、独立性、authority完整性和工程事实复用；不改后端业务项目、不引入缓存切片/预算遥测/全平台发布矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-25",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-25-929-review-startup-recovery/prd.md",
+    "revision": "sha256:9a4867969171d8f810fd80b58a0dd69cd3bde9656b72539da5f04ea1ff6926ec"
+  },
+  "deliveries": [
+    {
+      "id": "166dac49-79f1-4190-82e3-fd51ca1915a0",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-25-929-review-startup-recovery/prd.md",
+          "revision": "sha256:9a4867969171d8f810fd80b58a0dd69cd3bde9656b72539da5f04ea1ff6926ec"
+        },
+        "anchors": [
+          "R929-01",
+          "R929-02",
+          "R929-03",
+          "R929-04",
+          "R929-05",
+          "R929-06"
+        ]
+      },
+      "planning_root": "deliveries/166dac49-79f1-4190-82e3-fd51ca1915a0",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-25-929-review-startup-recovery/deliveries/166dac49-79f1-4190-82e3-fd51ca1915a0/design.md",
+        "revision": "sha256:b42f939da76ca037fff6f382d4db436abbca8e703cb19bfc18e8c1ca98662964"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:4bbcbb83-7315-49d6-a4c4-b806653eb240",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-25-929-review-startup-recovery/prd.md",
+              "revision": "sha256:9a4867969171d8f810fd80b58a0dd69cd3bde9656b72539da5f04ea1ff6926ec"
+            },
+            "anchors": [
+              "R929-01",
+              "R929-02",
+              "R929-03",
+              "R929-04",
+              "R929-05",
+              "R929-06"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-25-929-review-startup-recovery/deliveries/166dac49-79f1-4190-82e3-fd51ca1915a0/design.md",
+            "revision": "sha256:b42f939da76ca037fff6f382d4db436abbca8e703cb19bfc18e8c1ca98662964"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-25-929-review-startup-recovery/deliveries/166dac49-79f1-4190-82e3-fd51ca1915a0/prd.md",
+              "revision": "sha256:0e782c36f0dfd3981254bd77aa9bc22ad7cffccfd2cf92d7414a78c098b02574"
+            },
+            {
+              "locator": ".trellis/tasks/11-25-929-review-startup-recovery/deliveries/166dac49-79f1-4190-82e3-fd51ca1915a0/design.md",
+              "revision": "sha256:b42f939da76ca037fff6f382d4db436abbca8e703cb19bfc18e8c1ca98662964"
+            },
+            {
+              "locator": ".trellis/tasks/11-25-929-review-startup-recovery/deliveries/166dac49-79f1-4190-82e3-fd51ca1915a0/implement.md",
+              "revision": "sha256:2c2b252b82990d8583166e2cf25048795517c0d79a12f60a08eca2196ae73853"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

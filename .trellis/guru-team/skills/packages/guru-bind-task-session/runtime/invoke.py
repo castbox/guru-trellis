@@ -17,7 +17,9 @@ from runtime.task_lifecycle.git_facts import discover_worktree_facts, inspect_re
 from runtime.task_lifecycle.identity import resolve_task_id, task_resource_state
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.schema import validate_dto
-from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
+from runtime.task_lifecycle.session_adapter import (
+    bind_session, resolve_session, session_diagnostic, session_location,
+)
 
 
 PROFILE_ROUTES = {
@@ -59,12 +61,17 @@ def _record(official: Any, root: Path) -> tuple[str, Any | None]:
         return "explicit_task_mode", None
     facts = official.repository_facts(root)
     path = official.session_path(root, key, facts)
-    if not official.record_exists(path):
-        return "missing", None
-    record = official.read_record(path, root, facts)
-    if record.data.get("schema_version") == 3:
-        return "present", record  # the installed public session reader validated schema-3
-    raise ValueError("unsupported_legacy_session_record")
+    try:
+        if not official.record_exists(path):
+            return "missing", None
+        record = official.read_record(path, root, facts)
+        if record.data.get("schema_version") == 3:
+            return "present", record  # the installed public session reader validated schema-3
+        raise ValueError("unsupported_legacy_session_record")
+    except (OSError, RuntimeError, ValueError, AttributeError) as exc:
+        print(json.dumps(session_diagnostic("session_read", session_location(facts), exc),
+                         ensure_ascii=False), file=sys.stderr)
+        raise
 
 
 
@@ -190,6 +197,8 @@ def execute(root: Path, input_value: str, owner_value: str, *, official: Any | N
             output = {"exit_id": EXITS[owner["route"]], **lifecycle, "resume_target": owner["resume_target"]}
         else:
             result = bind_session(scoped_official, root, lifecycle)
+            if result.diagnostic is not None:
+                print(json.dumps(result.diagnostic, ensure_ascii=False), file=sys.stderr)
             if result.status == "explicit_task_mode":
                 output = {"exit_id": "explicit_task_mode", **lifecycle}
             elif result.status != "session_bound" or result.lifecycle is None or result.lifecycle.task_id != lifecycle["task_id"] or result.lifecycle.lifecycle_generation != lifecycle["lifecycle_generation"]:

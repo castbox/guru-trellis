@@ -53,6 +53,31 @@ class SessionAdapterResult:
     context_key: str | None = None
     task_ref: str | None = None
     reason_code: str | None = None
+    diagnostic: dict[str, Any] | None = None
+
+
+def session_location(facts: Any) -> str:
+    """Describe the official store without exposing a context key or local path."""
+    if getattr(facts, "common_dir", None) is not None:
+        return "<git-common-dir>/trellis/sessions/<session>.json"
+    return "<repo>/.trellis/.runtime/sessions/<session>.json"
+
+
+def session_diagnostic(operation: str, location: str, exc: BaseException) -> dict[str, Any]:
+    """Keep only operation facts; an upstream boolean failure has no errno."""
+    cause: BaseException | None = exc
+    error_number = None
+    while cause is not None:
+        if isinstance(cause, OSError) and cause.errno is not None:
+            error_number = cause.errno
+            break
+        cause = cause.__cause__
+    return {
+        "operation": operation,
+        "location": location,
+        "exception_class": type(exc).__name__,
+        "errno": error_number,
+    }
 
 
 def _lifecycle(payload: dict[str, Any]) -> TaskLifecycleKey:
@@ -141,23 +166,34 @@ def bind_session(
             reason_code="official_session_target_invalid",
         )
 
+    def failed(operation: str, location: str, exc: BaseException) -> SessionAdapterResult:
+        return SessionAdapterResult(
+            "session_write_failed", key, context_key=context_key,
+            reason_code="official_session_write_failed",
+            diagnostic=session_diagnostic(operation, location, exc),
+        )
+
+    payload = _record(key)
     try:
-        payload = _record(key)
         workspace = getattr(resolved, "workspace", root)
         from ..delivery_projection.adapter import DeliveryProjection
         DeliveryProjection(workspace, task_ref).read_record()
+    except (OSError, RuntimeError, ValueError) as exc:
+        return failed("projection_read", "<task>/task.json", exc)
+
+    location = session_location(facts)
+    try:
         if official.record_exists(path):
             prior = official.read_record(path, root, facts)
             if _record_identity(prior, field_path="official_session.record") == key:
                 payload = prior.data
+    except (OSError, RuntimeError, ValueError) as exc:
+        return failed("session_read", location, exc)
+
+    try:
         official.write_record(path, payload, root)
-    except (OSError, RuntimeError, ValueError):
-        return SessionAdapterResult(
-            "session_write_failed",
-            key,
-            context_key=context_key,
-            reason_code="official_session_write_failed",
-        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        return failed("session_write", location, exc)
 
     try:
         stored = official.read_record(path, root, facts)
@@ -168,12 +204,13 @@ def bind_session(
                 "official_session.record",
                 "Keep the stored lifecycle identity equal to the requested TaskLifecycleDTO.",
             )
-    except (LifecycleContractError, OSError, RuntimeError, ValueError):
+    except (LifecycleContractError, OSError, RuntimeError, ValueError) as exc:
         return SessionAdapterResult(
             "session_invalid",
             key,
             context_key=context_key,
             reason_code="official_session_post_write_invalid",
+            diagnostic=session_diagnostic("session_post_write_read", location, exc),
         )
     return SessionAdapterResult(
         "session_bound",

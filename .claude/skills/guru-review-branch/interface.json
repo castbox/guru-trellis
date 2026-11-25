@@ -465,6 +465,10 @@
     {
       "id": "planning_stale_recovery_input",
       "path": "schemas/public-delivery-planning-stale-recovery-input-1.0.schema.json"
+    },
+    {
+      "id": "execution_facts_output",
+      "path": "schemas/execution-facts-output-1.0.schema.json"
     }
   ],
   "validators": [
@@ -497,6 +501,12 @@
       "command": "scripts/legacy-maintenance.sh",
       "runtime_command": "legacy-maintenance-guru-review-branch",
       "objective_scope": "Exact legacy original-owner facts, attribution and fixed preimage retirement; no current lifecycle or publication/merge/Finish action."
+    },
+    {
+      "id": "review_execution_facts",
+      "command": "scripts/inspect-review-execution.sh",
+      "runtime_command": "inspect-review-execution",
+      "objective_scope": "Read explicit execution objects and report optional temporary write probes; no formal records, selection or quality judgment. final_plan is read-only."
     }
   ],
   "external_exits": [
@@ -592,7 +602,8 @@
     "tests/test_archived.py",
     "tests/test_legacy_maintenance.py",
     "tests/test_promotion_alignment.py",
-    "tests/test_postcommit_review.py"
+    "tests/test_postcommit_review.py",
+    "tests/test_execution_facts.py"
   ],
   "platform_destinations": [
     "shared",

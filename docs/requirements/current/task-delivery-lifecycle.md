@@ -1,5 +1,7 @@
 # Task 与 Delivery 生命周期
 
+#929由原RDT维护owner按final_integration整合，状态为integrated_pending_review，待TaskCommit及committed independent Review。固定前驱Git `63e71ffd72300dee4f5bfdc030c2a5f342b97f32`；本轮只增加本单元929定义，原条件和历史截止保持。实际工程、tools结果及V3/V5未验证边界见[#929验证记录](../../requirements-design-test-contributions/929-review-execution/test.md)。
+
 #850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
 
 导航别名：`R531-01..05/08`；`R636/BEH636`；`R637/BEH637`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
@@ -273,3 +275,16 @@ Author完成完整规划和自检后，独立Architecture final_plan直接进入
 ## R912 正式步骤跨会话交接
 
 首次派发、替换调用者或主会话接回时，实际调用者应在第一次依赖会话状态的正式调用前满足原入口的 Task 绑定及适用的 Delivery 选择。缺少状态时按 R679 恢复同一对象。匹配直接复用，真实冲突保留并交原 owner。Task-only、显式只读和工程证据入口按原职责执行。正式结果由原语义 owner 产生并交给原消费者。验收见 T912，职责见 D912。
+
+## R929：独立审查执行与同候选恢复
+
+来源为[Issue929](https://github.com/castbox/guru-trellis/issues/929)。本节细化R679/R694/R794的启动能力、诊断和实际恢复，不改变原身份、单写与独立判断。
+
+- **R929-01 / BEH929-EXECUTION**：大规模authority/候选读取前，实际reviewer仅在最小工程规则下核native prelude、明确对象可读及职责必要读写能力。事实不产生质量pass或选择；失败给实际操作和原owner，修正后同对象继续。完整语义读取仍authority-first。
+- **R929-02 / BEH929-WRITES**：候选源码/测试/文档职责只读。正式元数据归原合法writer，启动者提供并实测最小范围。final_plan保R694完整显式对象只读例外，无绑定/选择不恢复、不探测写能力；真实冲突和错误保持。
+- **R929-03 / BEH929-RECOVERY**：同未变候选普通中断或部分投影后采用真实coverage/工程事实，只补缺步；合规reviewer优先续接，缺失覆盖实际补审。不空pass、不重复gate或无因全测。
+- **R929-04 / BEH929-DIRECT**：generic/CLI已承担审查则直接完成，不递归转派同职责。无反馈按原句柄/阶段事件/阻塞或缺结果有界定位，再沿原blocked/re-entry；未知平台底因保持未知。
+- **R929-05 / BEH929-KNOWLEDGE**：当前authority、导航、历史沿current-knowledge完整取得及按影响追溯。其他Task历史pass不证明当前pass，也不一律是污染；不建摘要缓存、已读证明或路径剪枝。业务私有知识由其原owner采用。
+- **R929-06 / BEH929-DIAGNOSTIC**：保原official_session_write_failed及stdout兼容，以最小脱敏技术信息定位projection/session读写操作、异常类别和可取得errno；丢失值未知，不猜权限、不泄露敏感内容。
+
+职责[D929](../../design/current/task-delivery-lifecycle.md#d929独立审查执行事实与原writer)，验收[T929](../../test/current/task-delivery-lifecycle.md#t929启动恢复与证据分层)。公共方法和精确接口由原packages及MIGRATION-929单写。组件、真实sandbox/Agent、安装和外部效果分别证明，完整Release矩阵与原业务修复不在本项。

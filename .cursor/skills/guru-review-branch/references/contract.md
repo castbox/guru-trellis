@@ -2,6 +2,51 @@ Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicabil
 for shared candidate coverage, engineering facts and recovery. This package
 retains its own current judgment, formal result and action boundary.
 
+## Review execution conditions
+
+The actual reviewer checks its prelude, exact object locators and execution
+capability before large authority or candidate reads. Load only the necessary
+engineering rules at this point; do not preload Task narratives or judge quality.
+Use this package's `scripts/inspect-review-execution.sh` with explicit `--root`,
+`--task`, `--delivery-key`, `--purpose branch_review`, fixed `--base-ref` and
+`--head-ref`, and `--probe-writes` when establishing required write capability.
+Read the intermediate receipt's actual `result.checks`; it is not a typed exit,
+a pass, a Task selection or a promise that later writes will succeed. An omitted
+probe does not establish write capability. The AI owner interprets the facts and
+returns a real execution gap to its existing capability/permission or binding
+owner before paying the full read cost. Corrected conditions reenter the same
+object. Formal calls still validate their current facts and actual failures.
+
+Candidate source, tests and documents remain read-only by the reviewer's role.
+Original Bind/Selection may write Git common-dir `trellis/sessions`; original
+Review writes this Task's `task.json` and the official JSON writer's same-directory
+temporary file, plus this checkout's original Delivery-scoped
+`.trellis/.runtime/guru-team/owner-checkpoints/<task-directory>/<Delivery>/review-gate.json`.
+Necessary call-local carriers use the allowed temporary directory. A linked
+worktree's workspace write scope does not imply common-dir write capability.
+The launcher supplies the smallest actual additional range and verifies it on
+the chosen host; never default to the entire `.git` or unrestricted access.
+A successful session-directory probe alone is not a complete Review journey.
+
+An assigned generic/CLI reviewer executes its review directly; do not dispatch
+another worker for the same responsibility. The launcher diagnoses missing
+feedback from this invocation's actual handle, stage events and returned
+blocker/result. Process liveness, absent stdout or an elapsed wait is not a
+quality conclusion. With no new progress, do not loop waits or open replacement
+reviewers without diagnosing the missing execution/result and using the original
+blocked/re-entry route. A still-compliant reviewer continues the same candidate
+and missing work under the existing coverage contract; a real loss of coverage
+requires the missing assessment. No new time threshold, ledger or coordinator
+service is introduced.
+
+Current authority and necessary history follow the shared current-knowledge
+contract. Another Task's historical pass is neither this candidate's pass nor
+automatically context pollution. Read complete applicable authority and necessary
+relationships; do not replace them with cached summaries, path pruning or a
+parent's read marker. Actual design facts and object locators are valid review
+inputs in their original semantic read position. The original one-review,
+two-result-slot and same-candidate recovery contract below remains authoritative.
+
 ## Single post-commit independent review
 
 The current `delivery_branch_review` input2.0 carries mode, task_ref,

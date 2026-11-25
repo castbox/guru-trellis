@@ -1,0 +1,5 @@
+schema_version: "1.0"
+authority: guru-trellis-rdt
+status: integrated_pending_review
+source: https://github.com/castbox/guru-trellis/issues/929
+base_ref: 63e71ffd72300dee4f5bfdc030c2a5f342b97f32
