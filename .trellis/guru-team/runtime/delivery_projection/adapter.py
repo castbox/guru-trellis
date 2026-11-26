@@ -159,11 +159,11 @@ class DeliveryProjection:
             return self._explicit_current(key)
         return self._call(self.api.delivery_session.get_current_delivery, self.root)
 
-    def selection_preflight(self, key: dict) -> None:
-        """Check existing session facts before creating/selecting another key."""
+    def selection_preflight(self, key: dict) -> bool:
+        """Validate existing selection and report whether Bind or Selection needs a write."""
         if not self.has_context():
             self._require_explicit_task(key)
-            return
+            return False
         current = self.current()
         if current.get("kind") == "error":
             raise LifecycleContractError(current["code"], "session", current["message"])
@@ -174,6 +174,7 @@ class DeliveryProjection:
             or current["kind"] in {"current", "terminal_delivery"} and selected != key
         ):
             raise LifecycleContractError("delivery_selection_conflict", "session", "Resolve the existing explicit current route through its original owner before selecting another Delivery.")
+        return current["kind"] in {"no_current_task", "no_current_delivery"}
 
     def apply(self, operation: dict) -> dict:
         return self._call(self.api.delivery_store.apply_to_store, self.task_dir, self.root, operation)

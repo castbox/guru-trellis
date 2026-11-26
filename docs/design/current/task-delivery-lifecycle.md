@@ -1,5 +1,7 @@
 # Task / Delivery 生命周期设计
 
+#929由原RDT维护owner按final_integration整合，状态为integrated_pending_review，待TaskCommit及committed independent Review。固定前驱Git `63e71ffd72300dee4f5bfdc030c2a5f342b97f32`；本轮只增加本单元929定义，原条件和历史截止保持。实际工程、tools结果及V3/V5未验证边界见[#929验证记录](../../requirements-design-test-contributions/929-review-execution/test.md)。
+
 #850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
 
 导航别名：`BEH-001..006`；`R531-01..05/08`；`R636/BEH636`；`R637/BEH637`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
@@ -240,3 +242,17 @@ Author requirements_ready经candidate assessment回solution_planning，plan_read
 ## D912 接收会话前置
 
 Workflow 的 Explicit receiving-session continuation 统一协调初次派发、替换和接回。派发交接执行角色、原入口、确切对象、适用的候选和预期结果类型，并允许原会话 owner 执行必要的状态写入。接收者先读本会话实际状态，再按显式对象比对。只在确实缺少 Task 时进入 Bind，只在原入口需要选择且同一 Task 未选择时进入 Delivery Selection。Branch Review 在独立 Architecture、资格判定及自身 recorder/invoke 首次依赖状态前校验。各原阶段合同保留其自身的权限及读序。实际调用者更换时重新应用适用前置。
+
+## D929：独立审查执行事实与原writer
+
+承接R929-01..06，保留D679/D694/D794原owner。执行前最小事实检查移到长authority前，独立语义读取顺序不变。原Review package的inspect-review-execution只查询固定对象/关系及职责所需目录操作；临时probe不改正式记录，只输出当次事实，不判质量或route，不落能力ledger。
+
+按实际purpose区分职责：candidate_assessment有context时保原绑定/选择，confirmed no-context保原路径；首次candidate可只有调用期design_facts，预检不要求未来design/implement。final_plan检查实际design并保完整显式对象只读入口，不把context存在等同写需求；branch_review核原完整写集。Bind/Selection使用common-dir/trellis/sessions，Review使用本Task task.json及同目录temp、原checkout/Delivery checkpoint；必要call-local carrier用后清理。launcher只补必要真实范围，候选与其他Task/refs不写。实际正式journey验证完整性，probe不承诺后续成功。
+
+原session adapter分开projection读取、旧record读取、write_record、postwrite读取边界。Bind runtime通过stderr给操作/匿名位置/异常类别/可得errno，stdout/code保原语义；原bool已丢值不编造、不重probe猜原因。无原异常消息、payload/context key或机器身份。
+
+原Architecture/Review合同明确合法design_facts在authority后读取，其他Task历史不当当前pass/污染；generic直接执行，caller基于本次handle/events诊断无反馈，同candidate按原checkpoint/public results只补缺步。保持一次判断两结果槽及前驱关系，不新增writer、调度服务或恢复状态。
+
+本选择修正实际启动范围遗漏；额外writer拆分对本次结果不是必要条件，保原边界避免新交接成本。能力探测有一次临时I/O成本，换取提前定位；只探测实际职责，不扩展全.git写范围。平台注入实现和内部无响应底因未定位，不能宣称已修复。新owner/写集/持久状态需求回原Author/Architecture重评。
+
+原tools owner成套采用matching canonical/installed/平台并保Task/session/peer，版本/恢复见[MIGRATION-929](../../../trellis/presets/guru-team/MIGRATION-929.md)。知识复用现current-knowledge，不改业务仓私有正文、不登记共享索引。测试T929区分真实行为、组件、安装；source存在不证明效果。

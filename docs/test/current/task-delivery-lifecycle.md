@@ -1,5 +1,7 @@
 # Task / Delivery 生命周期测试策略
 
+#929由原RDT维护owner按final_integration整合，状态为integrated_pending_review，待TaskCommit及committed independent Review。固定前驱Git `63e71ffd72300dee4f5bfdc030c2a5f342b97f32`；本轮只增加本单元929定义，原条件和历史截止保持。实际工程、tools结果及V3/V5未验证边界见[#929验证记录](../../requirements-design-test-contributions/929-review-execution/test.md)。
+
 #850由原RDT owner整合当前职责与关系，状态为integrated_pending_review，尚待TaskCommit及独立committed Review。固定前驱Git a72981db56d2070d8140b468cab3a97ae82effd3；来源、替代范围和本轮未验证边界见[本次追踪](../../requirements-design-test-contributions/850-wording-retirement/traceability.md)。旧观察保留原截止。
 
 导航别名：`BEH-001..006`；`R531-01..05/08`；`R636/BEH636`；`R637/BEH637`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
@@ -273,3 +275,16 @@ Agent读完整来源及整体/切片要求，由Author写规划，独立Architec
 ## T912 正式交接验证
 
 从当前安装派发独立候选 Architecture 和正式 Branch Review。对每一入口观察新接收者自己的状态读回及原正式结果。验收要求在首次依赖会话状态的调用前完成确认和必要续接。定向观察仅缺选择时补齐、匹配时复用和不同合法选择保留。Task-only、显式对象和工程证据使用原边界。会话状态契约测试与实际 Agent 派发证据分别核对。安装投影、phase/step 读取及 drift 证明 matching 来源实际分发。
+
+## T929：启动恢复与证据分层
+
+| 对应requirement/design | 正常入口/输入 | 必须观察与边界 |
+| --- | --- | --- |
+| T929-01→R929-01/02、D929 | 真实linked-worktree，原query/支持的Codex载体，必要额外范围缺失及具备 | 昂贵读取前具体失败；最小范围可用且probe清理、不改正式记录；final_plan有context缺绑定/选择、session不可写仍只读核合法对象，不调用Bind/Selection或写probe |
+| T929-02→R929-02/03、D929 | 正常owners建最小Task/Delivery/B..H，fresh Agent原独立Review入口及最小元数据权限 | 完整authority/diff/consumers与独立判断，原writer产生匹配的check/full_review和真实前驱，候选内容不变；probe/Bind/fixture语义不能替代 |
+| T929-03→R929-03、D929 | 同候选部分结果写失败/普通中断、checkpoint退休loststdout | 真实已写结果复用、只补缺步或原结果恢复，实际覆盖不足补审；不重复gate/全测 |
+| T929-04→R929-04/05、D929 | 含其他Task历史pass的正常authority与合法design对象，真实generic/CLI和代表未执行/缺结果 | 直接执行不递归，完整适用authority及历史语义正确，无反馈基于原handle/events定位并按原出口；方法差异按既有Real Agent comparison，不宣称通用成本比例 |
+| T929-05→R929-06、D929 | 原Bind公开入口代表projection/session读写错误 | stdout稳定、stderr最小脱敏且操作准确，可得errno保真、已丢失未知；unit只证明该层，不能冒充真实sandbox |
+| T929-06→全部、D929 | source/installed、原tools同步、受影响平台、drift/sidecar/mode及preservation | matching采用并保Task/session/peer，分层报告；无完整多平台Release矩阵或业务现场修复推定 |
+
+实际命令、首次失败、修正及尚未验证项由[#929验证记录](../../requirements-design-test-contributions/929-review-execution/test.md)维护。本单元定义验收；query/sandbox与组件恢复已有实际结果，真实完整独立Review、Agent方法对照和安装采用各自按原记录的观察截止核对，不从组件或知识整合推定通过。

@@ -58,7 +58,10 @@ their existing owners. Follow the contract's Independent assessment entry
 before reading task narratives or authoring a first result. The caller only
 coordinates and consumes the actual output; it never fills a reviewer pass.
 
-After the authority-first reads, a receiving Delivery reviewer applies the
+Before large authority reads, apply the contract's execution-condition check
+with the actual purpose and prelude. This supplies no semantic judgment and
+preserves the final_plan read-only exception. After authority-first reads,
+a receiving Delivery reviewer applies the
 contract's purpose-specific entry. Planning `final_plan` validates the complete
 explicit object read-only without creating a Task binding or Delivery selection.
 Other purposes and stages execute the installed workflow's `Explicit

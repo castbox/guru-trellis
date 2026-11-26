@@ -245,6 +245,67 @@ class RuntimeSelectionTests(unittest.TestCase):
         self.assertEqual(self.first["runtime_identity"], json.loads(selected.stdout)["runtime_identity"])
         self.assertEqual("explicit", owner.read_selection(self.repo)["selection_mode"])
 
+    def test_readonly_review_wrappers_run_without_saving_a_cold_hint(self):
+        skills = self.repo / "trellis/skills/guru-team"
+        shutil.copytree(ASSETS, skills / "runtime", ignore=shutil.ignore_patterns("tests", "__pycache__"))
+        shutil.copytree(ASSETS.parent / "schemas", skills / "schemas")
+        for owner_id, script in (
+            ("guru-review-branch", "inspect-review-execution.sh"),
+            ("guru-maintain-architecture-baseline", "invoke.sh"),
+        ):
+            with self.subTest(owner=owner_id):
+                package = skills / "packages" / owner_id
+                shutil.copytree(ASSETS.parent / "packages" / owner_id, package,
+                                ignore=shutil.ignore_patterns("tests", "__pycache__"))
+                result = subprocess.run([str(package / "scripts" / script), "--help"],
+                                        text=True, capture_output=True)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertFalse(owner.active_pointer_path(self.repo).exists())
+
+    def test_repair_replaces_invalid_link_with_valid_selection(self):
+        repair = ("--repair", "--python", sys.executable, "--json")
+        selected = self.command(*repair)
+        self.assertEqual(0, selected.returncode, selected.stdout + selected.stderr)
+        pointer = owner.active_pointer_path(self.repo)
+        original = pointer.read_bytes()
+        saved = pointer.with_name("saved-selection.json")
+        pointer.rename(saved)
+        try:
+            pointer.symlink_to(saved)
+        except OSError as exc:
+            if os.name == "nt" and getattr(exc, "winerror", None) == 1314:
+                self.skipTest("Creating symlinks requires Windows developer mode or privilege.")
+            raise
+        checked = self.command("--check", "--json")
+        self.assertEqual(2, checked.returncode, checked.stdout + checked.stderr)
+        self.assertEqual("runtime_selection_invalid", json.loads(checked.stdout)["code"])
+        repaired = self.command(*repair)
+        self.assertEqual(0, repaired.returncode, repaired.stdout + repaired.stderr)
+        self.assertFalse(pointer.is_symlink())
+        self.assertEqual(original, pointer.read_bytes())
+        self.assertEqual(original, saved.read_bytes())
+        checked = self.command("--check", "--json")
+        self.assertEqual(0, checked.returncode, checked.stdout + checked.stderr)
+
+    def test_public_resolver_reuses_existing_selection_without_rewriting_it(self):
+        selected = self.command("--resolve-active", "--json")
+        self.assertEqual(0, selected.returncode, selected.stderr)
+        pointer = owner.active_pointer_path(self.repo)
+        os.utime(pointer, (1_000_000_000, 1_000_000_000))
+        before = (pointer.read_bytes(), pointer.stat().st_mtime_ns)
+        mode = pointer.parent.stat().st_mode
+        try:
+            pointer.parent.chmod(0o555)
+            result = subprocess.run([
+                str(ASSETS / "resolve-python.sh"), str(self.repo), str(ASSETS),
+                "-c", "print('resolved')",
+            ], text=True, capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("resolved", result.stdout.strip())
+            self.assertEqual(before, (pointer.read_bytes(), pointer.stat().st_mtime_ns))
+        finally:
+            pointer.parent.chmod(mode)
+
     def test_windows_dispatch_waits_and_preserves_business_streams(self):
         # Exercise the Windows dispatch branch with a real child on this host.
         driver = """

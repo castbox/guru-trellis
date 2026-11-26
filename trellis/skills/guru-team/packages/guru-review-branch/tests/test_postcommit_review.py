@@ -4,6 +4,9 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -54,6 +57,36 @@ class PostcommitReviewTests(unittest.TestCase):
         self.assertEqual("guru-review-branch", results["check"]["owner_id"])
         self.assertFalse(self.checkpoint().exists())
         self.assertEqual(result, self.invoke())
+
+    def test_completed_review_recovers_from_cold_readonly_provider(self):
+        self.record()
+        expected = self.invoke()
+        self.assertFalse(self.checkpoint().exists())
+        public_input = self.flow.write("readback.json", self.public)
+        task_record = self.repo / self.flow.task_ref / "task.json"
+        before = task_record.read_bytes()
+        with tempfile.TemporaryDirectory() as directory:
+            provider = Path(directory)
+            skills = provider / "trellis/skills/guru-team"
+            source = PACKAGE.parents[1]
+            for path in ("runtime", "schemas", "packages/guru-review-branch"):
+                shutil.copytree(source / path, skills / path,
+                                ignore=shutil.ignore_patterns("tests", "__pycache__"))
+            state = provider / ".trellis/.runtime/guru-team/python"
+            state.mkdir(parents=True)
+            try:
+                state.chmod(0o555)
+                result = subprocess.run([
+                    "bash", str(skills / "packages/guru-review-branch/scripts/invoke.sh"),
+                    "--root", str(self.repo), "--input", public_input,
+                ], text=True, capture_output=True)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(expected, json.loads(result.stdout))
+                self.assertEqual([], list(state.iterdir()))
+            finally:
+                state.chmod(0o755)
+        self.assertEqual(before, task_record.read_bytes())
+        self.assertFalse(self.checkpoint().exists())
 
     def test_missing_full_review_projection_retries_original_semantic_result(self):
         # Stop at the actual public API boundary after the first successful

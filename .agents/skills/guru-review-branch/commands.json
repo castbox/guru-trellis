@@ -290,6 +290,102 @@
       ],
       "validator_id": "legacy_maintenance",
       "runtime_role": "recover"
+    },
+    {
+      "id": "inspect-review-execution",
+      "owner": "guru-review-branch",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Exact registered Task checkout.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": true,
+          "kind": "string",
+          "description": "Explicit Task locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--delivery-key",
+          "required": true,
+          "kind": "json",
+          "description": "Explicit DeliveryKey: inline JSON, regular UTF-8 JSON file or - for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--purpose",
+          "required": true,
+          "kind": "enum",
+          "description": "Caller-selected responsibility.",
+          "repeatable": false,
+          "conflicts": [],
+          "values": [
+            "planning",
+            "branch_review"
+          ]
+        },
+        {
+          "flag": "--planning-purpose",
+          "required": false,
+          "kind": "enum",
+          "description": "Required for planning; forbidden for branch_review. final_plan performs no write probes.",
+          "repeatable": false,
+          "conflicts": [],
+          "values": [
+            "candidate_assessment",
+            "final_plan"
+          ]
+        },
+        {
+          "flag": "--base-ref",
+          "required": false,
+          "kind": "string",
+          "description": "Required fixed base commit for branch_review; forbidden for planning.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--head-ref",
+          "required": false,
+          "kind": "string",
+          "description": "Required fixed head commit for branch_review; forbidden for planning.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--probe-writes",
+          "required": false,
+          "kind": "boolean",
+          "description": "Exercise necessary temporary writes and clean up; ignored for final_plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/execution-facts-output-1.0.schema.json"
+      ],
+      "validator_id": "review_execution_facts",
+      "runtime_role": "check"
     }
   ]
 }

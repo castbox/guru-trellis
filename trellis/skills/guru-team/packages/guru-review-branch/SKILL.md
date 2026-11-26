@@ -74,7 +74,10 @@ complete workflow. Follow MIGRATION-794 before switching an existing installatio
 Enter after TaskCommit pre_review_committed and the original implementation
 constructor/begin_check. Freeze the complete fixed B..H Candidate. The first
 reviewer must be newly opened and must not have authored or implemented it.
-Before Task narratives or implementer pass claims, read the fixed B Architecture
+Before large reads, apply [Review execution conditions](references/contract.md#review-execution-conditions)
+using the exact fixed object, actual prelude and required minimum metadata scope.
+A capability receipt is not a quality pass. Before Task narratives or
+implementer pass claims, read the fixed B Architecture
 Baseline, constitution and change contract in full. The executing reviewer
 then applies the installed workflow's `Explicit receiving-session continuation`
 for this Task and Delivery. Verify the matching selection and fixed committed

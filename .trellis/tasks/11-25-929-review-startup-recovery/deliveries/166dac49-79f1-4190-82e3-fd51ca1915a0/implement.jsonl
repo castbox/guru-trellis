@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质输出全文规范；保留源角色与证据边界"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "新query及安装仅限Guru namespace；不得patch官方session/io"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/tests/README.md", "reason": "采用现真实public-owner fixture和postcommit恢复验证入口，区分fixture与Agent证据"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本Delivery正文完整性与来源条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求正文与验收责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批设计职责与例外"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批步骤验证和Policy"}

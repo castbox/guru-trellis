@@ -1,5 +1,12 @@
 # Guru Team Workflow
 
+独立审查先检查实际上下文和职责所需的最小读写能力，再完整读取适用 authority。
+linked worktree 的工作区写权限不包含主仓 Git common-dir；正式元数据范围必须实测，
+不能用预检成功代替完整 Review。当前执行者直接审查，同候选恢复优先采用有效工作、只补缺步。
+完整职责、只读 `final_plan` 例外、错误诊断及成套采用见
+[独立审查执行条件迁移](../../presets/guru-team/MIGRATION-929.md)。已有业务仓的知识组织由其原 owner 采用，
+源码改动不代表该业务仓已经迁移或故障已修复。
+
 已有 Issue 在实际 Sync 后先由原 Readiness 复核当前审核覆盖，再按缺口调用必要原 owner；
 局部补审返回同次 Readiness。Create Issue 的完成结果包括准确的最小审核评论及读回；
 只读审核不发布评论。讨论、仅创建、创建并开工和 no_issue 保持各自终点。

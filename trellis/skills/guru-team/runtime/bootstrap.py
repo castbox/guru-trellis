@@ -325,9 +325,16 @@ def write_active(
                "hints": hints}
     if selection_class is not None:
         pointer["interpreter_class"] = selection_class
+    payload = canonical_json(pointer) + b"\n"
+    if prior.get("schema_version") == "3.0":
+        try:
+            if pointer_path.read_bytes() == payload:
+                return
+        except OSError:
+            pass
     runtime_root.mkdir(parents=True, exist_ok=True)
     temporary = runtime_root / "selection-v3.json.tmp"
-    temporary.write_bytes(canonical_json(pointer) + b"\n")
+    temporary.write_bytes(payload)
     temporary.replace(pointer_path)
 
 
@@ -552,7 +559,8 @@ def main() -> int:
             runtime_id = args.resolve_runtime
             result = resolve_runtime(args.runtime_assets.resolve(), runtime_id)
         elif args.resolve_active or args.exec_active:
-            result = validate_active(args.repo.resolve(), args.runtime_assets.resolve(), cache_selection=True)
+            cache_selection = not (args.exec_active and os.environ.get("GURU_TEAM_SKIP_SELECTION_HINT_WRITE") == "1")
+            result = validate_active(args.repo.resolve(), args.runtime_assets.resolve(), cache_selection=cache_selection)
             runtime_id = str(result["runtime_identity"])
             if args.exec_active:
                 command = list(args.command)

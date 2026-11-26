@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -120,6 +121,88 @@ class RuntimeTest(unittest.TestCase):
     def invoke(self, profile, task_id="a", generation=0, **extra):
         public, owner = request(profile, task_id, generation, **extra)
         return bind.execute(self.root, json.dumps(public), json.dumps(owner), official=self.port)
+
+    def test_failure_diagnostics_preserve_public_stdout_and_distinguish_operations(self):
+        from runtime.delivery_projection.adapter import DeliveryProjection
+
+        private_message = "private payload /Users/local-user/session-context"
+        cases = (
+            ("projection_read", PermissionError(13, private_message),
+             "official_session_write_failed", "<task>/task.json"),
+            ("session_read", ValueError(private_message),
+             "official_session_write_failed", "<git-common-dir>/trellis/sessions/<session>.json"),
+            ("session_write", PermissionError(1, private_message),
+             "official_session_write_failed", "<git-common-dir>/trellis/sessions/<session>.json"),
+            ("session_post_write_read", ValueError(private_message),
+             "official_session_post_write_invalid", "<git-common-dir>/trellis/sessions/<session>.json"),
+        )
+        for operation, error, code, location in cases:
+            with self.subTest(operation=operation):
+                self.port.records.clear()
+                self.port.writes = 0
+                if operation == "projection_read":
+                    failure = patch.object(DeliveryProjection, "read_record", side_effect=error)
+                elif operation == "session_read":
+                    # The package's first lookup is missing; the adapter then reads
+                    # the existing pointer through the same public port.
+                    failure = patch.object(self.port, "read_record", side_effect=error)
+                elif operation == "session_write":
+                    failure = patch.object(self.port, "write_record", side_effect=error)
+                else:
+                    failure = patch.object(self.port, "read_record", side_effect=error)
+                exists = [False, True] if operation == "session_read" else [False, False]
+                public, owner = request("rebind_missing_session")
+                output, diagnostic = io.StringIO(), io.StringIO()
+                with failure, patch.object(self.port, "record_exists", side_effect=exists), \
+                        patch.object(bind, "official_port", return_value=self.port), \
+                        patch.object(sys, "argv", ["invoke", "--root", str(self.root),
+                                                  "--input", json.dumps(public),
+                                                  "--owner-result", json.dumps(owner)]), \
+                        redirect_stdout(output), redirect_stderr(diagnostic):
+                    bind.main()
+                self.assertEqual(json.loads(output.getvalue()), {
+                    "exit_id": "binding_blocked", "reason_code": code, "reason_refs": ["session"],
+                })
+                self.assertEqual(json.loads(diagnostic.getvalue()), {
+                    "operation": operation, "location": location,
+                    "exception_class": type(error).__name__,
+                    "errno": error.errno if isinstance(error, OSError) else None,
+                })
+                self.assertNotIn(private_message, output.getvalue() + diagnostic.getvalue())
+                self.assertEqual(self.port.writes, 1 if operation == "session_post_write_read" else 0)
+
+    def test_initial_session_read_failure_retains_identity_exit(self):
+        diagnostic = io.StringIO()
+        with patch.object(self.port, "record_exists", return_value=True), \
+                patch.object(self.port, "read_record", side_effect=PermissionError(13, "private")), \
+                redirect_stderr(diagnostic):
+            output = self.invoke("rebind_missing_session")
+        self.assertEqual(output, {"exit_id": "binding_blocked",
+                                  "reason_code": "session_identity_invalid", "reason_refs": ["session"]})
+        self.assertEqual(json.loads(diagnostic.getvalue()), {
+            "operation": "session_read", "location": "<git-common-dir>/trellis/sessions/<session>.json",
+            "exception_class": "PermissionError", "errno": 13,
+        })
+        self.assertEqual(self.port.writes, 0)
+
+    def test_wrapped_write_errno_and_lost_errno_do_not_trigger_retry(self):
+        def wrapped_write(*args):
+            try:
+                raise PermissionError(13, "private path")
+            except OSError as cause:
+                raise ValueError("private upstream wrapper") from cause
+
+        for side_effect, expected_errno in ((wrapped_write, 13), (ValueError("boolean write failed"), None)):
+            diagnostic = io.StringIO()
+            with patch.object(self.port, "write_record", side_effect=side_effect) as write, \
+                    redirect_stderr(diagnostic):
+                output = self.invoke("rebind_missing_session")
+            self.assertEqual(output["reason_code"], "official_session_write_failed")
+            self.assertEqual(json.loads(diagnostic.getvalue()), {
+                "operation": "session_write", "location": "<git-common-dir>/trellis/sessions/<session>.json",
+                "exception_class": "ValueError", "errno": expected_errno,
+            })
+            write.assert_called_once()
 
     def test_rebind_resume_and_manual_recovery_are_pointer_only(self):
         rebound = self.invoke("rebind_missing_session")
@@ -336,6 +419,33 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 legacy_mapping = root / ".trellis/.runtime/guru-team/tasks/a.json"
                 legacy_mapping.parent.mkdir(parents=True)
                 legacy_mapping.write_text("not-json")
+                self.assertEqual(invoke("resume_current_task")["exit_id"], "session_resumed")
+
+                def assert_session_read_failure(reason):
+                    diagnostic = io.StringIO()
+                    with redirect_stderr(diagnostic):
+                        output = invoke("resume_current_task")
+                    self.assertEqual(output, {"exit_id": "binding_blocked",
+                                              "reason_code": "session_identity_invalid", "reason_refs": ["session"]})
+                    self.assertEqual(json.loads(diagnostic.getvalue()), {
+                        "operation": "session_read",
+                        "location": "<git-common-dir>/trellis/sessions/<session>.json",
+                        "exception_class": "SessionBindingError", "errno": None, "read_reason": reason,
+                    })
+
+                original = session.read_bytes()
+                mode = session.stat().st_mode
+                try:
+                    session.chmod(0)
+                    if not os.access(session, os.R_OK):
+                        assert_session_read_failure("binding_unreadable")
+                finally:
+                    session.chmod(mode)
+                try:
+                    session.write_text("invalid JSON")
+                    assert_session_read_failure("binding_invalid")
+                finally:
+                    session.write_bytes(original)
                 self.assertEqual(invoke("resume_current_task")["exit_id"], "session_resumed")
                 self.assertEqual(invoke("switch_task", "b", current_task_id="a",
                                         current_lifecycle_generation=0)["exit_id"], "task_switched")

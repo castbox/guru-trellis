@@ -20,6 +20,9 @@ def checked_gate(package_root: Path, repo: Path, task_dir: Path, expected_exit=N
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    if command["id"] == "inspect-review-execution":
+        from execution_facts import run as execution_facts_run
+        return execution_facts_run(package_root, command, argv)
     if command["id"] == "review-branch-content-identity":
         return reviewed_content_run(package_root, command, argv)
     parser = argparse.ArgumentParser(add_help=False)
