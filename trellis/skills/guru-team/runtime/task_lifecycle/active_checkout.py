@@ -56,7 +56,7 @@ def resolve_active_task_checkout(repo_root: Path, task_ref: str) -> ActiveTaskCh
     registration = find_registration(repository, repo_root)
     if registration is None:
         raise LifecycleContractError("worktree_not_registered", "worktree", "Use the registered task checkout.")
-    checkout = inspect_registered_worktree(repository, registration)
+    checkout = inspect_registered_worktree(repository, registration, include_dirty=False)
     if (checkout.inspection_error or checkout.common_dir != repository.common_dir
             or checkout.branch_ref != binding.branch_ref
             or registration.registered_branch_ref != binding.branch_ref

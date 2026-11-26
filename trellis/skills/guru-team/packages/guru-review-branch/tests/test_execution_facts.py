@@ -13,7 +13,7 @@ from unittest.mock import patch
 PACKAGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE.parents[1]))
 sys.path.insert(0, str(PACKAGE / "runtime"))
-from execution_facts import probe_directory
+from execution_facts import probe_directory, run
 
 
 class ProbeTests(unittest.TestCase):
@@ -72,6 +72,13 @@ class QueryTests(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         self.flow = module.DeliveryFlow()
+        self.flow.planning_only = self._testMethodName in {
+            "test_final_plan_with_missing_receiving_session_never_probes_or_binds",
+            "test_final_plan_rejects_a_different_selection_without_overwriting_it",
+            "test_candidate_assessment_does_not_require_future_author_bodies",
+            "test_final_plan_reads_design_without_requiring_other_planning_bodies",
+            "test_final_plan_query_does_not_refresh_the_index",
+        }
         self.flow.setUp()
         self.addCleanup(self.flow.doCleanups)
 
@@ -111,7 +118,123 @@ class QueryTests(unittest.TestCase):
         failure = next(row for row in rows if row["status"] == "failed")
         self.assertEqual("read_commit", failure["operation"])
         self.assertIsNone(failure["errno"])
-        self.assertTrue(any(row["status"] == "not_probed" for row in rows))
+        rows = self.query("--purpose", "branch_review", "--base-ref", "main", "--head-ref", self.flow.head)["checks"]
+        self.assertIn({"operation": "probe_directory_write", "location": "<temporary-directory>",
+                       "status": "not_probed"}, rows)
+
+    def test_unrequested_probe_does_not_select_a_writable_temp_directory(self):
+        args = ["--root", str(self.flow.repo), "--task", self.flow.task_ref,
+                "--delivery-key", json.dumps(self.flow.key), "--purpose", "branch_review",
+                "--base-ref", "main", "--head-ref", self.flow.head]
+        with patch("execution_facts.tempfile.gettempdir",
+                   side_effect=AssertionError("directory selection can write")):
+            rows = run(PACKAGE, {}, args)["checks"]
+        self.assertIn({"operation": "probe_directory_write", "location": "<temporary-directory>",
+                       "status": "not_probed"}, rows)
+
+    def test_branch_query_rejects_readable_commits_outside_the_bound_candidate(self):
+        base = self.flow.git("rev-parse", "main").strip()
+        head = self.flow.head
+        for b, h, location in ((head, head, "<git-object>/base"), (base, base, "<git-object>/head")):
+            with self.subTest(location=location):
+                rows = self.query("--purpose", "branch_review", "--base-ref", b, "--head-ref", h,
+                                  "--probe-writes")["checks"]
+                self.assertEqual([("match_review_candidate", location)],
+                                 [(row["operation"], row["location"]) for row in rows if row["status"] == "failed"])
+                self.assertFalse(any("temporary" in row["operation"] or "write" in row["operation"] for row in rows))
+        self.flow.git("commit", "--allow-empty", "-qm", "advance checkout")
+        rows = self.query("--purpose", "branch_review", "--base-ref", base, "--head-ref", head)["checks"]
+        self.assertEqual([("match_review_candidate", "<checkout>/HEAD")],
+                         [(row["operation"], row["location"]) for row in rows if row["status"] == "failed"])
+
+    def assert_query_preserves_index(self, *args):
+        tracked = self.flow.repo / "app.txt"
+        os.utime(tracked, (1_000_000_000, 1_000_000_000))
+        index = self.flow.repo / ".git/index"
+        before = index.read_bytes()
+        with patch.dict(os.environ, {"GIT_OPTIONAL_LOCKS": "1"}):
+            rows = self.query(*args)["checks"]
+        self.assertFalse([row for row in rows if row["status"] == "failed"], rows)
+        self.assertEqual(before, index.read_bytes())
+
+    def test_branch_query_does_not_refresh_the_index(self):
+        self.assert_query_preserves_index("--purpose", "branch_review", "--base-ref", "main",
+                                          "--head-ref", self.flow.head)
+
+    def test_final_plan_query_does_not_refresh_the_index(self):
+        self.assert_query_preserves_index("--purpose", "planning", "--planning-purpose", "final_plan")
+
+    def test_checkout_mismatch_keeps_the_original_reason(self):
+        self.flow.git("branch", "-m", "replacement")
+        rows = self.query("--purpose", "branch_review", "--base-ref", "main",
+                          "--head-ref", self.flow.head)["checks"]
+        failure, = [row for row in rows if row["status"] == "failed"]
+        self.assertEqual(("read_explicit_checkout", "current_task_checkout_unresolved", "task_id"),
+                         (failure["operation"], failure["reason_code"], failure["field_path"]))
+
+    def test_branch_query_rejects_an_uncommitted_source_edit_before_probing(self):
+        (self.flow.repo / "app.txt").write_text("local edit")
+        rows = self.query("--purpose", "branch_review", "--base-ref", "main",
+                          "--head-ref", self.flow.head, "--probe-writes")["checks"]
+        self.assertEqual(["match_clean_checkout"], [row["operation"] for row in rows if row["status"] == "failed"])
+        self.assertFalse(any("write" in row["operation"] for row in rows))
+
+    def test_branch_query_preserves_official_session_read_reason(self):
+        from runtime.delivery_projection.adapter import official_session_port
+        context = "execution-session-read-failure"
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": context}):
+            self.flow.projection.select(self.flow.key)
+            official = official_session_port(self.flow.repo)
+            session = official.session_path(self.flow.repo, context, official.repository_facts(self.flow.repo))
+
+            def assert_failure(reason):
+                result = self.query("--purpose", "branch_review", "--base-ref", "main",
+                                    "--head-ref", self.flow.head, success=False)
+                self.assertEqual("stale_identity", result["code"])
+                self.assertEqual("session", result["field_path"])
+                self.assertIn(reason, result["remediation"])
+                self.assertNotIn(context, result["remediation"])
+
+            mode = session.stat().st_mode
+            try:
+                session.chmod(0)
+                if not os.access(session, os.R_OK):
+                    assert_failure("binding_unreadable")
+            finally:
+                session.chmod(mode)
+            session.write_text("invalid JSON")
+            assert_failure("binding_invalid")
+
+    def test_final_plan_rejects_a_delivery_that_has_entered_checking(self):
+        rows = self.query("--purpose", "planning", "--planning-purpose", "final_plan")["checks"]
+        self.assertEqual(["match_delivery_phase"], [row["operation"] for row in rows if row["status"] == "failed"])
+        self.assertFalse(any(row["operation"] == "read_planning_object" for row in rows))
+
+    def test_sessions_probe_is_needed_only_before_the_exact_selection_exists(self):
+        from runtime.delivery_projection.adapter import official_session_port
+        context = "execution-reuse-selection"
+        session_location = "<git-common-dir>/trellis/sessions"
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": context}):
+            args = ("--purpose", "branch_review", "--base-ref", "main", "--head-ref", self.flow.head, "--probe-writes")
+            before = self.query(*args)["checks"]
+            self.assertIn({"operation": "probe_directory_write", "location": session_location,
+                           "status": "available"}, before)
+            self.flow.projection.select(self.flow.key)
+            official = official_session_port(self.flow.repo)
+            session = official.session_path(self.flow.repo, context, official.repository_facts(self.flow.repo))
+            payload = session.read_bytes()
+            directory = session.parent
+            mode = directory.stat().st_mode
+            try:
+                directory.chmod(0o555)
+                after = self.query(*args)["checks"]
+                self.assertEqual([{"operation": "read_session_selection", "location": session_location,
+                                  "status": "available"}],
+                                 [row for row in after if row["location"] == session_location])
+                self.assertTrue(all(row["status"] == "available" for row in after), after)
+                self.assertEqual(payload, session.read_bytes())
+            finally:
+                directory.chmod(mode)
 
     def test_final_plan_rejects_a_different_selection_without_overwriting_it(self):
         from runtime.delivery_projection.adapter import official_session_port

@@ -72,7 +72,7 @@ def parent_status_records(root: Path) -> list[dict[str, str | None]]:
     gitlink_paths = {p for p, e in current.items() if e["mode"] == "160000"}
     deleted_gitlinks = {p for p, e in committed.items()
                         if e["mode"] == "160000" and p not in current}
-    fields = _git(root, "status", "--porcelain=v1", "-z", "--untracked-files=all",
+    fields = _git(root, "--no-optional-locks", "status", "--porcelain=v1", "-z", "--untracked-files=all",
                   "--ignore-submodules=all").split(b"\0")
     rows = {}
     i = 0

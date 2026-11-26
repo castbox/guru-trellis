@@ -420,6 +420,33 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 legacy_mapping.parent.mkdir(parents=True)
                 legacy_mapping.write_text("not-json")
                 self.assertEqual(invoke("resume_current_task")["exit_id"], "session_resumed")
+
+                def assert_session_read_failure(reason):
+                    diagnostic = io.StringIO()
+                    with redirect_stderr(diagnostic):
+                        output = invoke("resume_current_task")
+                    self.assertEqual(output, {"exit_id": "binding_blocked",
+                                              "reason_code": "session_identity_invalid", "reason_refs": ["session"]})
+                    self.assertEqual(json.loads(diagnostic.getvalue()), {
+                        "operation": "session_read",
+                        "location": "<git-common-dir>/trellis/sessions/<session>.json",
+                        "exception_class": "SessionBindingError", "errno": None, "read_reason": reason,
+                    })
+
+                original = session.read_bytes()
+                mode = session.stat().st_mode
+                try:
+                    session.chmod(0)
+                    if not os.access(session, os.R_OK):
+                        assert_session_read_failure("binding_unreadable")
+                finally:
+                    session.chmod(mode)
+                try:
+                    session.write_text("invalid JSON")
+                    assert_session_read_failure("binding_invalid")
+                finally:
+                    session.write_bytes(original)
+                self.assertEqual(invoke("resume_current_task")["exit_id"], "session_resumed")
                 self.assertEqual(invoke("switch_task", "b", current_task_id="a",
                                         current_lifecycle_generation=0)["exit_id"], "task_switched")
                 self.assertEqual(invoke("switch_task", "a", current_task_id="b",

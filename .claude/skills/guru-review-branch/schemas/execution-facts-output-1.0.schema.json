@@ -43,6 +43,14 @@
               "integer",
               "null"
             ]
+          },
+          "reason_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field_path": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "allOf": [
@@ -72,12 +80,30 @@
                     "required": [
                       "errno"
                     ]
+                  },
+                  {
+                    "required": [
+                      "reason_code"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "field_path"
+                    ]
                   }
                 ]
               }
             }
           }
-        ]
+        ],
+        "dependentRequired": {
+          "reason_code": [
+            "field_path"
+          ],
+          "field_path": [
+            "reason_code"
+          ]
+        }
       }
     }
   }

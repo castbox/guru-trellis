@@ -37,7 +37,8 @@ branch_review 提供固定 `--base-ref` 和 `--head-ref`。
 Bind 保留原 stdout、typed exit、reason_code 和 reason_refs。
 `official_session_write_failed` 跨多个操作，不能仅凭名字判为权限错误。
 原 adapter/runtime 对 projection 读取、旧 session 读取、写入和读回提供最小
-stderr 技术信息：操作、匿名化位置、异常类别及可取得的 errno。底层官方 bool
+stderr 技术信息：操作、匿名化位置、异常类别及可取得的 errno。如果官方读接口仍给出已知原因，stderr 的可选
+`read_reason` 保留该值，用于区分读取失败与内容无效。底层官方 bool
 接口已丢失 errno 时明确未知，不另做探测猜测原失败；不输出 raw exception message、
 context key、payload、本机身份、凭证或业务内容。原 caller 可忽略新增 stderr，
 也可用它定位原失败；它不是公共结果字段或新的状态 authority。

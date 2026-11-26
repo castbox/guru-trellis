@@ -10,6 +10,20 @@ engineering rules at this point; do not preload Task narratives or judge quality
 Use this package's `scripts/inspect-review-execution.sh` with explicit `--root`,
 `--task`, `--delivery-key`, `--purpose branch_review`, fixed `--base-ref` and
 `--head-ref`, and `--probe-writes` when establishing required write capability.
+The query checks the Delivery phase before opening Planning files. For
+Branch Review, it compares the resolved commits against the bound Delivery
+candidate and the checkout HEAD. It applies the same clean checkout rule as
+formal Review, including the existing metadata and preserved-path exemptions.
+
+Run this check once before the first large read for a Branch Review. The same
+executor may reuse the applicable receipt in that invocation's Branch Review
+and Architecture assessment. If the candidate, session or execution conditions
+change, refresh the affected facts before relying on them.
+
+If both public results are already recorded and the original checkpoint was
+retired, recover the result through the original readback. Run write probes only
+when returning to work that still needs those writes.
+
 Read the intermediate receipt's actual `result.checks`; it is not a typed exit,
 a pass, a Task selection or a promise that later writes will succeed. An omitted
 probe does not establish write capability. The AI owner interprets the facts and
@@ -18,8 +32,13 @@ owner before paying the full read cost. Corrected conditions reenter the same
 object. Formal calls still validate their current facts and actual failures.
 
 Candidate source, tests and documents remain read-only by the reviewer's role.
-Original Bind/Selection may write Git common-dir `trellis/sessions`; original
-Review writes this Task's `task.json` and the official JSON writer's same-directory
+Probe Git common-dir `trellis/sessions` only if the original Bind or Delivery
+Selection still needs to write there. Reuse an exact current selection.
+The query validates the existing managed Python environment without saving a
+runtime hint. It reads the Git index without refreshing it. The `final_plan`
+query performs no write probes. A failed object check retains its original
+reason code and field location when these are available.
+Original Review writes this Task's `task.json` and the official JSON writer's same-directory
 temporary file, plus this checkout's original Delivery-scoped
 `.trellis/.runtime/guru-team/owner-checkpoints/<task-directory>/<Delivery>/review-gate.json`.
 Necessary call-local carriers use the allowed temporary directory. A linked

@@ -306,11 +306,16 @@ blocked/re-entry route; never degrade to the caller authoring the assessment.
 Do not add a reviewer ledger, public reviewer fields or another state machine.
 
 Before the first large authority read, the actual executor checks its native
-prelude and object/execution facts under the minimum engineering rules. Use the
-original Review package's `scripts/inspect-review-execution.sh` with exact root,
-Task/Delivery and `--purpose planning --planning-purpose candidate_assessment|final_plan`,
-or `--purpose branch_review --base-ref <B> --head-ref <H>` for that original
-purpose. Request `--probe-writes` only for the actual original write duties.
+prelude and object/execution facts under the minimum engineering rules.
+For Planning and Branch Review, use the original Review package's
+`scripts/inspect-review-execution.sh` with the exact root and Task/Delivery.
+Pass `--purpose planning --planning-purpose candidate_assessment|final_plan`
+for Planning or `--purpose branch_review --base-ref <B> --head-ref <H>` for the
+committed candidate. Request `--probe-writes` only for the original write duties.
+For `branch_review`, apply the original Review contract's reuse rule for
+this same review invocation. For `implementation_discovery`, check the actual
+prelude and object locators here. Apply its original receiving-session and
+candidate checks in the authority-first order below.
 For `final_plan`, the complete explicit object retains the read-only exception:
 no session/Task/checkpoint write probe or missing binding/selection recovery,
 even with a context key and an unwritable session directory. An exact existing

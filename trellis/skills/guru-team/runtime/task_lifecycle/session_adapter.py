@@ -63,21 +63,40 @@ def session_location(facts: Any) -> str:
     return "<repo>/.trellis/.runtime/sessions/<session>.json"
 
 
+_SESSION_READ_FAILURES = frozenset({
+    "binding_missing", "binding_unreadable", "binding_invalid", "binding_not-object",
+    "binding_empty", "binding_undecodable", "unsupported_binding_schema",
+    "invalid_binding_fields", "invalid_delivery_id", "invalid_task_id",
+})
+
+
+def session_read_reason(message: str) -> str | None:
+    """Keep the official read reason without the rest of its diagnostic."""
+    reason = message.partition(":")[0]
+    return reason if reason in _SESSION_READ_FAILURES else None
+
+
 def session_diagnostic(operation: str, location: str, exc: BaseException) -> dict[str, Any]:
     """Keep only operation facts; an upstream boolean failure has no errno."""
     cause: BaseException | None = exc
     error_number = None
+    read_reason = None
     while cause is not None:
+        if type(cause).__name__ == "SessionBindingError":
+            read_reason = session_read_reason(str(cause)) or read_reason
         if isinstance(cause, OSError) and cause.errno is not None:
             error_number = cause.errno
             break
         cause = cause.__cause__
-    return {
+    diagnostic = {
         "operation": operation,
         "location": location,
         "exception_class": type(exc).__name__,
         "errno": error_number,
     }
+    if read_reason is not None:
+        diagnostic["read_reason"] = read_reason
+    return diagnostic
 
 
 def _lifecycle(payload: dict[str, Any]) -> TaskLifecycleKey:

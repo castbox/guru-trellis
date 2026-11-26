@@ -105,14 +105,16 @@ class DeliveryFlow(unittest.TestCase):
                   "scope_ref": d["scope_ref"], "plan_ref": authority_ref(plan / "implement.md", self.repo), "candidate": None,
                   "predecessor_result_id": None, "obligations": [],
                   "evidence": [authority_ref(plan / name, self.repo) for name in ("prd.md", "design.md", "implement.md")]}
-        self.projection.apply({"api_version": "1.0", "operation": "record_gate", "key": self.key,
-            "owner_role": "planning", "owner_id": owners["planning"], "expected_phase": "planning", "result": result})
+        if not getattr(self, "planning_only", False):
+            self.projection.apply({"api_version": "1.0", "operation": "record_gate", "key": self.key,
+                "owner_role": "planning", "owner_id": owners["planning"], "expected_phase": "planning", "result": result})
         (self.repo / "app.txt").write_text("feature\n")
         self.git("add", ".")
         self.git("commit", "-qm", "feature")
         self.head = self.git("rev-parse", "HEAD").strip()
         BranchBindingStore(inspect_repository(self.repo)).establish(TaskLifecycleKey("flow-task", 0), "feat/flow")
-        self.projection.begin_check(self.key, self.projection.candidate(["app.txt"], head_ref=self.head, base_ref=self.git("rev-parse", "main").strip()))
+        if not getattr(self, "planning_only", False):
+            self.projection.begin_check(self.key, self.projection.candidate(["app.txt"], head_ref=self.head, base_ref=self.git("rev-parse", "main").strip()))
         if self.projection.has_context():
             self.projection.select(self.key)
         self.inputs = self.repo / ".trellis/.runtime/test-inputs"
